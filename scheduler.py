@@ -29,13 +29,16 @@ logger = logging.getLogger(__name__)
 
 def _post_market_scan() -> None:
     """Callback executed by the scheduler after market close."""
-    logger.info("⏰ Scheduled post-market scan triggered.")
+    logger.info("Scheduled post-market scan triggered.")
     try:
-        from scanner import run_scanner
-        df = run_scanner()
-        logger.info(f"✅ Scan complete — {len(df)} stocks processed.")
+        # Guard against Streamlit hot-reload window where 'scanner' may
+        # temporarily be absent from sys.modules.
+        import importlib
+        scanner = importlib.import_module("scanner")
+        df = scanner.run_scanner()
+        logger.info(f"Scan complete — {len(df)} stocks processed.")
     except Exception as exc:
-        logger.error(f"❌ Scan failed: {exc}")
+        logger.error(f"Scan failed: {exc}")
 
 
 def start_scheduler() -> BackgroundScheduler:
