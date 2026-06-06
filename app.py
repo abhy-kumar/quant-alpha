@@ -631,7 +631,7 @@ with tab1:
 
     st.dataframe(
         top_bulls[display_cols].style.map(_style_cell, subset=colour_cols),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         height=510,
     )
@@ -670,7 +670,7 @@ with tab2:
 
     st.dataframe(
         filtered.style.map(_style_cell, subset=colour_all),
-        use_container_width=True,
+        width="stretch",
         height=600,
     )
     st.caption(f"{len(filtered)} of {len(df)} securities match the current filter")
@@ -831,7 +831,7 @@ with tab3:
                 ann.font.color = "#2D4163"
                 ann.font.size  = 10
 
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -881,8 +881,8 @@ with tab4:
             )
             st.dataframe(
                 failed_df[["Ticker", "Error"]],
-                hide_index=True, use_container_width=True,
+                hide_index=True, width="stretch",
             )
 
         with st.expander("Full scan log"):
-            st.dataframe(scan_log, hide_index=True, use_container_width=True)
+            st.dataframe(scan_log, hide_index=True, width="stretch")
