@@ -858,7 +858,7 @@ with tab4:
 
     if scan_log.empty:
         st.markdown(
-            '<div style="color:#1E3A5F; font-size:0.82rem; padding:1rem 0;">'
+            '<div style="color:#56789A; font-size:0.82rem; padding:1rem 0;">'
             'No scan log found. Run a market scan to populate diagnostics.</div>',
             unsafe_allow_html=True,
         )
@@ -893,5 +893,12 @@ with tab4:
                 hide_index=True, width="stretch",
             )
 
-        with st.expander("Full scan log"):
-            st.dataframe(scan_log, hide_index=True, width="stretch")
+        st.markdown(
+            '<div style="margin-top:1.25rem; padding-top:0.75rem; border-top:1px solid #111B2E;">'
+            '<div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; '
+            'text-transform:uppercase; color:#56789A; margin-bottom:0.6rem;">'
+            'Full Scan Log</div></div>',
+            unsafe_allow_html=True,
+        )
+        full_log = scan_log.copy()
+        st.dataframe(full_log, hide_index=True, width="stretch")
