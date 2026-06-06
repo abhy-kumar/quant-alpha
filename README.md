@@ -1,4 +1,4 @@
-# Quantitative Alpha — Stock Dashboard
+# Quantitative Alpha Stock Dashboard
 
 Indian equity intelligence platform built for the  
 **Alpha Research and Investment Club, FMS Delhi**.
