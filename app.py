@@ -376,9 +376,12 @@ _boot_scheduler()
 def _age(iso_ts: str) -> str:
     try:
         dt = datetime.fromisoformat(iso_ts)
+        # If tz-aware (new timestamps): compare directly
+        # If naive (old timestamps stored as UTC): treat as UTC and convert
         if dt.tzinfo is None:
-            dt = IST.localize(dt)
+            dt = pytz.utc.localize(dt).astimezone(IST)
         secs = int((datetime.now(IST) - dt).total_seconds())
+        if secs < 0:    secs = 0   # clock skew guard
         if secs < 60:   return f"{secs}s ago"
         if secs < 3600: return f"{secs // 60}m ago"
         h, m = divmod(secs // 60, 60)
@@ -427,7 +430,13 @@ st.markdown(f"""
 last_ts = get_last_scan_time()
 if last_ts:
     try:
-        dt_disp = datetime.fromisoformat(last_ts).strftime("%d %b %Y · %I:%M %p")
+        dt_raw = datetime.fromisoformat(last_ts)
+        # Normalise to IST: naive old timestamps were UTC, new ones carry tz info
+        if dt_raw.tzinfo is None:
+            dt_ist = pytz.utc.localize(dt_raw).astimezone(IST)
+        else:
+            dt_ist = dt_raw.astimezone(IST)
+        dt_disp = dt_ist.strftime("%d %b %Y · %I:%M %p")
     except Exception:
         dt_disp = last_ts
     st.markdown(

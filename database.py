@@ -8,10 +8,13 @@ Priority order for credentials:
 """
 
 import os
+import pytz
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL as SA_URL
+
+IST = pytz.timezone("Asia/Kolkata")
 
 _SCAN_TABLE    = "scans"
 _HISTORY_TABLE = "scan_history"
@@ -97,7 +100,7 @@ def test_connection() -> tuple[bool, str]:
 
 def save_to_db(df: pd.DataFrame, scan_time: datetime | None = None) -> None:
     if scan_time is None:
-        scan_time = datetime.now()
+        scan_time = datetime.now(IST)
     out = df.copy()
     out["Scan_Time"] = scan_time.isoformat(timespec="seconds")
 
@@ -112,7 +115,7 @@ def save_scan_log(log_entries: list[dict]) -> None:
     if not log_entries:
         return
     log_df = pd.DataFrame(log_entries)
-    log_df["Log_Time"] = datetime.now().isoformat(timespec="seconds")
+    log_df["Log_Time"] = datetime.now(IST).isoformat(timespec="seconds")
 
     with engine.begin() as conn:
         if _BACKEND == "postgresql":

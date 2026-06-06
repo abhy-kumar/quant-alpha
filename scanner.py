@@ -20,6 +20,9 @@ import pandas as pd
 import numpy as np
 import time
 from datetime import datetime
+import pytz
+
+IST = pytz.timezone("Asia/Kolkata")
 
 from database import save_to_db, save_scan_log
 from indicators import add_indicators, compute_metrics
@@ -78,7 +81,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         Called after each ticker with (current_index, total, ticker_symbol).
         Use this to drive a progress bar in the UI.
     """
-    scan_time = datetime.now()
+    scan_time = datetime.now(IST)
     tickers   = get_liquid_universe(top_n=150)
     total     = len(tickers)
     rows: list[dict] = []
