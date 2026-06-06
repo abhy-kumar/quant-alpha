@@ -1,52 +1,90 @@
 """
 database.py  —  Cloud-ready version
 ------------------------------------
-Uses PostgreSQL (Supabase) when DATABASE_URL env var is set.
-Falls back to local SQLite for development (no env var needed).
+Priority order for credentials:
+  1. st.secrets["database"]  (structured — handles any password safely)
+  2. os.environ DATABASE_URL (GitHub Actions / local with URL-encoded password)
+  3. Local SQLite (dev only)
 """
 
 import os
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
-
-# ── Connection ────────────────────────────────────────────────────────────────
-_DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
-
-if _DATABASE_URL:
-    # Cloud: Supabase PostgreSQL
-    # SQLAlchemy 2.x requires the 'postgresql+psycopg2://' scheme
-    if _DATABASE_URL.startswith("postgres://"):
-        _DATABASE_URL = _DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
-    # Supabase direct connections (port 5432) REQUIRE SSL — without this
-    # the connection is silently refused by Supabase's network layer.
-    engine = create_engine(
-        _DATABASE_URL,
-        connect_args={"sslmode": "require"},
-        pool_pre_ping=True,
-        pool_size=2,
-        max_overflow=0,
-    )
-    _BACKEND = "postgresql"
-else:
-    # Local dev: SQLite
-    os.makedirs("data", exist_ok=True)
-    engine = create_engine("sqlite:///data/screener.db", echo=False)
-    _BACKEND = "sqlite"
+from sqlalchemy.engine import URL as SA_URL
 
 _SCAN_TABLE    = "scans"
 _HISTORY_TABLE = "scan_history"
 _LOG_TABLE     = "scan_log"
 
 
+def _build_engine():
+    """
+    Build the SQLAlchemy engine.
+
+    Approach 1 (Streamlit Cloud): Read structured [database] block from
+    st.secrets so passwords with # ! , etc. are never forced into a URL string.
+
+    Approach 2 (GitHub Actions / local): Read DATABASE_URL env var.
+    Password must be URL-encoded (# → %23) in this case.
+
+    Approach 3 (local dev): SQLite fallback.
+    """
+
+    # ── Approach 1 : st.secrets structured block ──────────────────────────────
+    try:
+        import streamlit as st
+        if "database" in st.secrets:
+            db = st.secrets["database"]
+            url = SA_URL.create(
+                drivername="postgresql+psycopg2",
+                username=str(db["user"]),
+                password=str(db["password"]),   # raw string — SQLAlchemy encodes it
+                host=str(db["host"]),
+                port=int(db.get("port", 5432)),
+                database=str(db.get("dbname", "postgres")),
+            )
+            engine = create_engine(
+                url,
+                connect_args={"sslmode": "require"},
+                pool_pre_ping=True,
+                pool_size=2,
+                max_overflow=0,
+            )
+            return engine, "postgresql"
+    except Exception:
+        pass
+
+    # ── Approach 2 : DATABASE_URL environment variable ────────────────────────
+    raw_url = os.environ.get("DATABASE_URL", "").strip()
+    if raw_url:
+        if raw_url.startswith("postgres://"):
+            raw_url = raw_url.replace("postgres://", "postgresql://", 1)
+        engine = create_engine(
+            raw_url,
+            connect_args={"sslmode": "require"},
+            pool_pre_ping=True,
+            pool_size=2,
+            max_overflow=0,
+        )
+        return engine, "postgresql"
+
+    # ── Approach 3 : local SQLite ──────────────────────────────────────────────
+    os.makedirs("data", exist_ok=True)
+    engine = create_engine("sqlite:///data/screener.db", echo=False)
+    return engine, "sqlite"
+
+
+engine, _BACKEND = _build_engine()
+
+
+# ── Public helpers ────────────────────────────────────────────────────────────
+
 def get_backend() -> str:
-    """Return 'postgresql' or 'sqlite' — used by the UI to show connection status."""
     return _BACKEND
 
 
 def test_connection() -> tuple[bool, str]:
-    """Ping the database. Returns (ok: bool, message: str)."""
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
@@ -58,7 +96,6 @@ def test_connection() -> tuple[bool, str]:
 # ── Write ─────────────────────────────────────────────────────────────────────
 
 def save_to_db(df: pd.DataFrame, scan_time: datetime | None = None) -> None:
-    """Persist scan results. Raises on failure so the UI can report it."""
     if scan_time is None:
         scan_time = datetime.now()
     out = df.copy()
@@ -72,7 +109,6 @@ def save_to_db(df: pd.DataFrame, scan_time: datetime | None = None) -> None:
 
 
 def save_scan_log(log_entries: list[dict]) -> None:
-    """Persist per-ticker scan log. Raises on failure."""
     if not log_entries:
         return
     log_df = pd.DataFrame(log_entries)
