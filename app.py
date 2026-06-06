@@ -12,7 +12,7 @@ import yfinance as yf
 from datetime import datetime
 import pytz
 
-from database import load_from_db, get_last_scan_time, load_scan_log
+from database import load_from_db, get_last_scan_time, load_scan_log, test_connection, get_backend
 from scanner import run_scanner
 from nse_fetcher import market_status_text, get_bulk_live_quotes, is_market_open
 
@@ -468,13 +468,29 @@ with st.sidebar:
     st.markdown("<div style='height:0.75rem'></div>", unsafe_allow_html=True)
     st.markdown('<div class="sidebar-label">Diagnostics</div>', unsafe_allow_html=True)
 
+    # Database connection status — shows instantly whether Supabase is reachable
+    _db_ok, _db_msg = test_connection()
+    _db_label = "Supabase" if get_backend() == "postgresql" else "SQLite (local)"
+    _db_color = "#4ADE80" if _db_ok else "#F87171"
+    st.markdown(
+        f'<div class="sidebar-meta">Database &nbsp;&middot;&nbsp; '
+        f'<span style="color:{_db_color}; font-weight:600;">{_db_label}</span></div>',
+        unsafe_allow_html=True,
+    )
+    if not _db_ok:
+        st.markdown(
+            f'<div class="sidebar-meta" style="color:#F87171; font-size:0.62rem; '
+            f'margin-top:2px; word-break:break-all;">{_db_msg[:160]}</div>',
+            unsafe_allow_html=True,
+        )
+
     scan_log = load_scan_log()
     if not scan_log.empty:
         ok_n   = int((scan_log["Status"] == "OK").sum())
         fail_n = int((scan_log["Status"] == "FAILED").sum())
         st.markdown(
             f'<div class="sidebar-meta">'
-            f'Last scan &nbsp;·&nbsp; <b>{ok_n} OK</b> &nbsp;/ {fail_n} failed</div>',
+            f'Last scan &nbsp;&middot;&nbsp; <b>{ok_n} OK</b> &nbsp;/ {fail_n} failed</div>',
             unsafe_allow_html=True,
         )
 
@@ -526,7 +542,11 @@ if scan_btn:
             unsafe_allow_html=True,
         )
 
-    run_scanner(progress_callback=_on_progress)
+    try:
+        run_scanner(progress_callback=_on_progress)
+    except Exception as _scan_err:
+        st.error(f"Scan error: {_scan_err}")
+        st.stop()
     st.rerun()
 
 
