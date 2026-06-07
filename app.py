@@ -567,9 +567,14 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    # Attribution
+    # Attribution & Disclaimer
     st.markdown(
-        '<div style="margin-top:2.5rem; padding-top:1rem; border-top:1px solid #111B2E;">'
+        '<div style="margin-top:2.5rem; padding-top:1rem; border-top:1px solid #1E293B;">'
+        '<div style="font-size:0.65rem; color:#64748B; line-height:1.5; margin-bottom:0.75rem;">'
+        '<b>Disclaimer:</b> This platform is for educational purposes only and does not constitute financial advice. '
+        'The models and signals provided are experimental. Always consult a certified financial advisor before making investment decisions. '
+        'Quantitative Alpha and FMS Delhi are not responsible for any trading losses incurred.'
+        '</div>'
         '<div style="font-size:0.65rem; color:#56789A; line-height:1.8;">'
         'Alpha Research and Investment Club<br>FMS Delhi'
         '</div>'
@@ -674,7 +679,7 @@ with tab1:
     <div style="padding:1rem 0 0.25rem 0;">
         <div class="section-head">Top Signals</div>
         <div class="section-sub">
-            Securities ranked by composite technical score across 12 momentum and trend signals.
+            Top securities ranked by our Conviction rating, combining technical momentum and fundamental quality.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -1060,9 +1065,8 @@ with tab4:
     <div style="padding:1rem 0 0.5rem 0;">
         <div class="section-head">Sector Heatmap</div>
         <div class="section-sub">
-            Each cell represents a security sized by market capitalisation and coloured
-            by technical score. Green = bullish momentum, Red = bearish. Click any cell
-            to drill into that sector's peers via the Charting tab.
+            Each cell represents a security sized and coloured by your selected metrics. 
+            Click any cell to drill into that sector's peers via the Charting tab.
         </div>
     </div>
     """, unsafe_allow_html=True)
