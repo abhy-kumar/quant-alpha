@@ -73,7 +73,7 @@ header[data-testid="stHeader"] { display: none !important; }
 
 /* ── APP SHELL ────────────────────────────────────────────────────────────── */
 .stApp {
-    background-color: #080808;
+    background-color: #0b0e14;
 }
 
 .block-container {
@@ -83,8 +83,8 @@ header[data-testid="stHeader"] { display: none !important; }
 
 /* ── SIDEBAR ──────────────────────────────────────────────────────────────── */
 section[data-testid="stSidebar"] {
-    background-color: #0C0808 !important;
-    border-right: 1px solid #1E1810;
+    background-color: #111827 !important;
+    border-right: 1px solid #1E293B;
     border-top: 3px solid #C8102E;
 }
 section[data-testid="stSidebar"] .block-container {
@@ -94,19 +94,19 @@ section[data-testid="stSidebar"] .block-container {
 
 /* ── TYPOGRAPHY ───────────────────────────────────────────────────────────── */
 h1 {
-    color: #F0EAE0 !important;
-    font-size: 1.5rem !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.03em !important;
+    color: #F8FAFC !important;
+    font-size: 1.4rem !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
     line-height: 1.2 !important;
 }
 h2, h3 {
-    color: #E8E0D0 !important;
-    font-weight: 600 !important;
-    letter-spacing: -0.02em !important;
+    color: #F1F5F9 !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.01em !important;
 }
-/* Warm neutral for all body text — overrides Streamlit's cold defaults */
-p, div, span, label { color: #8A8475 !important; }
+/* Clean neutral for all body text */
+p, div, span, label { color: #94A3B8 !important; }
 
 /* ── HEADER AREA ──────────────────────────────────────────────────────────── */
 .app-header {
@@ -114,7 +114,7 @@ p, div, span, label { color: #8A8475 !important; }
     justify-content: space-between;
     align-items: center;
     padding: 1.75rem 0 1.25rem 0;
-    border-bottom: 1px solid #1E1810;
+    border-bottom: 1px solid #1E293B;
     margin-bottom: 0.75rem;
 }
 .app-brand {
@@ -122,44 +122,42 @@ p, div, span, label { color: #8A8475 !important; }
     align-items: center;
 }
 .app-wordmark {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #F0EAE0 !important;
-    letter-spacing: -0.03em;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #F8FAFC !important;
+    letter-spacing: -0.02em;
     line-height: 1;
 }
 .app-wordmark span {
     color: #C8102E !important;
 }
 .app-descriptor {
-    font-size: 0.7rem;
-    color: #6A6358 !important;
+    font-size: 0.75rem;
+    color: #64748B !important;
     margin-top: 5px;
-    font-weight: 500;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
+    font-weight: 400;
+    letter-spacing: 0.02em;
 }
 .mkt-cluster { text-align: right; }
 .mkt-badge {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     padding: 0.3rem 0.75rem;
     border-radius: 4px;
 }
 .mkt-badge.open {
-    color: #4ADE80 !important;
-    background: rgba(74, 222, 128, 0.08);
-    border: 1px solid rgba(74, 222, 128, 0.18);
+    color: #10B981 !important;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
 }
 .mkt-badge.closed {
-    color: #F87171 !important;
-    background: rgba(248, 113, 113, 0.08);
-    border: 1px solid rgba(248, 113, 113, 0.15);
+    color: #EF4444 !important;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 .pulse-dot {
     display: inline-block;
@@ -175,199 +173,188 @@ p, div, span, label { color: #8A8475 !important; }
     50%       { opacity: 0.25; }
 }
 .mkt-time {
-    font-size: 0.68rem;
-    color: #6B6358 !important;
+    font-size: 0.7rem;
+    color: #64748B !important;
     margin-top: 5px;
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.01em;
 }
 
 /* ── FRESHNESS STRIP ──────────────────────────────────────────────────────── */
 .freshness-bar {
-    font-size: 0.72rem;
-    color: #6A6358 !important;
+    font-size: 0.75rem;
+    color: #94A3B8 !important;
     padding: 0.3rem 0 0.9rem 0;
-    letter-spacing: 0.01em;
 }
-.freshness-bar b { color: #C9A84C !important; font-weight: 600 !important; }
+.freshness-bar b { color: #E2E8F0 !important; font-weight: 500 !important; }
 
 /* ── SIDEBAR SECTION LABEL ────────────────────────────────────────────────── */
 .sidebar-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #6B6358 !important;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #E2E8F0 !important;
     margin-bottom: 0.75rem;
     padding-bottom: 0.4rem;
-    border-bottom: 1px solid #1E1810;
+    border-bottom: 1px solid #1E293B;
 }
 .sidebar-meta {
-    font-size: 0.7rem;
-    color: #6B6358 !important;
+    font-size: 0.75rem;
+    color: #94A3B8 !important;
     line-height: 1.6;
     margin-top: 0.5rem;
 }
-.sidebar-meta b { color: #C9A84C !important; font-weight: 600 !important; }
+.sidebar-meta b { color: #E2E8F0 !important; font-weight: 500 !important; }
 
 /* ── BUTTONS ──────────────────────────────────────────────────────────────── */
 .stButton > button {
     background: transparent !important;
-    color: #C9A84C !important;
-    border: 1px solid #2A1A0A !important;
-    border-radius: 5px !important;
-    font-size: 0.8rem !important;
+    color: #E2E8F0 !important;
+    border: 1px solid #334155 !important;
+    border-radius: 4px !important;
+    font-size: 0.85rem !important;
     font-weight: 500 !important;
-    letter-spacing: 0.01em !important;
     padding: 0.45rem 1rem !important;
     transition: all 0.15s ease;
     width: 100%;
 }
 .stButton > button:hover {
-    background: #1A0A04 !important;
-    border-color: #C8102E !important;
-    color: #D4B86A !important;
+    background: #1E293B !important;
+    border-color: #475569 !important;
+    color: #F8FAFC !important;
 }
 /* Primary button → FMS crimson */
 .stButton > button[kind="primary"] {
-    background: linear-gradient(145deg, #7B0A0A, #C8102E) !important;
-    color: #FFF0EE !important;
+    background: #C8102E !important;
+    color: #FFFFFF !important;
     border-color: #C8102E !important;
+    font-weight: 600 !important;
 }
 .stButton > button[kind="primary"]:hover {
-    background: linear-gradient(145deg, #C8102E, #E53030) !important;
-    box-shadow: 0 0 18px rgba(200,16,46,0.35) !important;
+    background: #E53030 !important;
+    box-shadow: 0 4px 6px -1px rgba(200, 16, 46, 0.2) !important;
 }
 
 /* ── TABS ─────────────────────────────────────────────────────────────────── */
 .stTabs [data-baseweb="tab-list"] {
     background: transparent !important;
-    border-bottom: 1px solid #1E1810 !important;
+    border-bottom: 1px solid #1E293B !important;
     gap: 0 !important;
     padding: 0 !important;
 }
 .stTabs [data-baseweb="tab"] {
     background: transparent !important;
-    color: #6A6358 !important;
+    color: #64748B !important;
     font-weight: 500 !important;
-    font-size: 0.8rem !important;
-    letter-spacing: 0.02em !important;
+    font-size: 0.85rem !important;
     padding: 0.7rem 1.4rem !important;
     border-radius: 0 !important;
     border-bottom: 2px solid transparent !important;
     transition: color 0.15s, border-color 0.15s;
 }
 .stTabs [data-baseweb="tab"]:hover {
-    color: #8A8475 !important;
-    background: rgba(255,255,255,0.015) !important;
+    color: #94A3B8 !important;
+    background: rgba(255,255,255,0.02) !important;
 }
 /* Active tab → FMS crimson indicator */
 .stTabs [aria-selected="true"] {
-    color: #F0EAE0 !important;
+    color: #F8FAFC !important;
     border-bottom: 2px solid #C8102E !important;
-    font-weight: 600 !important;
+    font-weight: 500 !important;
 }
 
 /* ── METRIC CARDS ─────────────────────────────────────────────────────────── */
 [data-testid="metric-container"] {
-    background: #0F0A08 !important;
-    border: 1px solid #1E1810 !important;
-    border-radius: 8px !important;
+    background: #111827 !important;
+    border: 1px solid #1E293B !important;
+    border-radius: 6px !important;
     padding: 0.9rem 1.1rem !important;
     transition: border-color 0.2s;
 }
 [data-testid="metric-container"]:hover {
-    border-color: #3D2010 !important;
+    border-color: #334155 !important;
 }
 [data-testid="stMetricLabel"] > div {
-    font-size: 0.65rem !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.09em !important;
-    color: #6B6358 !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    color: #94A3B8 !important;
 }
 [data-testid="stMetricValue"] > div {
     font-size: 1.15rem !important;
     font-weight: 600 !important;
-    color: #E8E0D0 !important;
-    letter-spacing: -0.01em !important;
+    color: #F8FAFC !important;
 }
 
 /* ── PROGRESS BAR ─────────────────────────────────────────────────────────── */
 [data-testid="stProgress"] > div {
-    background: #1E1810 !important;
+    background: #1E293B !important;
     border-radius: 3px !important;
-    height: 3px !important;
+    height: 4px !important;
 }
 [data-testid="stProgress"] > div > div {
-    background: linear-gradient(90deg, #7B0A0A, #C8102E) !important;
+    background: #C8102E !important;
     border-radius: 3px !important;
     transition: width 0.3s ease !important;
 }
 
 /* ── SCAN PROGRESS UI ─────────────────────────────────────────────────────── */
 .scan-header {
-    padding: 2rem 0 1.25rem 0;
-    border-bottom: 1px solid #1E1810;
+    padding: 1.5rem 0 1rem 0;
+    border-bottom: 1px solid #1E293B;
     margin-bottom: 1.5rem;
 }
 .scan-title {
     font-size: 1rem;
-    font-weight: 600;
-    color: #D4CCB8 !important;
-    letter-spacing: -0.01em;
+    font-weight: 500;
+    color: #F8FAFC !important;
 }
 .scan-sub {
-    font-size: 0.75rem;
-    color: #6B6358 !important;
+    font-size: 0.8rem;
+    color: #94A3B8 !important;
     margin-top: 5px;
-    letter-spacing: 0.01em;
 }
 .scan-status-row {
-    font-size: 0.82rem;
-    color: #6A6358 !important;
+    font-size: 0.85rem;
+    color: #94A3B8 !important;
     margin-top: 0.6rem;
     font-variant-numeric: tabular-nums;
 }
-.scan-count  { color: #C9A84C !important; font-weight: 600; }
-.scan-ticker { color: #8A8475 !important; font-weight: 500; }
+.scan-count  { color: #E2E8F0 !important; font-weight: 500; }
+.scan-ticker { color: #E2E8F0 !important; font-weight: 500; }
 
 /* ── DIVIDERS ─────────────────────────────────────────────────────────────── */
 hr {
     border: none !important;
-    border-top: 1px solid #1E1810 !important;
+    border-top: 1px solid #1E293B !important;
     margin: 0.75rem 0 !important;
 }
 
 /* ── SUBHEADERS ───────────────────────────────────────────────────────────── */
 .section-head {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #D4CCB8 !important;
-    letter-spacing: -0.01em;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #F8FAFC !important;
     margin-bottom: 0.25rem;
 }
 .section-sub {
-    font-size: 0.72rem;
-    color: #6B6358 !important;
+    font-size: 0.8rem;
+    color: #94A3B8 !important;
     margin-bottom: 1rem;
     line-height: 1.5;
 }
 
 /* ── ALERTS ───────────────────────────────────────────────────────────────── */
 [data-testid="stAlert"] {
-    background: #0F0A08 !important;
-    border-radius: 7px !important;
-    border-left: 2px solid #C8102E !important;
-    color: #6A6358 !important;
-    font-size: 0.82rem !important;
+    background: #111827 !important;
+    border-radius: 6px !important;
+    border-left: 3px solid #C8102E !important;
+    color: #E2E8F0 !important;
+    font-size: 0.85rem !important;
 }
 
 /* ── EXPANDER ─────────────────────────────────────────────────────────────── */
 [data-testid="stExpander"] {
-    background: #0F0A08 !important;
-    border: 1px solid #1E1810 !important;
-    border-radius: 7px !important;
+    background: #111827 !important;
+    border: 1px solid #1E293B !important;
+    border-radius: 6px !important;
 }
 
 /* ── SELECT / RADIO / CHECKBOX ────────────────────────────────────────────── */
@@ -375,30 +362,28 @@ hr {
 [data-testid="stSlider"]    label,
 [data-testid="stRadio"]     label,
 [data-testid="stCheckbox"]  label {
-    font-size: 0.75rem !important;
+    font-size: 0.8rem !important;
     font-weight: 500 !important;
-    color: #6A6358 !important;
-    letter-spacing: 0.02em !important;
-    text-transform: uppercase !important;
+    color: #94A3B8 !important;
 }
 
 /* ── CAPTION ──────────────────────────────────────────────────────────────── */
 [data-testid="stCaptionContainer"] {
-    color: #6B6358 !important;
-    font-size: 0.72rem !important;
+    color: #64748B !important;
+    font-size: 0.75rem !important;
 }
 
 /* ── DATAFRAME ────────────────────────────────────────────────────────────── */
 [data-testid="stDataFrame"] iframe {
-    border-radius: 7px;
+    border-radius: 6px;
 }
 
 /* ── CONVICTION BADGE ─────────────────────────────────────────────────────── */
-.conv-strong-buy { color: #4ADE80 !important; font-weight: 700 !important; }
-.conv-buy        { color: #86EFAC !important; font-weight: 600 !important; }
-.conv-hold       { color: #FCD34D !important; font-weight: 500 !important; }
-.conv-caution    { color: #FB923C !important; font-weight: 500 !important; }
-.conv-avoid      { color: #F87171 !important; font-weight: 600 !important; }
+.conv-strong-buy { color: #10B981 !important; font-weight: 600 !important; }
+.conv-buy        { color: #34D399 !important; font-weight: 500 !important; }
+.conv-hold       { color: #FBBF24 !important; font-weight: 500 !important; }
+.conv-caution    { color: #F97316 !important; font-weight: 500 !important; }
+.conv-avoid      { color: #EF4444 !important; font-weight: 600 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -659,7 +644,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Screener",
     "Charting",
     "Sector Heatmap",
-    "Scan Health",
+    "System Logs",
 ])
 
 
@@ -669,11 +654,9 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 with tab1:
     st.markdown("""
     <div style="padding:1rem 0 0.25rem 0;">
-        <div class="section-head">High-Conviction Technical Setups</div>
+        <div class="section-head">Top Signals</div>
         <div class="section-sub">
-            Ranked by composite Tech Score across 12 signals.
-            Range: −1.0 (all bearish) to +1.0 (all bullish).
-            Conviction Rating combines technical and fundamental quality.
+            Securities ranked by composite technical score across 12 momentum and trend signals.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -870,38 +853,38 @@ with tab3:
             fig.add_hrect(y0=30, y1=70, fillcolor="#94A3B8",
                           opacity=0.03, row=3, col=1, line_width=0)
 
-            bg   = "#060B14"
-            grid = "#100C08"
+            bg   = "#0b0e14"
+            grid = "#1E293B"
             fig.update_layout(
                 height=720,
                 margin=dict(l=0, r=0, t=20, b=0),
                 xaxis_rangeslider_visible=False,
                 paper_bgcolor=bg,
                 plot_bgcolor=bg,
-                font=dict(color="#6B635A", size=11, family="Inter"),
+                font=dict(color="#94A3B8", size=11, family="Inter"),
                 legend=dict(
                     orientation="h", yanchor="bottom",
                     y=1.01, xanchor="right", x=1,
                     bgcolor="rgba(0,0,0,0)", font=dict(size=10),
                 ),
                 hoverlabel=dict(
-                    bgcolor="#100C08", font_color="#CBD5E1",
-                    bordercolor="#1E3A5F",
+                    bgcolor="#111827", font_color="#F8FAFC",
+                    bordercolor="#1E293B",
                 ),
             )
             for row_n in [1, 2, 3]:
                 fig.update_xaxes(
                     gridcolor=grid, zeroline=False, showgrid=True,
-                    tickfont=dict(color="#4A4340", size=10),
+                    tickfont=dict(color="#64748B", size=10),
                     row=row_n, col=1,
                 )
                 fig.update_yaxes(
                     gridcolor=grid, zeroline=False, showgrid=True,
-                    tickfont=dict(color="#4A4340", size=10),
+                    tickfont=dict(color="#64748B", size=10),
                     row=row_n, col=1,
                 )
             for ann in fig.layout.annotations:
-                ann.font.color = "#4A4340"
+                ann.font.color = "#64748B"
                 ann.font.size  = 10
 
             st.plotly_chart(fig, width="stretch")
@@ -909,16 +892,20 @@ with tab3:
     # ── Peer Comparison ───────────────────────────────────────────────────────
     st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
     st.markdown(
-        '<div style="border-top:1px solid #111B2E; padding-top:1.25rem;">'
+        '<div style="border-top:1px solid #1E293B; padding-top:1.25rem;">'
         '<div class="section-head">Sector Peer Comparison</div>'
         '<div class="section-sub">Top peers by market cap in the same NSE sector.</div>'
         '</div>',
         unsafe_allow_html=True,
     )
 
-    peer_sector = asset.get("Sector", "Unknown") if "Sector" in df.columns else "Unknown"
+    peer_sector = "Unknown"
+    if "Sector" in df.columns:
+        val = asset.get("Sector")
+        if pd.notna(val) and str(val).strip() != "":
+            peer_sector = str(val).strip()
 
-    if peer_sector and peer_sector != "Unknown" and "Sector" in df.columns:
+    if peer_sector != "Unknown" and "Sector" in df.columns:
         peers = (
             df[df["Sector"] == peer_sector]
             .sort_values("Market_Cap_B", ascending=False)
@@ -974,26 +961,26 @@ with tab3:
                         opacity=0.75,
                     ))
 
-                    bg = "#060B14"
+                    bg = "#0b0e14"
                     bar_fig.update_layout(
                         barmode="group",
                         height=280,
                         margin=dict(l=0, r=0, t=10, b=0),
                         paper_bgcolor=bg,
                         plot_bgcolor=bg,
-                        font=dict(color="#6B635A", size=11, family="Inter"),
+                        font=dict(color="#94A3B8", size=11, family="Inter"),
                         legend=dict(
                             orientation="h", yanchor="bottom",
                             y=1.02, xanchor="right", x=1,
                             bgcolor="rgba(0,0,0,0)", font=dict(size=10),
                         ),
                         hoverlabel=dict(
-                            bgcolor="#100C08", font_color="#CBD5E1",
-                            bordercolor="#1E3A5F",
+                            bgcolor="#111827", font_color="#F8FAFC",
+                            bordercolor="#1E293B",
                         ),
-                        xaxis=dict(gridcolor="#100C08", zeroline=False,
+                        xaxis=dict(gridcolor="#1E293B", zeroline=False,
                                    tickfont=dict(color="#64748B", size=10)),
-                        yaxis=dict(gridcolor="#100C08", zeroline=False,
+                        yaxis=dict(gridcolor="#1E293B", zeroline=False,
                                    tickfont=dict(color="#64748B", size=10)),
                     )
                     st.plotly_chart(bar_fig, width="stretch")
@@ -1004,14 +991,14 @@ with tab3:
                     )
         else:
             st.markdown(
-                '<div style="color:#56789A; font-size:0.8rem; padding:0.5rem 0;">'
+                '<div style="color:#94A3B8; font-size:0.8rem; padding:0.5rem 0;">'
                 f'No other stocks in sector "{peer_sector}" in the current universe.</div>',
                 unsafe_allow_html=True,
             )
     else:
         st.markdown(
-            '<div style="color:#56789A; font-size:0.8rem; padding:0.5rem 0;">'
-            'Sector data not available — run a fresh scan to populate peer groups.</div>',
+            '<div style="color:#94A3B8; font-size:0.8rem; padding:0.5rem 0;">'
+            'Sector data is not available for this stock, or a fresh scan is required.</div>',
             unsafe_allow_html=True,
         )
 
@@ -1077,10 +1064,10 @@ with tab4:
             values=hm_size_by,
             color=hm_colour_by,
             color_continuous_scale=[
-                [0.0, "#7B0A0A"],
-                [0.35, "#1E1A12"],
-                [0.5,  "#0F0D08"],
-                [0.65, "#1E1A12"],
+                [0.0, "#7F1D1D"],
+                [0.35, "#1F2937"],
+                [0.5,  "#111827"],
+                [0.65, "#1F2937"],
                 [1.0, "#14532D"],
             ],
             color_continuous_midpoint=0 if hm_colour_by in ["Tech_Score", "1d_Chg_%"] else None,
@@ -1101,13 +1088,13 @@ with tab4:
         hm_fig.update_layout(
             height=620,
             margin=dict(l=0, r=0, t=10, b=0),
-            paper_bgcolor="#060B14",
-            font=dict(color="#6B635A", size=11, family="Inter"),
+            paper_bgcolor="#0b0e14",
+            font=dict(color="#94A3B8", size=11, family="Inter"),
             coloraxis_colorbar=dict(
-                title=dict(text=hm_colour_by, font=dict(color="#56789A", size=10)),
-                tickfont=dict(color="#56789A", size=9),
-                bgcolor="#080E1A",
-                bordercolor="#111B2E",
+                title=dict(text=hm_colour_by, font=dict(color="#64748B", size=10)),
+                tickfont=dict(color="#64748B", size=9),
+                bgcolor="#111827",
+                bordercolor="#1E293B",
                 borderwidth=1,
                 len=0.6,
             ),
@@ -1138,9 +1125,8 @@ with tab4:
         )
 
         st.markdown(
-            '<div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #111B2E;">'
-            '<div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; '
-            'text-transform:uppercase; color:#56789A; margin-bottom:0.6rem;">'
+            '<div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #1E293B;">'
+            '<div style="font-size:0.85rem; font-weight:600; color:#E2E8F0; margin-bottom:0.6rem;">'
             'Sector Summary</div></div>',
             unsafe_allow_html=True,
         )
@@ -1154,12 +1140,12 @@ with tab4:
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# TAB 5 — Scan Health
+# TAB 5 — System Logs
 # ════════════════════════════════════════════════════════════════════════════
 with tab5:
     st.markdown("""
     <div style="padding:1rem 0 0.5rem 0;">
-        <div class="section-head">Scan Health</div>
+        <div class="section-head">System Logs</div>
         <div class="section-sub">Per-ticker processing results from the most recent scan.</div>
     </div>
     """, unsafe_allow_html=True)
@@ -1168,7 +1154,7 @@ with tab5:
 
     if scan_log.empty:
         st.markdown(
-            '<div style="color:#56789A; font-size:0.82rem; padding:1rem 0;">'
+            '<div style="color:#94A3B8; font-size:0.82rem; padding:1rem 0;">'
             'No scan log found. Run a market scan to populate diagnostics.</div>',
             unsafe_allow_html=True,
         )
@@ -1204,9 +1190,8 @@ with tab5:
             )
 
         st.markdown(
-            '<div style="margin-top:1.25rem; padding-top:0.75rem; border-top:1px solid #111B2E;">'
-            '<div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; '
-            'text-transform:uppercase; color:#56789A; margin-bottom:0.6rem;">'
+            '<div style="margin-top:1.25rem; padding-top:0.75rem; border-top:1px solid #1E293B;">'
+            '<div style="font-size:0.85rem; font-weight:600; color:#E2E8F0; margin-bottom:0.6rem;">'
             'Full Scan Log</div></div>',
             unsafe_allow_html=True,
         )
