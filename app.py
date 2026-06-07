@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 app.py — Quantitative Alpha Dashboard
-Alpha Research and Investment Club · FMS Delhi
+Alpha Research and Investment Club | FMS Delhi
 """
 
 import base64
@@ -45,22 +45,72 @@ _LOGO_IMG = (
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Quantitative Alpha · FMS Delhi",
+    page_title="Quantitative Alpha | FMS Delhi",
     page_icon="▲",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
+
+# ── Theme Management ────────────────────────────────────────────────────────
+if "theme" not in st.session_state:
+    st.session_state.theme = "dark"
+
+def toggle_theme():
+    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+
+if st.session_state.theme == "dark":
+    st.markdown('''
+    <style>
+    :root {
+        --bg-app: #09090b;
+        --bg-card: #18181b;
+        --border-color: var(--border-color);
+        --text-main: #fafafa;
+        --text-muted: #a1a1aa;
+        --text-sub: #71717a;
+        --text-hover: #e4e4e7;
+        --brand-red: #C8102E;
+        --brand-red-hover: #E53030;
+        --btn-bg: transparent;
+        --btn-border: #3f3f46;
+        --btn-hover: #27272a;
+        --fms-red: #C8102E;
+    }
+    </style>
+    ''', unsafe_allow_html=True)
+else:
+    st.markdown('''
+    <style>
+    :root {
+        --bg-app: #f8fafc;
+        --bg-card: #ffffff;
+        --border-color: #e2e8f0;
+        --text-main: #0f172a;
+        --text-muted: #475569;
+        --text-sub: #64748b;
+        --text-hover: #0f172a;
+        --brand-red: #C8102E;
+        --brand-red-hover: #E53030;
+        --btn-bg: transparent;
+        --btn-border: #cbd5e1;
+        --btn-hover: #f1f5f9;
+        --fms-red: #C8102E;
+    }
+    </style>
+    ''', unsafe_allow_html=True)
+
 # ── Design system ─────────────────────────────────────────────────────────────
+
 st.markdown("""
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 /* ── GLOBAL RESET ─────────────────────────────────────────────────────────── */
 html, body, [class*="css"], * {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
 }
 
 /* ── CHROME SUPPRESSION ────────────────────────────────────────────────────── */
@@ -73,7 +123,7 @@ header[data-testid="stHeader"] { display: none !important; }
 
 /* ── APP SHELL ────────────────────────────────────────────────────────────── */
 .stApp {
-    background-color: #09090b;
+    background-color: var(--bg-app);
 }
 
 .block-container {
@@ -83,9 +133,9 @@ header[data-testid="stHeader"] { display: none !important; }
 
 /* ── SIDEBAR ──────────────────────────────────────────────────────────────── */
 section[data-testid="stSidebar"] {
-    background-color: #18181b !important;
-    border-right: 1px solid #27272a;
-    border-top: 3px solid #C8102E;
+    background-color: var(--bg-card) !important;
+    border-right: 1px solid var(--border-color);
+    border-top: 3px solid var(--brand-red);
 }
 section[data-testid="stSidebar"] .block-container {
     padding: 1.75rem 1.25rem 2rem 1.25rem !important;
@@ -94,19 +144,19 @@ section[data-testid="stSidebar"] .block-container {
 
 /* ── TYPOGRAPHY ───────────────────────────────────────────────────────────── */
 h1 {
-    color: #fafafa !important;
+    color: var(--text-main) !important;
     font-size: 1.4rem !important;
     font-weight: 600 !important;
     letter-spacing: -0.02em !important;
     line-height: 1.2 !important;
 }
 h2, h3 {
-    color: #f4f4f5 !important;
+    color: var(--text-main) !important;
     font-weight: 500 !important;
     letter-spacing: -0.01em !important;
 }
 /* Clean neutral for all body text */
-p, div, span, label { color: #a1a1aa !important; }
+p, div, span, label { color: var(--text-muted) !important; }
 
 /* ── HEADER AREA ──────────────────────────────────────────────────────────── */
 .app-header {
@@ -114,7 +164,7 @@ p, div, span, label { color: #a1a1aa !important; }
     justify-content: space-between;
     align-items: center;
     padding: 1.75rem 0 1.25rem 0;
-    border-bottom: 1px solid #27272a;
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 0.75rem;
 }
 .app-brand {
@@ -124,16 +174,16 @@ p, div, span, label { color: #a1a1aa !important; }
 .app-wordmark {
     font-size: 1.3rem;
     font-weight: 600;
-    color: #fafafa !important;
+    color: var(--text-main) !important;
     letter-spacing: -0.02em;
     line-height: 1;
 }
 .app-wordmark span {
-    color: #C8102E !important;
+    color: var(--brand-red) !important;
 }
 .app-descriptor {
     font-size: 0.75rem;
-    color: #71717a !important;
+    color: var(--text-sub) !important;
     margin-top: 5px;
     font-weight: 400;
     letter-spacing: 0.02em;
@@ -147,7 +197,7 @@ p, div, span, label { color: #a1a1aa !important; }
     font-weight: 600;
     letter-spacing: 0.02em;
     padding: 0.3rem 0.75rem;
-    border-radius: 4px;
+    border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 .mkt-badge.open {
     color: #10B981 !important;
@@ -174,7 +224,7 @@ p, div, span, label { color: #a1a1aa !important; }
 }
 .mkt-time {
     font-size: 0.7rem;
-    color: #71717a !important;
+    color: var(--text-sub) !important;
     margin-top: 5px;
     font-variant-numeric: tabular-nums;
 }
@@ -182,34 +232,34 @@ p, div, span, label { color: #a1a1aa !important; }
 /* ── FRESHNESS STRIP ──────────────────────────────────────────────────────── */
 .freshness-bar {
     font-size: 0.75rem;
-    color: #a1a1aa !important;
+    color: var(--text-muted) !important;
     padding: 0.3rem 0 0.9rem 0;
 }
-.freshness-bar b { color: #e4e4e7 !important; font-weight: 500 !important; }
+.freshness-bar b { color: var(--text-hover) !important; font-weight: 500 !important; }
 
 /* ── SIDEBAR SECTION LABEL ────────────────────────────────────────────────── */
 .sidebar-label {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #e4e4e7 !important;
+    color: var(--text-hover) !important;
     margin-bottom: 0.75rem;
     padding-bottom: 0.4rem;
-    border-bottom: 1px solid #27272a;
+    border-bottom: 1px solid var(--border-color);
 }
 .sidebar-meta {
     font-size: 0.75rem;
-    color: #a1a1aa !important;
+    color: var(--text-muted) !important;
     line-height: 1.6;
     margin-top: 0.5rem;
 }
-.sidebar-meta b { color: #e4e4e7 !important; font-weight: 500 !important; }
+.sidebar-meta b { color: var(--text-hover) !important; font-weight: 500 !important; }
 
 /* ── BUTTONS ──────────────────────────────────────────────────────────────── */
 .stButton > button {
     background: transparent !important;
-    color: #e4e4e7 !important;
-    border: 1px solid #3f3f46 !important;
-    border-radius: 4px !important;
+    color: var(--text-hover) !important;
+    border: 1px solid var(--btn-border) !important;
+    border-radius: 99px !important;
     font-size: 0.85rem !important;
     font-weight: 500 !important;
     padding: 0.45rem 1rem !important;
@@ -217,32 +267,32 @@ p, div, span, label { color: #a1a1aa !important; }
     width: 100%;
 }
 .stButton > button:hover {
-    background: #27272a !important;
+    background: var(--border-color) !important;
     border-color: #52525b !important;
-    color: #fafafa !important;
+    color: var(--text-main) !important;
 }
 /* Primary button → FMS crimson */
 .stButton > button[kind="primary"] {
-    background: #C8102E !important;
+    background: var(--brand-red) !important;
     color: #FFFFFF !important;
-    border-color: #C8102E !important;
+    border-color: var(--brand-red) !important;
     font-weight: 600 !important;
 }
 .stButton > button[kind="primary"]:hover {
-    background: #E53030 !important;
+    background: var(--brand-red-hover) !important;
     box-shadow: 0 4px 6px -1px rgba(200, 16, 46, 0.2) !important;
 }
 
 /* ── TABS ─────────────────────────────────────────────────────────────────── */
 .stTabs [data-baseweb="tab-list"] {
     background: transparent !important;
-    border-bottom: 1px solid #27272a !important;
+    border-bottom: 1px solid var(--border-color) !important;
     gap: 0 !important;
     padding: 0 !important;
 }
 .stTabs [data-baseweb="tab"] {
     background: transparent !important;
-    color: #71717a !important;
+    color: var(--text-sub) !important;
     font-weight: 500 !important;
     font-size: 0.85rem !important;
     padding: 0.7rem 1.4rem !important;
@@ -251,46 +301,46 @@ p, div, span, label { color: #a1a1aa !important; }
     transition: color 0.15s, border-color 0.15s;
 }
 .stTabs [data-baseweb="tab"]:hover {
-    color: #a1a1aa !important;
+    color: var(--text-muted) !important;
     background: rgba(255,255,255,0.02) !important;
 }
 /* Active tab → FMS crimson indicator */
 .stTabs [aria-selected="true"] {
-    color: #fafafa !important;
-    border-bottom: 2px solid #C8102E !important;
+    color: var(--text-main) !important;
+    border-bottom: 2px solid var(--brand-red) !important;
     font-weight: 500 !important;
 }
 
 /* ── METRIC CARDS ─────────────────────────────────────────────────────────── */
 [data-testid="metric-container"] {
-    background: #18181b !important;
-    border: 1px solid #27272a !important;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
     border-radius: 6px !important;
     padding: 0.9rem 1.1rem !important;
     transition: border-color 0.2s;
 }
 [data-testid="metric-container"]:hover {
-    border-color: #3f3f46 !important;
+    border-color: var(--btn-border) !important;
 }
 [data-testid="stMetricLabel"] > div {
     font-size: 0.75rem !important;
     font-weight: 500 !important;
-    color: #a1a1aa !important;
+    color: var(--text-muted) !important;
 }
 [data-testid="stMetricValue"] > div {
     font-size: 1.15rem !important;
     font-weight: 600 !important;
-    color: #fafafa !important;
+    color: var(--text-main) !important;
 }
 
 /* ── PROGRESS BAR ─────────────────────────────────────────────────────────── */
 [data-testid="stProgress"] > div {
-    background: #27272a !important;
+    background: var(--border-color) !important;
     border-radius: 3px !important;
     height: 4px !important;
 }
 [data-testid="stProgress"] > div > div {
-    background: #C8102E !important;
+    background: var(--brand-red) !important;
     border-radius: 3px !important;
     transition: width 0.3s ease !important;
 }
@@ -298,32 +348,32 @@ p, div, span, label { color: #a1a1aa !important; }
 /* ── SCAN PROGRESS UI ─────────────────────────────────────────────────────── */
 .scan-header {
     padding: 1.5rem 0 1rem 0;
-    border-bottom: 1px solid #27272a;
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 1.5rem;
 }
 .scan-title {
     font-size: 1rem;
     font-weight: 500;
-    color: #fafafa !important;
+    color: var(--text-main) !important;
 }
 .scan-sub {
     font-size: 0.8rem;
-    color: #a1a1aa !important;
+    color: var(--text-muted) !important;
     margin-top: 5px;
 }
 .scan-status-row {
     font-size: 0.85rem;
-    color: #a1a1aa !important;
+    color: var(--text-muted) !important;
     margin-top: 0.6rem;
     font-variant-numeric: tabular-nums;
 }
-.scan-count  { color: #e4e4e7 !important; font-weight: 500; }
-.scan-ticker { color: #e4e4e7 !important; font-weight: 500; }
+.scan-count  { color: var(--text-hover) !important; font-weight: 500; }
+.scan-ticker { color: var(--text-hover) !important; font-weight: 500; }
 
 /* ── DIVIDERS ─────────────────────────────────────────────────────────────── */
 hr {
     border: none !important;
-    border-top: 1px solid #27272a !important;
+    border-top: 1px solid var(--border-color) !important;
     margin: 0.75rem 0 !important;
 }
 
@@ -331,29 +381,29 @@ hr {
 .section-head {
     font-size: 1rem;
     font-weight: 500;
-    color: #fafafa !important;
+    color: var(--text-main) !important;
     margin-bottom: 0.25rem;
 }
 .section-sub {
     font-size: 0.8rem;
-    color: #a1a1aa !important;
+    color: var(--text-muted) !important;
     margin-bottom: 1rem;
     line-height: 1.5;
 }
 
 /* ── ALERTS ───────────────────────────────────────────────────────────────── */
 [data-testid="stAlert"] {
-    background: #18181b !important;
+    background: var(--bg-card) !important;
     border-radius: 6px !important;
-    border-left: 3px solid #C8102E !important;
-    color: #e4e4e7 !important;
+    border-left: 3px solid var(--brand-red) !important;
+    color: var(--text-hover) !important;
     font-size: 0.85rem !important;
 }
 
 /* ── EXPANDER ─────────────────────────────────────────────────────────────── */
 [data-testid="stExpander"] {
-    background: #18181b !important;
-    border: 1px solid #27272a !important;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
     border-radius: 6px !important;
 }
 
@@ -364,18 +414,18 @@ hr {
 [data-testid="stCheckbox"]  label {
     font-size: 0.8rem !important;
     font-weight: 500 !important;
-    color: #a1a1aa !important;
+    color: var(--text-muted) !important;
 }
 
 /* ── CAPTION ──────────────────────────────────────────────────────────────── */
 [data-testid="stCaptionContainer"] {
-    color: #71717a !important;
+    color: var(--text-sub) !important;
     font-size: 0.75rem !important;
 }
 
 /* ── DATAFRAME ────────────────────────────────────────────────────────────── */
 [data-testid="stDataFrame"] iframe {
-    border-radius: 6px;
+    border-radius: 12px;
 }
 
 /* ── CONVICTION BADGE ─────────────────────────────────────────────────────── */
@@ -451,140 +501,47 @@ def _style_cell(val):
     return "color:#3B5278"
 
 
-# ── Market status ─────────────────────────────────────────────────────────────
-mkt       = market_status_text()
+# ── Header & Layout Setup ──────────────────────────────────────────────────
+mkt = market_status_text()
 dot_class = "open" if mkt["is_open"] else "closed"
 
-# ── App header ────────────────────────────────────────────────────────────────
-st.markdown(f"""
-<div class="app-header">
-    <div class="app-brand">
+hcol1, hcol2, hcol3 = st.columns([1.5, 1, 1])
+
+with hcol1:
+    st.markdown(f'''
+    <div style="display:flex; align-items:center; height:100%;">
         <div>
             <div class="app-wordmark">Quantitative <span>Alpha</span></div>
-            <div class="app-descriptor">Alpha Research and Investment Club &nbsp;&middot;&nbsp; FMS Delhi</div>
+            <div class="app-descriptor">Alpha Research and Investment Club &nbsp;|&nbsp; FMS Delhi</div>
         </div>
     </div>
-    <div class="mkt-cluster">
+    ''', unsafe_allow_html=True)
+
+with hcol2:
+    st.markdown(f'''
+    <div class="mkt-cluster" style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;">
         <div class="mkt-badge {dot_class}">
             <span class="pulse-dot"></span> NSE {mkt['status']}
         </div>
         <div class="mkt-time">{mkt['time_ist']}</div>
     </div>
-</div>
-""", unsafe_allow_html=True)
+    ''', unsafe_allow_html=True)
 
-# ── Freshness strip ───────────────────────────────────────────────────────────
-last_ts = get_last_scan_time()
-if last_ts:
-    try:
-        dt_ist = datetime.fromisoformat(last_ts)
-        if dt_ist.tzinfo is None:
-            dt_ist = pytz.utc.localize(dt_ist)
-        dt_ist = dt_ist.astimezone(IST)
-        dt_disp = dt_ist.strftime("%d %b %Y · %I:%M %p")
-    except Exception:
-        dt_disp = last_ts
-    st.markdown(
-        f'<div class="freshness-bar" style="display:flex; align-items:center; gap:0.75rem;">'
-        f'<span style="color:#71717a;">Last scan</span>'
-        f'<span style="color:#e4e4e7; font-weight:500;">{dt_disp} IST</span>'
-        f'<span style="background:#27272a; color:#a1a1aa; padding:0.15rem 0.5rem; border-radius:6px; font-size:0.7rem;">{_age(last_ts)}</span></div>',
-        unsafe_allow_html=True,
-    )
-else:
-    st.markdown(
-        '<div class="freshness-bar">No scan data found — run a market scan to begin.</div>',
-        unsafe_allow_html=True,
-    )
-
-
-# ── Sidebar ───────────────────────────────────────────────────────────────────
-with st.sidebar:
-    # FMS logo in sidebar
-    if _FMS_LOGO:
-        st.markdown(
-            f'<div style="text-align:center; padding:0.5rem 0 1.25rem 0;">'
-            f'<img src="data:image/svg+xml;base64,{_FMS_LOGO}" '
-            f'style="height:36px;" alt="FMS Delhi"></div>',
-            unsafe_allow_html=True,
-        )
-
-    st.markdown('<div class="sidebar-label">Controls</div>', unsafe_allow_html=True)
-
-    scan_btn = st.button("Run Market Scan", type="primary", use_container_width=True)
-
-    st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
-
+with hcol3:
+    st.markdown("<div style='height:0.25rem'></div>", unsafe_allow_html=True)
+    bcol1, bcol2 = st.columns(2)
+    with bcol1:
+        if st.button(f"Theme: {st.session_state.theme.title()}", use_container_width=True):
+            toggle_theme()
+            st.rerun()
+    with bcol2:
+        scan_btn = st.button("Run Scan", type="primary", use_container_width=True)
+    
     live_refresh_btn = False
     if is_market_open():
-        st.markdown(
-            '<div class="sidebar-meta">Market session active</div>',
-            unsafe_allow_html=True,
-        )
         live_refresh_btn = st.button("Refresh Live Prices", use_container_width=True)
-    else:
-        st.markdown(
-            '<div class="sidebar-meta" style="display:flex; justify-content:space-between; align-items:center;">'
-            '<span>Market closed</span>'
-            'Live refresh available 9:15 AM – 3:30 PM IST</div>',
-            unsafe_allow_html=True,
-        )
 
-    st.markdown("<div style='height:0.75rem'></div>", unsafe_allow_html=True)
-    st.markdown('<div class="sidebar-label">Diagnostics</div>', unsafe_allow_html=True)
-
-    _db_ok, _db_msg = test_connection()
-    _db_label = "Supabase" if get_backend() == "postgresql" else "SQLite (local)"
-    _db_color = "#4ADE80" if _db_ok else "#F87171"
-    st.markdown(
-        f'<div class="sidebar-meta" style="display:flex; justify-content:space-between; align-items:center;">'
-        f'<span>Database</span>'
-        f'<span style="color:{_db_color}; font-weight:600;">{_db_label}</span></div>',
-        unsafe_allow_html=True,
-    )
-    if not _db_ok:
-        st.markdown(
-            f'<div class="sidebar-meta" style="color:#F87171; font-size:0.62rem; '
-            f'margin-top:2px; word-break:break-all;">{_db_msg[:160]}</div>',
-            unsafe_allow_html=True,
-        )
-
-    scan_log_sb = load_scan_log()
-    if not scan_log_sb.empty:
-        ok_n_sb   = int((scan_log_sb["Status"] == "OK").sum())
-        fail_n_sb = int((scan_log_sb["Status"] == "FAILED").sum())
-        st.markdown(
-            f'<div class="sidebar-meta">'
-            f'<div style="display:flex; justify-content:space-between; margin-top:0.25rem;">'
-            f'<span>Scan Results</span>'
-            f'<span><span style="color:#10B981; font-weight:500;">{ok_n_sb} OK</span> <span style="color:#71717a;">/ {fail_n_sb} failed</span></span></div></div>',
-            unsafe_allow_html=True,
-        )
-
-    st.markdown(
-        '<div class="sidebar-meta" style="margin-top:0.5rem;">'
-        'Auto-scan scheduled &nbsp;&middot;&nbsp; <b>4:15 PM IST</b> Mon–Fri</div>',
-        unsafe_allow_html=True,
-    )
-
-    # Attribution & Disclaimer
-    st.markdown(
-        '<div style="margin-top:2.5rem; padding-top:1rem; border-top:1px solid #27272a;">'
-        '<div style="font-size:0.65rem; color:#71717a; line-height:1.5; margin-bottom:0.75rem;">'
-        '<b>Disclaimer:</b> This platform is for educational purposes only and does not constitute financial advice. '
-        'The models and signals provided are experimental. Always consult a certified financial advisor before making investment decisions. '
-        'Alpha Research and Investment Club, FMS Delhi are not responsible for any trading losses incurred.'
-        '</div>'
-        '<div style="font-size:0.65rem; color:#56789A; line-height:1.8;">'
-        'Alpha Research and Investment Club<br>FMS Delhi'
-        '</div>'
-        '<div style="font-size:0.62rem; color:#3D6A9A; margin-top:0.35rem; letter-spacing:0.01em;">'
-        'Made with &hearts; by Abhishek Kumar'
-        '</div>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
+st.markdown("<div style='border-bottom: 1px solid var(--border-color); margin-top:0.5rem; margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
 # ── Scan execution ────────────────────────────────────────────────────────────
 if scan_btn:
@@ -946,7 +903,7 @@ with tab3:
     # ── Peer Comparison ───────────────────────────────────────────────────────
     st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
     st.markdown(
-        '<div style="border-top:1px solid #27272a; padding-top:1.25rem;">'
+        '<div style="border-top:1px solid var(--border-color); padding-top:1.25rem;">'
         '<div class="section-head">Sector Peer Comparison</div>'
         '<div class="section-sub">Top peers by market cap in the same NSE sector.</div>'
         '</div>',
@@ -1039,8 +996,8 @@ with tab3:
                     )
                     st.plotly_chart(bar_fig, width="stretch")
                     st.caption(
-                        f"Red bars = {sel_sym} (selected) · "
-                        f"Fund Score shown as fraction of 10 for scale alignment · "
+                        f"Red bars = {sel_sym} (selected) | "
+                        f"Fund Score shown as fraction of 10 for scale alignment | "
                         f"Sector: {peer_sector}"
                     )
         else:
@@ -1178,7 +1135,7 @@ with tab4:
         )
 
         st.markdown(
-            '<div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #27272a;">'
+            '<div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border-color);">'
             '<div style="font-size:0.85rem; font-weight:600; color:#e4e4e7; margin-bottom:0.6rem;">'
             'Sector Summary</div></div>',
             unsafe_allow_html=True,
@@ -1243,7 +1200,7 @@ with tab5:
             )
 
         st.markdown(
-            '<div style="margin-top:1.25rem; padding-top:0.75rem; border-top:1px solid #27272a;">'
+            '<div style="margin-top:1.25rem; padding-top:0.75rem; border-top:1px solid var(--border-color);">'
             '<div style="font-size:0.85rem; font-weight:600; color:#e4e4e7; margin-bottom:0.6rem;">'
             'Full Scan Log</div></div>',
             unsafe_allow_html=True,
@@ -1251,3 +1208,60 @@ with tab5:
         full_log = scan_log.copy()
         st.dataframe(full_log, hide_index=True, width="stretch")
 
+
+# ── Footer ──────────────────────────────────────────────────────────────────
+st.markdown("<div style='height:3rem'></div>", unsafe_allow_html=True)
+
+# Prepare diagnostics
+_db_ok, _db_msg = test_connection()
+_db_label = "Supabase" if get_backend() == "postgresql" else "SQLite (local)"
+_db_color = "#4ADE80" if _db_ok else "#F87171"
+
+scan_log_sb = load_scan_log()
+ok_n_sb, fail_n_sb = 0, 0
+if not scan_log_sb.empty:
+    ok_n_sb = int((scan_log_sb["Status"] == "OK").sum())
+    fail_n_sb = int((scan_log_sb["Status"] == "FAILED").sum())
+
+st.markdown(f'''
+<div style="margin-top:2.5rem; padding:2rem 0; border-top:1px solid var(--border-color);">
+    <div style="display:grid; grid-template-columns:1fr 2fr 1fr; gap:2rem;">
+        
+        <!-- Diagnostics -->
+        <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-bottom:0.75rem;">System Diagnostics</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between; margin-bottom:0.25rem;">
+                <span>Database</span><span style="color:{_db_color}; font-weight:600;">{_db_label}</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between; margin-bottom:0.25rem;">
+                <span>Scan Results</span><span><span style="color:#10B981; font-weight:500;">{ok_n_sb} OK</span> / {fail_n_sb} failed</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between;">
+                <span>Auto-scan</span><span><b>4:15 PM IST</b> Mon–Fri</span>
+            </div>
+        </div>
+        
+        <!-- Disclaimer -->
+        <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-bottom:0.75rem;">Disclaimer</div>
+            <div style="font-size:0.75rem; color:var(--text-sub); line-height:1.6;">
+                This platform is for educational purposes only and does not constitute financial advice. 
+                The models and signals provided are experimental. Always consult a certified financial advisor before making investment decisions. 
+                Alpha Research and Investment Club, FMS Delhi is not responsible for any trading losses incurred.
+            </div>
+        </div>
+        
+        <!-- Attribution -->
+        <div style="text-align:right;">
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-bottom:0.75rem;">Project Eura</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.6;">
+                Alpha Research and Investment Club<br>FMS Delhi
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-sub); margin-top:0.75rem; letter-spacing:0.01em;">
+                Made with &hearts; by Abhishek Kumar
+            </div>
+        </div>
+        
+    </div>
+</div>
+''', unsafe_allow_html=True)
