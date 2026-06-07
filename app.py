@@ -188,7 +188,7 @@ p, div, span, label { color: #94A3B8; }
     padding: 0.3rem 0 0.9rem 0;
     letter-spacing: 0.01em;
 }
-.freshness-bar b { color: #7EB3E8; font-weight: 500; }
+.freshness-bar b { color: #C9A84C; font-weight: 500; }
 
 /* ── SIDEBAR SECTION LABEL ────────────────────────────────────────────────── */
 .sidebar-label {
@@ -207,13 +207,13 @@ p, div, span, label { color: #94A3B8; }
     line-height: 1.6;
     margin-top: 0.5rem;
 }
-.sidebar-meta b { color: #7EB3E8; font-weight: 500; }
+.sidebar-meta b { color: #C9A84C; font-weight: 500; }
 
 /* ── BUTTONS ──────────────────────────────────────────────────────────────── */
 .stButton > button {
     background: transparent !important;
-    color: #60A5FA !important;
-    border: 1px solid #1A3055 !important;
+    color: #C9A84C !important;
+    border: 1px solid #2A1A0A !important;
     border-radius: 5px !important;
     font-size: 0.8rem !important;
     font-weight: 500 !important;
@@ -223,9 +223,9 @@ p, div, span, label { color: #94A3B8; }
     width: 100%;
 }
 .stButton > button:hover {
-    background: #0F2444 !important;
-    border-color: #2563EB !important;
-    color: #93C5FD !important;
+    background: #1A0A04 !important;
+    border-color: #C8102E !important;
+    color: #D4B86A !important;
 }
 /* Primary button → FMS crimson */
 .stButton > button[kind="primary"] {
@@ -328,7 +328,7 @@ p, div, span, label { color: #94A3B8; }
     margin-top: 0.6rem;
     font-variant-numeric: tabular-nums;
 }
-.scan-count  { color: #C8102E; font-weight: 600; }
+.scan-count  { color: #C9A84C; font-weight: 600; }
 .scan-ticker { color: #94A3B8; font-weight: 500; }
 
 /* ── DIVIDERS ─────────────────────────────────────────────────────────────── */
@@ -460,7 +460,6 @@ dot_class = "open" if mkt["is_open"] else "closed"
 st.markdown(f"""
 <div class="app-header">
     <div class="app-brand">
-        {_LOGO_IMG}
         <div>
             <div class="app-wordmark">Quantitative <span>Alpha</span></div>
             <div class="app-descriptor">Alpha Research and Investment Club &nbsp;&middot;&nbsp; FMS Delhi</div>
@@ -1063,6 +1062,13 @@ with tab4:
 
     hm_df["Ticker_Short"] = hm_df["Ticker"].str.replace(".NS", "", regex=False)
 
+    # Build hover_data only for columns that exist (avoids Plotly KeyError on old data)
+    _hm_hover: dict = {}
+    if "Price"      in hm_df.columns: _hm_hover["Price"]      = ":.2f"
+    if "1d_Chg_%"   in hm_df.columns: _hm_hover["1d_Chg_%"]   = ":.2f"
+    if "Conviction" in hm_df.columns: _hm_hover["Conviction"] = True
+    _hm_custom = ["Conviction"] if "Conviction" in hm_df.columns else []
+
     try:
         hm_fig = px.treemap(
             hm_df,
@@ -1070,29 +1076,24 @@ with tab4:
             values=hm_size_by,
             color=hm_colour_by,
             color_continuous_scale=[
-                [0.0, "#7B0A0A"],    # deep red  (bear)
-                [0.35, "#1E293B"],   # dark navy  (neutral)
-                [0.5,  "#0F1C30"],   # near-black (zero)
-                [0.65, "#1E293B"],   # dark navy  (neutral)
-                [1.0, "#14532D"],    # deep green (bull)
+                [0.0, "#7B0A0A"],
+                [0.35, "#1E1A12"],
+                [0.5,  "#0F0D08"],
+                [0.65, "#1E1A12"],
+                [1.0, "#14532D"],
             ],
             color_continuous_midpoint=0 if hm_colour_by in ["Tech_Score", "1d_Chg_%"] else None,
-            hover_data={
-                "Price":      (":.2f" if "Price" in hm_df.columns else False),
-                "1d_Chg_%":  (":.2f" if "1d_Chg_%" in hm_df.columns else False),
-                "Conviction": (True   if "Conviction" in hm_df.columns else False),
-            },
-            custom_data=["Conviction"] if "Conviction" in hm_df.columns else [],
+            hover_data=_hm_hover if _hm_hover else None,
+            custom_data=_hm_custom,
         )
 
         hm_fig.update_traces(
-            textfont=dict(family="Inter", size=11, color="#CBD5E1"),
+            textfont=dict(family="Inter", size=11, color="#EDE8E0"),
             hovertemplate=(
                 "<b>%{label}</b><br>"
-                + (f"{hm_colour_by}: %{{color:.3f}}<br>" if hm_colour_by else "")
-                + "%{customdata[0]}<extra></extra>"
-                if "Conviction" in hm_df.columns
-                else "<b>%{label}</b><extra></extra>"
+                + f"{hm_colour_by}: %{{color:.3f}}<br>"
+                + ("%{customdata[0]}<extra></extra>" if _hm_custom
+                   else "<extra></extra>")
             ),
         )
 

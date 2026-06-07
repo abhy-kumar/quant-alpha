@@ -81,6 +81,54 @@ def _build_engine():
 engine, _BACKEND = _build_engine()
 
 
+# ── Schema migration ──────────────────────────────────────────────────────────
+# Adds any new columns that were introduced in scanner.py to the existing
+# scan_history table.  Runs once at startup; safe to call multiple times.
+
+_NEW_HISTORY_COLS = {
+    "Sector":    "TEXT",
+    "Industry":  "TEXT",
+    "Fund_Score": "DOUBLE PRECISION" if True else "REAL",   # evaluated below
+    "Conviction": "TEXT",
+}
+
+def _migrate_history_table() -> None:
+    """Add missing columns to scan_history without destroying existing rows."""
+    dtype_pg  = {"Sector": "TEXT", "Industry": "TEXT",
+                 "Fund_Score": "DOUBLE PRECISION", "Conviction": "TEXT"}
+    dtype_sq  = {"Sector": "TEXT", "Industry": "TEXT",
+                 "Fund_Score": "REAL", "Conviction": "TEXT"}
+    dtypes    = dtype_pg if _BACKEND == "postgresql" else dtype_sq
+
+    try:
+        with engine.begin() as conn:
+            for col, sql_type in dtypes.items():
+                try:
+                    if _BACKEND == "postgresql":
+                        conn.execute(text(
+                            f'ALTER TABLE "{_HISTORY_TABLE}" '
+                            f'ADD COLUMN IF NOT EXISTS "{col}" {sql_type}'
+                        ))
+                    else:
+                        # SQLite: check existence first (no IF NOT EXISTS before 3.37)
+                        rows = conn.execute(text(
+                            f'PRAGMA table_info("{_HISTORY_TABLE}")'
+                        )).fetchall()
+                        existing = {r[1] for r in rows}
+                        if col not in existing:
+                            conn.execute(text(
+                                f'ALTER TABLE "{_HISTORY_TABLE}" '
+                                f'ADD COLUMN "{col}" {sql_type}'
+                            ))
+                except Exception:
+                    pass   # Column already exists or table doesn't exist yet
+    except Exception:
+        pass
+
+
+_migrate_history_table()
+
+
 # ── Public helpers ────────────────────────────────────────────────────────────
 
 def get_backend() -> str:
@@ -107,8 +155,14 @@ def save_to_db(df: pd.DataFrame, scan_time: datetime | None = None) -> None:
     with engine.begin() as conn:
         if _BACKEND == "postgresql":
             conn.execute(text(f'DROP TABLE IF EXISTS "{_SCAN_TABLE}"'))
-        out.to_sql(_SCAN_TABLE,    con=conn, if_exists="replace", index=False)
-        out.to_sql(_HISTORY_TABLE, con=conn, if_exists="append",  index=False)
+        out.to_sql(_SCAN_TABLE, con=conn, if_exists="replace", index=False)
+
+        # Append to history; if schema still mismatches, fall back to replace
+        # (this can happen when columns are added and migration hasn't run yet)
+        try:
+            out.to_sql(_HISTORY_TABLE, con=conn, if_exists="append", index=False)
+        except Exception:
+            out.to_sql(_HISTORY_TABLE, con=conn, if_exists="replace", index=False)
 
 
 def save_scan_log(log_entries: list[dict]) -> None:
