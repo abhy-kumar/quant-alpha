@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 """
 app.py — Quantitative Alpha Dashboard
+Alpha Research and Investment Club · FMS Delhi
 """
+
+import base64
+import os
 
 import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import plotly.express as px
 from plotly.subplots import make_subplots
 import yfinance as yf
 from datetime import datetime
@@ -18,9 +23,29 @@ from nse_fetcher import market_status_text, get_bulk_live_quotes, is_market_open
 
 IST = pytz.timezone("Asia/Kolkata")
 
+
+# ── FMS Logo ──────────────────────────────────────────────────────────────────
+@st.cache_data(ttl=86400)
+def _logo_b64() -> str:
+    """Read and base64-encode the FMS logo SVG (cached for the day)."""
+    path = os.path.join(os.path.dirname(__file__), "assets", "fmsLogo.svg")
+    try:
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except Exception:
+        return ""
+
+_FMS_LOGO = _logo_b64()
+_LOGO_IMG = (
+    f'<img src="data:image/svg+xml;base64,{_FMS_LOGO}" '
+    'style="height:28px;vertical-align:middle;margin-right:10px;" alt="FMS Delhi">'
+    if _FMS_LOGO else ""
+)
+
+
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Quantitative Alpha",
+    page_title="Quantitative Alpha · FMS Delhi",
     page_icon="▲",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -60,6 +85,7 @@ header[data-testid="stHeader"] { display: none !important; }
 section[data-testid="stSidebar"] {
     background-color: #080E1A !important;
     border-right: 1px solid #111B2E;
+    border-top: 3px solid #C8102E;
 }
 section[data-testid="stSidebar"] .block-container {
     padding: 1.75rem 1.25rem 2rem 1.25rem !important;
@@ -90,12 +116,19 @@ p, div, span, label { color: #94A3B8; }
     border-bottom: 1px solid #111B2E;
     margin-bottom: 0.75rem;
 }
+.app-brand {
+    display: flex;
+    align-items: center;
+}
 .app-wordmark {
     font-size: 1.4rem;
     font-weight: 700;
     color: #F1F5F9;
     letter-spacing: -0.03em;
     line-height: 1;
+}
+.app-wordmark span {
+    color: #C8102E;
 }
 .app-descriptor {
     font-size: 0.7rem;
@@ -194,14 +227,15 @@ p, div, span, label { color: #94A3B8; }
     border-color: #2563EB !important;
     color: #93C5FD !important;
 }
+/* Primary button → FMS crimson */
 .stButton > button[kind="primary"] {
-    background: linear-gradient(145deg, #162C52, #1D4ED8) !important;
-    color: #EFF6FF !important;
-    border-color: #2563EB !important;
+    background: linear-gradient(145deg, #7B0A0A, #C8102E) !important;
+    color: #FFF5F5 !important;
+    border-color: #C8102E !important;
 }
 .stButton > button[kind="primary"]:hover {
-    background: linear-gradient(145deg, #1D4ED8, #2563EB) !important;
-    box-shadow: 0 0 18px rgba(37,99,235,0.3) !important;
+    background: linear-gradient(145deg, #C8102E, #E53030) !important;
+    box-shadow: 0 0 18px rgba(200,16,46,0.35) !important;
 }
 
 /* ── TABS ─────────────────────────────────────────────────────────────────── */
@@ -226,9 +260,10 @@ p, div, span, label { color: #94A3B8; }
     color: #64748B !important;
     background: rgba(255,255,255,0.015) !important;
 }
+/* Active tab → FMS crimson indicator */
 .stTabs [aria-selected="true"] {
-    color: #CBD5E1 !important;
-    border-bottom: 2px solid #2563EB !important;
+    color: #F1F5F9 !important;
+    border-bottom: 2px solid #C8102E !important;
     font-weight: 600 !important;
 }
 
@@ -264,7 +299,7 @@ p, div, span, label { color: #94A3B8; }
     height: 3px !important;
 }
 [data-testid="stProgress"] > div > div {
-    background: linear-gradient(90deg, #1D4ED8, #7C3AED) !important;
+    background: linear-gradient(90deg, #C8102E, #7C3AED) !important;
     border-radius: 3px !important;
     transition: width 0.3s ease !important;
 }
@@ -293,7 +328,7 @@ p, div, span, label { color: #94A3B8; }
     margin-top: 0.6rem;
     font-variant-numeric: tabular-nums;
 }
-.scan-count  { color: #3B82F6; font-weight: 600; }
+.scan-count  { color: #C8102E; font-weight: 600; }
 .scan-ticker { color: #94A3B8; font-weight: 500; }
 
 /* ── DIVIDERS ─────────────────────────────────────────────────────────────── */
@@ -322,7 +357,7 @@ hr {
 [data-testid="stAlert"] {
     background: #0A1120 !important;
     border-radius: 7px !important;
-    border-left: 2px solid #1D4ED8 !important;
+    border-left: 2px solid #C8102E !important;
     color: #64748B !important;
     font-size: 0.82rem !important;
 }
@@ -356,6 +391,13 @@ hr {
 [data-testid="stDataFrame"] iframe {
     border-radius: 7px;
 }
+
+/* ── CONVICTION BADGE ─────────────────────────────────────────────────────── */
+.conv-strong-buy { color: #4ADE80 !important; font-weight: 700 !important; }
+.conv-buy        { color: #86EFAC !important; font-weight: 600 !important; }
+.conv-hold       { color: #FCD34D !important; font-weight: 500 !important; }
+.conv-caution    { color: #FB923C !important; font-weight: 500 !important; }
+.conv-avoid      { color: #F87171 !important; font-weight: 600 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -376,12 +418,10 @@ _boot_scheduler()
 def _age(iso_ts: str) -> str:
     try:
         dt = datetime.fromisoformat(iso_ts)
-        # If tz-aware (new timestamps): compare directly
-        # If naive (old timestamps stored as UTC): treat as UTC and convert
         if dt.tzinfo is None:
             dt = pytz.utc.localize(dt).astimezone(IST)
         secs = int((datetime.now(IST) - dt).total_seconds())
-        if secs < 0:    secs = 0   # clock skew guard
+        if secs < 0:    secs = 0
         if secs < 60:   return f"{secs}s ago"
         if secs < 3600: return f"{secs // 60}m ago"
         h, m = divmod(secs // 60, 60)
@@ -391,11 +431,17 @@ def _age(iso_ts: str) -> str:
 
 
 def _style_cell(val):
-    """CSS for numeric signal values and Bullish/Bearish strings."""
+    """CSS for signal values, conviction ratings, and Bullish/Bearish strings."""
     if isinstance(val, str):
-        v = val.strip().lower()
-        if v == "bullish": return "color:#4ADE80; font-weight:500"
-        if v == "bearish": return "color:#F87171; font-weight:500"
+        v = val.strip()
+        vl = v.lower()
+        if vl == "bullish":     return "color:#4ADE80; font-weight:500"
+        if vl == "bearish":     return "color:#F87171; font-weight:500"
+        if v == "Strong Buy":   return "color:#4ADE80; font-weight:700"
+        if v == "Buy":          return "color:#86EFAC; font-weight:600"
+        if v == "Hold":         return "color:#FCD34D; font-weight:500"
+        if v == "Caution":      return "color:#FB923C; font-weight:500"
+        if v == "Avoid":        return "color:#F87171; font-weight:600"
     try:
         n = float(val)
         if np.isnan(n):  return "color:#1E3A5F"
@@ -413,9 +459,12 @@ dot_class = "open" if mkt["is_open"] else "closed"
 # ── App header ────────────────────────────────────────────────────────────────
 st.markdown(f"""
 <div class="app-header">
-    <div>
-        <div class="app-wordmark">Quantitative Alpha</div>
-        <div class="app-descriptor">Alpha Research and Investment Club &nbsp;&middot;&nbsp; FMS Delhi</div>
+    <div class="app-brand">
+        {_LOGO_IMG}
+        <div>
+            <div class="app-wordmark">Quantitative <span>Alpha</span></div>
+            <div class="app-descriptor">Alpha Research and Investment Club &nbsp;&middot;&nbsp; FMS Delhi</div>
+        </div>
     </div>
     <div class="mkt-cluster">
         <div class="mkt-badge {dot_class}">
@@ -431,7 +480,6 @@ last_ts = get_last_scan_time()
 if last_ts:
     try:
         dt_raw = datetime.fromisoformat(last_ts)
-        # Normalise to IST: naive old timestamps were UTC, new ones carry tz info
         if dt_raw.tzinfo is None:
             dt_ist = pytz.utc.localize(dt_raw).astimezone(IST)
         else:
@@ -453,13 +501,21 @@ else:
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
+    # FMS logo in sidebar
+    if _FMS_LOGO:
+        st.markdown(
+            f'<div style="text-align:center; padding:0.5rem 0 1.25rem 0;">'
+            f'<img src="data:image/svg+xml;base64,{_FMS_LOGO}" '
+            f'style="height:36px;" alt="FMS Delhi"></div>',
+            unsafe_allow_html=True,
+        )
+
     st.markdown('<div class="sidebar-label">Controls</div>', unsafe_allow_html=True)
 
     scan_btn = st.button("Run Market Scan", type="primary", use_container_width=True)
 
     st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
 
-    # Live refresh (market hours only)
     live_refresh_btn = False
     if is_market_open():
         st.markdown(
@@ -477,12 +533,11 @@ with st.sidebar:
     st.markdown("<div style='height:0.75rem'></div>", unsafe_allow_html=True)
     st.markdown('<div class="sidebar-label">Diagnostics</div>', unsafe_allow_html=True)
 
-    # Database connection status — shows instantly whether Supabase is reachable
     _db_ok, _db_msg = test_connection()
     _db_label = "Supabase" if get_backend() == "postgresql" else "SQLite (local)"
     _db_color = "#4ADE80" if _db_ok else "#F87171"
     st.markdown(
-        f'<div class="sidebar-meta">Database &nbsp;&middot;&nbsp; '
+        f'<div class="sidebar-meta">Database &nbsp;·&nbsp; '
         f'<span style="color:{_db_color}; font-weight:600;">{_db_label}</span></div>',
         unsafe_allow_html=True,
     )
@@ -493,13 +548,13 @@ with st.sidebar:
             unsafe_allow_html=True,
         )
 
-    scan_log = load_scan_log()
-    if not scan_log.empty:
-        ok_n   = int((scan_log["Status"] == "OK").sum())
-        fail_n = int((scan_log["Status"] == "FAILED").sum())
+    scan_log_sb = load_scan_log()
+    if not scan_log_sb.empty:
+        ok_n_sb   = int((scan_log_sb["Status"] == "OK").sum())
+        fail_n_sb = int((scan_log_sb["Status"] == "FAILED").sum())
         st.markdown(
             f'<div class="sidebar-meta">'
-            f'Last scan &nbsp;&middot;&nbsp; <b>{ok_n} OK</b> &nbsp;/ {fail_n} failed</div>',
+            f'Last scan &nbsp;·&nbsp; <b>{ok_n_sb} OK</b> &nbsp;/ {fail_n_sb} failed</div>',
             unsafe_allow_html=True,
         )
 
@@ -523,7 +578,7 @@ with st.sidebar:
     )
 
 
-# ── Scan execution (blocks here; progress updates are streamed to browser) ────
+# ── Scan execution ────────────────────────────────────────────────────────────
 if scan_btn:
     st.markdown("""
     <div class="scan-header">
@@ -599,10 +654,11 @@ if "live_quotes" in st.session_state:
 
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Top Signals",
     "Screener",
     "Charting",
+    "Sector Heatmap",
     "Scan Health",
 ])
 
@@ -617,6 +673,7 @@ with tab1:
         <div class="section-sub">
             Ranked by composite Tech Score across 12 signals.
             Range: −1.0 (all bearish) to +1.0 (all bullish).
+            Conviction Rating combines technical and fundamental quality.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -628,15 +685,18 @@ with tab1:
     )
 
     display_cols = [c for c in [
-        "Ticker", "Price", "1d_Chg_%", "ST_Signal",
-        "Tech_Score", "Bull_Count", "Bear_Count",
+        "Ticker", "Sector", "Price", "1d_Chg_%",
+        "Conviction", "Tech_Score", "Fund_Score",
+        "Bull_Count", "Bear_Count", "ST_Signal",
         "RSI_Value", "ADX_Value", "ATR_Value",
         "Total_Return_%", "Sharpe", "Max_Drawdown_%",
         "P/E", "ROE_%", "Market_Cap_B",
     ] if c in top_bulls.columns]
 
-    colour_cols = [c for c in ["1d_Chg_%", "Tech_Score", "Total_Return_%", "Sharpe", "ST_Signal"]
-                   if c in display_cols]
+    colour_cols = [c for c in [
+        "1d_Chg_%", "Tech_Score", "Total_Return_%",
+        "Sharpe", "ST_Signal", "Conviction",
+    ] if c in display_cols]
 
     st.dataframe(
         top_bulls[display_cols].style.map(_style_cell, subset=colour_cols),
@@ -656,7 +716,7 @@ with tab2:
     </div>
     """, unsafe_allow_html=True)
 
-    fc1, fc2, fc3, fc4 = st.columns(4)
+    fc1, fc2, fc3, fc4, fc5 = st.columns(5)
     with fc1:
         min_score = st.slider("Min Tech Score", -1.0, 1.0, -1.0, 0.05)
     with fc2:
@@ -665,6 +725,9 @@ with tab2:
         min_adx = st.slider("Min ADX", 0, 60, 0)
     with fc4:
         st_filter = st.selectbox("Supertrend", ["All", "Bullish", "Bearish"])
+    with fc5:
+        conviction_opts = ["All", "Strong Buy", "Buy", "Hold", "Caution", "Avoid"]
+        conv_filter = st.selectbox("Conviction", conviction_opts)
 
     filtered = df[df["Tech_Score"] >= min_score].copy()
     if "RSI_Value" in filtered.columns:
@@ -673,20 +736,23 @@ with tab2:
         filtered = filtered[filtered["ADX_Value"] >= min_adx]
     if st_filter != "All" and "ST_Signal" in filtered.columns:
         filtered = filtered[filtered["ST_Signal"] == st_filter]
+    if conv_filter != "All" and "Conviction" in filtered.columns:
+        filtered = filtered[filtered["Conviction"] == conv_filter]
 
     sig_cols   = [c for c in filtered.columns if c.startswith("Sig_")]
-    colour_all = [c for c in sig_cols + ["Tech_Score", "ST_Signal"] if c in filtered.columns]
+    colour_all = [c for c in sig_cols + ["Tech_Score", "ST_Signal", "Conviction", "1d_Chg_%"]
+                  if c in filtered.columns]
 
     st.dataframe(
         filtered.style.map(_style_cell, subset=colour_all),
         width="stretch",
-        height=600,
+        height=580,
     )
     st.caption(f"{len(filtered)} of {len(df)} securities match the current filter")
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# TAB 3 — Charting
+# TAB 3 — Charting + Peer Comparison
 # ════════════════════════════════════════════════════════════════════════════
 with tab3:
     ctrl_col, chart_col = st.columns([1, 4])
@@ -705,17 +771,20 @@ with tab3:
                 display = str(val) if val is not None else "—"
             st.metric(label, display)
 
-        _m("Tech Score",  "Tech_Score",  3)
+        _m("Tech Score",   "Tech_Score",  3)
+        _m("Fund Score",   "Fund_Score",  0)
+        conv_val = asset.get("Conviction", "—")
+        st.metric("Conviction", conv_val)
         st.metric("Supertrend", asset.get("ST_Signal", "—"))
-        _m("RSI (14)",    "RSI_Value",   1)
-        _m("ADX (14)",    "ADX_Value",   1)
-        _m("ATR",         "ATR_Value",   2)
-        _m("MACD",        "MACD_Value",  4)
+        _m("RSI (14)",     "RSI_Value",   1)
+        _m("ADX (14)",     "ADX_Value",   1)
+        _m("ATR",          "ATR_Value",   2)
+        _m("MACD",         "MACD_Value",  4)
         st.markdown("<hr>", unsafe_allow_html=True)
-        _m("Forward P/E", "Forward_P/E", 2)
-        _m("ROE %",       "ROE_%",       2)
-        _m("52W High",    "52W_High",    2)
-        _m("52W Low",     "52W_Low",     2)
+        _m("Forward P/E",  "Forward_P/E", 2)
+        _m("ROE %",        "ROE_%",       2)
+        _m("52W High",     "52W_High",    2)
+        _m("52W Low",      "52W_Low",     2)
 
     with chart_col:
         st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
@@ -739,7 +808,6 @@ with tab3:
         if price_df.empty:
             st.caption(f"Price data unavailable for {selected}.")
         else:
-            # Inline RSI computation
             cl    = price_df["Close"]
             delta = cl.diff()
             gain  = delta.clip(lower=0).rolling(14).mean()
@@ -761,7 +829,6 @@ with tab3:
                 subplot_titles=["", "", "RSI (14)"],
             )
 
-            # Candlestick
             fig.add_trace(go.Candlestick(
                 x=price_df.index,
                 open=price_df["Open"], high=price_df["High"],
@@ -787,13 +854,11 @@ with tab3:
                         opacity=0.8,
                     ), row=1, col=1)
 
-            # Volume
             fig.add_trace(go.Bar(
                 x=price_df.index, y=price_df["Volume"],
                 marker_color=bar_colours, name="Volume", showlegend=False,
             ), row=2, col=1)
 
-            # RSI
             fig.add_trace(go.Scatter(
                 x=price_df.index, y=rsi_s,
                 name="RSI", line=dict(color="#A78BFA", width=1.5),
@@ -805,10 +870,10 @@ with tab3:
             fig.add_hrect(y0=30, y1=70, fillcolor="#94A3B8",
                           opacity=0.03, row=3, col=1, line_width=0)
 
-            bg  = "#060B14"
+            bg   = "#060B14"
             grid = "#0D1728"
             fig.update_layout(
-                height=740,
+                height=720,
                 margin=dict(l=0, r=0, t=20, b=0),
                 xaxis_rangeslider_visible=False,
                 paper_bgcolor=bg,
@@ -835,18 +900,261 @@ with tab3:
                     tickfont=dict(color="#2D4163", size=10),
                     row=row_n, col=1,
                 )
-            # Subplot title colour
             for ann in fig.layout.annotations:
                 ann.font.color = "#2D4163"
                 ann.font.size  = 10
 
             st.plotly_chart(fig, width="stretch")
 
+    # ── Peer Comparison ───────────────────────────────────────────────────────
+    st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
+    st.markdown(
+        '<div style="border-top:1px solid #111B2E; padding-top:1.25rem;">'
+        '<div class="section-head">Sector Peer Comparison</div>'
+        '<div class="section-sub">Top peers by market cap in the same NSE sector.</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    peer_sector = asset.get("Sector", "Unknown") if "Sector" in df.columns else "Unknown"
+
+    if peer_sector and peer_sector != "Unknown" and "Sector" in df.columns:
+        peers = (
+            df[df["Sector"] == peer_sector]
+            .sort_values("Market_Cap_B", ascending=False)
+            .head(8)
+        )
+
+        if len(peers) > 1:
+            peer_cols = [c for c in [
+                "Ticker", "Price", "1d_Chg_%", "Conviction",
+                "Tech_Score", "Fund_Score", "P/E", "ROE_%",
+                "Market_Cap_B", "Sharpe", "ST_Signal",
+            ] if c in peers.columns]
+
+            peer_colour = [c for c in ["1d_Chg_%", "Tech_Score", "ST_Signal", "Conviction"]
+                           if c in peer_cols]
+
+            st.dataframe(
+                peers[peer_cols].style.map(_style_cell, subset=peer_colour),
+                width="stretch",
+                hide_index=True,
+                height=min(80 + len(peers) * 35, 320),
+            )
+
+            # ── Radar-style bar comparison: Tech Score vs Fund Score ──────────
+            if len(peers) >= 2:
+                bar_tickers = [t.replace(".NS", "") for t in peers["Ticker"].tolist()]
+                tech_vals   = peers["Tech_Score"].tolist()   if "Tech_Score" in peers.columns else []
+                fund_vals   = peers["Fund_Score"].tolist()   if "Fund_Score"  in peers.columns else []
+
+                if tech_vals and fund_vals:
+                    # Highlight selected stock
+                    sel_sym = selected.replace(".NS", "")
+                    marker_colors_tech = [
+                        "#C8102E" if t == sel_sym else "#3B82F6" for t in bar_tickers
+                    ]
+                    marker_colors_fund = [
+                        "#C8102E" if t == sel_sym else "#7C3AED" for t in bar_tickers
+                    ]
+
+                    bar_fig = go.Figure()
+                    bar_fig.add_trace(go.Bar(
+                        name="Tech Score",
+                        x=bar_tickers,
+                        y=tech_vals,
+                        marker_color=marker_colors_tech,
+                        opacity=0.9,
+                    ))
+                    bar_fig.add_trace(go.Bar(
+                        name="Fund Score (÷10)",
+                        x=bar_tickers,
+                        y=[v / 10 for v in fund_vals],
+                        marker_color=marker_colors_fund,
+                        opacity=0.75,
+                    ))
+
+                    bg = "#060B14"
+                    bar_fig.update_layout(
+                        barmode="group",
+                        height=280,
+                        margin=dict(l=0, r=0, t=10, b=0),
+                        paper_bgcolor=bg,
+                        plot_bgcolor=bg,
+                        font=dict(color="#4A6FA5", size=11, family="Inter"),
+                        legend=dict(
+                            orientation="h", yanchor="bottom",
+                            y=1.02, xanchor="right", x=1,
+                            bgcolor="rgba(0,0,0,0)", font=dict(size=10),
+                        ),
+                        hoverlabel=dict(
+                            bgcolor="#0D1728", font_color="#CBD5E1",
+                            bordercolor="#1E3A5F",
+                        ),
+                        xaxis=dict(gridcolor="#0D1728", zeroline=False,
+                                   tickfont=dict(color="#64748B", size=10)),
+                        yaxis=dict(gridcolor="#0D1728", zeroline=False,
+                                   tickfont=dict(color="#64748B", size=10)),
+                    )
+                    st.plotly_chart(bar_fig, width="stretch")
+                    st.caption(
+                        f"Red bars = {sel_sym} (selected) · "
+                        f"Fund Score shown as fraction of 10 for scale alignment · "
+                        f"Sector: {peer_sector}"
+                    )
+        else:
+            st.markdown(
+                '<div style="color:#56789A; font-size:0.8rem; padding:0.5rem 0;">'
+                f'No other stocks in sector "{peer_sector}" in the current universe.</div>',
+                unsafe_allow_html=True,
+            )
+    else:
+        st.markdown(
+            '<div style="color:#56789A; font-size:0.8rem; padding:0.5rem 0;">'
+            'Sector data not available — run a fresh scan to populate peer groups.</div>',
+            unsafe_allow_html=True,
+        )
+
 
 # ════════════════════════════════════════════════════════════════════════════
-# TAB 4 — Scan Health
+# TAB 4 — Sector Heatmap
 # ════════════════════════════════════════════════════════════════════════════
 with tab4:
+    st.markdown("""
+    <div style="padding:1rem 0 0.5rem 0;">
+        <div class="section-head">Sector Heatmap</div>
+        <div class="section-sub">
+            Each cell represents a security sized by market capitalisation and coloured
+            by technical score. Green = bullish momentum, Red = bearish. Click any cell
+            to drill into that sector's peers via the Charting tab.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    hm_col1, hm_col2 = st.columns([3, 1])
+    with hm_col2:
+        hm_colour_by = st.selectbox(
+            "Colour by",
+            ["Tech_Score", "Fund_Score", "1d_Chg_%", "Sharpe"],
+            key="hm_colour",
+        )
+        hm_size_by = st.selectbox(
+            "Size by",
+            ["Market_Cap_B", "Volume", "ATR_Value"],
+            key="hm_size",
+        )
+
+    hm_df = df.copy()
+
+    # Fill missing sectors
+    if "Sector" not in hm_df.columns:
+        hm_df["Sector"] = "Unknown"
+    hm_df["Sector"] = hm_df["Sector"].fillna("Unknown").replace("", "Unknown")
+
+    # Ensure size column is positive and non-null
+    if hm_size_by in hm_df.columns:
+        hm_df[hm_size_by] = pd.to_numeric(hm_df[hm_size_by], errors="coerce").fillna(1).clip(lower=0.01)
+    else:
+        hm_df["_size"] = 1
+        hm_size_by = "_size"
+
+    if hm_colour_by in hm_df.columns:
+        hm_df[hm_colour_by] = pd.to_numeric(hm_df[hm_colour_by], errors="coerce")
+
+    hm_df["Ticker_Short"] = hm_df["Ticker"].str.replace(".NS", "", regex=False)
+
+    try:
+        hm_fig = px.treemap(
+            hm_df,
+            path=["Sector", "Ticker_Short"],
+            values=hm_size_by,
+            color=hm_colour_by,
+            color_continuous_scale=[
+                [0.0, "#7B0A0A"],    # deep red  (bear)
+                [0.35, "#1E293B"],   # dark navy  (neutral)
+                [0.5,  "#0F1C30"],   # near-black (zero)
+                [0.65, "#1E293B"],   # dark navy  (neutral)
+                [1.0, "#14532D"],    # deep green (bull)
+            ],
+            color_continuous_midpoint=0 if hm_colour_by in ["Tech_Score", "1d_Chg_%"] else None,
+            hover_data={
+                "Price":      (":.2f" if "Price" in hm_df.columns else False),
+                "1d_Chg_%":  (":.2f" if "1d_Chg_%" in hm_df.columns else False),
+                "Conviction": (True   if "Conviction" in hm_df.columns else False),
+            },
+            custom_data=["Conviction"] if "Conviction" in hm_df.columns else [],
+        )
+
+        hm_fig.update_traces(
+            textfont=dict(family="Inter", size=11, color="#CBD5E1"),
+            hovertemplate=(
+                "<b>%{label}</b><br>"
+                + (f"{hm_colour_by}: %{{color:.3f}}<br>" if hm_colour_by else "")
+                + "%{customdata[0]}<extra></extra>"
+                if "Conviction" in hm_df.columns
+                else "<b>%{label}</b><extra></extra>"
+            ),
+        )
+
+        hm_fig.update_layout(
+            height=620,
+            margin=dict(l=0, r=0, t=10, b=0),
+            paper_bgcolor="#060B14",
+            font=dict(color="#4A6FA5", size=11, family="Inter"),
+            coloraxis_colorbar=dict(
+                title=dict(text=hm_colour_by, font=dict(color="#56789A", size=10)),
+                tickfont=dict(color="#56789A", size=9),
+                bgcolor="#080E1A",
+                bordercolor="#111B2E",
+                borderwidth=1,
+                len=0.6,
+            ),
+        )
+
+        with hm_col1:
+            st.plotly_chart(hm_fig, width="stretch")
+
+    except Exception as _hm_err:
+        with hm_col1:
+            st.error(f"Heatmap rendering error: {_hm_err}")
+
+    # ── Sector Summary Table ───────────────────────────────────────────────
+    if "Sector" in df.columns and "Tech_Score" in df.columns:
+        sector_summary = (
+            df.groupby("Sector")
+            .agg(
+                Stocks=("Ticker", "count"),
+                Avg_Tech=(  "Tech_Score",  "mean"),
+                Avg_Fund=(  "Fund_Score",  "mean") if "Fund_Score" in df.columns else ("Tech_Score", "count"),
+                Bullish=(   "ST_Signal",   lambda x: (x == "Bullish").sum()) if "ST_Signal" in df.columns else ("Ticker", "count"),
+                Avg_PE=(    "P/E",         "mean") if "P/E" in df.columns else ("Ticker", "count"),
+                Total_MCap=("Market_Cap_B","sum")  if "Market_Cap_B" in df.columns else ("Ticker", "count"),
+            )
+            .round(2)
+            .sort_values("Avg_Tech", ascending=False)
+            .reset_index()
+        )
+
+        st.markdown(
+            '<div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #111B2E;">'
+            '<div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; '
+            'text-transform:uppercase; color:#56789A; margin-bottom:0.6rem;">'
+            'Sector Summary</div></div>',
+            unsafe_allow_html=True,
+        )
+        colour_sector = [c for c in ["Avg_Tech"] if c in sector_summary.columns]
+        st.dataframe(
+            sector_summary.style.map(_style_cell, subset=colour_sector),
+            width="stretch",
+            hide_index=True,
+            height=min(80 + len(sector_summary) * 35, 400),
+        )
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# TAB 5 — Scan Health
+# ════════════════════════════════════════════════════════════════════════════
+with tab5:
     st.markdown("""
     <div style="padding:1rem 0 0.5rem 0;">
         <div class="section-head">Scan Health</div>

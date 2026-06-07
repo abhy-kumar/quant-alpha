@@ -6,13 +6,15 @@ Market scanner.
 Data sources:
   • Universe   — NSE Bhav Copy top 150 by daily turnover  (nse_fetcher)
   • OHLCV      — yfinance 1-year daily history  (reliable for indicators)
-  • Fundamentals — yfinance .info  (P/E, ROE, etc.)
+  • Fundamentals — yfinance .info  (P/E, ROE, sector, etc.)
 
 Signals scored  (+1 bull / -1 bear / 0 neutral):
   SMA cross, RSI, MACD cross, MACD histogram, Stochastic,
-  Bollinger %B, CCI, Volume confirmation, ADX trend, Supertrend  (10 total)
+  Bollinger %B, CCI, Volume confirmation, ADX trend, Supertrend  (12 total)
 
-Tech_Score = (bull - bear) / total_signals  ∈ [-1, +1]
+Tech_Score  = (bull - bear) / total_signals  ∈ [-1, +1]
+Fund_Score  = weighted fundamentals score     ∈ [0, 10]
+Conviction_Rating = combined signal label
 """
 
 import yfinance as yf
@@ -64,6 +66,88 @@ def _safe_float(val, default=np.nan) -> float:
         return float(val) if val is not None and not (isinstance(val, float) and np.isnan(val)) else default
     except Exception:
         return default
+
+
+# ---------------------------------------------------------------------------
+# Fundamentals scoring
+# ---------------------------------------------------------------------------
+
+def _compute_fund_score(
+    roe_pct: float,
+    pe: float,
+    fwd_pe: float,
+    debt_eq: float,
+    div_yield_pct: float,
+    mkt_cap_b: float,
+    sharpe: float,
+) -> int:
+    """
+    Score fundamental quality on a 0–10 integer scale.
+
+    ROE         → up to 2 pts  (quality of returns)
+    P/E         → up to 2 pts  (valuation)
+    Debt/Equity → up to 2 pts  (financial risk)
+    Fwd vs Ttm  → 1 pt         (growth expectation)
+    Div Yield   → 1 pt         (shareholder return)
+    Market Cap  → 1 pt         (scale/stability)
+    Sharpe      → 1 pt         (risk-adjusted performance)
+    """
+    score = 0
+
+    # ── ROE ──────────────────────────────────────────────────────────────────
+    if not np.isnan(roe_pct):
+        if roe_pct >= 15:
+            score += 2
+        elif roe_pct >= 8:
+            score += 1
+
+    # ── P/E ──────────────────────────────────────────────────────────────────
+    if not np.isnan(pe) and pe > 0:
+        if pe < 20:
+            score += 2
+        elif pe < 35:
+            score += 1
+
+    # ── Debt / Equity ─────────────────────────────────────────────────────────
+    if not np.isnan(debt_eq):
+        if debt_eq < 0.5:
+            score += 2
+        elif debt_eq < 1.0:
+            score += 1
+    else:
+        score += 1   # benefit of doubt when no debt data available
+
+    # ── Forward P/E vs Trailing (growth expectation) ─────────────────────────
+    if (not np.isnan(fwd_pe) and not np.isnan(pe)
+            and pe > 0 and fwd_pe > 0 and fwd_pe < pe):
+        score += 1
+
+    # ── Dividend Yield ────────────────────────────────────────────────────────
+    if not np.isnan(div_yield_pct) and div_yield_pct > 1.0:
+        score += 1
+
+    # ── Market Cap ────────────────────────────────────────────────────────────
+    if not np.isnan(mkt_cap_b) and mkt_cap_b >= 10:
+        score += 1
+
+    # ── Sharpe ───────────────────────────────────────────────────────────────
+    if not np.isnan(sharpe) and sharpe > 1.0:
+        score += 1
+
+    return min(score, 10)
+
+
+def _conviction_rating(tech_score: float, fund_score: int) -> str:
+    """Map (Tech_Score, Fund_Score) → qualitative conviction label."""
+    if tech_score > 0.4 and fund_score >= 7:
+        return "Strong Buy"
+    if tech_score > 0.2 and fund_score >= 5:
+        return "Buy"
+    if tech_score > -0.2 and fund_score >= 3:
+        return "Hold"
+    if tech_score <= -0.4 or fund_score <= 1:
+        return "Avoid"
+    return "Caution"
 
 
 # ---------------------------------------------------------------------------
@@ -156,18 +240,37 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             bear  = sum(1 for v in signals if v == -1)
             score = (bull - bear) / len(signals)
 
+            # ── Fundamentals ──────────────────────────────────────────────────
+            roe_pct       = round((_safe_float(info.get("returnOnEquity"), 0)) * 100, 2)
+            pe            = _safe_float(info.get("trailingPE"))
+            fwd_pe        = _safe_float(info.get("forwardPE"))
+            debt_eq       = _safe_float(info.get("debtToEquity"))
+            div_yield_pct = round((_safe_float(info.get("dividendYield"), 0)) * 100, 2)
+            mkt_cap_b     = round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2)
+            sharpe        = met["Sharpe"]
+
+            fund_score = _compute_fund_score(
+                roe_pct, pe, fwd_pe, debt_eq,
+                div_yield_pct, mkt_cap_b, sharpe
+            )
+            conviction = _conviction_rating(score, fund_score)
+
             rows.append({
                 # ── Identity ──────────────────────────────────────────────
                 "Ticker":           ticker.upper(),
+                "Sector":           info.get("sector",   "Unknown") or "Unknown",
+                "Industry":         info.get("industry", "Unknown") or "Unknown",
                 "Price":            round(close, 2),
                 "1d_Chg_%":        round(chg, 2),
                 # ── Fundamentals ──────────────────────────────────────────
-                "P/E":              info.get("trailingPE", np.nan),
-                "Forward_P/E":      info.get("forwardPE",   np.nan),
-                "ROE_%":            round((_safe_float(info.get("returnOnEquity"), 0)) * 100, 2),
-                "Debt_to_Equity":   info.get("debtToEquity",   np.nan),
-                "Div_Yield_%":      round((_safe_float(info.get("dividendYield"), 0)) * 100, 2),
-                "Market_Cap_B":     round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2),
+                "P/E":              pe,
+                "Forward_P/E":      fwd_pe,
+                "ROE_%":            roe_pct,
+                "Debt_to_Equity":   debt_eq,
+                "Div_Yield_%":      div_yield_pct,
+                "Market_Cap_B":     mkt_cap_b,
+                "Fund_Score":       fund_score,
+                "Conviction":       conviction,
                 # ── Indicator values ──────────────────────────────────────
                 "RSI_Value":        round(rsi, 2),
                 "MACD_Value":       round(macd, 4),
@@ -204,7 +307,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
                 # ── Risk / return ─────────────────────────────────────────
                 "Total_Return_%":   met["Total_Return_%"],
                 "Ann_Vol_%":        met["Ann_Vol_%"],
-                "Sharpe":           met["Sharpe"],
+                "Sharpe":           sharpe,
                 "Max_Drawdown_%":   met["Max_Drawdown_%"],
             })
 
