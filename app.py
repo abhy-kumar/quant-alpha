@@ -401,6 +401,18 @@ _boot_scheduler()
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+@st.cache_data(ttl=300, show_spinner=False)
+def fetch_chart_data(ticker: str, period: str):
+    """Cached yfinance data fetching for the Charting tab to prevent slow reloads."""
+    period_map = {"3M": "3mo", "6M": "6mo", "1Y": "1y", "2Y": "2y"}
+    df_price = yf.download(
+        ticker, period=period_map[period],
+        interval="1d", auto_adjust=True, progress=False,
+    )
+    if isinstance(df_price.columns, pd.MultiIndex):
+        df_price.columns = df_price.columns.get_level_values(0)
+    return df_price
+
 def _age(iso_ts: str) -> str:
     try:
         dt = datetime.fromisoformat(iso_ts)
@@ -473,8 +485,10 @@ if last_ts:
     except Exception:
         dt_disp = last_ts
     st.markdown(
-        f'<div class="freshness-bar">Last full scan &nbsp;·&nbsp; '
-        f'<b>{dt_disp} IST</b> &nbsp;·&nbsp; {_age(last_ts)}</div>',
+        f'<div class="freshness-bar" style="display:flex; align-items:center; gap:0.75rem;">'
+        f'<span style="color:#64748B;">Last scan</span>'
+        f'<span style="color:#E2E8F0; font-weight:500;">{dt_disp} IST</span>'
+        f'<span style="background:#1E293B; color:#94A3B8; padding:0.15rem 0.5rem; border-radius:6px; font-size:0.7rem;">{_age(last_ts)}</span></div>',
         unsafe_allow_html=True,
     )
 else:
@@ -510,7 +524,8 @@ with st.sidebar:
         live_refresh_btn = st.button("Refresh Live Prices", use_container_width=True)
     else:
         st.markdown(
-            '<div class="sidebar-meta">Market closed &nbsp;·&nbsp; '
+            '<div class="sidebar-meta" style="display:flex; justify-content:space-between; align-items:center;">'
+            '<span>Market closed</span>'
             'Live refresh available 9:15 AM – 3:30 PM IST</div>',
             unsafe_allow_html=True,
         )
@@ -522,7 +537,8 @@ with st.sidebar:
     _db_label = "Supabase" if get_backend() == "postgresql" else "SQLite (local)"
     _db_color = "#4ADE80" if _db_ok else "#F87171"
     st.markdown(
-        f'<div class="sidebar-meta">Database &nbsp;·&nbsp; '
+        f'<div class="sidebar-meta" style="display:flex; justify-content:space-between; align-items:center;">'
+        f'<span>Database</span>'
         f'<span style="color:{_db_color}; font-weight:600;">{_db_label}</span></div>',
         unsafe_allow_html=True,
     )
@@ -539,7 +555,9 @@ with st.sidebar:
         fail_n_sb = int((scan_log_sb["Status"] == "FAILED").sum())
         st.markdown(
             f'<div class="sidebar-meta">'
-            f'Last scan &nbsp;·&nbsp; <b>{ok_n_sb} OK</b> &nbsp;/ {fail_n_sb} failed</div>',
+            f'<div style="display:flex; justify-content:space-between; margin-top:0.25rem;">'
+            f'<span>Scan Results</span>'
+            f'<span><span style="color:#10B981; font-weight:500;">{ok_n_sb} OK</span> <span style="color:#64748B;">/ {fail_n_sb} failed</span></span></div></div>',
             unsafe_allow_html=True,
         )
 
@@ -667,26 +685,46 @@ with tab1:
         .head(15)
     )
 
-    display_cols = [c for c in [
-        "Ticker", "Sector", "Price", "1d_Chg_%",
-        "Conviction", "Tech_Score", "Fund_Score",
-        "Bull_Count", "Bear_Count", "ST_Signal",
-        "RSI_Value", "ADX_Value", "ATR_Value",
-        "Total_Return_%", "Sharpe", "Max_Drawdown_%",
-        "P/E", "ROE_%", "Market_Cap_B",
-    ] if c in top_bulls.columns]
+    if not top_bulls.empty:
+        hero = top_bulls.iloc[0]
+        sym = hero["Ticker"].replace(".NS", "")
+        price = hero.get("Price", "—")
+        chg = hero.get("1d_Chg_%", 0.0)
+        chg_color = "#10B981" if chg > 0 else "#EF4444"
+        chg_sign = "+" if chg > 0 else ""
+        
+        st.markdown(f"""
+        <div style="background:#111827; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <div style="font-size:0.75rem; color:#94A3B8; font-weight:600; text-transform:uppercase; letter-spacing:0.02em;">Top Pick</div>
+                    <div style="font-size:1.8rem; font-weight:700; color:#F8FAFC; margin-top:0.25rem;">{sym}</div>
+                    <div style="font-size:1.2rem; font-weight:600; color:#E2E8F0; margin-top:0.1rem;">₹{price} <span style="font-size:1rem; color:{chg_color}; font-weight:500; margin-left:0.5rem;">{chg_sign}{chg}%</span></div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:0.75rem; color:#64748B;">Conviction</div>
+                    <div style="font-size:1.1rem; font-weight:600; color:#E2E8F0; margin-top:0.1rem;">{hero.get("Conviction", "—")}</div>
+                    <div style="font-size:0.8rem; color:#94A3B8; margin-top:0.5rem;">Tech: <span style="color:#F8FAFC">{hero.get("Tech_Score", "—")}</span> &nbsp;&nbsp; Fund: <span style="color:#F8FAFC">{hero.get("Fund_Score", "—")}</span></div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        view_opt = st.radio("Data View", ["Technical View", "Fundamental View"], horizontal=True, label_visibility="collapsed")
+        
+        if view_opt == "Technical View":
+            display_cols = [c for c in ["Ticker", "Sector", "Price", "1d_Chg_%", "Conviction", "Tech_Score", "ST_Signal", "RSI_Value", "ADX_Value", "MACD_Value"] if c in top_bulls.columns]
+        else:
+            display_cols = [c for c in ["Ticker", "Sector", "Price", "Conviction", "Fund_Score", "P/E", "Forward_P/E", "ROE_%", "Debt_to_Equity", "Market_Cap_B"] if c in top_bulls.columns]
 
-    colour_cols = [c for c in [
-        "1d_Chg_%", "Tech_Score", "Total_Return_%",
-        "Sharpe", "ST_Signal", "Conviction",
-    ] if c in display_cols]
+        colour_cols = [c for c in ["1d_Chg_%", "Tech_Score", "ST_Signal", "Conviction"] if c in display_cols]
 
-    st.dataframe(
-        top_bulls[display_cols].style.map(_style_cell, subset=colour_cols),
-        width="stretch",
-        hide_index=True,
-        height=510,
-    )
+        st.dataframe(
+            top_bulls[display_cols].style.map(_style_cell, subset=colour_cols),
+            width="stretch",
+            hide_index=True,
+            height=400,
+        )
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -746,28 +784,35 @@ with tab3:
         st.markdown("<hr>", unsafe_allow_html=True)
         asset = df[df["Ticker"] == selected].iloc[0]
 
-        def _m(label: str, key: str, decimals: int = 2):
+        def _get(key: str, decimals: int = 2):
             val = asset.get(key)
             try:
-                display = round(float(val), decimals) if pd.notna(val) else "—"
+                return round(float(val), decimals) if pd.notna(val) else "—"
             except (TypeError, ValueError):
-                display = str(val) if val is not None else "—"
-            st.metric(label, display)
+                return str(val) if val is not None else "—"
 
-        _m("Tech Score",   "Tech_Score",  3)
-        _m("Fund Score",   "Fund_Score",  0)
-        conv_val = asset.get("Conviction", "—")
-        st.metric("Conviction", conv_val)
-        st.metric("Supertrend", asset.get("ST_Signal", "—"))
-        _m("RSI (14)",     "RSI_Value",   1)
-        _m("ADX (14)",     "ADX_Value",   1)
-        _m("ATR",          "ATR_Value",   2)
-        _m("MACD",         "MACD_Value",  4)
-        st.markdown("<hr>", unsafe_allow_html=True)
-        _m("Forward P/E",  "Forward_P/E", 2)
-        _m("ROE %",        "ROE_%",       2)
-        _m("52W High",     "52W_High",    2)
-        _m("52W Low",      "52W_Low",     2)
+        st.markdown(f"""
+        <div style="background:#111827; border-radius:12px; padding:1.2rem; margin-bottom:1rem;">
+            <div style="font-size:0.8rem; font-weight:600; color:#E2E8F0; margin-bottom:0.8rem;">Technical Snapshot</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+                <div><div style="font-size:0.7rem; color:#64748B;">Tech Score</div><div style="font-size:1rem; font-weight:600; color:#F8FAFC;">{_get("Tech_Score", 3)}</div></div>
+                <div><div style="font-size:0.7rem; color:#64748B;">Conviction</div><div style="font-size:1rem; font-weight:600; color:#F8FAFC;">{asset.get("Conviction", "—")}</div></div>
+                <div><div style="font-size:0.7rem; color:#64748B;">RSI (14)</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("RSI_Value", 1)}</div></div>
+                <div><div style="font-size:0.7rem; color:#64748B;">ADX (14)</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("ADX_Value", 1)}</div></div>
+                <div><div style="font-size:0.7rem; color:#64748B;">Supertrend</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{asset.get("ST_Signal", "—")}</div></div>
+                <div><div style="font-size:0.7rem; color:#64748B;">MACD</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("MACD_Value", 4)}</div></div>
+            </div>
+        </div>
+        <div style="background:#111827; border-radius:12px; padding:1.2rem;">
+            <div style="font-size:0.8rem; font-weight:600; color:#E2E8F0; margin-bottom:0.8rem;">Fundamentals</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+                <div><div style="font-size:0.7rem; color:#64748B;">Fund Score</div><div style="font-size:1rem; font-weight:600; color:#F8FAFC;">{_get("Fund_Score", 0)}</div></div>
+                <div><div style="font-size:0.7rem; color:#64748B;">Forward P/E</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("Forward_P/E", 2)}</div></div>
+                <div><div style="font-size:0.7rem; color:#64748B;">ROE %</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("ROE_%", 2)}</div></div>
+                <div><div style="font-size:0.7rem; color:#64748B;">52W High</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("52W_High", 2)}</div></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     with chart_col:
         st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
@@ -780,11 +825,7 @@ with tab3:
         with p2:
             show_smas = st.checkbox("SMAs", value=True, key="show_smas")
 
-        period_map = {"3M": "3mo", "6M": "6mo", "1Y": "1y", "2Y": "2y"}
-        price_df = yf.download(
-            selected, period=period_map[period_opt],
-            interval="1d", auto_adjust=True, progress=False,
-        )
+        price_df = fetch_chart_data(selected, period_opt)
         if isinstance(price_df.columns, pd.MultiIndex):
             price_df.columns = price_df.columns.get_level_values(0)
 
