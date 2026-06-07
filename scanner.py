@@ -17,12 +17,18 @@ Fund_Score  = weighted fundamentals score     ∈ [0, 10]
 Conviction_Rating = combined signal label
 """
 
-import yfinance as yf
-import pandas as pd
-import numpy as np
 import time
 from datetime import datetime
+import requests
+import pandas as pd
+import numpy as np
+import yfinance as yf
 import pytz
+
+_YF_SESSION = requests.Session()
+_YF_SESSION.headers.update({
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+})
 
 IST = pytz.timezone("Asia/Kolkata")
 
@@ -42,7 +48,7 @@ _MIN_ROWS = 50      # Discard tickers with < 50 trading days of data
 def _fetch_ohlcv(ticker: str) -> pd.DataFrame:
     df = yf.download(
         ticker, period=_PERIOD, interval=_INTERVAL,
-        auto_adjust=True, progress=False
+        auto_adjust=True, progress=False, session=_YF_SESSION
     )
     if df.empty:
         raise ValueError("Empty OHLCV response")
@@ -56,7 +62,11 @@ def _fetch_ohlcv(ticker: str) -> pd.DataFrame:
 
 def _fetch_info(ticker: str) -> dict:
     try:
-        return yf.Ticker(ticker).info
+        t = yf.Ticker(ticker, session=_YF_SESSION)
+        info = t.info
+        if not info:
+            return {}
+        return info
     except Exception:
         return {}
 

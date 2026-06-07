@@ -417,7 +417,8 @@ def _age(iso_ts: str) -> str:
     try:
         dt = datetime.fromisoformat(iso_ts)
         if dt.tzinfo is None:
-            dt = pytz.utc.localize(dt).astimezone(IST)
+            dt = pytz.utc.localize(dt)
+        dt = dt.astimezone(IST)
         secs = int((datetime.now(IST) - dt).total_seconds())
         if secs < 0:    secs = 0
         if secs < 60:   return f"{secs}s ago"
@@ -476,11 +477,10 @@ st.markdown(f"""
 last_ts = get_last_scan_time()
 if last_ts:
     try:
-        dt_raw = datetime.fromisoformat(last_ts)
-        if dt_raw.tzinfo is None:
-            dt_ist = pytz.utc.localize(dt_raw).astimezone(IST)
-        else:
-            dt_ist = dt_raw.astimezone(IST)
+        dt_ist = datetime.fromisoformat(last_ts)
+        if dt_ist.tzinfo is None:
+            dt_ist = pytz.utc.localize(dt_ist)
+        dt_ist = dt_ist.astimezone(IST)
         dt_disp = dt_ist.strftime("%d %b %Y · %I:%M %p")
     except Exception:
         dt_disp = last_ts
@@ -679,11 +679,19 @@ with tab1:
     </div>
     """, unsafe_allow_html=True)
 
+    conv_map = {"Strong Buy": 5, "Buy": 4, "Hold": 3, "Caution": 2, "Avoid": 1}
+    df["_Rank"] = df["Conviction"].map(conv_map).fillna(0)
     top_bulls = (
-        df[df["Tech_Score"] > 0]
-        .sort_values("Tech_Score", ascending=False)
+        df[(df["Tech_Score"] > 0) & (df["Fund_Score"] >= 5)]
+        .sort_values(["_Rank", "Tech_Score"], ascending=[False, False])
         .head(15)
     )
+    if top_bulls.empty:
+        top_bulls = (
+            df[df["Tech_Score"] > 0]
+            .sort_values(["_Rank", "Tech_Score"], ascending=[False, False])
+            .head(15)
+        )
 
     if not top_bulls.empty:
         hero = top_bulls.iloc[0]
