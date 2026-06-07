@@ -73,7 +73,7 @@ header[data-testid="stHeader"] { display: none !important; }
 
 /* ── APP SHELL ────────────────────────────────────────────────────────────── */
 .stApp {
-    background-color: #0b0e14;
+    background-color: #09090b;
 }
 
 .block-container {
@@ -83,8 +83,8 @@ header[data-testid="stHeader"] { display: none !important; }
 
 /* ── SIDEBAR ──────────────────────────────────────────────────────────────── */
 section[data-testid="stSidebar"] {
-    background-color: #111827 !important;
-    border-right: 1px solid #1E293B;
+    background-color: #18181b !important;
+    border-right: 1px solid #27272a;
     border-top: 3px solid #C8102E;
 }
 section[data-testid="stSidebar"] .block-container {
@@ -94,19 +94,19 @@ section[data-testid="stSidebar"] .block-container {
 
 /* ── TYPOGRAPHY ───────────────────────────────────────────────────────────── */
 h1 {
-    color: #F8FAFC !important;
+    color: #fafafa !important;
     font-size: 1.4rem !important;
     font-weight: 600 !important;
     letter-spacing: -0.02em !important;
     line-height: 1.2 !important;
 }
 h2, h3 {
-    color: #F1F5F9 !important;
+    color: #f4f4f5 !important;
     font-weight: 500 !important;
     letter-spacing: -0.01em !important;
 }
 /* Clean neutral for all body text */
-p, div, span, label { color: #94A3B8 !important; }
+p, div, span, label { color: #a1a1aa !important; }
 
 /* ── HEADER AREA ──────────────────────────────────────────────────────────── */
 .app-header {
@@ -114,7 +114,7 @@ p, div, span, label { color: #94A3B8 !important; }
     justify-content: space-between;
     align-items: center;
     padding: 1.75rem 0 1.25rem 0;
-    border-bottom: 1px solid #1E293B;
+    border-bottom: 1px solid #27272a;
     margin-bottom: 0.75rem;
 }
 .app-brand {
@@ -124,7 +124,7 @@ p, div, span, label { color: #94A3B8 !important; }
 .app-wordmark {
     font-size: 1.3rem;
     font-weight: 600;
-    color: #F8FAFC !important;
+    color: #fafafa !important;
     letter-spacing: -0.02em;
     line-height: 1;
 }
@@ -133,7 +133,7 @@ p, div, span, label { color: #94A3B8 !important; }
 }
 .app-descriptor {
     font-size: 0.75rem;
-    color: #64748B !important;
+    color: #71717a !important;
     margin-top: 5px;
     font-weight: 400;
     letter-spacing: 0.02em;
@@ -174,7 +174,7 @@ p, div, span, label { color: #94A3B8 !important; }
 }
 .mkt-time {
     font-size: 0.7rem;
-    color: #64748B !important;
+    color: #71717a !important;
     margin-top: 5px;
     font-variant-numeric: tabular-nums;
 }
@@ -182,33 +182,33 @@ p, div, span, label { color: #94A3B8 !important; }
 /* ── FRESHNESS STRIP ──────────────────────────────────────────────────────── */
 .freshness-bar {
     font-size: 0.75rem;
-    color: #94A3B8 !important;
+    color: #a1a1aa !important;
     padding: 0.3rem 0 0.9rem 0;
 }
-.freshness-bar b { color: #E2E8F0 !important; font-weight: 500 !important; }
+.freshness-bar b { color: #e4e4e7 !important; font-weight: 500 !important; }
 
 /* ── SIDEBAR SECTION LABEL ────────────────────────────────────────────────── */
 .sidebar-label {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #E2E8F0 !important;
+    color: #e4e4e7 !important;
     margin-bottom: 0.75rem;
     padding-bottom: 0.4rem;
-    border-bottom: 1px solid #1E293B;
+    border-bottom: 1px solid #27272a;
 }
 .sidebar-meta {
     font-size: 0.75rem;
-    color: #94A3B8 !important;
+    color: #a1a1aa !important;
     line-height: 1.6;
     margin-top: 0.5rem;
 }
-.sidebar-meta b { color: #E2E8F0 !important; font-weight: 500 !important; }
+.sidebar-meta b { color: #e4e4e7 !important; font-weight: 500 !important; }
 
 /* ── BUTTONS ──────────────────────────────────────────────────────────────── */
 .stButton > button {
     background: transparent !important;
-    color: #E2E8F0 !important;
-    border: 1px solid #334155 !important;
+    color: #e4e4e7 !important;
+    border: 1px solid #3f3f46 !important;
     border-radius: 4px !important;
     font-size: 0.85rem !important;
     font-weight: 500 !important;
@@ -217,9 +217,9 @@ p, div, span, label { color: #94A3B8 !important; }
     width: 100%;
 }
 .stButton > button:hover {
-    background: #1E293B !important;
-    border-color: #475569 !important;
-    color: #F8FAFC !important;
+    background: #27272a !important;
+    border-color: #52525b !important;
+    color: #fafafa !important;
 }
 /* Primary button → FMS crimson */
 .stButton > button[kind="primary"] {
@@ -236,13 +236,13 @@ p, div, span, label { color: #94A3B8 !important; }
 /* ── TABS ─────────────────────────────────────────────────────────────────── */
 .stTabs [data-baseweb="tab-list"] {
     background: transparent !important;
-    border-bottom: 1px solid #1E293B !important;
+    border-bottom: 1px solid #27272a !important;
     gap: 0 !important;
     padding: 0 !important;
 }
 .stTabs [data-baseweb="tab"] {
     background: transparent !important;
-    color: #64748B !important;
+    color: #71717a !important;
     font-weight: 500 !important;
     font-size: 0.85rem !important;
     padding: 0.7rem 1.4rem !important;
@@ -251,41 +251,41 @@ p, div, span, label { color: #94A3B8 !important; }
     transition: color 0.15s, border-color 0.15s;
 }
 .stTabs [data-baseweb="tab"]:hover {
-    color: #94A3B8 !important;
+    color: #a1a1aa !important;
     background: rgba(255,255,255,0.02) !important;
 }
 /* Active tab → FMS crimson indicator */
 .stTabs [aria-selected="true"] {
-    color: #F8FAFC !important;
+    color: #fafafa !important;
     border-bottom: 2px solid #C8102E !important;
     font-weight: 500 !important;
 }
 
 /* ── METRIC CARDS ─────────────────────────────────────────────────────────── */
 [data-testid="metric-container"] {
-    background: #111827 !important;
-    border: 1px solid #1E293B !important;
+    background: #18181b !important;
+    border: 1px solid #27272a !important;
     border-radius: 6px !important;
     padding: 0.9rem 1.1rem !important;
     transition: border-color 0.2s;
 }
 [data-testid="metric-container"]:hover {
-    border-color: #334155 !important;
+    border-color: #3f3f46 !important;
 }
 [data-testid="stMetricLabel"] > div {
     font-size: 0.75rem !important;
     font-weight: 500 !important;
-    color: #94A3B8 !important;
+    color: #a1a1aa !important;
 }
 [data-testid="stMetricValue"] > div {
     font-size: 1.15rem !important;
     font-weight: 600 !important;
-    color: #F8FAFC !important;
+    color: #fafafa !important;
 }
 
 /* ── PROGRESS BAR ─────────────────────────────────────────────────────────── */
 [data-testid="stProgress"] > div {
-    background: #1E293B !important;
+    background: #27272a !important;
     border-radius: 3px !important;
     height: 4px !important;
 }
@@ -298,32 +298,32 @@ p, div, span, label { color: #94A3B8 !important; }
 /* ── SCAN PROGRESS UI ─────────────────────────────────────────────────────── */
 .scan-header {
     padding: 1.5rem 0 1rem 0;
-    border-bottom: 1px solid #1E293B;
+    border-bottom: 1px solid #27272a;
     margin-bottom: 1.5rem;
 }
 .scan-title {
     font-size: 1rem;
     font-weight: 500;
-    color: #F8FAFC !important;
+    color: #fafafa !important;
 }
 .scan-sub {
     font-size: 0.8rem;
-    color: #94A3B8 !important;
+    color: #a1a1aa !important;
     margin-top: 5px;
 }
 .scan-status-row {
     font-size: 0.85rem;
-    color: #94A3B8 !important;
+    color: #a1a1aa !important;
     margin-top: 0.6rem;
     font-variant-numeric: tabular-nums;
 }
-.scan-count  { color: #E2E8F0 !important; font-weight: 500; }
-.scan-ticker { color: #E2E8F0 !important; font-weight: 500; }
+.scan-count  { color: #e4e4e7 !important; font-weight: 500; }
+.scan-ticker { color: #e4e4e7 !important; font-weight: 500; }
 
 /* ── DIVIDERS ─────────────────────────────────────────────────────────────── */
 hr {
     border: none !important;
-    border-top: 1px solid #1E293B !important;
+    border-top: 1px solid #27272a !important;
     margin: 0.75rem 0 !important;
 }
 
@@ -331,29 +331,29 @@ hr {
 .section-head {
     font-size: 1rem;
     font-weight: 500;
-    color: #F8FAFC !important;
+    color: #fafafa !important;
     margin-bottom: 0.25rem;
 }
 .section-sub {
     font-size: 0.8rem;
-    color: #94A3B8 !important;
+    color: #a1a1aa !important;
     margin-bottom: 1rem;
     line-height: 1.5;
 }
 
 /* ── ALERTS ───────────────────────────────────────────────────────────────── */
 [data-testid="stAlert"] {
-    background: #111827 !important;
+    background: #18181b !important;
     border-radius: 6px !important;
     border-left: 3px solid #C8102E !important;
-    color: #E2E8F0 !important;
+    color: #e4e4e7 !important;
     font-size: 0.85rem !important;
 }
 
 /* ── EXPANDER ─────────────────────────────────────────────────────────────── */
 [data-testid="stExpander"] {
-    background: #111827 !important;
-    border: 1px solid #1E293B !important;
+    background: #18181b !important;
+    border: 1px solid #27272a !important;
     border-radius: 6px !important;
 }
 
@@ -364,12 +364,12 @@ hr {
 [data-testid="stCheckbox"]  label {
     font-size: 0.8rem !important;
     font-weight: 500 !important;
-    color: #94A3B8 !important;
+    color: #a1a1aa !important;
 }
 
 /* ── CAPTION ──────────────────────────────────────────────────────────────── */
 [data-testid="stCaptionContainer"] {
-    color: #64748B !important;
+    color: #71717a !important;
     font-size: 0.75rem !important;
 }
 
@@ -486,9 +486,9 @@ if last_ts:
         dt_disp = last_ts
     st.markdown(
         f'<div class="freshness-bar" style="display:flex; align-items:center; gap:0.75rem;">'
-        f'<span style="color:#64748B;">Last scan</span>'
-        f'<span style="color:#E2E8F0; font-weight:500;">{dt_disp} IST</span>'
-        f'<span style="background:#1E293B; color:#94A3B8; padding:0.15rem 0.5rem; border-radius:6px; font-size:0.7rem;">{_age(last_ts)}</span></div>',
+        f'<span style="color:#71717a;">Last scan</span>'
+        f'<span style="color:#e4e4e7; font-weight:500;">{dt_disp} IST</span>'
+        f'<span style="background:#27272a; color:#a1a1aa; padding:0.15rem 0.5rem; border-radius:6px; font-size:0.7rem;">{_age(last_ts)}</span></div>',
         unsafe_allow_html=True,
     )
 else:
@@ -557,7 +557,7 @@ with st.sidebar:
             f'<div class="sidebar-meta">'
             f'<div style="display:flex; justify-content:space-between; margin-top:0.25rem;">'
             f'<span>Scan Results</span>'
-            f'<span><span style="color:#10B981; font-weight:500;">{ok_n_sb} OK</span> <span style="color:#64748B;">/ {fail_n_sb} failed</span></span></div></div>',
+            f'<span><span style="color:#10B981; font-weight:500;">{ok_n_sb} OK</span> <span style="color:#71717a;">/ {fail_n_sb} failed</span></span></div></div>',
             unsafe_allow_html=True,
         )
 
@@ -569,11 +569,11 @@ with st.sidebar:
 
     # Attribution & Disclaimer
     st.markdown(
-        '<div style="margin-top:2.5rem; padding-top:1rem; border-top:1px solid #1E293B;">'
-        '<div style="font-size:0.65rem; color:#64748B; line-height:1.5; margin-bottom:0.75rem;">'
+        '<div style="margin-top:2.5rem; padding-top:1rem; border-top:1px solid #27272a;">'
+        '<div style="font-size:0.65rem; color:#71717a; line-height:1.5; margin-bottom:0.75rem;">'
         '<b>Disclaimer:</b> This platform is for educational purposes only and does not constitute financial advice. '
         'The models and signals provided are experimental. Always consult a certified financial advisor before making investment decisions. '
-        'Quantitative Alpha and FMS Delhi are not responsible for any trading losses incurred.'
+        'Alpha Research and Investment Club, FMS Delhi are not responsible for any trading losses incurred.'
         '</div>'
         '<div style="font-size:0.65rem; color:#56789A; line-height:1.8;">'
         'Alpha Research and Investment Club<br>FMS Delhi'
@@ -707,17 +707,17 @@ with tab1:
         chg_sign = "+" if chg > 0 else ""
         
         st.markdown(f"""
-        <div style="background:#111827; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
+        <div style="background:#18181b; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                 <div>
-                    <div style="font-size:0.75rem; color:#94A3B8; font-weight:600; text-transform:uppercase; letter-spacing:0.02em;">Top Pick</div>
-                    <div style="font-size:1.8rem; font-weight:700; color:#F8FAFC; margin-top:0.25rem;">{sym}</div>
-                    <div style="font-size:1.2rem; font-weight:600; color:#E2E8F0; margin-top:0.1rem;">₹{price} <span style="font-size:1rem; color:{chg_color}; font-weight:500; margin-left:0.5rem;">{chg_sign}{chg}%</span></div>
+                    <div style="font-size:0.75rem; color:#a1a1aa; font-weight:600; text-transform:uppercase; letter-spacing:0.02em;">Top Pick</div>
+                    <div style="font-size:1.8rem; font-weight:700; color:#fafafa; margin-top:0.25rem;">{sym}</div>
+                    <div style="font-size:1.2rem; font-weight:600; color:#e4e4e7; margin-top:0.1rem;">₹{price} <span style="font-size:1rem; color:{chg_color}; font-weight:500; margin-left:0.5rem;">{chg_sign}{chg}%</span></div>
                 </div>
                 <div style="text-align:right;">
-                    <div style="font-size:0.75rem; color:#64748B;">Conviction</div>
-                    <div style="font-size:1.1rem; font-weight:600; color:#E2E8F0; margin-top:0.1rem;">{hero.get("Conviction", "—")}</div>
-                    <div style="font-size:0.8rem; color:#94A3B8; margin-top:0.5rem;">Tech: <span style="color:#F8FAFC">{hero.get("Tech_Score", "—")}</span> &nbsp;&nbsp; Fund: <span style="color:#F8FAFC">{hero.get("Fund_Score", "—")}</span></div>
+                    <div style="font-size:0.75rem; color:#71717a;">Conviction</div>
+                    <div style="font-size:1.1rem; font-weight:600; color:#e4e4e7; margin-top:0.1rem;">{hero.get("Conviction", "—")}</div>
+                    <div style="font-size:0.8rem; color:#a1a1aa; margin-top:0.5rem;">Tech: <span style="color:#fafafa">{hero.get("Tech_Score", "—")}</span> &nbsp;&nbsp; Fund: <span style="color:#fafafa">{hero.get("Fund_Score", "—")}</span></div>
                 </div>
             </div>
         </div>
@@ -805,24 +805,24 @@ with tab3:
                 return str(val) if val is not None else "—"
 
         st.markdown(f"""
-        <div style="background:#111827; border-radius:12px; padding:1.2rem; margin-bottom:1rem;">
-            <div style="font-size:0.8rem; font-weight:600; color:#E2E8F0; margin-bottom:0.8rem;">Technical Snapshot</div>
+        <div style="background:#18181b; border-radius:12px; padding:1.2rem; margin-bottom:1rem;">
+            <div style="font-size:0.8rem; font-weight:600; color:#e4e4e7; margin-bottom:0.8rem;">Technical Snapshot</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
-                <div><div style="font-size:0.7rem; color:#64748B;">Tech Score</div><div style="font-size:1rem; font-weight:600; color:#F8FAFC;">{_get("Tech_Score", 3)}</div></div>
-                <div><div style="font-size:0.7rem; color:#64748B;">Conviction</div><div style="font-size:1rem; font-weight:600; color:#F8FAFC;">{asset.get("Conviction", "—")}</div></div>
-                <div><div style="font-size:0.7rem; color:#64748B;">RSI (14)</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("RSI_Value", 1)}</div></div>
-                <div><div style="font-size:0.7rem; color:#64748B;">ADX (14)</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("ADX_Value", 1)}</div></div>
-                <div><div style="font-size:0.7rem; color:#64748B;">Supertrend</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{asset.get("ST_Signal", "—")}</div></div>
-                <div><div style="font-size:0.7rem; color:#64748B;">MACD</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("MACD_Value", 4)}</div></div>
+                <div><div style="font-size:0.7rem; color:#71717a;">Tech Score</div><div style="font-size:1rem; font-weight:600; color:#fafafa;">{_get("Tech_Score", 3)}</div></div>
+                <div><div style="font-size:0.7rem; color:#71717a;">Conviction</div><div style="font-size:1rem; font-weight:600; color:#fafafa;">{asset.get("Conviction", "—")}</div></div>
+                <div><div style="font-size:0.7rem; color:#71717a;">RSI (14)</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("RSI_Value", 1)}</div></div>
+                <div><div style="font-size:0.7rem; color:#71717a;">ADX (14)</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("ADX_Value", 1)}</div></div>
+                <div><div style="font-size:0.7rem; color:#71717a;">Supertrend</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{asset.get("ST_Signal", "—")}</div></div>
+                <div><div style="font-size:0.7rem; color:#71717a;">MACD</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("MACD_Value", 4)}</div></div>
             </div>
         </div>
-        <div style="background:#111827; border-radius:12px; padding:1.2rem;">
-            <div style="font-size:0.8rem; font-weight:600; color:#E2E8F0; margin-bottom:0.8rem;">Fundamentals</div>
+        <div style="background:#18181b; border-radius:12px; padding:1.2rem;">
+            <div style="font-size:0.8rem; font-weight:600; color:#e4e4e7; margin-bottom:0.8rem;">Fundamentals</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
-                <div><div style="font-size:0.7rem; color:#64748B;">Fund Score</div><div style="font-size:1rem; font-weight:600; color:#F8FAFC;">{_get("Fund_Score", 0)}</div></div>
-                <div><div style="font-size:0.7rem; color:#64748B;">Forward P/E</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("Forward_P/E", 2)}</div></div>
-                <div><div style="font-size:0.7rem; color:#64748B;">ROE %</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("ROE_%", 2)}</div></div>
-                <div><div style="font-size:0.7rem; color:#64748B;">52W High</div><div style="font-size:0.95rem; font-weight:500; color:#E2E8F0;">{_get("52W_High", 2)}</div></div>
+                <div><div style="font-size:0.7rem; color:#71717a;">Fund Score</div><div style="font-size:1rem; font-weight:600; color:#fafafa;">{_get("Fund_Score", 0)}</div></div>
+                <div><div style="font-size:0.7rem; color:#71717a;">Forward P/E</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("Forward_P/E", 2)}</div></div>
+                <div><div style="font-size:0.7rem; color:#71717a;">ROE %</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("ROE_%", 2)}</div></div>
+                <div><div style="font-size:0.7rem; color:#71717a;">52W High</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("52W_High", 2)}</div></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -904,41 +904,41 @@ with tab3:
                           row=3, col=1, opacity=0.5)
             fig.add_hline(y=30, line_dash="dot", line_color="#22C55E",
                           row=3, col=1, opacity=0.5)
-            fig.add_hrect(y0=30, y1=70, fillcolor="#94A3B8",
+            fig.add_hrect(y0=30, y1=70, fillcolor="#a1a1aa",
                           opacity=0.03, row=3, col=1, line_width=0)
 
-            bg   = "#0b0e14"
-            grid = "#1E293B"
+            bg   = "#09090b"
+            grid = "#27272a"
             fig.update_layout(
                 height=720,
                 margin=dict(l=0, r=0, t=20, b=0),
                 xaxis_rangeslider_visible=False,
                 paper_bgcolor=bg,
                 plot_bgcolor=bg,
-                font=dict(color="#94A3B8", size=11, family="Inter"),
+                font=dict(color="#a1a1aa", size=11, family="Inter"),
                 legend=dict(
                     orientation="h", yanchor="bottom",
                     y=1.01, xanchor="right", x=1,
                     bgcolor="rgba(0,0,0,0)", font=dict(size=10),
                 ),
                 hoverlabel=dict(
-                    bgcolor="#111827", font_color="#F8FAFC",
-                    bordercolor="#1E293B",
+                    bgcolor="#18181b", font_color="#fafafa",
+                    bordercolor="#27272a",
                 ),
             )
             for row_n in [1, 2, 3]:
                 fig.update_xaxes(
                     gridcolor=grid, zeroline=False, showgrid=True,
-                    tickfont=dict(color="#64748B", size=10),
+                    tickfont=dict(color="#71717a", size=10),
                     row=row_n, col=1,
                 )
                 fig.update_yaxes(
                     gridcolor=grid, zeroline=False, showgrid=True,
-                    tickfont=dict(color="#64748B", size=10),
+                    tickfont=dict(color="#71717a", size=10),
                     row=row_n, col=1,
                 )
             for ann in fig.layout.annotations:
-                ann.font.color = "#64748B"
+                ann.font.color = "#71717a"
                 ann.font.size  = 10
 
             st.plotly_chart(fig, width="stretch")
@@ -946,7 +946,7 @@ with tab3:
     # ── Peer Comparison ───────────────────────────────────────────────────────
     st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
     st.markdown(
-        '<div style="border-top:1px solid #1E293B; padding-top:1.25rem;">'
+        '<div style="border-top:1px solid #27272a; padding-top:1.25rem;">'
         '<div class="section-head">Sector Peer Comparison</div>'
         '<div class="section-sub">Top peers by market cap in the same NSE sector.</div>'
         '</div>',
@@ -1015,27 +1015,27 @@ with tab3:
                         opacity=0.75,
                     ))
 
-                    bg = "#0b0e14"
+                    bg = "#09090b"
                     bar_fig.update_layout(
                         barmode="group",
                         height=280,
                         margin=dict(l=0, r=0, t=10, b=0),
                         paper_bgcolor=bg,
                         plot_bgcolor=bg,
-                        font=dict(color="#94A3B8", size=11, family="Inter"),
+                        font=dict(color="#a1a1aa", size=11, family="Inter"),
                         legend=dict(
                             orientation="h", yanchor="bottom",
                             y=1.02, xanchor="right", x=1,
                             bgcolor="rgba(0,0,0,0)", font=dict(size=10),
                         ),
                         hoverlabel=dict(
-                            bgcolor="#111827", font_color="#F8FAFC",
-                            bordercolor="#1E293B",
+                            bgcolor="#18181b", font_color="#fafafa",
+                            bordercolor="#27272a",
                         ),
-                        xaxis=dict(gridcolor="#1E293B", zeroline=False,
-                                   tickfont=dict(color="#64748B", size=10)),
-                        yaxis=dict(gridcolor="#1E293B", zeroline=False,
-                                   tickfont=dict(color="#64748B", size=10)),
+                        xaxis=dict(gridcolor="#27272a", zeroline=False,
+                                   tickfont=dict(color="#71717a", size=10)),
+                        yaxis=dict(gridcolor="#27272a", zeroline=False,
+                                   tickfont=dict(color="#71717a", size=10)),
                     )
                     st.plotly_chart(bar_fig, width="stretch")
                     st.caption(
@@ -1045,13 +1045,13 @@ with tab3:
                     )
         else:
             st.markdown(
-                '<div style="color:#94A3B8; font-size:0.8rem; padding:0.5rem 0;">'
+                '<div style="color:#a1a1aa; font-size:0.8rem; padding:0.5rem 0;">'
                 f'No other stocks in sector "{peer_sector}" in the current universe.</div>',
                 unsafe_allow_html=True,
             )
     else:
         st.markdown(
-            '<div style="color:#94A3B8; font-size:0.8rem; padding:0.5rem 0;">'
+            '<div style="color:#a1a1aa; font-size:0.8rem; padding:0.5rem 0;">'
             'Sector data is not available for this stock, or a fresh scan is required.</div>',
             unsafe_allow_html=True,
         )
@@ -1119,7 +1119,7 @@ with tab4:
             color_continuous_scale=[
                 [0.0, "#7F1D1D"],
                 [0.35, "#1F2937"],
-                [0.5,  "#111827"],
+                [0.5,  "#18181b"],
                 [0.65, "#1F2937"],
                 [1.0, "#14532D"],
             ],
@@ -1141,13 +1141,13 @@ with tab4:
         hm_fig.update_layout(
             height=620,
             margin=dict(l=0, r=0, t=10, b=0),
-            paper_bgcolor="#0b0e14",
-            font=dict(color="#94A3B8", size=11, family="Inter"),
+            paper_bgcolor="#09090b",
+            font=dict(color="#a1a1aa", size=11, family="Inter"),
             coloraxis_colorbar=dict(
-                title=dict(text=hm_colour_by, font=dict(color="#64748B", size=10)),
-                tickfont=dict(color="#64748B", size=9),
-                bgcolor="#111827",
-                bordercolor="#1E293B",
+                title=dict(text=hm_colour_by, font=dict(color="#71717a", size=10)),
+                tickfont=dict(color="#71717a", size=9),
+                bgcolor="#18181b",
+                bordercolor="#27272a",
                 borderwidth=1,
                 len=0.6,
             ),
@@ -1178,8 +1178,8 @@ with tab4:
         )
 
         st.markdown(
-            '<div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #1E293B;">'
-            '<div style="font-size:0.85rem; font-weight:600; color:#E2E8F0; margin-bottom:0.6rem;">'
+            '<div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #27272a;">'
+            '<div style="font-size:0.85rem; font-weight:600; color:#e4e4e7; margin-bottom:0.6rem;">'
             'Sector Summary</div></div>',
             unsafe_allow_html=True,
         )
@@ -1207,7 +1207,7 @@ with tab5:
 
     if scan_log.empty:
         st.markdown(
-            '<div style="color:#94A3B8; font-size:0.82rem; padding:1rem 0;">'
+            '<div style="color:#a1a1aa; font-size:0.82rem; padding:1rem 0;">'
             'No scan log found. Run a market scan to populate diagnostics.</div>',
             unsafe_allow_html=True,
         )
@@ -1243,8 +1243,8 @@ with tab5:
             )
 
         st.markdown(
-            '<div style="margin-top:1.25rem; padding-top:0.75rem; border-top:1px solid #1E293B;">'
-            '<div style="font-size:0.85rem; font-weight:600; color:#E2E8F0; margin-bottom:0.6rem;">'
+            '<div style="margin-top:1.25rem; padding-top:0.75rem; border-top:1px solid #27272a;">'
+            '<div style="font-size:0.85rem; font-weight:600; color:#e4e4e7; margin-bottom:0.6rem;">'
             'Full Scan Log</div></div>',
             unsafe_allow_html=True,
         )
