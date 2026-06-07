@@ -1225,43 +1225,43 @@ if not scan_log_sb.empty:
 
 st.markdown(f'''
 <div style="margin-top:2.5rem; padding:2rem 0; border-top:1px solid var(--border-color);">
-    <div style="display:grid; grid-template-columns:1fr 2fr 1fr; gap:2rem;">
-        
-        <!-- Diagnostics -->
-        <div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-bottom:0.75rem;">System Diagnostics</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between; margin-bottom:0.25rem;">
-                <span>Database</span><span style="color:{_db_color}; font-weight:600;">{_db_label}</span>
-            </div>
-            <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between; margin-bottom:0.25rem;">
-                <span>Scan Results</span><span><span style="color:#10B981; font-weight:500;">{ok_n_sb} OK</span> / {fail_n_sb} failed</span>
-            </div>
-            <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between;">
-                <span>Auto-scan</span><span><b>4:15 PM IST</b> Mon–Fri</span>
-            </div>
-        </div>
-        
-        <!-- Disclaimer -->
-        <div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-bottom:0.75rem;">Disclaimer</div>
-            <div style="font-size:0.75rem; color:var(--text-sub); line-height:1.6;">
-                This platform is for educational purposes only and does not constitute financial advice. 
-                The models and signals provided are experimental. Always consult a certified financial advisor before making investment decisions. 
-                Alpha Research and Investment Club, FMS Delhi is not responsible for any trading losses incurred.
-            </div>
-        </div>
-        
-        <!-- Attribution -->
-        <div style="text-align:right;">
-            <div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-bottom:0.75rem;">Project Eura</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.6;">
-                Alpha Research and Investment Club<br>FMS Delhi
-            </div>
-            <div style="font-size:0.7rem; color:var(--text-sub); margin-top:0.75rem; letter-spacing:0.01em;">
-                Made with &hearts; by Abhishek Kumar
-            </div>
-        </div>
-        
-    </div>
+<div style="display:grid; grid-template-columns:1fr 2fr 1fr; gap:2rem;">
+
+<!-- Diagnostics -->
+<div>
+<div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-bottom:0.75rem;">System Diagnostics</div>
+<div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between; margin-bottom:0.25rem;">
+<span>Database</span><span style="color:{_db_color}; font-weight:600;">{_db_label}</span>
+</div>
+<div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between; margin-bottom:0.25rem;">
+<span>Scan Results</span><span><span style="color:#10B981; font-weight:500;">{ok_n_sb} OK</span> / {fail_n_sb} failed</span>
+</div>
+<div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between;">
+<span>Auto-scan</span><span><b>4:15 PM IST</b> Mon–Fri</span>
+</div>
+</div>
+
+<!-- Disclaimer -->
+<div>
+<div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-bottom:0.75rem;">Disclaimer</div>
+<div style="font-size:0.75rem; color:var(--text-sub); line-height:1.6;">
+This platform is for educational purposes only and does not constitute financial advice. 
+The models and signals provided are experimental. Always consult a certified financial advisor before making investment decisions. 
+Alpha Research and Investment Club, FMS Delhi is not responsible for any trading losses incurred.
+</div>
+</div>
+
+<!-- Attribution -->
+<div style="text-align:right;">
+<div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-bottom:0.75rem;">Project Eura</div>
+<div style="font-size:0.75rem; color:var(--text-muted); line-height:1.6;">
+Alpha Research and Investment Club<br>FMS Delhi
+</div>
+<div style="font-size:0.7rem; color:var(--text-sub); margin-top:0.75rem; letter-spacing:0.01em;">
+Made with &hearts; by Abhishek Kumar
+</div>
+</div>
+
+</div>
 </div>
 ''', unsafe_allow_html=True)
