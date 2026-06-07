@@ -65,7 +65,7 @@ if st.session_state.theme == "dark":
     :root {
         --bg-app: #09090b;
         --bg-card: #18181b;
-        --border-color: var(--border-color);
+        --border-color: #27272a;
         --text-main: #fafafa;
         --text-muted: #a1a1aa;
         --text-sub: #71717a;
@@ -156,7 +156,15 @@ h2, h3 {
     letter-spacing: -0.01em !important;
 }
 /* Clean neutral for all body text */
-p, div, span, label { color: var(--text-muted) !important; }
+body, .stApp {
+    color: var(--text-muted);
+}
+.section-head, .scan-title, .sidebar-label, .app-wordmark {
+    color: var(--text-main) !important;
+}
+.section-sub, .scan-sub, .sidebar-meta, .freshness-bar {
+    color: var(--text-muted) !important;
+}
 
 /* ── HEADER AREA ──────────────────────────────────────────────────────────── */
 .app-header {
@@ -428,6 +436,13 @@ hr {
     border-radius: 12px;
 }
 
+/* ── PLOTLY CHART ─────────────────────────────────────────────────────────── */
+[data-testid="stPlotlyChart"] {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
 /* ── CONVICTION BADGE ─────────────────────────────────────────────────────── */
 .conv-strong-buy { color: #10B981 !important; font-weight: 600 !important; }
 .conv-buy        { color: #34D399 !important; font-weight: 500 !important; }
@@ -481,31 +496,44 @@ def _age(iso_ts: str) -> str:
 
 def _style_cell(val):
     """CSS for signal values, conviction ratings, and Bullish/Bearish strings."""
+    theme = st.session_state.get("theme", "dark")
+    is_dark = (theme == "dark")
+    
+    c_bullish    = "#4ADE80" if is_dark else "#047857"
+    c_bearish    = "#F87171" if is_dark else "#B91C1C"
+    c_strong_buy = "#4ADE80" if is_dark else "#047857"
+    c_buy        = "#86EFAC" if is_dark else "#10B981"
+    c_hold       = "#FCD34D" if is_dark else "#B45309"
+    c_caution    = "#FB923C" if is_dark else "#C2410C"
+    c_avoid      = "#F87171" if is_dark else "#B91C1C"
+    c_neutral    = "#3B5278" if is_dark else "#475569"
+    c_nan        = "#1E3A5F" if is_dark else "#94A3B8"
+    
     if isinstance(val, str):
         v = val.strip()
         vl = v.lower()
-        if vl == "bullish":     return "color:#4ADE80; font-weight:500"
-        if vl == "bearish":     return "color:#F87171; font-weight:500"
-        if v == "Strong Buy":   return "color:#4ADE80; font-weight:700"
-        if v == "Buy":          return "color:#86EFAC; font-weight:600"
-        if v == "Hold":         return "color:#FCD34D; font-weight:500"
-        if v == "Caution":      return "color:#FB923C; font-weight:500"
-        if v == "Avoid":        return "color:#F87171; font-weight:600"
+        if vl == "bullish":     return f"color:{c_bullish}; font-weight:500"
+        if vl == "bearish":     return f"color:{c_bearish}; font-weight:500"
+        if v == "Strong Buy":   return f"color:{c_strong_buy}; font-weight:700"
+        if v == "Buy":          return f"color:{c_buy}; font-weight:600"
+        if v == "Hold":         return f"color:{c_hold}; font-weight:500"
+        if v == "Caution":      return f"color:{c_caution}; font-weight:500"
+        if v == "Avoid":        return f"color:{c_avoid}; font-weight:600"
     try:
         n = float(val)
-        if np.isnan(n):  return "color:#1E3A5F"
-        if n > 0:        return "color:#4ADE80"
-        if n < 0:        return "color:#F87171"
+        if np.isnan(n):  return f"color:{c_nan}"
+        if n > 0:        return f"color:{c_bullish}"
+        if n < 0:        return f"color:{c_bearish}"
     except Exception:
         pass
-    return "color:#3B5278"
+    return f"color:{c_neutral}"
 
 
 # ── Header & Layout Setup ──────────────────────────────────────────────────
 mkt = market_status_text()
 dot_class = "open" if mkt["is_open"] else "closed"
 
-hcol1, hcol2, hcol3 = st.columns([1.5, 1, 1])
+hcol1, hcol2, hcol3 = st.columns([1.5, 1, 1], vertical_alignment="center")
 
 with hcol1:
     st.markdown(f'''
@@ -528,18 +556,25 @@ with hcol2:
     ''', unsafe_allow_html=True)
 
 with hcol3:
-    st.markdown("<div style='height:0.25rem'></div>", unsafe_allow_html=True)
-    bcol1, bcol2 = st.columns(2)
-    with bcol1:
-        if st.button(f"Theme: {st.session_state.theme.title()}", use_container_width=True):
-            toggle_theme()
-            st.rerun()
-    with bcol2:
-        scan_btn = st.button("Run Scan", type="primary", use_container_width=True)
-    
     live_refresh_btn = False
     if is_market_open():
-        live_refresh_btn = st.button("Refresh Live Prices", use_container_width=True)
+        bcol1, bcol2, bcol3 = st.columns(3, vertical_alignment="center")
+        with bcol1:
+            if st.button(f"Theme: {st.session_state.theme.title()}", use_container_width=True):
+                toggle_theme()
+                st.rerun()
+        with bcol2:
+            scan_btn = st.button("Run Scan", type="primary", use_container_width=True)
+        with bcol3:
+            live_refresh_btn = st.button("Refresh Live Prices", use_container_width=True)
+    else:
+        bcol1, bcol2 = st.columns(2, vertical_alignment="center")
+        with bcol1:
+            if st.button(f"Theme: {st.session_state.theme.title()}", use_container_width=True):
+                toggle_theme()
+                st.rerun()
+        with bcol2:
+            scan_btn = st.button("Run Scan", type="primary", use_container_width=True)
 
 st.markdown("<div style='border-bottom: 1px solid var(--border-color); margin-top:0.5rem; margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
@@ -592,14 +627,15 @@ if live_refresh_btn:
 # ── Load data ─────────────────────────────────────────────────────────────────
 df = load_from_db()
 
-if df.empty:
+required_cols = ["Ticker", "Price", "Conviction", "Tech_Score"]
+if df.empty or not all(col in df.columns for col in required_cols):
     st.markdown("""
     <div style="padding:3rem 0; text-align:center; color:#1E3A5F;">
         <div style="font-size:0.9rem; font-weight:600; color:#3B5278; margin-bottom:0.5rem;">
-            No data available
+            No valid data available
         </div>
         <div style="font-size:0.78rem; color:#1E3A5F;">
-            Use the sidebar to run a market scan and populate the database.
+            The database is empty or outdated. Please run a market scan to populate the database with technical and fundamental scores.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -663,18 +699,19 @@ with tab1:
         chg_color = "#10B981" if chg > 0 else "#EF4444"
         chg_sign = "+" if chg > 0 else ""
         
+        price_val = f"₹{price:.2f}" if isinstance(price, (int, float)) else f"₹{price}"
         st.markdown(f"""
-        <div style="background:#18181b; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                 <div>
-                    <div style="font-size:0.75rem; color:#a1a1aa; font-weight:600; text-transform:uppercase; letter-spacing:0.02em;">Top Pick</div>
-                    <div style="font-size:1.8rem; font-weight:700; color:#fafafa; margin-top:0.25rem;">{sym}</div>
-                    <div style="font-size:1.2rem; font-weight:600; color:#e4e4e7; margin-top:0.1rem;">₹{price} <span style="font-size:1rem; color:{chg_color}; font-weight:500; margin-left:0.5rem;">{chg_sign}{chg}%</span></div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.02em;">Top Pick</div>
+                    <div style="font-size:1.8rem; font-weight:700; color:var(--text-main); margin-top:0.25rem;">{sym}</div>
+                    <div style="font-size:1.2rem; font-weight:600; color:var(--text-hover); margin-top:0.1rem;">{price_val} <span style="font-size:1rem; color:{chg_color}; font-weight:500; margin-left:0.5rem;">{chg_sign}{chg}%</span></div>
                 </div>
                 <div style="text-align:right;">
-                    <div style="font-size:0.75rem; color:#71717a;">Conviction</div>
-                    <div style="font-size:1.1rem; font-weight:600; color:#e4e4e7; margin-top:0.1rem;">{hero.get("Conviction", "—")}</div>
-                    <div style="font-size:0.8rem; color:#a1a1aa; margin-top:0.5rem;">Tech: <span style="color:#fafafa">{hero.get("Tech_Score", "—")}</span> &nbsp;&nbsp; Fund: <span style="color:#fafafa">{hero.get("Fund_Score", "—")}</span></div>
+                    <div style="font-size:0.75rem; color:var(--text-sub);">Conviction</div>
+                    <div style="font-size:1.1rem; font-weight:600; color:var(--text-hover); margin-top:0.1rem;">{hero.get("Conviction", "—")}</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.5rem;">Tech: <span style="color:var(--text-main)">{hero.get("Tech_Score", "—")}</span> &nbsp;&nbsp; Fund: <span style="color:var(--text-main)">{hero.get("Fund_Score", "—")}</span></div>
                 </div>
             </div>
         </div>
@@ -689,8 +726,23 @@ with tab1:
 
         colour_cols = [c for c in ["1d_Chg_%", "Tech_Score", "ST_Signal", "Conviction"] if c in display_cols]
 
+        format_dict = {
+            "Price": "₹{:.2f}",
+            "1d_Chg_%": "{:+.2f}%",
+            "Tech_Score": "{:+.3f}",
+            "RSI_Value": "{:.1f}",
+            "ADX_Value": "{:.1f}",
+            "MACD_Value": "{:.4f}",
+            "P/E": "{:.2f}",
+            "Forward_P/E": "{:.2f}",
+            "ROE_%": "{:.2f}%",
+            "Debt_to_Equity": "{:.2f}",
+            "Market_Cap_B": "₹{:.2f}B",
+            "Sharpe": "{:.2f}",
+        }
+        fmt_cols = {c: format_dict[c] for c in display_cols if c in format_dict}
         st.dataframe(
-            top_bulls[display_cols].style.map(_style_cell, subset=colour_cols),
+            top_bulls[display_cols].style.format(fmt_cols, na_rep="—").map(_style_cell, subset=colour_cols),
             width="stretch",
             hide_index=True,
             height=400,
@@ -734,8 +786,23 @@ with tab2:
     colour_all = [c for c in sig_cols + ["Tech_Score", "ST_Signal", "Conviction", "1d_Chg_%"]
                   if c in filtered.columns]
 
+    format_dict = {
+        "Price": "₹{:.2f}",
+        "1d_Chg_%": "{:+.2f}%",
+        "Tech_Score": "{:+.3f}",
+        "RSI_Value": "{:.1f}",
+        "ADX_Value": "{:.1f}",
+        "MACD_Value": "{:.4f}",
+        "P/E": "{:.2f}",
+        "Forward_P/E": "{:.2f}",
+        "ROE_%": "{:.2f}%",
+        "Debt_to_Equity": "{:.2f}",
+        "Market_Cap_B": "₹{:.2f}B",
+        "Sharpe": "{:.2f}",
+    }
+    fmt_cols = {c: format_dict[c] for c in filtered.columns if c in format_dict}
     st.dataframe(
-        filtered.style.map(_style_cell, subset=colour_all),
+        filtered.style.format(fmt_cols, na_rep="—").map(_style_cell, subset=colour_all),
         width="stretch",
         height=580,
     )
@@ -762,24 +829,24 @@ with tab3:
                 return str(val) if val is not None else "—"
 
         st.markdown(f"""
-        <div style="background:#18181b; border-radius:12px; padding:1.2rem; margin-bottom:1rem;">
-            <div style="font-size:0.8rem; font-weight:600; color:#e4e4e7; margin-bottom:0.8rem;">Technical Snapshot</div>
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:1.2rem; margin-bottom:1rem;">
+            <div style="font-size:0.8rem; font-weight:600; color:var(--text-hover); margin-bottom:0.8rem;">Technical Snapshot</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
-                <div><div style="font-size:0.7rem; color:#71717a;">Tech Score</div><div style="font-size:1rem; font-weight:600; color:#fafafa;">{_get("Tech_Score", 3)}</div></div>
-                <div><div style="font-size:0.7rem; color:#71717a;">Conviction</div><div style="font-size:1rem; font-weight:600; color:#fafafa;">{asset.get("Conviction", "—")}</div></div>
-                <div><div style="font-size:0.7rem; color:#71717a;">RSI (14)</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("RSI_Value", 1)}</div></div>
-                <div><div style="font-size:0.7rem; color:#71717a;">ADX (14)</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("ADX_Value", 1)}</div></div>
-                <div><div style="font-size:0.7rem; color:#71717a;">Supertrend</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{asset.get("ST_Signal", "—")}</div></div>
-                <div><div style="font-size:0.7rem; color:#71717a;">MACD</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("MACD_Value", 4)}</div></div>
+                <div><div style="font-size:0.7rem; color:var(--text-sub);">Tech Score</div><div style="font-size:1rem; font-weight:600; color:var(--text-main);">{_get("Tech_Score", 3)}</div></div>
+                <div><div style="font-size:0.7rem; color:var(--text-sub);">Conviction</div><div style="font-size:1rem; font-weight:600; color:var(--text-main);">{asset.get("Conviction", "—")}</div></div>
+                <div><div style="font-size:0.7rem; color:var(--text-sub);">RSI (14)</div><div style="font-size:0.95rem; font-weight:500; color:var(--text-hover);">{_get("RSI_Value", 1)}</div></div>
+                <div><div style="font-size:0.7rem; color:var(--text-sub);">ADX (14)</div><div style="font-size:0.95rem; font-weight:500; color:var(--text-hover);">{_get("ADX_Value", 1)}</div></div>
+                <div><div style="font-size:0.7rem; color:var(--text-sub);">Supertrend</div><div style="font-size:0.95rem; font-weight:500; color:var(--text-hover);">{asset.get("ST_Signal", "—")}</div></div>
+                <div><div style="font-size:0.7rem; color:var(--text-sub);">MACD</div><div style="font-size:0.95rem; font-weight:500; color:var(--text-hover);">{_get("MACD_Value", 4)}</div></div>
             </div>
         </div>
-        <div style="background:#18181b; border-radius:12px; padding:1.2rem;">
-            <div style="font-size:0.8rem; font-weight:600; color:#e4e4e7; margin-bottom:0.8rem;">Fundamentals</div>
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:1.2rem;">
+            <div style="font-size:0.8rem; font-weight:600; color:var(--text-hover); margin-bottom:0.8rem;">Fundamentals</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
-                <div><div style="font-size:0.7rem; color:#71717a;">Fund Score</div><div style="font-size:1rem; font-weight:600; color:#fafafa;">{_get("Fund_Score", 0)}</div></div>
-                <div><div style="font-size:0.7rem; color:#71717a;">Forward P/E</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("Forward_P/E", 2)}</div></div>
-                <div><div style="font-size:0.7rem; color:#71717a;">ROE %</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("ROE_%", 2)}</div></div>
-                <div><div style="font-size:0.7rem; color:#71717a;">52W High</div><div style="font-size:0.95rem; font-weight:500; color:#e4e4e7;">{_get("52W_High", 2)}</div></div>
+                <div><div style="font-size:0.7rem; color:var(--text-sub);">Fund Score</div><div style="font-size:1rem; font-weight:600; color:var(--text-main);">{_get("Fund_Score", 0)}</div></div>
+                <div><div style="font-size:0.7rem; color:var(--text-sub);">Forward P/E</div><div style="font-size:0.95rem; font-weight:500; color:var(--text-hover);">{_get("Forward_P/E", 2)}</div></div>
+                <div><div style="font-size:0.7rem; color:var(--text-sub);">ROE %</div><div style="font-size:0.95rem; font-weight:500; color:var(--text-hover);">{_get("ROE_%", 2)}</div></div>
+                <div><div style="font-size:0.7rem; color:var(--text-sub);">52W High</div><div style="font-size:0.95rem; font-weight:500; color:var(--text-hover);">{_get("52W_High", 2)}</div></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -864,38 +931,45 @@ with tab3:
             fig.add_hrect(y0=30, y1=70, fillcolor="#a1a1aa",
                           opacity=0.03, row=3, col=1, line_width=0)
 
-            bg   = "#09090b"
-            grid = "#27272a"
+            is_dark = (st.session_state.get("theme", "dark") == "dark")
+            bg = "#09090b" if is_dark else "#ffffff"
+            grid = "#27272a" if is_dark else "#e2e8f0"
+            text_color = "#a1a1aa" if is_dark else "#475569"
+            sub_text_color = "#71717a" if is_dark else "#64748b"
+            hover_bg = "#18181b" if is_dark else "#ffffff"
+            hover_text = "#fafafa" if is_dark else "#0f172a"
+            hover_border = "#27272a" if is_dark else "#e2e8f0"
+
             fig.update_layout(
                 height=720,
                 margin=dict(l=0, r=0, t=20, b=0),
                 xaxis_rangeslider_visible=False,
                 paper_bgcolor=bg,
                 plot_bgcolor=bg,
-                font=dict(color="#a1a1aa", size=11, family="Inter"),
+                font=dict(color=text_color, size=11, family="Plus Jakarta Sans"),
                 legend=dict(
                     orientation="h", yanchor="bottom",
                     y=1.01, xanchor="right", x=1,
                     bgcolor="rgba(0,0,0,0)", font=dict(size=10),
                 ),
                 hoverlabel=dict(
-                    bgcolor="#18181b", font_color="#fafafa",
-                    bordercolor="#27272a",
+                    bgcolor=hover_bg, font_color=hover_text,
+                    bordercolor=hover_border,
                 ),
             )
             for row_n in [1, 2, 3]:
                 fig.update_xaxes(
                     gridcolor=grid, zeroline=False, showgrid=True,
-                    tickfont=dict(color="#71717a", size=10),
+                    tickfont=dict(color=sub_text_color, size=10),
                     row=row_n, col=1,
                 )
                 fig.update_yaxes(
                     gridcolor=grid, zeroline=False, showgrid=True,
-                    tickfont=dict(color="#71717a", size=10),
+                    tickfont=dict(color=sub_text_color, size=10),
                     row=row_n, col=1,
                 )
             for ann in fig.layout.annotations:
-                ann.font.color = "#71717a"
+                ann.font.color = sub_text_color
                 ann.font.size  = 10
 
             st.plotly_chart(fig, width="stretch")
@@ -933,8 +1007,23 @@ with tab3:
             peer_colour = [c for c in ["1d_Chg_%", "Tech_Score", "ST_Signal", "Conviction"]
                            if c in peer_cols]
 
+            format_dict = {
+                "Price": "₹{:.2f}",
+                "1d_Chg_%": "{:+.2f}%",
+                "Tech_Score": "{:+.3f}",
+                "RSI_Value": "{:.1f}",
+                "ADX_Value": "{:.1f}",
+                "MACD_Value": "{:.4f}",
+                "P/E": "{:.2f}",
+                "Forward_P/E": "{:.2f}",
+                "ROE_%": "{:.2f}%",
+                "Debt_to_Equity": "{:.2f}",
+                "Market_Cap_B": "₹{:.2f}B",
+                "Sharpe": "{:.2f}",
+            }
+            fmt_cols = {c: format_dict[c] for c in peer_cols if c in format_dict}
             st.dataframe(
-                peers[peer_cols].style.map(_style_cell, subset=peer_colour),
+                peers[peer_cols].style.format(fmt_cols, na_rep="—").map(_style_cell, subset=peer_colour),
                 width="stretch",
                 hide_index=True,
                 height=min(80 + len(peers) * 35, 320),
@@ -972,27 +1061,35 @@ with tab3:
                         opacity=0.75,
                     ))
 
-                    bg = "#09090b"
+                    is_dark = (st.session_state.get("theme", "dark") == "dark")
+                    bg = "#09090b" if is_dark else "#ffffff"
+                    grid = "#27272a" if is_dark else "#e2e8f0"
+                    text_color = "#a1a1aa" if is_dark else "#475569"
+                    sub_text_color = "#71717a" if is_dark else "#64748b"
+                    hover_bg = "#18181b" if is_dark else "#ffffff"
+                    hover_text = "#fafafa" if is_dark else "#0f172a"
+                    hover_border = "#27272a" if is_dark else "#e2e8f0"
+
                     bar_fig.update_layout(
                         barmode="group",
                         height=280,
                         margin=dict(l=0, r=0, t=10, b=0),
                         paper_bgcolor=bg,
                         plot_bgcolor=bg,
-                        font=dict(color="#a1a1aa", size=11, family="Inter"),
+                        font=dict(color=text_color, size=11, family="Plus Jakarta Sans"),
                         legend=dict(
                             orientation="h", yanchor="bottom",
                             y=1.02, xanchor="right", x=1,
                             bgcolor="rgba(0,0,0,0)", font=dict(size=10),
                         ),
                         hoverlabel=dict(
-                            bgcolor="#18181b", font_color="#fafafa",
-                            bordercolor="#27272a",
+                            bgcolor=hover_bg, font_color=hover_text,
+                            bordercolor=hover_border,
                         ),
-                        xaxis=dict(gridcolor="#27272a", zeroline=False,
-                                   tickfont=dict(color="#71717a", size=10)),
-                        yaxis=dict(gridcolor="#27272a", zeroline=False,
-                                   tickfont=dict(color="#71717a", size=10)),
+                        xaxis=dict(gridcolor=grid, zeroline=False,
+                                   tickfont=dict(color=sub_text_color, size=10)),
+                        yaxis=dict(gridcolor=grid, zeroline=False,
+                                   tickfont=dict(color=sub_text_color, size=10)),
                     )
                     st.plotly_chart(bar_fig, width="stretch")
                     st.caption(
@@ -1074,19 +1171,25 @@ with tab4:
             values=hm_size_by,
             color=hm_colour_by,
             color_continuous_scale=[
-                [0.0, "#7F1D1D"],
-                [0.35, "#1F2937"],
-                [0.5,  "#18181b"],
-                [0.65, "#1F2937"],
-                [1.0, "#14532D"],
+                [0.0, "#7F1D1D" if st.session_state.get("theme", "dark") == "dark" else "#FCA5A5"],
+                [0.5, "#18181b" if st.session_state.get("theme", "dark") == "dark" else "#F1F5F9"],
+                [1.0, "#14532D" if st.session_state.get("theme", "dark") == "dark" else "#86EFAC"],
             ],
             color_continuous_midpoint=0 if hm_colour_by in ["Tech_Score", "1d_Chg_%"] else None,
             hover_data=_hm_hover if _hm_hover else None,
             custom_data=_hm_custom,
         )
 
+        is_dark = (st.session_state.get("theme", "dark") == "dark")
+        hm_bg = "#09090b" if is_dark else "#ffffff"
+        hm_text = "#a1a1aa" if is_dark else "#475569"
+        hm_sub = "#71717a" if is_dark else "#64748b"
+        hm_cb_bg = "#18181b" if is_dark else "#ffffff"
+        hm_cb_border = "#27272a" if is_dark else "#e2e8f0"
+        hm_item_text = "#EDE8E0" if is_dark else "#0f172a"
+
         hm_fig.update_traces(
-            textfont=dict(family="Inter", size=11, color="#EDE8E0"),
+            textfont=dict(family="Plus Jakarta Sans", size=11, color=hm_item_text),
             hovertemplate=(
                 "<b>%{label}</b><br>"
                 + f"{hm_colour_by}: %{{color:.3f}}<br>"
@@ -1098,13 +1201,13 @@ with tab4:
         hm_fig.update_layout(
             height=620,
             margin=dict(l=0, r=0, t=10, b=0),
-            paper_bgcolor="#09090b",
-            font=dict(color="#a1a1aa", size=11, family="Inter"),
+            paper_bgcolor=hm_bg,
+            font=dict(color=hm_text, size=11, family="Plus Jakarta Sans"),
             coloraxis_colorbar=dict(
-                title=dict(text=hm_colour_by, font=dict(color="#71717a", size=10)),
-                tickfont=dict(color="#71717a", size=9),
-                bgcolor="#18181b",
-                bordercolor="#27272a",
+                title=dict(text=hm_colour_by, font=dict(color=hm_sub, size=10)),
+                tickfont=dict(color=hm_sub, size=9),
+                bgcolor=hm_cb_bg,
+                bordercolor=hm_cb_border,
                 borderwidth=1,
                 len=0.6,
             ),
@@ -1140,9 +1243,16 @@ with tab4:
             'Sector Summary</div></div>',
             unsafe_allow_html=True,
         )
+        format_dict = {
+            "Avg_Tech": "{:+.3f}",
+            "Avg_Fund": "{:.2f}",
+            "Avg_PE": "{:.2f}",
+            "Total_MCap": "₹{:.2f}B",
+        }
+        fmt_cols = {c: format_dict[c] for c in sector_summary.columns if c in format_dict}
         colour_sector = [c for c in ["Avg_Tech"] if c in sector_summary.columns]
         st.dataframe(
-            sector_summary.style.map(_style_cell, subset=colour_sector),
+            sector_summary.style.format(fmt_cols, na_rep="—").map(_style_cell, subset=colour_sector),
             width="stretch",
             hide_index=True,
             height=min(80 + len(sector_summary) * 35, 400),
