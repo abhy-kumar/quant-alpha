@@ -73,7 +73,7 @@ header[data-testid="stHeader"] { display: none !important; }
 
 /* ── APP SHELL ────────────────────────────────────────────────────────────── */
 .stApp {
-    background-color: #060B14;
+    background-color: #080808;
 }
 
 .block-container {
@@ -83,8 +83,8 @@ header[data-testid="stHeader"] { display: none !important; }
 
 /* ── SIDEBAR ──────────────────────────────────────────────────────────────── */
 section[data-testid="stSidebar"] {
-    background-color: #080E1A !important;
-    border-right: 1px solid #111B2E;
+    background-color: #0C0808 !important;
+    border-right: 1px solid #1E1810;
     border-top: 3px solid #C8102E;
 }
 section[data-testid="stSidebar"] .block-container {
@@ -94,18 +94,19 @@ section[data-testid="stSidebar"] .block-container {
 
 /* ── TYPOGRAPHY ───────────────────────────────────────────────────────────── */
 h1 {
-    color: #F1F5F9 !important;
+    color: #F0EAE0 !important;
     font-size: 1.5rem !important;
     font-weight: 700 !important;
     letter-spacing: -0.03em !important;
     line-height: 1.2 !important;
 }
 h2, h3 {
-    color: #E2E8F0 !important;
+    color: #E8E0D0 !important;
     font-weight: 600 !important;
     letter-spacing: -0.02em !important;
 }
-p, div, span, label { color: #94A3B8; }
+/* Warm neutral for all body text — overrides Streamlit's cold defaults */
+p, div, span, label { color: #8A8475 !important; }
 
 /* ── HEADER AREA ──────────────────────────────────────────────────────────── */
 .app-header {
@@ -113,7 +114,7 @@ p, div, span, label { color: #94A3B8; }
     justify-content: space-between;
     align-items: center;
     padding: 1.75rem 0 1.25rem 0;
-    border-bottom: 1px solid #111B2E;
+    border-bottom: 1px solid #1E1810;
     margin-bottom: 0.75rem;
 }
 .app-brand {
@@ -123,16 +124,16 @@ p, div, span, label { color: #94A3B8; }
 .app-wordmark {
     font-size: 1.4rem;
     font-weight: 700;
-    color: #F1F5F9;
+    color: #F0EAE0 !important;
     letter-spacing: -0.03em;
     line-height: 1;
 }
 .app-wordmark span {
-    color: #C8102E;
+    color: #C8102E !important;
 }
 .app-descriptor {
     font-size: 0.7rem;
-    color: #64748B;
+    color: #6A6358 !important;
     margin-top: 5px;
     font-weight: 500;
     letter-spacing: 0.07em;
@@ -151,12 +152,12 @@ p, div, span, label { color: #94A3B8; }
     border-radius: 4px;
 }
 .mkt-badge.open {
-    color: #4ADE80;
+    color: #4ADE80 !important;
     background: rgba(74, 222, 128, 0.08);
     border: 1px solid rgba(74, 222, 128, 0.18);
 }
 .mkt-badge.closed {
-    color: #F87171;
+    color: #F87171 !important;
     background: rgba(248, 113, 113, 0.08);
     border: 1px solid rgba(248, 113, 113, 0.15);
 }
@@ -175,7 +176,7 @@ p, div, span, label { color: #94A3B8; }
 }
 .mkt-time {
     font-size: 0.68rem;
-    color: #56789A;
+    color: #6B6358 !important;
     margin-top: 5px;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.01em;
@@ -184,11 +185,11 @@ p, div, span, label { color: #94A3B8; }
 /* ── FRESHNESS STRIP ──────────────────────────────────────────────────────── */
 .freshness-bar {
     font-size: 0.72rem;
-    color: #64748B;
+    color: #6A6358 !important;
     padding: 0.3rem 0 0.9rem 0;
     letter-spacing: 0.01em;
 }
-.freshness-bar b { color: #C9A84C; font-weight: 500; }
+.freshness-bar b { color: #C9A84C !important; font-weight: 600 !important; }
 
 /* ── SIDEBAR SECTION LABEL ────────────────────────────────────────────────── */
 .sidebar-label {
@@ -196,18 +197,18 @@ p, div, span, label { color: #94A3B8; }
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #56789A;
+    color: #6B6358 !important;
     margin-bottom: 0.75rem;
     padding-bottom: 0.4rem;
-    border-bottom: 1px solid #111B2E;
+    border-bottom: 1px solid #1E1810;
 }
 .sidebar-meta {
     font-size: 0.7rem;
-    color: #56789A;
+    color: #6B6358 !important;
     line-height: 1.6;
     margin-top: 0.5rem;
 }
-.sidebar-meta b { color: #C9A84C; font-weight: 500; }
+.sidebar-meta b { color: #C9A84C !important; font-weight: 600 !important; }
 
 /* ── BUTTONS ──────────────────────────────────────────────────────────────── */
 .stButton > button {
@@ -230,7 +231,7 @@ p, div, span, label { color: #94A3B8; }
 /* Primary button → FMS crimson */
 .stButton > button[kind="primary"] {
     background: linear-gradient(145deg, #7B0A0A, #C8102E) !important;
-    color: #FFF5F5 !important;
+    color: #FFF0EE !important;
     border-color: #C8102E !important;
 }
 .stButton > button[kind="primary"]:hover {
@@ -241,13 +242,13 @@ p, div, span, label { color: #94A3B8; }
 /* ── TABS ─────────────────────────────────────────────────────────────────── */
 .stTabs [data-baseweb="tab-list"] {
     background: transparent !important;
-    border-bottom: 1px solid #111B2E !important;
+    border-bottom: 1px solid #1E1810 !important;
     gap: 0 !important;
     padding: 0 !important;
 }
 .stTabs [data-baseweb="tab"] {
     background: transparent !important;
-    color: #64748B !important;
+    color: #6A6358 !important;
     font-weight: 500 !important;
     font-size: 0.8rem !important;
     letter-spacing: 0.02em !important;
@@ -257,49 +258,49 @@ p, div, span, label { color: #94A3B8; }
     transition: color 0.15s, border-color 0.15s;
 }
 .stTabs [data-baseweb="tab"]:hover {
-    color: #64748B !important;
+    color: #8A8475 !important;
     background: rgba(255,255,255,0.015) !important;
 }
 /* Active tab → FMS crimson indicator */
 .stTabs [aria-selected="true"] {
-    color: #F1F5F9 !important;
+    color: #F0EAE0 !important;
     border-bottom: 2px solid #C8102E !important;
     font-weight: 600 !important;
 }
 
 /* ── METRIC CARDS ─────────────────────────────────────────────────────────── */
 [data-testid="metric-container"] {
-    background: #0A1120 !important;
-    border: 1px solid #111B2E !important;
+    background: #0F0A08 !important;
+    border: 1px solid #1E1810 !important;
     border-radius: 8px !important;
     padding: 0.9rem 1.1rem !important;
     transition: border-color 0.2s;
 }
 [data-testid="metric-container"]:hover {
-    border-color: #1E3A5F !important;
+    border-color: #3D2010 !important;
 }
 [data-testid="stMetricLabel"] > div {
     font-size: 0.65rem !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.09em !important;
-    color: #56789A !important;
+    color: #6B6358 !important;
 }
 [data-testid="stMetricValue"] > div {
     font-size: 1.15rem !important;
     font-weight: 600 !important;
-    color: #E2E8F0 !important;
+    color: #E8E0D0 !important;
     letter-spacing: -0.01em !important;
 }
 
 /* ── PROGRESS BAR ─────────────────────────────────────────────────────────── */
 [data-testid="stProgress"] > div {
-    background: #111B2E !important;
+    background: #1E1810 !important;
     border-radius: 3px !important;
     height: 3px !important;
 }
 [data-testid="stProgress"] > div > div {
-    background: linear-gradient(90deg, #C8102E, #7C3AED) !important;
+    background: linear-gradient(90deg, #7B0A0A, #C8102E) !important;
     border-radius: 3px !important;
     transition: width 0.3s ease !important;
 }
@@ -307,34 +308,34 @@ p, div, span, label { color: #94A3B8; }
 /* ── SCAN PROGRESS UI ─────────────────────────────────────────────────────── */
 .scan-header {
     padding: 2rem 0 1.25rem 0;
-    border-bottom: 1px solid #111B2E;
+    border-bottom: 1px solid #1E1810;
     margin-bottom: 1.5rem;
 }
 .scan-title {
     font-size: 1rem;
     font-weight: 600;
-    color: #CBD5E1;
+    color: #D4CCB8 !important;
     letter-spacing: -0.01em;
 }
 .scan-sub {
     font-size: 0.75rem;
-    color: #56789A;
+    color: #6B6358 !important;
     margin-top: 5px;
     letter-spacing: 0.01em;
 }
 .scan-status-row {
     font-size: 0.82rem;
-    color: #64748B;
+    color: #6A6358 !important;
     margin-top: 0.6rem;
     font-variant-numeric: tabular-nums;
 }
-.scan-count  { color: #C9A84C; font-weight: 600; }
-.scan-ticker { color: #94A3B8; font-weight: 500; }
+.scan-count  { color: #C9A84C !important; font-weight: 600; }
+.scan-ticker { color: #8A8475 !important; font-weight: 500; }
 
 /* ── DIVIDERS ─────────────────────────────────────────────────────────────── */
 hr {
     border: none !important;
-    border-top: 1px solid #111B2E !important;
+    border-top: 1px solid #1E1810 !important;
     margin: 0.75rem 0 !important;
 }
 
@@ -342,30 +343,30 @@ hr {
 .section-head {
     font-size: 0.95rem;
     font-weight: 600;
-    color: #CBD5E1;
+    color: #D4CCB8 !important;
     letter-spacing: -0.01em;
     margin-bottom: 0.25rem;
 }
 .section-sub {
     font-size: 0.72rem;
-    color: #56789A;
+    color: #6B6358 !important;
     margin-bottom: 1rem;
     line-height: 1.5;
 }
 
 /* ── ALERTS ───────────────────────────────────────────────────────────────── */
 [data-testid="stAlert"] {
-    background: #0A1120 !important;
+    background: #0F0A08 !important;
     border-radius: 7px !important;
     border-left: 2px solid #C8102E !important;
-    color: #64748B !important;
+    color: #6A6358 !important;
     font-size: 0.82rem !important;
 }
 
 /* ── EXPANDER ─────────────────────────────────────────────────────────────── */
 [data-testid="stExpander"] {
-    background: #0A1120 !important;
-    border: 1px solid #111B2E !important;
+    background: #0F0A08 !important;
+    border: 1px solid #1E1810 !important;
     border-radius: 7px !important;
 }
 
@@ -376,14 +377,14 @@ hr {
 [data-testid="stCheckbox"]  label {
     font-size: 0.75rem !important;
     font-weight: 500 !important;
-    color: #64748B !important;
+    color: #6A6358 !important;
     letter-spacing: 0.02em !important;
     text-transform: uppercase !important;
 }
 
 /* ── CAPTION ──────────────────────────────────────────────────────────────── */
 [data-testid="stCaptionContainer"] {
-    color: #56789A !important;
+    color: #6B6358 !important;
     font-size: 0.72rem !important;
 }
 
@@ -842,7 +843,7 @@ with tab3:
             if show_smas:
                 for w, col, dash in [
                     (20,  "#F59E0B", "solid"),
-                    (50,  "#38BDF8", "solid"),
+                    (50,  "#C9A84C", "solid"),
                     (200, "#C084FC", "dot"),
                 ]:
                     sma = cl.rolling(w).mean()
@@ -870,37 +871,37 @@ with tab3:
                           opacity=0.03, row=3, col=1, line_width=0)
 
             bg   = "#060B14"
-            grid = "#0D1728"
+            grid = "#100C08"
             fig.update_layout(
                 height=720,
                 margin=dict(l=0, r=0, t=20, b=0),
                 xaxis_rangeslider_visible=False,
                 paper_bgcolor=bg,
                 plot_bgcolor=bg,
-                font=dict(color="#4A6FA5", size=11, family="Inter"),
+                font=dict(color="#6B635A", size=11, family="Inter"),
                 legend=dict(
                     orientation="h", yanchor="bottom",
                     y=1.01, xanchor="right", x=1,
                     bgcolor="rgba(0,0,0,0)", font=dict(size=10),
                 ),
                 hoverlabel=dict(
-                    bgcolor="#0D1728", font_color="#CBD5E1",
+                    bgcolor="#100C08", font_color="#CBD5E1",
                     bordercolor="#1E3A5F",
                 ),
             )
             for row_n in [1, 2, 3]:
                 fig.update_xaxes(
                     gridcolor=grid, zeroline=False, showgrid=True,
-                    tickfont=dict(color="#2D4163", size=10),
+                    tickfont=dict(color="#4A4340", size=10),
                     row=row_n, col=1,
                 )
                 fig.update_yaxes(
                     gridcolor=grid, zeroline=False, showgrid=True,
-                    tickfont=dict(color="#2D4163", size=10),
+                    tickfont=dict(color="#4A4340", size=10),
                     row=row_n, col=1,
                 )
             for ann in fig.layout.annotations:
-                ann.font.color = "#2D4163"
+                ann.font.color = "#4A4340"
                 ann.font.size  = 10
 
             st.plotly_chart(fig, width="stretch")
@@ -980,19 +981,19 @@ with tab3:
                         margin=dict(l=0, r=0, t=10, b=0),
                         paper_bgcolor=bg,
                         plot_bgcolor=bg,
-                        font=dict(color="#4A6FA5", size=11, family="Inter"),
+                        font=dict(color="#6B635A", size=11, family="Inter"),
                         legend=dict(
                             orientation="h", yanchor="bottom",
                             y=1.02, xanchor="right", x=1,
                             bgcolor="rgba(0,0,0,0)", font=dict(size=10),
                         ),
                         hoverlabel=dict(
-                            bgcolor="#0D1728", font_color="#CBD5E1",
+                            bgcolor="#100C08", font_color="#CBD5E1",
                             bordercolor="#1E3A5F",
                         ),
-                        xaxis=dict(gridcolor="#0D1728", zeroline=False,
+                        xaxis=dict(gridcolor="#100C08", zeroline=False,
                                    tickfont=dict(color="#64748B", size=10)),
-                        yaxis=dict(gridcolor="#0D1728", zeroline=False,
+                        yaxis=dict(gridcolor="#100C08", zeroline=False,
                                    tickfont=dict(color="#64748B", size=10)),
                     )
                     st.plotly_chart(bar_fig, width="stretch")
@@ -1101,7 +1102,7 @@ with tab4:
             height=620,
             margin=dict(l=0, r=0, t=10, b=0),
             paper_bgcolor="#060B14",
-            font=dict(color="#4A6FA5", size=11, family="Inter"),
+            font=dict(color="#6B635A", size=11, family="Inter"),
             coloraxis_colorbar=dict(
                 title=dict(text=hm_colour_by, font=dict(color="#56789A", size=10)),
                 tickfont=dict(color="#56789A", size=9),
@@ -1211,3 +1212,4 @@ with tab5:
         )
         full_log = scan_log.copy()
         st.dataframe(full_log, hide_index=True, width="stretch")
+
