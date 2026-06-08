@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/chart.ts": {
-      "includeFiles": "api/lib/**"
-    }
-  }
-}

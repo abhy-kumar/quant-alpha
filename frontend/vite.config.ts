@@ -1,6 +1,6 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
-import { fetchChartData } from './api/lib/fetchChartData'
+import { fetchChartData } from './api/chart'
 
 function chartApiDevPlugin(): Plugin {
   return {
