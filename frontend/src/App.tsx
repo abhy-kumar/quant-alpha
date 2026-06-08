@@ -109,12 +109,14 @@ export default function App() {
         setLoading(false)
         return true // Success
       } else if (dashRes.data.status === 'empty') {
+        setLoading(false)
         return false // Needs scan
       }
     } catch (err) {
       console.error("Failed to fetch data:", err)
       setLoading(false)
     }
+    setLoading(false)
     return false
   }
 
