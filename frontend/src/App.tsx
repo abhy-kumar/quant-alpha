@@ -50,25 +50,20 @@ interface DashboardData {
   Sig_Supertrend?: number
 }
 
-interface Diagnostics {
-  database: { status: string; message: string; type: string; last_scan: string | null }
-  scans: { ok: number; failed: number }
-}
-
-const API_BASE = 'https://quant-alpha-7dot.onrender.com/api'
+// Diagnostics removed, using static JSON
+const STATIC_URL = '/market_data.json'
 
 export default function App() {
   const [data, setData] = useState<DashboardData[]>([])
-  const [diagnostics, setDiagnostics] = useState<Diagnostics | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'picks' | 'fundamentals' | 'charting' | 'heatmap'>('picks')
   
   // Theme state
   const [isDark, setIsDark] = useState(true)
 
-  // Scan state
-  const [isScanning, setIsScanning] = useState(false)
-  const [scanProgress, setScanProgress] = useState({ current: 0, total: 0, ticker: "", status: "idle" })
+  // Theme state
+  const [isDark, setIsDark] = useState(true)
 
   // Toggles
   const [horizon, setHorizon] = useState<'short' | 'long'>('short')
@@ -92,102 +87,39 @@ export default function App() {
     }
   }, [isDark])
 
-  // Fetch initial data & polling logic
+  // Fetch static data
   const fetchData = async () => {
     try {
-      const [dashRes, diagRes] = await Promise.all([
-        axios.get(`${API_BASE}/dashboard`),
-        axios.get(`${API_BASE}/diagnostics`)
-      ])
+      const res = await axios.get(STATIC_URL)
       
-      setDiagnostics(diagRes.data)
-
-      if (dashRes.data.status === 'ok' && dashRes.data.data.length > 0) {
-        setData(dashRes.data.data)
-        if (!selectedTicker) setSelectedTicker(dashRes.data.data[0].Ticker)
-        setIsScanning(false)
+      if (res.data.status === 'ok' && res.data.data.length > 0) {
+        setData(res.data.data)
+        setLastUpdated(res.data.last_updated || 'Unknown')
+        if (!selectedTicker) setSelectedTicker(res.data.data[0].Ticker)
         setLoading(false)
-        return true // Success
-      } else if (dashRes.data.status === 'empty') {
-        setLoading(false)
-        return false // Needs scan
+        return true
       }
     } catch (err) {
-      console.error("Failed to fetch data:", err)
-      setLoading(false)
+      console.error("Failed to load static market data:", err)
     }
     setLoading(false)
     return false
   }
 
   useEffect(() => {
-    const init = async () => {
-      const success = await fetchData()
-      if (!success && !isScanning) {
-        // Auto trigger scan if empty
-        setIsScanning(true)
-        try {
-          await axios.post(`${API_BASE}/scan`)
-        } catch (err) {
-          console.error("Auto scan trigger failed", err)
-        }
-      }
-    }
-    init()
+    fetchData()
   }, [])
 
-  // Polling effect while scanning
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval>
-    if (isScanning) {
-      interval = setInterval(async () => {
-        try {
-          const progRes = await axios.get(`${API_BASE}/scan/progress`)
-          setScanProgress(progRes.data)
-          
-          if (progRes.data.status === 'completed' || progRes.data.status === 'idle') {
-            await fetchData()
-          } else if (progRes.data.status === 'failed') {
-            alert(`Scan failed: ${progRes.data.ticker}`)
-            setIsScanning(false)
-          }
-        } catch (err) {
-          console.error("Progress fetch failed", err)
-        }
-      }, 1500) // Poll every 1.5 seconds for live telemetry
-    }
-    return () => clearInterval(interval)
-  }, [isScanning])
-
-  // Fetch chart data when ticker, period, or interval changes
+  // Fetch chart data - currently disabled in static mode unless we use client-side Yahoo Finance proxy
+  // We'll leave the state structure but disable backend fetching
   useEffect(() => {
     if (!selectedTicker) return
-    const fetchChart = async () => {
-      setChartLoading(true)
-      try {
-        const res = await axios.get(`${API_BASE}/chart/${selectedTicker}?period=${chartPeriod}&interval=${chartInterval}`)
-        setChartData(res.data.data)
-      } catch (err) {
-        console.error("Chart fetch failed", err)
-      } finally {
-        setChartLoading(false)
-      }
-    }
-    fetchChart()
+    setChartLoading(true)
+    // For static mode, we will just use the historical EOD snapshot or clear it for now
+    // A future upgrade can pull live Yahoo Finance data directly in the browser via a free proxy!
+    setChartData([])
+    setChartLoading(false)
   }, [selectedTicker, chartPeriod, chartInterval])
-
-  // Trigger manual scan
-  const handleScan = async () => {
-    setIsScanning(true)
-    setData([]) // Clear data to trigger loading screen
-    try {
-      await axios.post(`${API_BASE}/scan`)
-    } catch (err) {
-      console.error("Scan trigger failed", err)
-      alert("Failed to start scan. Check backend logs.")
-      setIsScanning(false)
-    }
-  }
 
   // Logic
   const topPicks = useMemo(() => {
@@ -290,14 +222,6 @@ export default function App() {
           >
             {isDark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
-          <button 
-            onClick={handleScan}
-            disabled={isScanning}
-            className={`ml-2 p-2 border border-btn-border text-muted hover:text-primary hover:border-brand transition-all rounded-sm ${isScanning ? 'opacity-50 cursor-not-allowed' : ''}`}
-            title="Trigger Data Scan"
-          >
-            <RefreshCw size={16} className={isScanning ? "animate-spin text-brand" : ""} />
-          </button>
         </div>
       </header>
 
@@ -312,36 +236,11 @@ export default function App() {
               Waking up server & Loading System Data...
             </div>
           </div>
-        ) : isScanning || data.length === 0 ? (
+        ) : data.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-96 gap-6 max-w-md mx-auto">
-            <RefreshCw size={48} className="animate-spin text-brand opacity-80" />
-            
-            {scanProgress.total > 0 ? (
-              <div className="w-full flex flex-col gap-2">
-                <div className="flex justify-between text-xs font-mono uppercase tracking-widest text-muted">
-                  <span>{scanProgress.ticker}</span>
-                  <span>{scanProgress.current} / {scanProgress.total}</span>
-                </div>
-                <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
-                  <div 
-                    className="bg-brand h-1.5 rounded-full transition-all duration-300 ease-out" 
-                    style={{ width: `${Math.min(100, Math.max(0, (scanProgress.current / scanProgress.total) * 100))}%` }}
-                  ></div>
-                </div>
-              </div>
-            ) : (
-              <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
-                <div className="bg-brand h-1.5 w-full rounded-full animate-progress origin-left"></div>
-              </div>
-            )}
-
-            <div className="font-mono text-muted text-sm uppercase tracking-widest text-center animate-pulse">
-              {scanProgress.status === "failed" ? (
-                <span className="text-red-500">Scan Failed! Check Backend Logs</span>
-              ) : (
-                "Initializing Market Scan..."
-              )}<br/>
-              <span className="text-primary/50 text-xs mt-2 block">Fetching live data from Yahoo Finance. This usually takes 60 seconds.</span>
+            <div className="font-mono text-muted text-sm uppercase tracking-widest text-center">
+              Failed to load market_data.json<br/>
+              <span className="text-primary/50 text-xs mt-2 block">Ensure the JSON file exists.</span>
             </div>
           </div>
         ) : (
@@ -780,26 +679,19 @@ export default function App() {
       {/* Footer */}
       <footer className="border-t border-border mt-12 py-12 px-10 bg-card">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div>
-            <h4 className="font-display font-semibold text-lg mb-4 uppercase text-primary">System Diagnostics</h4>
-            {diagnostics && (
-              <div className="space-y-2 font-mono text-xs text-muted">
-                <div className="flex justify-between items-center group">
-                  <span className="flex items-center gap-2 group-hover:text-primary transition-colors"><Database size={14} /> Database</span>
-                  <span className={diagnostics.database.status === 'ok' ? 'text-green-600 dark:text-green-500 font-medium' : 'text-red-600 dark:text-red-500 font-medium'}>
-                    {diagnostics.database.type}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center group">
-                  <span className="flex items-center gap-2 group-hover:text-primary transition-colors"><Activity size={14} /> Scans</span>
-                  <span><span className="text-green-600 dark:text-green-500 font-medium">{diagnostics.scans.ok} OK</span> / {diagnostics.scans.failed} Failed</span>
-                </div>
-                <div className="flex justify-between items-center group pt-2 border-t border-border mt-2">
-                  <span className="flex items-center gap-2 group-hover:text-primary transition-colors">Last Scan</span>
-                  <span className="text-primary">{formatDateStr(diagnostics.database.last_scan || '')}</span>
-                </div>
+          
+          <div className="mt-8 flex flex-col gap-6 w-full max-w-xs opacity-80">
+            <div className="flex flex-col gap-2 border border-border bg-card p-4 rounded-sm shadow-sm">
+              <h4 className="font-mono text-brand text-xs uppercase tracking-widest font-bold">System Status</h4>
+              <div className="flex justify-between text-xs font-mono uppercase tracking-wider text-muted mt-2">
+                <span className="flex items-center gap-2"><Database size={12} /> Database</span>
+                <span className="text-primary">Static JSON</span>
               </div>
-            )}
+              <div className="flex justify-between text-xs font-mono uppercase tracking-wider text-muted border-t border-border/50 pt-2">
+                <span className="flex items-center gap-2"><Activity size={12} /> Last Updated</span>
+                <span className="text-primary">{lastUpdated}</span>
+              </div>
+            </div>
           </div>
 
           <div>

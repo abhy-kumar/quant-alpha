@@ -18,21 +18,21 @@ Conviction_Rating = combined signal label
 """
 
 import time
-from datetime import datetime
+import json
+from datetime import datetime, timezone, timedelta
+from typing import Optional
 import requests
 import pandas as pd
 import numpy as np
 import yfinance as yf
-import pytz
+# Define IST timezone manually to avoid pytz dependency
+IST = timezone(timedelta(hours=5, minutes=30))
 
 _YF_SESSION = requests.Session()
 _YF_SESSION.headers.update({
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 })
 
-IST = pytz.timezone("Asia/Kolkata")
-
-from database import save_to_db, save_scan_log
 from indicators import add_indicators, compute_metrics
 from nse_fetcher import get_liquid_universe
 
@@ -391,11 +391,23 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
     result_df = pd.DataFrame(rows)
     if not result_df.empty:
         result_df.sort_values("Tech_Score", ascending=False, inplace=True, ignore_index=True)
-        save_to_db(result_df, scan_time)
+        # Fill NA values so JSON encoding doesn't break
+        result_df = result_df.fillna("")
+        
+        output_data = {
+            "status": "ok",
+            "last_updated": scan_time.strftime("%Y-%m-%d %I:%M %p IST"),
+            "data": result_df.to_dict(orient="records")
+        }
+        
+        import os
+        os.makedirs("frontend/public", exist_ok=True)
+        with open("frontend/public/market_data.json", "w") as f:
+            json.dump(output_data, f, indent=2)
 
-    save_scan_log(log)
+        print(f"✅ Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
+
     return result_df
-
 
 if __name__ == "__main__":
     run_scanner()
