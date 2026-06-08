@@ -105,17 +105,17 @@ export default function App() {
                   <div className="space-y-4 font-mono text-sm">
                     <div className="flex justify-between border-b border-border pb-2">
                       <span className="text-muted">Tech Score</span>
-                      <span className={stock.Tech_Score > 0 ? 'text-green-500' : 'text-red-500'}>
-                        {stock.Tech_Score.toFixed(1)}
+                      <span className={Number(stock.Tech_Score) > 0 ? 'text-green-500' : 'text-red-500'}>
+                        {!isNaN(Number(stock.Tech_Score)) && stock.Tech_Score !== "" ? Number(stock.Tech_Score).toFixed(1) : '-'}
                       </span>
                     </div>
                     <div className="flex justify-between border-b border-border pb-2">
                       <span className="text-muted">RSI</span>
-                      <span>{stock.RSI.toFixed(1)}</span>
+                      <span>{!isNaN(Number(stock.RSI)) && stock.RSI !== "" ? Number(stock.RSI).toFixed(1) : '-'}</span>
                     </div>
                     <div className="flex justify-between border-b border-border pb-2">
                       <span className="text-muted">Conviction</span>
-                      <span className="text-primary">{stock.Conviction}</span>
+                      <span className="text-primary">{stock.Conviction || '-'}</span>
                     </div>
                   </div>
                   
