@@ -107,15 +107,26 @@ export default function App() {
     fetchData()
   }, [])
 
-  // Fetch chart data - currently disabled in static mode unless we use client-side Yahoo Finance proxy
-  // We'll leave the state structure but disable backend fetching
+  // Fetch chart data via Vercel Serverless Function
   useEffect(() => {
     if (!selectedTicker) return
-    setChartLoading(true)
-    // For static mode, we will just use the historical EOD snapshot or clear it for now
-    // A future upgrade can pull live Yahoo Finance data directly in the browser via a free proxy!
-    setChartData([])
-    setChartLoading(false)
+    const fetchChart = async () => {
+      setChartLoading(true)
+      try {
+        const res = await axios.get(`/api/chart?ticker=${selectedTicker}&period=${chartPeriod}&interval=${chartInterval}`)
+        if (res.data.status === 'ok') {
+          setChartData(res.data.data)
+        } else {
+          setChartData([])
+        }
+      } catch (err) {
+        console.error("Chart fetch failed", err)
+        setChartData([])
+      } finally {
+        setChartLoading(false)
+      }
+    }
+    fetchChart()
   }, [selectedTicker, chartPeriod, chartInterval])
 
   // Logic
