@@ -91,30 +91,58 @@ export default function App() {
     }
   }, [isDark])
 
-  // Fetch initial data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [dashRes, diagRes] = await Promise.all([
-          axios.get(`${API_BASE}/dashboard`),
-          axios.get(`${API_BASE}/diagnostics`)
-        ])
-        
-        if (dashRes.data.status === 'ok') {
-          setData(dashRes.data.data)
-          if (dashRes.data.data.length > 0) {
-            setSelectedTicker(dashRes.data.data[0].Ticker)
-          }
-        }
-        setDiagnostics(diagRes.data)
-      } catch (err) {
-        console.error("Failed to fetch data:", err)
-      } finally {
+  // Fetch initial data & polling logic
+  const fetchData = async () => {
+    try {
+      const [dashRes, diagRes] = await Promise.all([
+        axios.get(`${API_BASE}/dashboard`),
+        axios.get(`${API_BASE}/diagnostics`)
+      ])
+      
+      setDiagnostics(diagRes.data)
+
+      if (dashRes.data.status === 'ok' && dashRes.data.data.length > 0) {
+        setData(dashRes.data.data)
+        if (!selectedTicker) setSelectedTicker(dashRes.data.data[0].Ticker)
+        setIsScanning(false)
         setLoading(false)
+        return true // Success
+      } else if (dashRes.data.status === 'empty') {
+        return false // Needs scan
+      }
+    } catch (err) {
+      console.error("Failed to fetch data:", err)
+      setLoading(false)
+    }
+    return false
+  }
+
+  useEffect(() => {
+    const init = async () => {
+      const success = await fetchData()
+      if (!success && !isScanning) {
+        // Auto trigger scan if empty
+        setIsScanning(true)
+        try {
+          await axios.post(`${API_BASE}/scan`)
+        } catch (err) {
+          console.error("Auto scan trigger failed", err)
+        }
       }
     }
-    fetchData()
+    init()
   }, [])
+
+  // Polling effect while scanning
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (isScanning) {
+      interval = setInterval(async () => {
+        await fetchData()
+      }, 10000) // Poll every 10 seconds
+    }
+    return () => clearInterval(interval)
+  }, [isScanning])
 
   // Fetch chart data when ticker, period, or interval changes
   useEffect(() => {
@@ -133,18 +161,15 @@ export default function App() {
     fetchChart()
   }, [selectedTicker, chartPeriod, chartInterval])
 
-  // Trigger scan
+  // Trigger manual scan
   const handleScan = async () => {
     setIsScanning(true)
+    setData([]) // Clear data to trigger loading screen
     try {
       await axios.post(`${API_BASE}/scan`)
-      // Optional: Wait and poll, or just show a success toast.
-      // For now, let the user know it's running in the background.
-      alert("Background scan started! It usually takes 1-2 minutes. The dashboard will automatically update on refresh once completed.")
     } catch (err) {
       console.error("Scan trigger failed", err)
       alert("Failed to start scan. Check backend logs.")
-    } finally {
       setIsScanning(false)
     }
   }
@@ -265,12 +290,15 @@ export default function App() {
       <main className="flex-grow p-10 max-w-7xl mx-auto w-full">
         {loading ? (
           <div className="flex items-center justify-center h-64 font-mono text-muted text-sm uppercase">
-            Fetching telemetry...
+            Loading System Data...
           </div>
-        ) : data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 font-mono text-muted text-sm uppercase gap-4">
-            <AlertCircle size={32} className="text-sub" />
-            <div>No scan data available. Check backend logs or run scan.</div>
+        ) : isScanning || data.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-96 gap-6">
+            <RefreshCw size={48} className="animate-spin text-brand opacity-80" />
+            <div className="font-mono text-muted text-sm uppercase tracking-widest text-center animate-pulse">
+              Initializing Market Scan...<br/>
+              <span className="text-primary/50 text-xs mt-2 block">Fetching live data from Yahoo Finance. This usually takes 60 seconds.</span>
+            </div>
           </div>
         ) : (
           <div className="animate-in fade-in duration-500">
