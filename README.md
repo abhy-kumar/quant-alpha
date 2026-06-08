@@ -3,33 +3,48 @@
 Indian equity intelligence platform built for the  
 **Alpha Research and Investment Club, FMS Delhi**.
 
+## Architecture
+
+This application is a modern, decoupled Full Stack Web Application:
+
+| Component | Technology |
+|---|---|
+| **Frontend** | React, Vite, Tailwind CSS, Recharts |
+| **Backend** | FastAPI, Python |
+| **Database** | SQLite (`scanner.db`) |
+| **Market Data** | `yfinance` (historical pricing), `BeautifulSoup` (fundamental scraping via Screener.in) |
+| **Math / Algos** | `pandas`, `numpy` (RSI, MACD, Bollinger, ATR, ADX, Supertrend) |
+
 ## Running Locally
 
+Because the architecture is decoupled, you need to start two separate servers to run the app locally.
+
+### 1. Start the Backend API (Terminal 1)
 ```bash
 python -m venv venv
 .\venv\Scripts\activate        # Windows
 pip install -r requirements.txt
-streamlit run app.py
+
+# Run the database scan to fetch the latest data
+python scanner.py
+
+# Start the FastAPI server
+uvicorn api:app --host 0.0.0.0 --port 8000 --reload
 ```
+
+### 2. Start the Frontend UI (Terminal 2)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Navigate to `http://localhost:5173` in your browser to view the dashboard!
 
 ## Deployment
 
-See [deployment guide](deployment_guide.md) for full instructions.
-Hosted on **Streamlit Community Cloud** with **Supabase** as the database
-and **GitHub Actions** for the scheduled daily scan.
+See the [Deployment Guide](deployment_guide.md) for full instructions on how to host this platform online for free.
 
-### Quick summary
-1. Push this repo to GitHub
-2. Create a free Supabase project → copy the database URL
-3. Deploy on share.streamlit.io → add `DATABASE_URL` as a secret
-4. Add `DATABASE_URL` to GitHub repo secrets for the Actions scheduler
-
-## Architecture
-
-| Component | Technology |
-|---|---|
-| Frontend | Streamlit |
-| Indicators | pandas / numpy (RSI, MACD, Bollinger, ATR, ADX, Supertrend) |
-| Data | yfinance (historical), NSE Bhav Copy (EOD), NSE public API (live) |
-| Database | SQLite (local) / Supabase PostgreSQL (cloud) |
-| Scheduler | APScheduler (local) / GitHub Actions (cloud) |
+**Quick Summary:**
+1. Deploy the backend to **Render.com** (Web Service, Python 3). Attach a persistent disk if you want to save SQLite history across reboots.
+2. Update the `API_BASE` URL in `frontend/src/App.tsx` to point to your new Render URL.
+3. Deploy the frontend to **Vercel.com**.
