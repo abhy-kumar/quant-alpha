@@ -78,7 +78,7 @@ def get_chart_data(ticker: str, period: str = "1y", interval: str = "1d"):
         
         # Slice back down to the requested period
         period_days = {
-            "1mo": 22, "3mo": 66, "6mo": 130, "1y": 252, "2y": 504, "5y": 1260
+            "1w": 5, "1mo": 22, "3mo": 66, "6mo": 130, "1y": 252, "2y": 504, "5y": 1260
         }
         
         # For weekly intervals, divide days by 5
