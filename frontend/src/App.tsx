@@ -62,9 +62,6 @@ export default function App() {
   // Theme state
   const [isDark, setIsDark] = useState(true)
 
-  // Theme state
-  const [isDark, setIsDark] = useState(true)
-
   // Toggles
   const [horizon, setHorizon] = useState<'short' | 'long'>('short')
 
