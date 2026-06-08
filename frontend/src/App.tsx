@@ -480,7 +480,7 @@ export default function App() {
                 <div className="w-full xl:w-3/4 flex flex-col gap-6">
                   
                   {/* Period & Interval Toggles */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4">
                     <div className="flex bg-card border border-border p-1 rounded-sm shadow-sm w-fit">
                       {['1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => (
                         <button 
