@@ -62,19 +62,19 @@ def toggle_theme():
 if st.session_state.theme == "dark":
     st.markdown('''
     <style>
-    :root {
-        --bg-app: #09090b;
-        --bg-card: #18181b;
-        --border-color: #27272a;
-        --text-main: #fafafa;
-        --text-muted: #a1a1aa;
-        --text-sub: #71717a;
-        --text-hover: #e4e4e7;
+        :root {
+        --bg-app: #000000;
+        --bg-card: #0A0A0A;
+        --border-color: #1A1A1A;
+        --text-main: #FFFFFF;
+        --text-muted: #737373;
+        --text-sub: #52525B;
+        --text-hover: #D4D4D8;
         --brand-red: #C8102E;
         --brand-red-hover: #E53030;
         --btn-bg: transparent;
-        --btn-border: #3f3f46;
-        --btn-hover: #27272a;
+        --btn-border: #27272A;
+        --btn-hover: #1A1A1A;
         --fms-red: #C8102E;
     }
     </style>
@@ -105,7 +105,7 @@ else:
 st.markdown("""
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
 <style>
 /* ── GLOBAL RESET ─────────────────────────────────────────────────────────── */
@@ -180,8 +180,10 @@ body, .stApp {
     align-items: center;
 }
 .app-wordmark {
-    font-size: 1.3rem;
-    font-weight: 600;
+    font-size: 1.6rem;
+    font-family: 'Archivo Black', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
     color: var(--text-main) !important;
     letter-spacing: -0.02em;
     line-height: 1;
@@ -205,7 +207,7 @@ body, .stApp {
     font-weight: 600;
     letter-spacing: 0.02em;
     padding: 0.3rem 0.75rem;
-    border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border-radius: 0px; 
 }
 .mkt-badge.open {
     color: #10B981 !important;
@@ -267,7 +269,7 @@ body, .stApp {
     background: transparent !important;
     color: var(--text-hover) !important;
     border: 1px solid var(--btn-border) !important;
-    border-radius: 99px !important;
+    border-radius: 0px !important;
     font-size: 0.85rem !important;
     font-weight: 500 !important;
     padding: 0.45rem 1rem !important;
@@ -301,8 +303,10 @@ body, .stApp {
 .stTabs [data-baseweb="tab"] {
     background: transparent !important;
     color: var(--text-sub) !important;
-    font-weight: 500 !important;
-    font-size: 0.85rem !important;
+    font-family: 'Space Mono', monospace !important;
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
     padding: 0.7rem 1.4rem !important;
     border-radius: 0 !important;
     border-bottom: 2px solid transparent !important;
@@ -323,7 +327,7 @@ body, .stApp {
 [data-testid="metric-container"] {
     background: var(--bg-card) !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: 6px !important;
+    border-radius: 0px !important;
     padding: 0.9rem 1.1rem !important;
     transition: border-color 0.2s;
 }
@@ -402,7 +406,7 @@ hr {
 /* ── ALERTS ───────────────────────────────────────────────────────────────── */
 [data-testid="stAlert"] {
     background: var(--bg-card) !important;
-    border-radius: 6px !important;
+    border-radius: 0px !important;
     border-left: 3px solid var(--brand-red) !important;
     color: var(--text-hover) !important;
     font-size: 0.85rem !important;
@@ -412,7 +416,7 @@ hr {
 [data-testid="stExpander"] {
     background: var(--bg-card) !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: 6px !important;
+    border-radius: 0px !important;
 }
 
 /* ── SELECT / RADIO / CHECKBOX ────────────────────────────────────────────── */
@@ -433,13 +437,13 @@ hr {
 
 /* ── DATAFRAME ────────────────────────────────────────────────────────────── */
 [data-testid="stDataFrame"] iframe {
-    border-radius: 12px;
+    border-radius: 0px;
 }
 
 /* ── PLOTLY CHART ─────────────────────────────────────────────────────────── */
 [data-testid="stPlotlyChart"] {
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 0px;
     overflow: hidden;
 }
 
