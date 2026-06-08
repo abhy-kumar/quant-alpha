@@ -38,8 +38,9 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     delta = close.diff()
     gain  = delta.clip(lower=0).rolling(14).mean()
     loss  = (-delta.clip(upper=0)).rolling(14).mean()
+    # If loss is 0, rs is inf and RSI should be 100.
     rs    = gain / loss.replace(0, np.nan)
-    df["RSI"] = 100 - (100 / (1 + rs))
+    df["RSI"] = np.where(loss == 0, 100, 100 - (100 / (1 + rs)))
 
     # ── Bollinger Bands ───────────────────────────────────────────────────────
     df["BB_Mid"]   = close.rolling(20).mean()
