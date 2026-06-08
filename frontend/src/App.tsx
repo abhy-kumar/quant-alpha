@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import axios from 'axios'
-import { Activity, Database, TrendingUp, BarChart2, Layers, Search, AlertCircle, Moon, Sun, Info } from 'lucide-react'
+import { Activity, Database, TrendingUp, BarChart2, Layers, Search, AlertCircle, Moon, Sun, Info, RefreshCw } from 'lucide-react'
 import {
   ComposedChart,
   Line,
@@ -66,6 +66,9 @@ export default function App() {
   // Theme state
   const [isDark, setIsDark] = useState(true)
 
+  // Scan state
+  const [isScanning, setIsScanning] = useState(false)
+
   // Toggles
   const [horizon, setHorizon] = useState<'short' | 'long'>('short')
 
@@ -129,6 +132,22 @@ export default function App() {
     }
     fetchChart()
   }, [selectedTicker, chartPeriod, chartInterval])
+
+  // Trigger scan
+  const handleScan = async () => {
+    setIsScanning(true)
+    try {
+      await axios.post(`${API_BASE}/scan`)
+      // Optional: Wait and poll, or just show a success toast.
+      // For now, let the user know it's running in the background.
+      alert("Background scan started! It usually takes 1-2 minutes. The dashboard will automatically update on refresh once completed.")
+    } catch (err) {
+      console.error("Scan trigger failed", err)
+      alert("Failed to start scan. Check backend logs.")
+    } finally {
+      setIsScanning(false)
+    }
+  }
 
   // Logic
   const topPicks = useMemo(() => {
@@ -230,6 +249,14 @@ export default function App() {
             title="Toggle Theme"
           >
             {isDark ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+          <button 
+            onClick={handleScan}
+            disabled={isScanning}
+            className={`ml-2 p-2 border border-btn-border text-muted hover:text-primary hover:border-brand transition-all rounded-sm ${isScanning ? 'opacity-50 cursor-not-allowed' : ''}`}
+            title="Trigger Data Scan"
+          >
+            <RefreshCw size={16} className={isScanning ? "animate-spin text-brand" : ""} />
           </button>
         </div>
       </header>
