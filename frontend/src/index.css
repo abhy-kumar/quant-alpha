@@ -1,17 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-background text-primary font-body antialiased;
+  :root {
+    --bg-app: #f8fafc;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --text-sub: #64748b;
+    --brand-red: #C8102E;
+    --brand-red-hover: #E53030;
+    --btn-border: #cbd5e1;
+  }
+
+  .dark {
+    --bg-app: #000000;
+    --bg-card: #0A0A0A;
+    --border-color: #1A1A1A;
+    --text-main: #FFFFFF;
+    --text-muted: #A1A1AA;
+    --text-sub: #71717A;
+    --brand-red: #C8102E;
+    --brand-red-hover: #E53030;
+    --btn-border: #27272A;
+  }
+
+  html, body {
+    @apply bg-background text-muted antialiased;
   }
 }
 
-@layer utilities {
-  .brutalist-card {
-    @apply bg-card border border-border;
-  }
+/* Custom scrollbar for brutalist theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-border;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-btn-border;
 }

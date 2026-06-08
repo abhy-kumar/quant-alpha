@@ -5,7 +5,7 @@ import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
 
-from database import load_from_db, load_scan_log, test_connection, get_backend
+from database import load_from_db, load_scan_log, test_connection, get_backend, get_last_scan_time
 from scanner import run_scanner
 from indicators import add_indicators
 
@@ -44,7 +44,8 @@ def get_diagnostics():
         "database": {
             "status": "ok" if db_ok else "error",
             "message": db_msg,
-            "type": "Supabase" if get_backend() == "postgresql" else "SQLite"
+            "type": "Supabase" if get_backend() == "postgresql" else "SQLite",
+            "last_scan": get_last_scan_time()
         },
         "scans": {
             "ok": ok_n,
@@ -64,15 +65,29 @@ def trigger_scan(background_tasks: BackgroundTasks):
     return {"message": "Scan triggered in background"}
 
 @app.get("/api/chart/{ticker}")
-def get_chart_data(ticker: str, period: str = "1y"):
+def get_chart_data(ticker: str, period: str = "1y", interval: str = "1d"):
     try:
         t = yf.Ticker(ticker)
-        df_price = t.history(period=period, interval="1d", auto_adjust=True)
+        # Fetch 5 years of data so 200-day SMA can always calculate, regardless of selected period
+        df_price = t.history(period="5y", interval=interval, auto_adjust=True)
         if df_price.empty:
             raise HTTPException(status_code=404, detail="No data found for ticker")
         
         # Add technical indicators using the project's logic
         df_price = add_indicators(df_price)
+        
+        # Slice back down to the requested period
+        period_days = {
+            "1mo": 22, "3mo": 66, "6mo": 130, "1y": 252, "2y": 504, "5y": 1260
+        }
+        
+        # For weekly intervals, divide days by 5
+        if interval == "1wk":
+            for k in period_days:
+                period_days[k] = period_days[k] // 5
+                
+        if period in period_days:
+            df_price = df_price.tail(period_days[period])
         
         # Format for lightweight-charts or recharts
         df_price = df_price.reset_index()
