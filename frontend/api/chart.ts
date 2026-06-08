@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { fetchChartData } from '../lib/fetchChartData'
+import { fetchChartData } from './lib/fetchChartData.js'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true)

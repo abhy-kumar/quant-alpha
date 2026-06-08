@@ -20,5 +20,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "lib/**/*.ts"]
+  "include": ["vite.config.ts", "api/lib/**/*.ts"]
 }
