@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import axios from 'axios'
 import { Activity, Database, TrendingUp, BarChart2, Layers, Search, AlertCircle, Moon, Sun, Info } from 'lucide-react'
 import {
