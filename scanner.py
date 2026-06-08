@@ -405,7 +405,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         with open("frontend/public/market_data.json", "w") as f:
             json.dump(output_data, f, indent=2)
 
-        print(f"✅ Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
+        print(f"Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
 
     return result_df
 

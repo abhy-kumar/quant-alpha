@@ -230,7 +230,7 @@ export default function App() {
               <div className="bg-brand h-1.5 w-full rounded-full animate-progress origin-left"></div>
             </div>
             <div className="font-mono text-muted text-sm uppercase tracking-widest text-center animate-pulse">
-              Waking up server & Loading System Data...
+              Loading Dashboard...
             </div>
           </div>
         ) : data.length === 0 ? (
