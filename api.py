@@ -2,10 +2,12 @@ from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import yfinance as yf
+import pandas as pd
 from datetime import datetime, timedelta
 
 from database import load_from_db, load_scan_log, test_connection, get_backend
 from scanner import run_scanner
+from indicators import add_indicators
 
 app = FastAPI(title="Quant Alpha API", version="1.0")
 
@@ -69,18 +71,25 @@ def get_chart_data(ticker: str):
         if df_price.empty:
             raise HTTPException(status_code=404, detail="No data found for ticker")
         
+        # Add technical indicators using the project's logic
+        df_price = add_indicators(df_price)
+        
         # Format for lightweight-charts or recharts
         df_price = df_price.reset_index()
         data = []
         for _, row in df_price.iterrows():
             date_str = row['Date'].strftime('%Y-%m-%d') if hasattr(row['Date'], 'strftime') else str(row['Date']).split()[0]
+            # Replace NaNs with None for JSON serialization
             data.append({
                 "time": date_str,
                 "open": row["Open"],
                 "high": row["High"],
                 "low": row["Low"],
                 "close": row["Close"],
-                "volume": row["Volume"]
+                "volume": row["Volume"],
+                "sma50": None if pd.isna(row.get("SMA_50")) else row["SMA_50"],
+                "sma200": None if pd.isna(row.get("SMA_200")) else row["SMA_200"],
+                "rsi": None if pd.isna(row.get("RSI")) else row["RSI"]
             })
         return {"ticker": ticker, "data": data}
     except Exception as e:
