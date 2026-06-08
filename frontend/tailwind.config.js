@@ -18,6 +18,15 @@ export default {
         'brand-hover': 'var(--brand-red-hover)',
         'btn-border': 'var(--btn-border)',
       },
+      keyframes: {
+        progress: {
+          '0%': { transform: 'scaleX(0)' },
+          '100%': { transform: 'scaleX(1)' },
+        }
+      },
+      animation: {
+        'progress': 'progress 2s ease-in-out infinite alternate',
+      },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
         display: ['Inter', 'sans-serif'],

@@ -289,8 +289,13 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-grow p-10 max-w-7xl mx-auto w-full">
         {loading ? (
-          <div className="flex items-center justify-center h-64 font-mono text-muted text-sm uppercase">
-            Loading System Data...
+          <div className="flex flex-col items-center justify-center h-64 gap-6 max-w-md mx-auto">
+            <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
+              <div className="bg-brand h-1.5 w-full rounded-full animate-progress origin-left"></div>
+            </div>
+            <div className="font-mono text-muted text-sm uppercase tracking-widest text-center animate-pulse">
+              Waking up server & Loading System Data...
+            </div>
           </div>
         ) : isScanning || data.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-96 gap-6">
