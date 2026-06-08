@@ -168,9 +168,9 @@ export default function App() {
   const peerGroup = useMemo(() => {
     if (!selectedAsset || !selectedAsset.Sector || selectedAsset.Sector === 'Unknown') return []
     return data
-      .filter(d => d.Sector === selectedAsset.Sector && d.Ticker !== selectedAsset.Ticker)
+      .filter(d => d.Sector === selectedAsset.Sector)
       .sort((a, b) => Number(b.Market_Cap_B || 0) - Number(a.Market_Cap_B || 0))
-      .slice(0, 5)
+      .slice(0, 6)
   }, [data, selectedAsset])
 
   const num = (val: any) => (!isNaN(Number(val)) && val !== "" && val !== null ? Number(val).toFixed(2) : 'N/A')
@@ -482,13 +482,13 @@ export default function App() {
                   {/* Period & Interval Toggles */}
                   <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4">
                     <div className="flex bg-card border border-border p-1 rounded-sm shadow-sm w-fit">
-                      {['1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => (
+                      {['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => (
                         <button 
                           key={p}
                           onClick={() => setChartPeriod(p)}
                           className={`px-3 py-1.5 font-mono text-xs uppercase tracking-widest transition-all ${chartPeriod === p ? 'bg-brand text-white shadow-sm' : 'text-muted hover:text-primary'}`}
                         >
-                          {p.replace('mo', 'M').replace('y', 'Y')}
+                          {p.replace('mo', 'M').replace('y', 'Y').replace('w', 'W')}
                         </button>
                       ))}
                     </div>
@@ -616,7 +616,7 @@ export default function App() {
                             <tr 
                               key={i} 
                               onClick={() => setSelectedTicker(row.Ticker)}
-                              className="border-b border-border hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors duration-200"
+                              className={`border-b border-border cursor-pointer transition-colors duration-200 ${row.Ticker === selectedTicker ? 'bg-brand/10 dark:bg-brand/20 border-l-2 border-l-brand' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
                             >
                               <td className="p-4 text-primary font-medium">{row.Ticker.replace('.NS', '')}</td>
                               <td className="p-4 text-right text-muted">{num(row.Market_Cap_B)}B</td>
