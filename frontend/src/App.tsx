@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import axios from 'axios'
-import { Activity, Database, TrendingUp, BarChart2, Layers, Search, Moon, Sun, Info, RefreshCw } from 'lucide-react'
+import { Activity, Database, TrendingUp, BarChart2, Layers, Search, Moon, Sun, Info } from 'lucide-react'
 import {
   ComposedChart,
   Line,
@@ -167,15 +167,6 @@ export default function App() {
   const handleHeatmapClick = (ticker: string) => {
     setSelectedTicker(ticker)
     setActiveTab('charting')
-  }
-
-  const formatDateStr = (iso: string) => {
-    if (!iso) return 'N/A'
-    try {
-      return new Date(iso).toLocaleString()
-    } catch {
-      return iso
-    }
   }
 
   const getSignalLabel = (val: any) => {
