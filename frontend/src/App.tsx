@@ -55,7 +55,7 @@ interface Diagnostics {
   scans: { ok: number; failed: number }
 }
 
-const API_BASE = 'http://localhost:8000/api'
+const API_BASE = 'https://quant-alpha-7dot.onrender.com'
 
 export default function App() {
   const [data, setData] = useState<DashboardData[]>([])
