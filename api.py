@@ -11,6 +11,9 @@ from indicators import add_indicators
 
 app = FastAPI(title="Quant Alpha API", version="1.0")
 
+# Global state to track real-time scan progress
+scan_state = {"status": "idle", "current": 0, "total": 0, "ticker": ""}
+
 # Allow CORS for React frontend (Vite defaults to 5173)
 app.add_middleware(
     CORSMiddleware,
@@ -55,14 +58,29 @@ def get_diagnostics():
 
 @app.post("/api/scan")
 def trigger_scan(background_tasks: BackgroundTasks):
+    global scan_state
+    scan_state = {"status": "scanning", "current": 0, "total": 0, "ticker": "Starting..."}
+
+    def progress_cb(current, total, ticker):
+        scan_state["current"] = current + 1
+        scan_state["total"] = total
+        scan_state["ticker"] = ticker
+
     def background_scan():
         try:
-            run_scanner()
+            run_scanner(progress_callback=progress_cb)
+            scan_state["status"] = "completed"
         except Exception as e:
             print(f"Background scan failed: {e}")
+            scan_state["status"] = "failed"
+            scan_state["ticker"] = str(e)
             
     background_tasks.add_task(background_scan)
     return {"message": "Scan triggered in background"}
+
+@app.get("/api/scan/progress")
+def get_scan_progress():
+    return scan_state
 
 @app.get("/api/chart/{ticker}")
 def get_chart_data(ticker: str, period: str = "1y", interval: str = "1d"):

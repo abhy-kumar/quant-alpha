@@ -68,6 +68,7 @@ export default function App() {
 
   // Scan state
   const [isScanning, setIsScanning] = useState(false)
+  const [scanProgress, setScanProgress] = useState({ current: 0, total: 0, ticker: "", status: "idle" })
 
   // Toggles
   const [horizon, setHorizon] = useState<'short' | 'long'>('short')
@@ -138,8 +139,20 @@ export default function App() {
     let interval: ReturnType<typeof setInterval>
     if (isScanning) {
       interval = setInterval(async () => {
-        await fetchData()
-      }, 10000) // Poll every 10 seconds
+        try {
+          const progRes = await axios.get(`${API_BASE}/scan/progress`)
+          setScanProgress(progRes.data)
+          
+          if (progRes.data.status === 'completed' || progRes.data.status === 'idle') {
+            await fetchData()
+          } else if (progRes.data.status === 'failed') {
+            alert(`Scan failed: ${progRes.data.ticker}`)
+            setIsScanning(false)
+          }
+        } catch (err) {
+          console.error("Progress fetch failed", err)
+        }
+      }, 1500) // Poll every 1.5 seconds for live telemetry
     }
     return () => clearInterval(interval)
   }, [isScanning])
@@ -298,10 +311,34 @@ export default function App() {
             </div>
           </div>
         ) : isScanning || data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-96 gap-6">
+          <div className="flex flex-col items-center justify-center h-96 gap-6 max-w-md mx-auto">
             <RefreshCw size={48} className="animate-spin text-brand opacity-80" />
+            
+            {scanProgress.total > 0 ? (
+              <div className="w-full flex flex-col gap-2">
+                <div className="flex justify-between text-xs font-mono uppercase tracking-widest text-muted">
+                  <span>{scanProgress.ticker}</span>
+                  <span>{scanProgress.current} / {scanProgress.total}</span>
+                </div>
+                <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
+                  <div 
+                    className="bg-brand h-1.5 rounded-full transition-all duration-300 ease-out" 
+                    style={{ width: `${Math.min(100, Math.max(0, (scanProgress.current / scanProgress.total) * 100))}%` }}
+                  ></div>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
+                <div className="bg-brand h-1.5 w-full rounded-full animate-progress origin-left"></div>
+              </div>
+            )}
+
             <div className="font-mono text-muted text-sm uppercase tracking-widest text-center animate-pulse">
-              Initializing Market Scan...<br/>
+              {scanProgress.status === "failed" ? (
+                <span className="text-red-500">Scan Failed! Check Backend Logs</span>
+              ) : (
+                "Initializing Market Scan..."
+              )}<br/>
               <span className="text-primary/50 text-xs mt-2 block">Fetching live data from Yahoo Finance. This usually takes 60 seconds.</span>
             </div>
           </div>
