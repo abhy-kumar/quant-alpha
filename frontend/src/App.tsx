@@ -250,11 +250,18 @@ export default function App() {
             {activeTab === 'picks' && (
               <div className="space-y-12">
                 <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                  <div>
-                    <h2 className="font-display font-semibold text-3xl mb-2 tracking-wide text-primary">
-                      High Conviction Signals
-                    </h2>
-                    <p className="font-mono text-muted text-sm max-w-2xl mt-2">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-1.5 bg-brand rounded-full shadow-[0_0_10px_rgba(225,29,72,0.5)]"></div>
+                      <h2 className="font-display font-bold text-3xl tracking-wide text-primary flex items-center gap-4">
+                        High Conviction Signals
+                        <span className="flex h-2.5 w-2.5 relative">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand"></span>
+                        </span>
+                      </h2>
+                    </div>
+                    <p className="font-mono text-muted text-sm max-w-2xl pl-4 border-l-2 border-border/60">
                       Top 3 algorithmic picks automatically ranked by your selected investment horizon.
                     </p>
                   </div>
