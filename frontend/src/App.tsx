@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import axios from 'axios'
-import { Activity, Database, TrendingUp, BarChart2, Layers, Search, AlertCircle, Moon, Sun, Info, RefreshCw } from 'lucide-react'
+import { Activity, Database, TrendingUp, BarChart2, Layers, Search, Moon, Sun, Info, RefreshCw } from 'lucide-react'
 import {
   ComposedChart,
   Line,
@@ -135,7 +135,7 @@ export default function App() {
 
   // Polling effect while scanning
   useEffect(() => {
-    let interval: NodeJS.Timeout
+    let interval: ReturnType<typeof setInterval>
     if (isScanning) {
       interval = setInterval(async () => {
         await fetchData()
