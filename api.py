@@ -64,10 +64,10 @@ def trigger_scan(background_tasks: BackgroundTasks):
     return {"message": "Scan triggered in background"}
 
 @app.get("/api/chart/{ticker}")
-def get_chart_data(ticker: str):
+def get_chart_data(ticker: str, period: str = "1y"):
     try:
         t = yf.Ticker(ticker)
-        df_price = t.history(period="1y", interval="1d", auto_adjust=True)
+        df_price = t.history(period=period, interval="1d", auto_adjust=True)
         if df_price.empty:
             raise HTTPException(status_code=404, detail="No data found for ticker")
         

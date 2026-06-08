@@ -60,15 +60,75 @@ def _fetch_ohlcv(ticker: str) -> pd.DataFrame:
     return df
 
 
+from bs4 import BeautifulSoup
+import re
+
 def _fetch_info(ticker: str) -> dict:
+    info = {}
     try:
         t = yf.Ticker(ticker, session=_YF_SESSION)
-        info = t.info
-        if not info:
-            return {}
-        return info
+        info = t.info or {}
     except Exception:
-        return {}
+        pass
+
+    # Fallback to Screener.in for critical missing fundamental data on Indian equities
+    sym = ticker.replace('.NS', '').replace('.BO', '')
+    try:
+        url = f"https://www.screener.in/company/{sym}/consolidated/"
+        resp = _YF_SESSION.get(url, timeout=5)
+        if resp.status_code != 200:
+            url = f"https://www.screener.in/company/{sym}/"
+            resp = _YF_SESSION.get(url, timeout=5)
+            
+        if resp.status_code == 200:
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            
+            # Scrape top ratios
+            ratios = soup.select('ul#top-ratios li')
+            for r in ratios:
+                name_elem = r.find('span', class_='name')
+                val_elem = r.find('span', class_='number')
+                if name_elem and val_elem:
+                    name = name_elem.text.strip().lower()
+                    val_str = val_elem.text.strip().replace(',', '')
+                    try:
+                        val = float(val_str)
+                    except ValueError:
+                        continue
+                        
+                    if 'market cap' in name and pd.isna(_safe_float(info.get('marketCap'))):
+                        info['marketCap'] = val * 10000000 # Screener is in Crores
+                    elif 'stock p/e' in name and pd.isna(_safe_float(info.get('trailingPE'))):
+                        info['trailingPE'] = val
+                    elif 'roce' in name and pd.isna(_safe_float(info.get('returnOnEquity'))):
+                        # Use ROCE as fallback for ROE
+                        info['returnOnEquity'] = val / 100.0
+                    elif 'roe' in name and pd.isna(_safe_float(info.get('returnOnEquity'))):
+                        info['returnOnEquity'] = val / 100.0
+                    elif 'dividend yield' in name and pd.isna(_safe_float(info.get('dividendYield'))):
+                        info['dividendYield'] = val / 100.0
+
+            # Scrape peers table for Debt to Equity
+            peers_table = soup.find('table', class_='data-table')
+            if peers_table:
+                headers = [th.text.strip().lower() for th in peers_table.find_all('th')]
+                debt_idx = next((i for i, h in enumerate(headers) if 'debt to eq' in h), -1)
+                
+                if debt_idx != -1 and pd.isna(_safe_float(info.get('debtToEquity'))):
+                    rows = peers_table.find('tbody').find_all('tr')
+                    for row in rows:
+                        cells = row.find_all('td')
+                        if len(cells) > 1 and sym.lower() in cells[1].text.strip().lower():
+                            debt_val = cells[debt_idx].text.strip().replace(',', '')
+                            try:
+                                info['debtToEquity'] = float(debt_val) * 100.0 # yfinance is 0-100 scale
+                            except ValueError:
+                                pass
+                            break
+    except Exception as e:
+        pass
+
+    return info
 
 
 def _safe_float(val, default=np.nan) -> float:
