@@ -6,7 +6,7 @@
 
 <br />
 
-## ✨ Purpose & Impact
+## Purpose & Impact
 
 The Quantitative Alpha dashboard bridges the gap between raw financial data and actionable trading insights. By leveraging robust algorithms and deep fundamental screening, it empowers the Alpha Research and Investment Club to make objective, data-driven investment decisions.
 
@@ -14,14 +14,14 @@ Our goal is to remove emotional bias from equity research. This platform democra
 
 Whether identifying short-term momentum or long-term value, the platform ensures that every conviction is backed by rigorous mathematics.
 
-## 🚀 Key Features
+## Key Features
 
 - **Algorithmic Signal Generation**: Automated scoring using RSI, MACD, Bollinger Bands, and Supertrend.
 - **Fundamental Screening**: Real-time integration of P/E ratios, ROE, and Debt-to-Equity metrics.
 - **Dynamic Charting**: Interactive price and volume charts natively integrated.
 - **Sector Heatmaps**: Visual dispersion of market performance across different equity sectors.
 
-## 🏗 Architecture
+## Architecture
 
 The platform runs on a modern, decoupled architecture designed for maximum speed and zero maintenance costs:
 
@@ -30,7 +30,7 @@ The platform runs on a modern, decoupled architecture designed for maximum speed
 - **Data Delivery**: Automated static JSON artifacts served directly to the client via GitHub Actions
 - **Serverless API**: Vercel Serverless Functions for real-time charting data
 
-## 💻 Local Setup
+## Local Setup
 
 Want to run the platform locally? You just need Node.js and Python installed.
 
