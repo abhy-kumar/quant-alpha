@@ -17,7 +17,7 @@
 
 The Quantitative Alpha dashboard bridges the gap between raw financial data and actionable trading insights. By leveraging robust algorithms and deep fundamental screening, it empowers the Alpha Research and Investment Club to make objective, data-driven investment decisions.
 
-Our goal is to remove emotional bias from equity research. This platform democratizes institutional-grade quantitative strategies—combining momentum signals, technical breakouts, and fundamental value scores—into a sleek, zero-latency dashboard. 
+Our goal is to remove emotional bias from equity research. This platform democratizes institutional-grade quantitative strategies - combining momentum signals, technical breakouts, and fundamental value scores - into a sleek, zero-latency dashboard. 
 
 Whether identifying short-term momentum or long-term value, the platform ensures that every conviction is backed by rigorous mathematics.
 

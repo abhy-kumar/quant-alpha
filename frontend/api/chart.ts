@@ -5,9 +5,13 @@ const yahooFinance = new YahooFinance()
 
 function periodToStart(period, end) {
   const start = new Date(end)
-  if (period === '1y') start.setFullYear(end.getFullYear() - 1)
+  if (period === '1w') start.setDate(end.getDate() - 7)
+  else if (period === '1mo') start.setMonth(end.getMonth() - 1)
   else if (period === '3mo') start.setMonth(end.getMonth() - 3)
-  else if (period === '5d') start.setDate(end.getDate() - 5)
+  else if (period === '6mo') start.setMonth(end.getMonth() - 6)
+  else if (period === '1y') start.setFullYear(end.getFullYear() - 1)
+  else if (period === '2y') start.setFullYear(end.getFullYear() - 2)
+  else if (period === '5y') start.setFullYear(end.getFullYear() - 5)
   else start.setMonth(end.getMonth() - 1)
   return start
 }
@@ -51,8 +55,13 @@ export async function fetchChartData(ticker, period = '1mo', interval = '1d') {
   const end = new Date()
   const start = periodToStart(period, end)
 
+  // Fetch extra data to prime the SMAs (200 periods)
+  // 1wk interval requires ~4 extra years, 1d interval requires ~1 extra year
+  const paddingDays = interval === '1wk' ? 200 * 7 : 200 * 1.5;
+  const extendedStart = new Date(start.getTime() - paddingDays * 24 * 60 * 60 * 1000)
+
   const result = await yahooFinance.chart(ticker, {
-    period1: start,
+    period1: extendedStart,
     period2: end,
     interval,
   })
@@ -63,7 +72,7 @@ export async function fetchChartData(ticker, period = '1mo', interval = '1d') {
   const sma200 = rollingMean(closes, 200)
   const rsi = computeRsi(closes, 14)
 
-  return quotes.map((quote, index) => ({
+  const fullData = quotes.map((quote, index) => ({
     time: quote.date.toISOString().split('T')[0],
     open: quote.open ?? null,
     high: quote.high ?? null,
@@ -75,6 +84,9 @@ export async function fetchChartData(ticker, period = '1mo', interval = '1d') {
     sma200: sma200[index],
     rsi: rsi[index],
   }))
+
+  const startTimeStr = start.toISOString().split('T')[0]
+  return fullData.filter(d => d.time >= startTimeStr)
 }
 
 export default async function handler(req, res) {
