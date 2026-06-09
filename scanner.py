@@ -83,13 +83,6 @@ def _fetch_info(ticker: str) -> dict:
         if resp.status_code == 200:
             soup = BeautifulSoup(resp.text, 'html.parser')
             
-            # Scrape Sector and Industry overrides from Screener
-            market_links = [a.text.strip() for a in soup.find_all('a') if a.get('href', '').startswith('/market/')]
-            if market_links:
-                info['sector'] = market_links[0]
-                if len(market_links) > 1:
-                    info['industry'] = market_links[-1]
-            
             # Scrape top ratios
             ratios = soup.select('ul#top-ratios li')
             for r in ratios:
