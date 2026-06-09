@@ -18,7 +18,7 @@ import {
 interface DashboardData {
   Ticker: string
   Sector: string
-  LTP: number
+  Price: number
   Prev_Close: number
   RSI_Value: number
   MACD_Value: number
@@ -105,7 +105,6 @@ export default function App() {
              if (livePrices[d.Ticker]) {
                  return {
                      ...d,
-                     LTP: livePrices[d.Ticker].price || d.LTP,
                      Price: livePrices[d.Ticker].price || d.Price,
                      "1d_Chg_%": livePrices[d.Ticker].change_pct !== undefined ? livePrices[d.Ticker].change_pct : d["1d_Chg_%"]
                  }
@@ -416,7 +415,7 @@ export default function App() {
                           >
                             <td className="p-4 text-primary font-medium cursor-pointer" onClick={() => handleHeatmapClick(row.Ticker)}>{row.Ticker.replace('.NS', '')}</td>
                             <td className="p-4 text-muted">{row.Sector || '-'}</td>
-                            <td className="p-4 text-right text-muted">{num(row.LTP)}</td>
+                            <td className="p-4 text-right text-muted">{num(row.Price)}</td>
                             <td className={`p-4 text-right font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
                             <td className={`p-4 text-right font-medium ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
                             <td className="p-4 text-right text-muted">{num(row['P/E'])}</td>
