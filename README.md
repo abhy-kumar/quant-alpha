@@ -9,8 +9,6 @@
 
 <div align="center">
   <img src="assets/dashboard-preview.png" alt="Quantitative Alpha Dashboard" width="800" />
-  <br />
-  <em>(Replace `assets/dashboard-preview.png` with a screenshot of the dashboard)</em>
 </div>
 
 <br />
