@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="assets/fmsLogo.svg" alt="FMS Logo" width="100" height="100" />
   <h1>Quantitative Alpha</h1>
   <p><strong>A modern, decoupled intelligence platform for Indian equities.</strong></p>
   <p>Built for the Alpha Research and Investment Club, FMS Delhi.</p>
@@ -6,7 +7,15 @@
 
 <br />
 
-## Purpose & Impact
+<div align="center">
+  <img src="assets/dashboard-preview.png" alt="Quantitative Alpha Dashboard" width="800" />
+  <br />
+  <em>(Replace `assets/dashboard-preview.png` with a screenshot of the dashboard)</em>
+</div>
+
+<br />
+
+## <img src="https://unpkg.com/lucide-static@0.321.0/icons/target.svg" width="24" height="24" align="top" /> Purpose & Impact
 
 The Quantitative Alpha dashboard bridges the gap between raw financial data and actionable trading insights. By leveraging robust algorithms and deep fundamental screening, it empowers the Alpha Research and Investment Club to make objective, data-driven investment decisions.
 
@@ -14,14 +23,14 @@ Our goal is to remove emotional bias from equity research. This platform democra
 
 Whether identifying short-term momentum or long-term value, the platform ensures that every conviction is backed by rigorous mathematics.
 
-## Key Features
+## <img src="https://unpkg.com/lucide-static@0.321.0/icons/zap.svg" width="24" height="24" align="top" /> Key Features
 
 - **Algorithmic Signal Generation**: Automated scoring using RSI, MACD, Bollinger Bands, and Supertrend.
 - **Fundamental Screening**: Real-time integration of P/E ratios, ROE, and Debt-to-Equity metrics.
 - **Dynamic Charting**: Interactive price and volume charts natively integrated.
 - **Sector Heatmaps**: Visual dispersion of market performance across different equity sectors.
 
-## Architecture
+## <img src="https://unpkg.com/lucide-static@0.321.0/icons/layers.svg" width="24" height="24" align="top" /> Architecture
 
 The platform runs on a modern, decoupled architecture designed for maximum speed and zero maintenance costs:
 
@@ -30,7 +39,7 @@ The platform runs on a modern, decoupled architecture designed for maximum speed
 - **Data Delivery**: Automated static JSON artifacts served directly to the client via GitHub Actions
 - **Serverless API**: Vercel Serverless Functions for real-time charting data
 
-## Local Setup
+## <img src="https://unpkg.com/lucide-static@0.321.0/icons/terminal.svg" width="24" height="24" align="top" /> Local Setup
 
 Want to run the platform locally? You just need Node.js and Python installed.
 
