@@ -1,50 +1,67 @@
-# Quantitative Alpha Stock Dashboard
+<div align="center">
+  <h1>Quantitative Alpha</h1>
+  <p><strong>A modern, decoupled intelligence platform for Indian equities.</strong></p>
+  <p>Built for the Alpha Research and Investment Club, FMS Delhi.</p>
+</div>
 
-Indian equity intelligence platform built for the  
-**Alpha Research and Investment Club, FMS Delhi**.
+<br />
 
-## Architecture
+## ✨ Purpose & Impact
 
-This application is a modern, decoupled Full Stack Web Application:
+The Quantitative Alpha dashboard bridges the gap between raw financial data and actionable trading insights. By leveraging robust algorithms and deep fundamental screening, it empowers the Alpha Research and Investment Club to make objective, data-driven investment decisions.
 
-| Component | Technology |
-|---|---|
-| **Frontend** | React, Vite, Tailwind CSS, Recharts |
-| **Backend** | FastAPI, Python |
-| **Database** | SQLite (`scanner.db`) |
-| **Market Data** | `yfinance` (historical pricing), `BeautifulSoup` (fundamental scraping via Screener.in) |
-| **Math / Algos** | `pandas`, `numpy` (RSI, MACD, Bollinger, ATR, ADX, Supertrend) |
+Our goal is to remove emotional bias from equity research. This platform democratizes institutional-grade quantitative strategies—combining momentum signals, technical breakouts, and fundamental value scores—into a sleek, zero-latency dashboard. 
 
-## Running Locally
+Whether identifying short-term momentum or long-term value, the platform ensures that every conviction is backed by rigorous mathematics.
 
-Because the architecture is decoupled, you need to start two separate servers to run the app locally.
+## 🚀 Key Features
 
-### 1. Start the Backend API (Terminal 1)
+- **Algorithmic Signal Generation**: Automated scoring using RSI, MACD, Bollinger Bands, and Supertrend.
+- **Fundamental Screening**: Real-time integration of P/E ratios, ROE, and Debt-to-Equity metrics.
+- **Dynamic Charting**: Interactive price and volume charts natively integrated.
+- **Sector Heatmaps**: Visual dispersion of market performance across different equity sectors.
+
+## 🏗 Architecture
+
+The platform runs on a modern, decoupled architecture designed for maximum speed and zero maintenance costs:
+
+- **Frontend**: React, Vite, Tailwind CSS, Recharts
+- **Data Engine**: Python (`pandas`, `numpy`, `yfinance`)
+- **Data Delivery**: Automated static JSON artifacts served directly to the client via GitHub Actions
+- **Serverless API**: Vercel Serverless Functions for real-time charting data
+
+## 💻 Local Setup
+
+Want to run the platform locally? You just need Node.js and Python installed.
+
+### 1. Generate the Market Data
+First, run the Python engine to fetch the latest market data and generate the static JSON artifact.
+
 ```bash
+# Create and activate a virtual environment
 python -m venv venv
 .\venv\Scripts\activate        # Windows
+# source venv/bin/activate     # Mac/Linux
+
+# Install dependencies
 pip install -r requirements.txt
 
-# Run the database scan to fetch the latest data
+# Run the data scanner (This will update the data for the UI)
 python scanner.py
-
-# Start the FastAPI server
-uvicorn api:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 2. Start the Frontend UI (Terminal 2)
+### 2. Start the UI
+Once the data scanner finishes, start the React frontend.
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Navigate to `http://localhost:5173` in your browser to view the dashboard!
 
-## Deployment
+Navigate to `http://localhost:5173` in your browser to view your local dashboard!
 
-See the [Deployment Guide](deployment_guide.md) for full instructions on how to host this platform online for free.
-
-**Quick Summary:**
-1. Deploy the backend to **Render.com** (Web Service, Python 3). Attach a persistent disk if you want to save SQLite history across reboots.
-2. Update the `API_BASE` URL in `frontend/src/App.tsx` to point to your new Render URL.
-3. Deploy the frontend to **Vercel.com**.
+---
+<div align="center">
+  <sub>Made with ♥ by Abhishek Kumar</sub>
+</div>
