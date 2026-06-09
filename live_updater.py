@@ -96,7 +96,8 @@ def update_live_prices():
     except Exception as e:
         logger.warning(f"Could not process Nifty data: {e}")
 
-    market_data["last_updated"] = datetime.now(IST).strftime("%Y-%m-%d %I:%M %p IST")
+    now_time = datetime.now(IST)
+    market_data["last_updated"] = now_time.strftime("%Y-%m-%d %I:%M %p IST")
     market_data["is_dynamic"] = True
     if nifty_data:
         market_data["nifty_50"] = nifty_data
@@ -106,6 +107,44 @@ def update_live_prices():
         json.dump(market_data, f, indent=2)
         
     logger.info(f"Updated {updates_count} tickers. Nifty 50: {nifty_data}")
+    
+    # Save live prices to database
+    try:
+        import sqlite3
+        os.makedirs("data", exist_ok=True)
+        conn = sqlite3.connect("data/market_scans.db")
+        cursor = conn.cursor()
+        
+        # Create table if not exists
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS live_prices (
+                Ticker TEXT,
+                Timestamp TEXT,
+                Price REAL,
+                Change_Pct REAL
+            )
+        ''')
+        
+        timestamp_str = now_time.strftime("%Y-%m-%d %H:%M:%S")
+        records_to_insert = []
+        
+        for row in market_data.get("data", []):
+            if "Price" in row and "1d_Chg_%" in row and "Ticker" in row:
+                records_to_insert.append((row["Ticker"], timestamp_str, row["Price"], row["1d_Chg_%"]))
+                
+        if nifty_data:
+            records_to_insert.append(("^NSEI", timestamp_str, nifty_data["price"], nifty_data["change_pct"]))
+            
+        cursor.executemany(
+            "INSERT INTO live_prices (Ticker, Timestamp, Price, Change_Pct) VALUES (?, ?, ?, ?)",
+            records_to_insert
+        )
+        
+        conn.commit()
+        conn.close()
+        logger.info(f"Inserted {len(records_to_insert)} live prices into database.")
+    except Exception as e:
+        logger.error(f"Failed to save live prices to database: {e}")
 
 if __name__ == "__main__":
     update_live_prices()

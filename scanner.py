@@ -401,11 +401,28 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         }
         
         import os
+        import sqlite3
+        
         os.makedirs("frontend/public", exist_ok=True)
         with open("frontend/public/market_data.json", "w") as f:
             json.dump(output_data, f, indent=2)
 
         print(f"Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
+        
+        # Save to database
+        try:
+            os.makedirs("data", exist_ok=True)
+            conn = sqlite3.connect("data/market_scans.db")
+            
+            # Prepare dataframe for SQL
+            sql_df = result_df.copy()
+            sql_df["Scan_Date"] = scan_time.strftime("%Y-%m-%d %H:%M:%S")
+            
+            sql_df.to_sql("historical_scans", conn, if_exists="append", index=False)
+            conn.close()
+            print(f"Successfully appended {len(sql_df)} records to historical_scans database.")
+        except Exception as e:
+            print(f"Failed to save to database: {e}")
 
     return result_df
 
