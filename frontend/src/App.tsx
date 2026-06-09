@@ -60,7 +60,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'picks' | 'fundamentals' | 'charting' | 'heatmap'>('picks')
   
   // Theme state
-  const [isDark, setIsDark] = useState(true)
+  const [isDark, setIsDark] = useState(false)
 
   // Toggles
   const [horizon, setHorizon] = useState<'short' | 'long'>('short')
