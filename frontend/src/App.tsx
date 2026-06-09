@@ -57,6 +57,8 @@ export default function App() {
   const [data, setData] = useState<DashboardData[]>([])
   const [lastUpdated, setLastUpdated] = useState<string>('')
   const [loading, setLoading] = useState(true)
+  const [niftyData, setNiftyData] = useState<{price: number, change_pct: number, is_up: boolean} | null>(null)
+  const [isDynamic, setIsDynamic] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<'picks' | 'fundamentals' | 'charting' | 'heatmap'>('picks')
   
   // Theme state
@@ -92,6 +94,8 @@ export default function App() {
       if (res.data.status === 'ok' && res.data.data.length > 0) {
         setData(res.data.data)
         setLastUpdated(res.data.last_updated || 'Unknown')
+        if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
+        setIsDynamic(res.data.is_dynamic || false)
         if (!selectedTicker) setSelectedTicker(res.data.data[0].Ticker)
         setLoading(false)
         return true
@@ -105,6 +109,8 @@ export default function App() {
 
   useEffect(() => {
     fetchData()
+    const intervalId = setInterval(fetchData, 3 * 60 * 1000) // Poll every 3 minutes
+    return () => clearInterval(intervalId)
   }, [])
 
   // Fetch chart data via Vercel Serverless Function
@@ -194,9 +200,14 @@ export default function App() {
           <h1 className="font-display font-semibold text-2xl uppercase tracking-wider text-primary">
             Quantitative <span className="text-brand">Alpha</span>
           </h1>
-          <p className="font-mono text-[10px] text-sub tracking-widest mt-1 uppercase">
-            Alpha Research & Investment Club | FMS Delhi
-          </p>
+          <div className="font-mono text-[10px] text-sub tracking-widest mt-2 uppercase flex flex-col sm:flex-row sm:items-center gap-2">
+            <span>Alpha Research & Investment Club | FMS Delhi</span>
+            {niftyData && (
+              <span className={`px-2 py-0.5 rounded-sm bg-card border border-border font-semibold flex items-center gap-1 w-fit ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
+                NIFTY 50: {niftyData.price} ({niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%)
+              </span>
+            )}
+          </div>
         </div>
         
         <div className="flex gap-2 items-center">
@@ -698,7 +709,10 @@ export default function App() {
               </div>
               <div className="flex justify-between text-xs font-mono uppercase tracking-wider text-muted border-t border-border/50 pt-2">
                 <span className="flex items-center gap-2"><Activity size={12} /> Last Updated</span>
-                <span className="text-primary">{lastUpdated}</span>
+                <span className="text-primary text-right flex flex-col items-end">
+                  {lastUpdated} 
+                  {isDynamic && <span className="text-[10px] text-brand ml-1">(Dynamic)</span>}
+                </span>
               </div>
             </div>
           </div>
