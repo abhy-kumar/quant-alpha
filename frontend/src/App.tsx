@@ -86,6 +86,44 @@ export default function App() {
     }
   }, [isDark])
 
+  const dataRef = React.useRef<DashboardData[]>([])
+  useEffect(() => {
+    dataRef.current = data
+  }, [data])
+
+  const fetchLiveData = async () => {
+    const currentData = dataRef.current
+    if (!currentData || currentData.length === 0) return
+
+    try {
+      const tickers = currentData.map(d => d.Ticker)
+      const res = await axios.post('/api/live_data', { tickers })
+      
+      if (res.data.status === 'ok') {
+         const livePrices = res.data.data
+         const updatedData = currentData.map(d => {
+             if (livePrices[d.Ticker]) {
+                 return {
+                     ...d,
+                     LTP: livePrices[d.Ticker].price || d.LTP,
+                     Price: livePrices[d.Ticker].price || d.Price,
+                     "1d_Chg_%": livePrices[d.Ticker].change_pct !== undefined ? livePrices[d.Ticker].change_pct : d["1d_Chg_%"]
+                 }
+             }
+             return d
+         })
+         setData(updatedData)
+         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
+         
+         const now = new Date()
+         setLastUpdated(now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) + ' IST')
+         setIsDynamic(true)
+      }
+    } catch(err) {
+       console.error("Failed to fetch live data", err)
+    }
+  }
+
   // Fetch static data
   const fetchData = async () => {
     try {
@@ -108,8 +146,19 @@ export default function App() {
   }
 
   useEffect(() => {
-    fetchData()
-    const intervalId = setInterval(fetchData, 3 * 60 * 1000) // Poll every 3 minutes
+    const init = async () => {
+      const success = await fetchData()
+      if (success) {
+        // After loading static data, fetch the very latest prices
+        setTimeout(() => fetchLiveData(), 1000)
+      }
+    }
+    init()
+    
+    const intervalId = setInterval(() => {
+      fetchLiveData()
+    }, 3 * 60 * 1000) // Poll API every 3 minutes
+    
     return () => clearInterval(intervalId)
   }, [])
 
