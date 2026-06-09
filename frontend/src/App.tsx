@@ -484,8 +484,10 @@ export default function App() {
                 <div className="w-full xl:w-3/4 flex flex-col gap-6">
                   
                   {/* Period & Interval Toggles */}
-                  <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4">
-                    <div className="flex bg-card border border-border p-1 rounded-sm shadow-sm w-fit">
+                  <div className="flex flex-col gap-2">
+                    <label className="font-mono text-xs uppercase tracking-widest text-sub hidden sm:block">Timeframe</label>
+                    <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4">
+                      <div className="flex bg-card border border-border p-1 rounded-sm shadow-sm w-fit">
                       {['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => (
                         <button 
                           key={p}
@@ -512,8 +514,9 @@ export default function App() {
                         </button>
                     </div>
                   </div>
+                </div>
 
-                  {/* Chart Container */}
+                {/* Chart Container */}
                   <div className="flex flex-col gap-6">
                     
                     {/* Main Price & Volume Chart */}
@@ -684,9 +687,9 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-border mt-12 py-12 px-10 bg-card">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 items-start">
           
-          <div className="mt-8 flex flex-col gap-6 w-full max-w-xs opacity-80">
+          <div className="flex flex-col gap-6 w-full max-w-xs opacity-80">
             <div className="flex flex-col gap-2 border border-border bg-card p-4 rounded-sm shadow-sm">
               <h4 className="font-mono text-brand text-xs uppercase tracking-widest font-bold">System Status</h4>
               <div className="flex justify-between text-xs font-mono uppercase tracking-wider text-muted mt-2">
@@ -709,7 +712,7 @@ export default function App() {
             </p>
           </div>
 
-          <div className="text-right flex flex-col justify-end h-full">
+          <div className="text-right flex flex-col pt-2 h-full">
              <p className="font-mono text-xs text-muted">Alpha Research and Investment Club<br/>FMS Delhi</p>
              <p className="font-mono text-[10px] text-sub mt-4 tracking-widest uppercase">Made with &hearts; by Abhishek Kumar</p>
           </div>
