@@ -83,6 +83,13 @@ def _fetch_info(ticker: str) -> dict:
         if resp.status_code == 200:
             soup = BeautifulSoup(resp.text, 'html.parser')
             
+            # Scrape Sector and Industry overrides from Screener
+            market_links = [a.text.strip() for a in soup.find_all('a') if a.get('href', '').startswith('/market/')]
+            if market_links:
+                info['sector'] = market_links[0]
+                if len(market_links) > 1:
+                    info['industry'] = market_links[-1]
+            
             # Scrape top ratios
             ratios = soup.select('ul#top-ratios li')
             for r in ratios:
@@ -311,34 +318,50 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             score = (bull - bear) / len(signals)
 
             # ── Fundamentals ──────────────────────────────────────────────────
+            is_etf = "BEES" in ticker.upper() or "ETF" in ticker.upper()
+
             roe_pct       = round((_safe_float(info.get("returnOnEquity"), 0)) * 100, 2)
+            
             pe            = _safe_float(info.get("trailingPE"))
+            if pd.isna(pe):
+                eps = _safe_float(info.get("trailingEps"))
+                if not pd.isna(eps) and eps < 0 and close > 0:
+                    pe = close / eps
+
             fwd_pe        = _safe_float(info.get("forwardPE"))
             debt_eq       = _safe_float(info.get("debtToEquity"))
             div_yield_pct = round((_safe_float(info.get("dividendYield"), 0)) * 100, 2)
             mkt_cap_b     = round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2)
             sharpe        = met["Sharpe"]
 
-            fund_score = _compute_fund_score(
-                roe_pct, pe, fwd_pe, debt_eq,
-                div_yield_pct, mkt_cap_b, sharpe
-            )
+            if is_etf:
+                sector = "ETF"
+                industry = "Exchange Traded Fund"
+                fund_score = 5  # Neutral fundamental score
+            else:
+                sector = info.get("sector", "Unknown") or "Unknown"
+                industry = info.get("industry", "Unknown") or "Unknown"
+                fund_score = _compute_fund_score(
+                    roe_pct, pe, fwd_pe, debt_eq,
+                    div_yield_pct, mkt_cap_b, sharpe
+                )
+                
             conviction = _conviction_rating(score, fund_score)
 
             rows.append({
                 # ── Identity ──────────────────────────────────────────────
                 "Ticker":           ticker.upper(),
-                "Sector":           info.get("sector",   "Unknown") or "Unknown",
-                "Industry":         info.get("industry", "Unknown") or "Unknown",
+                "Sector":           sector,
+                "Industry":         industry,
                 "Price":            round(close, 2),
                 "1d_Chg_%":        round(chg, 2),
                 # ── Fundamentals ──────────────────────────────────────────
-                "P/E":              pe,
-                "Forward_P/E":      fwd_pe,
-                "ROE_%":            roe_pct,
-                "Debt_to_Equity":   debt_eq,
-                "Div_Yield_%":      div_yield_pct,
-                "Market_Cap_B":     mkt_cap_b,
+                "P/E":              np.nan if is_etf else (pe if pd.isna(pe) else round(pe, 2)),
+                "Forward_P/E":      np.nan if is_etf else (fwd_pe if pd.isna(fwd_pe) else round(fwd_pe, 2)),
+                "ROE_%":            np.nan if is_etf else roe_pct,
+                "Debt_to_Equity":   np.nan if is_etf else debt_eq,
+                "Div_Yield_%":      np.nan if is_etf else div_yield_pct,
+                "Market_Cap_B":     np.nan if is_etf else mkt_cap_b,
                 "Fund_Score":       fund_score,
                 "Conviction":       conviction,
                 # ── Indicator values ──────────────────────────────────────
