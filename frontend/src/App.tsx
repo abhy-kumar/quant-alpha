@@ -220,10 +220,11 @@ export default function App() {
 
   const peerGroup = useMemo(() => {
     if (!selectedAsset || !selectedAsset.Sector || selectedAsset.Sector === 'Unknown') return []
-    return data
-      .filter(d => d.Sector === selectedAsset.Sector)
+    const peers = data
+      .filter(d => d.Sector === selectedAsset.Sector && d.Ticker !== selectedAsset.Ticker)
       .sort((a, b) => Number(b.Market_Cap_B || 0) - Number(a.Market_Cap_B || 0))
-      .slice(0, 6)
+      .slice(0, 5)
+    return [selectedAsset, ...peers]
   }, [data, selectedAsset])
 
   const num = (val: any) => (!isNaN(Number(val)) && val !== "" && val !== null ? Number(val).toFixed(2) : 'N/A')
