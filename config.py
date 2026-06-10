@@ -5,7 +5,7 @@ Configuration constants and magic numbers for the stock scanner.
 """
 
 # Scanner settings
-PERIOD = "1y"
+PERIOD = "2y"
 INTERVAL = "1d"
 MIN_ROWS = 50
 

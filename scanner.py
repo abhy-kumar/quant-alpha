@@ -23,7 +23,7 @@ from config import (
     CACHE_TTL_FUNDAMENTALS, CACHE_TTL_ATH, CACHE_TTL_SECTOR, CACHE_TTL_NEWS
 )
 from indicators import add_indicators, compute_metrics
-from nse_fetcher import get_liquid_universe
+from nse_fetcher import get_liquid_universe, download_bhav_copy, get_market_breadth
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from recommendation import compute_fund_score, compute_tech_score, get_conviction_rating
 
@@ -139,10 +139,16 @@ def _fetch_info(ticker: str) -> dict:
                             info['marketCap'] = val * 10000000
                         elif 'stock p/e' in name and pd.isna(_safe_float(info.get('trailingPE'))):
                             info['trailingPE'] = val
-                        elif 'roce' in name and pd.isna(_safe_float(info.get('returnOnEquity'))):
-                            info['returnOnEquity'] = val / 100.0
+                        elif 'roce' in name:
+                            info['roce'] = val
+                            if pd.isna(_safe_float(info.get('returnOnEquity'))):
+                                info['returnOnEquity'] = val / 100.0
                         elif 'roe' in name and pd.isna(_safe_float(info.get('returnOnEquity'))):
                             info['returnOnEquity'] = val / 100.0
+                        elif 'promoter holding' in name:
+                            info['promoter_holding'] = val
+                        elif 'pledged percentage' in name:
+                            info['promoter_pledging'] = val
                         elif 'dividend yield' in name and pd.isna(_safe_float(info.get('dividendYield'))):
                             info['dividendYield'] = val
 
@@ -150,18 +156,31 @@ def _fetch_info(ticker: str) -> dict:
                 if peers_table:
                     headers = [th.text.strip().lower() for th in peers_table.find_all('th')]
                     debt_idx = next((i for i, h in enumerate(headers) if 'debt to eq' in h), -1)
+                    pe_idx = next((i for i, h in enumerate(headers) if 'p/e' in h), -1)
+                    roe_idx = next((i for i, h in enumerate(headers) if 'roe' in h), -1)
                     
-                    if debt_idx != -1 and pd.isna(_safe_float(info.get('debtToEquity'))):
-                        rows = peers_table.find('tbody').find_all('tr')
-                        for row in rows:
-                            cells = row.find_all('td')
-                            if len(cells) > 1 and sym.lower() in cells[1].text.strip().lower():
-                                debt_val = cells[debt_idx].text.strip().replace(',', '')
-                                try:
-                                    info['debtToEquity'] = float(debt_val) * 100.0
-                                except ValueError:
-                                    pass
-                                break
+                    peers = []
+                    rows = peers_table.find('tbody').find_all('tr')
+                    for row in rows:
+                        cells = row.find_all('td')
+                        if len(cells) > 1:
+                            if sym.lower() in cells[1].text.strip().lower():
+                                if debt_idx != -1 and pd.isna(_safe_float(info.get('debtToEquity'))):
+                                    try: info['debtToEquity'] = float(cells[debt_idx].text.strip().replace(',', '')) * 100.0
+                                    except: pass
+                            else:
+                                peer_data = {}
+                                if pe_idx != -1:
+                                    try: peer_data['pe'] = float(cells[pe_idx].text.strip().replace(',', ''))
+                                    except: pass
+                                if roe_idx != -1:
+                                    try: peer_data['roe'] = float(cells[roe_idx].text.strip().replace(',', ''))
+                                    except: pass
+                                if debt_idx != -1:
+                                    try: peer_data['debt_eq'] = float(cells[debt_idx].text.strip().replace(',', '')) * 100.0
+                                    except: pass
+                                peers.append(peer_data)
+                    info['screener_peers'] = peers
         except Exception:
             screener_banned.set()
             
@@ -272,17 +291,12 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
 
     coverage_pct = round((len(raw_data) / total) * 100, 1) if total else 0
 
-    stocks_above_200 = 0
-    total_valid = len(raw_data)
-    for t, data in raw_data.items():
-        df = data["df"]
-        latest = df.iloc[-1]
-        if _safe_float(latest["Close"]) > _safe_float(latest["SMA_200"]):
-            stocks_above_200 += 1
-            
-    breadth_pct = (stocks_above_200 / total_valid) if total_valid else 0
-    if breadth_pct > 0.6: regime_score += 1
-    elif breadth_pct < 0.4: regime_score -= 1
+    bhav_df, _ = download_bhav_copy()
+    if not bhav_df.empty:
+        breadth = get_market_breadth(bhav_df)
+        breadth_pct = breadth.get("breadth_pct", 0.5)
+        if breadth_pct > 0.55: regime_score += 1
+        elif breadth_pct < 0.45: regime_score -= 1
 
     sector_data = {}
     rs_composites = []
@@ -297,7 +311,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         prev = df.iloc[-2]
         met = compute_metrics(df)
         
-        tech = compute_tech_score(latest, prev, df, nifty_df)
+        tech = compute_tech_score(latest, prev, df, nifty_df, fifty_two_high=_safe_float(info.get("fiftyTwoWeekHigh")))
         
         rs_score = 0.0
         rs_components = []
@@ -332,6 +346,11 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             if not np.isnan(pe): sector_data[sector]['pe'].append(pe)
             if not np.isnan(roe_pct): sector_data[sector]['roe'].append(roe_pct)
             if not np.isnan(debt_eq): sector_data[sector]['debt_eq'].append(debt_eq)
+            
+            for p in info.get("screener_peers", []):
+                if 'pe' in p: sector_data[sector]['pe'].append(p['pe'])
+                if 'roe' in p: sector_data[sector]['roe'].append(p['roe'])
+                if 'debt_eq' in p: sector_data[sector]['debt_eq'].append(p['debt_eq'])
             
         rows_intermediate.append({
             "ticker": ticker, "is_etf": is_etf, "sector": sector, "industry": industry,
@@ -381,12 +400,25 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             fund_score = compute_fund_score(
                 item["roe"], item["pe"], fwd_pe, item["debt_eq"],
                 div_yield_pct, mkt_cap_b, met["Sharpe"],
-                eps_growth, rev_growth, medians
+                eps_growth, rev_growth,
+                roce_pct=_safe_float(info.get("roce")),
+                promoter_holding=_safe_float(info.get("promoter_holding")),
+                promoter_pledging=_safe_float(info.get("promoter_pledging")),
+                sector_medians=medians
             )
             
         norm_tech = (score + 1) * 5
+        sentiment = _safe_float(info.get("news_sentiment"))
+        if sentiment > 0.5: norm_tech = min(10.0, norm_tech + 0.5)
+        elif sentiment < -0.5: norm_tech = max(0.0, norm_tech - 0.5)
+
         composite_score = (norm_tech * 0.6) + (fund_score * 0.4)
+        composite_score_tech = (norm_tech * 0.8) + (fund_score * 0.2)
+        composite_score_fund = (norm_tech * 0.3) + (fund_score * 0.7)
+
         item["composite_score"] = composite_score
+        item["composite_score_tech"] = composite_score_tech
+        item["composite_score_fund"] = composite_score_fund
         item["fund_score"] = fund_score
         item["final_tech"] = score
         item["rs_pctile"] = rs_pctile
@@ -441,6 +473,12 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             "All_Time_High":    item["ath"],
             "ATH_Source":       item["ath_source"],
             "Fund_Score":       round(item["fund_score"], 1),
+            "Composite_Score":  round(item["composite_score"], 2),
+            "Composite_Score_Tech": round(item["composite_score_tech"], 2),
+            "Composite_Score_Fund": round(item["composite_score_fund"], 2),
+            "ROCE_%":           np.nan if is_etf else _safe_float(info.get("roce")),
+            "Promoter_Holding_%": np.nan if is_etf else _safe_float(info.get("promoter_holding")),
+            "Promoter_Pledging_%": np.nan if is_etf else _safe_float(info.get("promoter_pledging")),
             "Conviction":       conviction,
             "RS_Percentile":    round(item["rs_pctile"], 1),
             "RSI_Value":        round(_safe_float(latest.get("RSI", np.nan)), 2),
@@ -509,16 +547,15 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
                 existing_cols = {col[1] for col in cursor.fetchall()}
                 for col in sql_df.columns:
                     if col not in existing_cols:
-                        cursor.execute(f'ALTER TABLE historical_scans ADD COLUMN "{col}" TEXT')
+                        dtype = "REAL"
+                        if sql_df[col].dtype == object: dtype = "TEXT"
+                        elif pd.api.types.is_integer_dtype(sql_df[col]): dtype = "INTEGER"
+                        cursor.execute(f'ALTER TABLE historical_scans ADD COLUMN "{col}" {dtype}')
             sql_df.to_sql("historical_scans", conn, if_exists="append", index=False)
             conn.close()
             log.info(f"Successfully appended {len(sql_df)} records to historical_scans database.")
         except Exception as e:
             log.error(f"Failed to save to database: {e}")
-
-        missing_aths = [row["Ticker"] for row in final_rows if row["ATH_Source"] == "52W"]
-        if missing_aths:
-            threading.Thread(target=_background_fetch_ath, args=(missing_aths,), daemon=True).start()
 
     return result_df
 

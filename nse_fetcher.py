@@ -113,7 +113,7 @@ def download_bhav_copy(max_lookback: int = 5) -> tuple[pd.DataFrame, datetime | 
                     df = df[df["SERIES"].str.strip() == "EQ"].copy()
                 # Normalise numeric columns
                 for col in ["OPEN_PRICE", "HIGH_PRICE", "LOW_PRICE",
-                             "CLOSE_PRICE", "TURNOVER_LACS", "TTL_TRD_QNTY"]:
+                             "CLOSE_PRICE", "PREVCLOSE", "PREV_CLOSE", "TURNOVER_LACS", "TTL_TRD_QNTY"]:
                     if col in df.columns:
                         df[col] = pd.to_numeric(df[col], errors="coerce")
                 return df, candidate
@@ -121,6 +121,33 @@ def download_bhav_copy(max_lookback: int = 5) -> tuple[pd.DataFrame, datetime | 
             continue
 
     return pd.DataFrame(), None
+
+
+def get_market_breadth(bhav_df: pd.DataFrame) -> dict:
+    """
+    Compute broad market breadth (Advances, Declines, Unchanged) 
+    from the full NSE Bhav Copy (approx 2000+ stocks).
+    """
+    if bhav_df.empty or "CLOSE_PRICE" not in bhav_df.columns:
+        return {"advances": 0, "declines": 0, "unchanged": 0, "breadth_pct": 0.5}
+        
+    prev_col = "PREVCLOSE" if "PREVCLOSE" in bhav_df.columns else "PREV_CLOSE" if "PREV_CLOSE" in bhav_df.columns else None
+    if not prev_col:
+        return {"advances": 0, "declines": 0, "unchanged": 0, "breadth_pct": 0.5}
+
+    advances = len(bhav_df[bhav_df["CLOSE_PRICE"] > bhav_df[prev_col]])
+    declines = len(bhav_df[bhav_df["CLOSE_PRICE"] < bhav_df[prev_col]])
+    unchanged = len(bhav_df[bhav_df["CLOSE_PRICE"] == bhav_df[prev_col]])
+    
+    total = advances + declines
+    breadth_pct = advances / total if total > 0 else 0.5
+    
+    return {
+        "advances": advances,
+        "declines": declines,
+        "unchanged": unchanged,
+        "breadth_pct": breadth_pct
+    }
 
 
 def get_liquid_universe(top_n: int = 150) -> list[str]:

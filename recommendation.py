@@ -12,6 +12,9 @@ def compute_fund_score(
     sharpe: float,
     eps_growth: float,
     rev_growth: float,
+    roce_pct: float = np.nan,
+    promoter_holding: float = np.nan,
+    promoter_pledging: float = np.nan,
     sector_medians: dict = None
 ) -> float:
     """
@@ -32,6 +35,11 @@ def compute_fund_score(
         else:
             if roe_pct >= 15: score += 1.5
             elif roe_pct >= 8: score += 0.5
+
+    # ── ROCE ──────────────────────────────────────────────────────────────────
+    if not np.isnan(roce_pct):
+        if roce_pct >= 20: score += 1.5
+        elif roce_pct >= 12: score += 0.5
 
     # ── Valuation / Growth (PEG & P/E) ───────────────────────────────────────
     if not np.isnan(pe) and not np.isnan(eps_growth) and eps_growth > 0:
@@ -75,10 +83,22 @@ def compute_fund_score(
     if not np.isnan(sharpe) and sharpe > 1.0:
         score += 1.0
 
+    # ── Promoter ─────────────────────────────────────────────────────────────
+    if not np.isnan(promoter_holding):
+        if promoter_holding > 50:
+            if not np.isnan(promoter_pledging) and promoter_pledging < 10:
+                score += 1.0
+            elif np.isnan(promoter_pledging):
+                score += 0.5
+                
+    if not np.isnan(promoter_pledging):
+        if promoter_pledging > 30:
+            score -= 1.5
+
     return min(float(score), 10.0)
 
 
-def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nifty_df: pd.DataFrame = None) -> dict:
+def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nifty_df: pd.DataFrame = None, fifty_two_high: float = np.nan) -> dict:
     """
     Evaluates technical indicators and returns a Tech Score between -1 and +1.
     """
@@ -91,8 +111,16 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
     sig_price_sma200   = 1 if close > sma200 else -1
     sig_sma50_sma200   = 1 if sma50  > sma200 else -1
 
+    st_dir        = _safe_float(latest.get("ST_Direction", np.nan), default=np.nan)
+    sig_supertrend = 0 if np.isnan(st_dir) else int(-st_dir)
+
+    bullish_regime = (sig_price_sma200 == 1 and sig_supertrend == 1)
+
     rsi = _safe_float(latest["RSI"])
-    sig_rsi = 1 if rsi < 30 else (-1 if rsi > 70 else 0)
+    if bullish_regime:
+        sig_rsi = 1 if 40 <= rsi <= 80 else (-1 if rsi < 40 or rsi > 80 else 0)
+    else:
+        sig_rsi = 1 if rsi < 30 else (-1 if rsi > 70 else 0)
 
     macd      = _safe_float(latest["MACD"])
     macd_sig  = _safe_float(latest["MACD_Signal"])
@@ -122,9 +150,6 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
         -1 if adx > 25 and minus_di > plus_di  else 0
     )
 
-    st_dir        = _safe_float(latest.get("ST_Direction", np.nan), default=np.nan)
-    sig_supertrend = 0 if np.isnan(st_dir) else int(-st_dir)
-
     vpt = _safe_float(latest.get("VPT", np.nan))
     vpt_ema = _safe_float(latest.get("VPT_EMA20", np.nan))
     sig_vpt = 1 if vpt > vpt_ema else (-1 if vpt < vpt_ema else 0)
@@ -132,6 +157,10 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
     span_a = _safe_float(latest.get("Ichimoku_SpanA", np.nan))
     span_b = _safe_float(latest.get("Ichimoku_SpanB", np.nan))
     sig_ichimoku = 1 if (close > span_a and close > span_b) else (-1 if (close < span_a and close < span_b) else 0)
+
+    sig_52w_high = 0
+    if not np.isnan(fifty_two_high) and fifty_two_high > 0:
+        sig_52w_high = 1 if (close / fifty_two_high) >= 0.95 else 0
 
     weighted_signals = [
         (sig_supertrend, 2.0),
@@ -141,11 +170,13 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
         (sig_ichimoku, 1.5),
         (sig_macd, 1.0),
         (sig_rsi, 1.0),
+        (sig_52w_high, 1.0),
         (sig_vpt, 1.0),
         (sig_price_sma50, 1.0),
-        (sig_stoch, 0.5),
-        (sig_cci, 0.5),
-        (sig_bb, 0.5),
+        (sig_vol, 0.5),
+        (sig_stoch, 0.25),
+        (sig_cci, 0.25),
+        (sig_bb, 0.25),
         (sig_macd_hist, 0.5)
     ]
 
@@ -200,15 +231,18 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
         "sig_adx": sig_adx,
         "sig_supertrend": sig_supertrend,
         "sig_vpt": sig_vpt,
-        "sig_ichimoku": sig_ichimoku
+        "sig_ichimoku": sig_ichimoku,
+        "sig_52w_high": sig_52w_high
     }
 
 def get_conviction_rating(percentile: float, regime_score: int, weekly_bullish: bool) -> str:
     """Map composite percentile across universe -> qualitative conviction label."""
+    sb_threshold = 85 if regime_score >= 2 else 90
+    
     if np.isnan(percentile):
         return "Unknown"
         
-    if percentile >= 90:
+    if percentile >= sb_threshold:
         rating = "Strong Buy"
     elif percentile >= 70:
         rating = "Buy"
@@ -226,8 +260,7 @@ def get_conviction_rating(percentile: float, regime_score: int, weekly_bullish: 
     if regime_score <= -2:
         if rating == "Strong Buy": rating = "Buy"
         elif rating == "Buy": rating = "Hold"
-    elif regime_score >= 2:
-        if rating == "Buy": rating = "Strong Buy"
-        elif rating == "Hold": rating = "Buy"
+        elif rating == "Hold": rating = "Caution"
+        elif rating == "Caution": rating = "Avoid"
 
     return rating
