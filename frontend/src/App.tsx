@@ -72,6 +72,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [niftyData, setNiftyData] = useState<{price: number, change_pct: number, is_up: boolean} | null>(null)
   const [coveragePct, setCoveragePct] = useState<number | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [marketRegimeScore, setMarketRegimeScore] = useState<number | null>(null)
   const [isDynamic, setIsDynamic] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<'picks' | 'fundamentals' | 'charting' | 'heatmap'>('picks')
@@ -160,8 +161,9 @@ export default function App() {
         setLoading(false)
         return true
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load static market data:", err)
+      setLoadError(err.message || String(err))
     }
     setLoading(false)
     return false
@@ -282,23 +284,25 @@ export default function App() {
           <h1 className="font-display font-semibold text-2xl uppercase tracking-wider text-primary">
             Quantitative <span className="text-brand">Alpha</span>
           </h1>
-          <div className="font-mono text-[10px] text-sub tracking-widest mt-2 uppercase flex flex-col sm:flex-row sm:items-center gap-2">
-            <span>Alpha Research & Investment Club | FMS Delhi</span>
-            {niftyData && (
-              <span className={`px-2 py-0.5 rounded-sm bg-card border border-border font-semibold flex items-center gap-1 w-fit ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
-                NIFTY 50: {niftyData.price} ({niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%)
-              </span>
-            )}
-            {coveragePct !== null && (
-              <span className="px-2 py-0.5 rounded-sm bg-card border border-border flex items-center gap-1 w-fit text-muted">
-                Scan Coverage: {coveragePct}%
-              </span>
-            )}
-            {marketRegimeScore !== null && (
-              <span className={`px-2 py-0.5 rounded-sm bg-card border border-border font-semibold flex items-center gap-1 w-fit ${marketRegimeScore > 0 ? 'text-green-600 dark:text-green-500' : marketRegimeScore < 0 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>
-                Regime: {marketRegimeScore > 0 ? 'Bullish' : marketRegimeScore < 0 ? 'Bearish' : 'Neutral'} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
-              </span>
-            )}
+          <div className="font-mono text-[10px] text-sub tracking-widest mt-2 uppercase flex flex-col gap-3">
+            <div>Alpha Research & Investment Club | FMS Delhi</div>
+            <div className="flex flex-wrap items-center gap-2">
+              {niftyData && (
+                <span className={`px-2 py-0.5 rounded-sm bg-card border border-border font-semibold flex items-center gap-1 w-fit ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
+                  NIFTY 50: {niftyData.price} ({niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%)
+                </span>
+              )}
+              {coveragePct !== null && (
+                <span className="px-2 py-0.5 rounded-sm bg-card border border-border flex items-center gap-1 w-fit text-muted">
+                  Scan Coverage: {coveragePct}%
+                </span>
+              )}
+              {marketRegimeScore !== null && (
+                <span className={`px-2 py-0.5 rounded-sm bg-card border border-border font-semibold flex items-center gap-1 w-fit ${marketRegimeScore > 0 ? 'text-green-600 dark:text-green-500' : marketRegimeScore < 0 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>
+                  Regime: {marketRegimeScore > 0 ? 'Bullish' : marketRegimeScore < 0 ? 'Bearish' : 'Neutral'} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
+                </span>
+              )}
+            </div>
           </div>
         </div>
         
@@ -343,6 +347,9 @@ export default function App() {
             <div className="font-mono text-muted text-sm uppercase tracking-widest text-center">
               Failed to load market_data.json<br/>
               <span className="text-primary/50 text-xs mt-2 block">Ensure the JSON file exists.</span>
+              {loadError && (
+                <div className="text-red-500 text-xs mt-4 normal-case max-w-sm overflow-hidden break-words">Error: {loadError}</div>
+              )}
             </div>
           </div>
         ) : (
@@ -881,9 +888,9 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-border mt-12 py-12 px-10 bg-card">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 items-start">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
           
-          <div className="flex flex-col gap-6 w-full max-w-xs opacity-80">
+          <div className="flex flex-col gap-6 w-full max-w-xs opacity-90">
             <div className="flex flex-col gap-2 border border-border bg-card p-4 rounded-sm shadow-sm">
               <h4 className="font-mono text-brand text-xs uppercase tracking-widest font-bold">System Status</h4>
               <div className="flex justify-between text-xs font-mono uppercase tracking-wider text-muted mt-2">
@@ -909,7 +916,7 @@ export default function App() {
             </p>
           </div>
 
-          <div className="text-right flex flex-col pt-2 h-full">
+          <div className="md:text-right flex flex-col justify-center h-full">
              <p className="font-mono text-xs text-muted">Alpha Research and Investment Club<br/>FMS Delhi</p>
              <p className="font-mono text-[10px] text-sub mt-4 tracking-widest uppercase">Made with &hearts; by Abhishek Kumar</p>
           </div>
