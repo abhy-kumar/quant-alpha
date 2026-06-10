@@ -77,7 +77,10 @@ def save_sector_cache():
     with open(CACHE_FILE, 'w') as f:
         json.dump(SECTOR_CACHE, f, indent=2)
 
+SCREENER_BANNED = False
+
 def _fetch_info(ticker: str) -> dict:
+    global SCREENER_BANNED
     info = {}
     try:
         t = yf.Ticker(ticker, session=_YF_SESSION)
@@ -91,7 +94,7 @@ def _fetch_info(ticker: str) -> dict:
     needs_fundamentals = pd.isna(_safe_float(info.get('trailingPE'))) or pd.isna(_safe_float(info.get('returnOnEquity')))
     needs_sector = sym not in SECTOR_CACHE
     
-    if needs_fundamentals or needs_sector:
+    if (needs_fundamentals or needs_sector) and not SCREENER_BANNED:
         try:
             url = f"https://www.screener.in/company/{sym}/consolidated/"
             resp = _YF_SESSION.get(url, timeout=5)
@@ -154,6 +157,7 @@ def _fetch_info(ticker: str) -> dict:
                                 pass
                             break
         except Exception as e:
+            SCREENER_BANNED = True
             pass
 
     # Apply cache to info
