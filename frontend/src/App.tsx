@@ -48,6 +48,12 @@ interface DashboardData {
   Sig_Volume?: number
   Sig_ADX?: number
   Sig_Supertrend?: number
+  Long_Name?: string
+  CEO?: string
+  Total_Revenue?: number
+  Net_Income?: number
+  EBITDA?: number
+  News_Sentiment?: number
 }
 
 // Diagnostics removed, using static JSON
@@ -99,6 +105,10 @@ export default function App() {
       const tickers = currentData.map(d => d.Ticker)
       const res = await axios.post('/api/live_data', { tickers })
       
+      if (res.data.status === 'market_closed') {
+         return 'market_closed'
+      }
+
       if (res.data.status === 'ok') {
          const livePrices = res.data.data
          const updatedData = currentData.map(d => {
@@ -117,9 +127,11 @@ export default function App() {
          const now = new Date()
          setLastUpdated(now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) + ' IST')
          setIsDynamic(true)
+         return 'ok'
       }
     } catch(err) {
        console.error("Failed to fetch live data", err)
+       return 'error'
     }
   }
 
@@ -129,11 +141,12 @@ export default function App() {
       const res = await axios.get(STATIC_URL)
       
       if (res.data.status === 'ok' && res.data.data.length > 0) {
-        setData(res.data.data)
+        const sortedData = res.data.data.sort((a: any, b: any) => a.Ticker.localeCompare(b.Ticker))
+        setData(sortedData)
         setLastUpdated(res.data.last_updated || 'Unknown')
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
         setIsDynamic(res.data.is_dynamic || false)
-        if (!selectedTicker) setSelectedTicker(res.data.data[0].Ticker)
+        if (!selectedTicker) setSelectedTicker(sortedData[0].Ticker)
         setLoading(false)
         return true
       }
@@ -145,20 +158,30 @@ export default function App() {
   }
 
   useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval>
+
     const init = async () => {
       const success = await fetchData()
       if (success) {
         // After loading static data, fetch the very latest prices
-        setTimeout(() => fetchLiveData(), 1000)
+        setTimeout(async () => {
+           const status = await fetchLiveData()
+           if (status !== 'market_closed') {
+              intervalId = setInterval(async () => {
+                const currentStatus = await fetchLiveData()
+                if (currentStatus === 'market_closed') {
+                  clearInterval(intervalId)
+                }
+              }, 3 * 60 * 1000) // Poll API every 3 minutes
+           }
+        }, 1000)
       }
     }
     init()
     
-    const intervalId = setInterval(() => {
-      fetchLiveData()
-    }, 3 * 60 * 1000) // Poll API every 3 minutes
-    
-    return () => clearInterval(intervalId)
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+    }
   }, [])
 
   // Fetch chart data via Vercel Serverless Function
@@ -472,15 +495,49 @@ export default function App() {
                   {/* Selector */}
                   <div className="flex flex-col gap-2">
                     <label className="font-mono text-xs uppercase tracking-widest text-sub">Security</label>
-                    <div className="flex items-center gap-4 bg-card border border-border px-4 py-3 hover:border-brand/50 transition-colors shadow-sm">
-                      <Search size={14} className="text-muted" />
+                    <div className="flex items-center gap-3 bg-card border border-border p-1 rounded-sm shadow-sm hover:border-brand/50 transition-colors">
+                      <div className="pl-3">
+                        <Search size={14} className="text-muted" />
+                      </div>
                       <select 
-                        className="bg-transparent text-primary font-mono text-sm uppercase outline-none cursor-pointer w-full"
+                        className="bg-transparent text-primary font-mono text-xs uppercase outline-none cursor-pointer w-full py-1.5 pr-2"
                         value={selectedTicker}
                         onChange={e => setSelectedTicker(e.target.value)}
                       >
                         {data.map(d => <option key={d.Ticker} value={d.Ticker} className="bg-card">{d.Ticker}</option>)}
                       </select>
+                    </div>
+                  </div>
+
+                  {/* Company Profile */}
+                  <div className="border border-border bg-card p-6 shadow-sm">
+                    <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-4 border-b border-border pb-2 font-semibold flex justify-between">
+                      Company Profile
+                      <span className={Number(selectedAsset?.News_Sentiment) > 0.1 ? "text-green-600 dark:text-green-500" : Number(selectedAsset?.News_Sentiment) < -0.1 ? "text-red-600 dark:text-red-500" : "text-muted"}>
+                        {selectedAsset?.News_Sentiment !== undefined && selectedAsset.News_Sentiment !== null && selectedAsset.News_Sentiment !== "" ? `Sentiment: ${selectedAsset.News_Sentiment}` : ''}
+                      </span>
+                    </h3>
+                    <div className="mb-4">
+                      <div className="font-mono text-[10px] text-muted uppercase">Name</div>
+                      <div className="font-display text-sm mt-1 text-primary truncate" title={selectedAsset?.Long_Name || 'N/A'}>{selectedAsset?.Long_Name || 'N/A'}</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">CEO</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate" title={selectedAsset?.CEO || 'N/A'}>{selectedAsset?.CEO || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Revenue</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Total_Revenue ? `$${num(selectedAsset?.Total_Revenue / 1e9)}B` : 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Profit</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Net_Income ? `$${num(selectedAsset?.Net_Income / 1e9)}B` : 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">EBITDA</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.EBITDA ? `$${num(selectedAsset?.EBITDA / 1e9)}B` : 'N/A'}</div>
+                      </div>
                     </div>
                   </div>
 

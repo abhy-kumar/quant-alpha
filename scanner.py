@@ -35,6 +35,7 @@ _YF_SESSION.headers.update({
 
 from indicators import add_indicators, compute_metrics
 from nse_fetcher import get_liquid_universe
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 _PERIOD   = "1y"
 _INTERVAL = "1d"
@@ -72,15 +73,41 @@ try:
 except Exception:
     SECTOR_CACHE = {}
 
-def save_sector_cache():
+FUND_CACHE_FILE = 'data/fundamentals_cache.json'
+try:
+    with open(FUND_CACHE_FILE, 'r') as f:
+        FUND_CACHE = json.load(f)
+except Exception:
+    FUND_CACHE = {}
+
+NEWS_CACHE_FILE = 'data/news_cache.json'
+try:
+    with open(NEWS_CACHE_FILE, 'r') as f:
+        NEWS_CACHE = json.load(f)
+except Exception:
+    NEWS_CACHE = {}
+
+def save_caches():
     os.makedirs('data', exist_ok=True)
     with open(CACHE_FILE, 'w') as f:
         json.dump(SECTOR_CACHE, f, indent=2)
+    with open(FUND_CACHE_FILE, 'w') as f:
+        json.dump(FUND_CACHE, f, indent=2)
+    with open(NEWS_CACHE_FILE, 'w') as f:
+        json.dump(NEWS_CACHE, f, indent=2)
 
 SCREENER_BANNED = False
 
 def _fetch_info(ticker: str) -> dict:
     global SCREENER_BANNED
+    sym = ticker.replace('.NS', '').replace('.BO', '')
+    now = datetime.now(timezone.utc).timestamp()
+    
+    if sym in FUND_CACHE:
+        cached_data = FUND_CACHE[sym]
+        if now - cached_data.get('timestamp', 0) < 2592000: # 30 days
+            return cached_data['info']
+
     info = {}
     try:
         t = yf.Ticker(ticker, session=_YF_SESSION)
@@ -165,6 +192,7 @@ def _fetch_info(ticker: str) -> dict:
         info['sector'] = SECTOR_CACHE[sym].get('sector', info.get('sector'))
         info['industry'] = SECTOR_CACHE[sym].get('industry', info.get('industry'))
 
+    FUND_CACHE[sym] = {'timestamp': now, 'info': info}
     return info
 
 
@@ -286,6 +314,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
     total     = len(tickers)
     rows: list[dict] = []
     log:  list[dict] = []
+    analyzer = SentimentIntensityAnalyzer()
 
     # ── Market Regime ────────────────────────────────────────────────────────
     market_regime = "Neutral"
@@ -429,6 +458,44 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             eps_growth = _safe_float(info.get("earningsGrowth"))
             rev_growth = _safe_float(info.get("revenueGrowth"))
 
+            long_name = info.get("longName", "Unknown")
+            total_revenue = _safe_float(info.get("totalRevenue"))
+            net_income = _safe_float(info.get("netIncomeToCommon"))
+            ebitda = _safe_float(info.get("ebitda"))
+            
+            ceo_name = "Unknown"
+            officers = info.get("companyOfficers", [])
+            if officers:
+                for officer in officers:
+                    if 'title' in officer and 'CEO' in officer['title'].upper():
+                        ceo_name = officer.get('name', 'Unknown')
+                        break
+                if ceo_name == "Unknown":
+                    ceo_name = officers[0].get('name', 'Unknown')
+
+            sym = ticker.replace('.NS', '').replace('.BO', '')
+            now_ts = datetime.now(timezone.utc).timestamp()
+            news_sentiment = 0.0
+            
+            if sym in NEWS_CACHE and now_ts - NEWS_CACHE[sym].get('timestamp', 0) < 86400: # 24 hours
+                news_sentiment = NEWS_CACHE[sym]['sentiment']
+            else:
+                try:
+                    t_obj = yf.Ticker(ticker, session=_YF_SESSION)
+                    news_items = t_obj.news
+                    if news_items:
+                        sentiments = []
+                        for item in news_items:
+                            title = item.get('title', '')
+                            if title:
+                                score = analyzer.polarity_scores(title)
+                                sentiments.append(score['compound'])
+                        if sentiments:
+                            news_sentiment = sum(sentiments) / len(sentiments)
+                        NEWS_CACHE[sym] = {'timestamp': now_ts, 'sentiment': news_sentiment}
+                except Exception:
+                    pass
+
             if is_etf:
                 sector = "ETF"
                 industry = "Exchange Traded Fund"
@@ -449,6 +516,12 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
                 "Ticker":           ticker.upper(),
                 "Sector":           sector,
                 "Industry":         industry,
+                "Long_Name":        long_name,
+                "CEO":              ceo_name,
+                "Total_Revenue":    np.nan if is_etf else total_revenue,
+                "Net_Income":       np.nan if is_etf else net_income,
+                "EBITDA":           np.nan if is_etf else ebitda,
+                "News_Sentiment":   round(news_sentiment, 3),
                 "Price":            round(close, 2),
                 "1d_Chg_%":        round(chg, 2),
                 # ── Fundamentals ──────────────────────────────────────────
@@ -526,7 +599,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         with open("frontend/public/market_data.json", "w") as f:
             json.dump(output_data, f, indent=2)
 
-        save_sector_cache()
+        save_caches()
         print(f"Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
         
         # Save to database
@@ -537,6 +610,15 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             # Prepare dataframe for SQL
             sql_df = result_df.copy()
             sql_df["Scan_Date"] = scan_time.strftime("%Y-%m-%d %H:%M:%S")
+            
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='historical_scans'")
+            if cursor.fetchone():
+                cursor.execute("PRAGMA table_info(historical_scans)")
+                existing_cols = {col[1] for col in cursor.fetchall()}
+                for col in sql_df.columns:
+                    if col not in existing_cols:
+                        cursor.execute(f'ALTER TABLE historical_scans ADD COLUMN "{col}" TEXT')
             
             sql_df.to_sql("historical_scans", conn, if_exists="append", index=False)
             conn.close()

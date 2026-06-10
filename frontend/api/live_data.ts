@@ -19,6 +19,21 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Calculate current IST time
+    const currentUTC = new Date()
+    const istOffset = 5.5 * 60 * 60 * 1000
+    const istTime = new Date(currentUTC.getTime() + istOffset)
+
+    const day = istTime.getUTCDay()
+    const hour = istTime.getUTCHours()
+    const minute = istTime.getUTCMinutes()
+
+    const isWeekend = day === 0 || day === 6
+    const isOutsideMarketHours = hour < 9 || hour > 16 || (hour === 16 && minute >= 30)
+
+    if (isWeekend || isOutsideMarketHours) {
+      return res.status(200).json({ status: 'market_closed' })
+    }
     let tickers = req.body?.tickers || req.query.tickers
     
     if (!tickers) {
