@@ -51,12 +51,16 @@ interface DashboardData {
   Sig_Volume?: number
   Sig_ADX?: number
   Sig_Supertrend?: number
+  Sig_VPT?: number
+  Sig_Ichimoku?: number
+  RS_Percentile?: number
   Long_Name?: string
   CEO?: string
   Total_Revenue?: number
   Net_Income?: number
   EBITDA?: number
   News_Sentiment?: number
+  ATH_Source?: string
 }
 
 // Diagnostics removed, using static JSON
@@ -67,6 +71,8 @@ export default function App() {
   const [lastUpdated, setLastUpdated] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [niftyData, setNiftyData] = useState<{price: number, change_pct: number, is_up: boolean} | null>(null)
+  const [coveragePct, setCoveragePct] = useState<number | null>(null)
+  const [marketRegimeScore, setMarketRegimeScore] = useState<number | null>(null)
   const [isDynamic, setIsDynamic] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<'picks' | 'fundamentals' | 'charting' | 'heatmap'>('picks')
   
@@ -147,6 +153,8 @@ export default function App() {
         setData(sortedData)
         setLastUpdated(res.data.last_updated || 'Unknown')
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
+        setCoveragePct(res.data.coverage_pct ?? null)
+        setMarketRegimeScore(res.data.market_regime_score ?? null)
         setIsDynamic(res.data.is_dynamic || false)
         if (!selectedTicker) setSelectedTicker(sortedData[0].Ticker)
         setLoading(false)
@@ -279,6 +287,16 @@ export default function App() {
             {niftyData && (
               <span className={`px-2 py-0.5 rounded-sm bg-card border border-border font-semibold flex items-center gap-1 w-fit ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
                 NIFTY 50: {niftyData.price} ({niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%)
+              </span>
+            )}
+            {coveragePct !== null && (
+              <span className="px-2 py-0.5 rounded-sm bg-card border border-border flex items-center gap-1 w-fit text-muted">
+                Scan Coverage: {coveragePct}%
+              </span>
+            )}
+            {marketRegimeScore !== null && (
+              <span className={`px-2 py-0.5 rounded-sm bg-card border border-border font-semibold flex items-center gap-1 w-fit ${marketRegimeScore > 0 ? 'text-green-600 dark:text-green-500' : marketRegimeScore < 0 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>
+                Regime: {marketRegimeScore > 0 ? 'Bullish' : marketRegimeScore < 0 ? 'Bearish' : 'Neutral'} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
               </span>
             )}
           </div>
@@ -476,6 +494,8 @@ export default function App() {
                                   <div><span className="text-muted block mb-1">Volume Spike</span>{getSignalLabel(row.Sig_Volume)}</div>
                                   <div><span className="text-muted block mb-1">ADX Trend</span>{getSignalLabel(row.Sig_ADX)}</div>
                                   <div><span className="text-muted block mb-1">Supertrend</span>{getSignalLabel(row.Sig_Supertrend)}</div>
+                                  <div><span className="text-muted block mb-1">Vol Price Trend</span>{getSignalLabel(row.Sig_VPT)}</div>
+                                  <div><span className="text-muted block mb-1">Ichimoku Cloud</span>{getSignalLabel(row.Sig_Ichimoku)}</div>
                                 </div>
                               </td>
                             </tr>
@@ -580,7 +600,12 @@ export default function App() {
                       {/* Row 4: ATH, ATL */}
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">All-Time High</div>
-                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.All_Time_High ? `₹${num(selectedAsset?.All_Time_High)}` : 'N/A'}</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate flex items-center gap-1">
+                          {selectedAsset?.All_Time_High ? `₹${num(selectedAsset?.All_Time_High)}` : 'N/A'}
+                          {selectedAsset?.ATH_Source === '52W' && (
+                            <span className="text-[8px] text-sub border border-border px-1 py-0.5 rounded-sm leading-none mt-px" title="True ATH data unavailable; falling back to 52W high">52W</span>
+                          )}
+                        </div>
                       </div>
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">All-Time Low</div>
@@ -600,6 +625,10 @@ export default function App() {
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">Conviction</div>
                         <div className="font-mono text-sm mt-1 text-primary font-semibold">{selectedAsset?.Conviction || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">RS Percentile</div>
+                        <div className="font-mono text-sm mt-1 text-primary font-semibold">{selectedAsset?.RS_Percentile !== undefined ? `${num(selectedAsset?.RS_Percentile)}%` : 'N/A'}</div>
                       </div>
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">RSI (14)</div>

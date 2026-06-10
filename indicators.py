@@ -34,13 +34,16 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df["MACD_Signal"] = df["MACD"].ewm(span=9, adjust=False).mean()
     df["MACD_Hist"]   = df["MACD"] - df["MACD_Signal"]
 
-    # ── RSI (14-period) ───────────────────────────────────────────────────────
+    # ── RSI (14-period, Wilder's smoothing) ──────────────────────────────────
     delta = close.diff()
-    gain  = delta.clip(lower=0).rolling(14).mean()
-    loss  = (-delta.clip(upper=0)).rolling(14).mean()
-    # If loss is 0, rs is inf and RSI should be 100.
-    rs    = gain / loss.replace(0, np.nan)
-    df["RSI"] = np.where(loss == 0, 100, 100 - (100 / (1 + rs)))
+    gain  = delta.clip(lower=0)
+    loss  = -delta.clip(upper=0)
+    
+    smoothed_gain = _wilder_smoothing(gain, 14)
+    smoothed_loss = _wilder_smoothing(loss, 14)
+    
+    rs = smoothed_gain / smoothed_loss.replace(0, np.nan)
+    df["RSI"] = np.where(smoothed_loss == 0, 100, 100 - (100 / (1 + rs)))
 
     # ── Bollinger Bands ───────────────────────────────────────────────────────
     df["BB_Mid"]   = close.rolling(20).mean()
@@ -79,7 +82,38 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     # ── NEW: Weekly Supertrend ───────────────────────────────────────────────
     df = add_weekly_supertrend(df)
 
+    # ── NEW: VPT (Volume Price Trend) ─────────────────────────────────────────
+    df = _add_vpt(df)
+    
+    # ── NEW: Ichimoku Cloud ───────────────────────────────────────────────────
+    df = _add_ichimoku(df)
+
     return df
+
+# ---------------------------------------------------------------------------
+# Wilder's Smoothing
+# ---------------------------------------------------------------------------
+
+def _wilder_smoothing(s: pd.Series, period: int) -> pd.Series:
+    res = np.full_like(s, np.nan, dtype=float)
+    s_arr = s.to_numpy()
+    
+    valid_idx = np.where(~np.isnan(s_arr))[0]
+    if len(valid_idx) < period:
+        return pd.Series(res, index=s.index)
+        
+    start = valid_idx[0]
+    if start + period > len(s_arr):
+        return pd.Series(res, index=s.index)
+        
+    # Seed with SMA
+    sma = np.mean(s_arr[start:start+period])
+    res[start+period-1] = sma
+    
+    for i in range(start+period, len(s_arr)):
+        res[i] = (res[i-1] * (period - 1) + s_arr[i]) / period
+        
+    return pd.Series(res, index=s.index)
 
 
 # ---------------------------------------------------------------------------
@@ -222,6 +256,49 @@ def _add_obv(df: pd.DataFrame) -> pd.DataFrame:
     
     df["OBV"] = obv
     df["OBV_EMA20"] = obv.ewm(span=20, adjust=False).mean()
+    return df
+
+
+# ---------------------------------------------------------------------------
+# VPT (Volume Price Trend)
+# ---------------------------------------------------------------------------
+
+def _add_vpt(df: pd.DataFrame) -> pd.DataFrame:
+    close = df["Close"]
+    vol = df["Volume"]
+    pct_change = close.pct_change()
+    
+    df["VPT"] = (vol * pct_change).cumsum()
+    df["VPT_EMA20"] = df["VPT"].ewm(span=20, adjust=False).mean()
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Ichimoku Cloud
+# ---------------------------------------------------------------------------
+
+def _add_ichimoku(df: pd.DataFrame) -> pd.DataFrame:
+    high = df["High"]
+    low = df["Low"]
+    
+    # Tenkan-sen (9 period)
+    period9_high = high.rolling(window=9).max()
+    period9_low = low.rolling(window=9).min()
+    df["Ichimoku_Tenkan"] = (period9_high + period9_low) / 2
+    
+    # Kijun-sen (26 period)
+    period26_high = high.rolling(window=26).max()
+    period26_low = low.rolling(window=26).min()
+    df["Ichimoku_Kijun"] = (period26_high + period26_low) / 2
+    
+    # Senkou Span A (Shifted forward 26 periods) -> value at t is (Tenkan(t-26) + Kijun(t-26))/2
+    df["Ichimoku_SpanA"] = ((df["Ichimoku_Tenkan"] + df["Ichimoku_Kijun"]) / 2).shift(26)
+    
+    # Senkou Span B (52 period, shifted forward 26 periods)
+    period52_high = high.rolling(window=52).max()
+    period52_low = low.rolling(window=52).min()
+    df["Ichimoku_SpanB"] = ((period52_high + period52_low) / 2).shift(26)
+    
     return df
 
 

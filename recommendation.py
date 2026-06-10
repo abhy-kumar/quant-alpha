@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from utils import _safe_float
 
 def compute_fund_score(
     roe_pct: float,
@@ -10,35 +11,49 @@ def compute_fund_score(
     mkt_cap_b: float,
     sharpe: float,
     eps_growth: float,
-    rev_growth: float
-) -> int:
+    rev_growth: float,
+    sector_medians: dict = None
+) -> float:
     """
-    Score fundamental quality on a 0–10 integer scale.
+    Score fundamental quality on a 0–10 continuous scale.
+    If sector_medians is provided, evaluates metrics relative to the sector.
     """
     score = 0.0
+    
+    sec_pe = _safe_float(sector_medians.get("pe")) if sector_medians else np.nan
+    sec_roe = _safe_float(sector_medians.get("roe")) if sector_medians else np.nan
+    sec_debt = _safe_float(sector_medians.get("debt_eq")) if sector_medians else np.nan
 
     # ── ROE ──────────────────────────────────────────────────────────────────
     if not np.isnan(roe_pct):
-        if roe_pct >= 15:
-            score += 1.5
-        elif roe_pct >= 8:
-            score += 0.5
+        if not np.isnan(sec_roe) and sec_roe > 0:
+            if roe_pct >= sec_roe * 1.5: score += 1.5
+            elif roe_pct >= sec_roe: score += 0.5
+        else:
+            if roe_pct >= 15: score += 1.5
+            elif roe_pct >= 8: score += 0.5
 
-    # ── Valuation / Growth (PEG) ─────────────────────────────────────────────
+    # ── Valuation / Growth (PEG & P/E) ───────────────────────────────────────
     if not np.isnan(pe) and not np.isnan(eps_growth) and eps_growth > 0:
         peg = pe / (eps_growth * 100)
-        if peg < 1.0: score += 2
-        elif peg < 1.5: score += 1
+        if peg < 1.0: score += 2.0
+        elif peg < 1.5: score += 1.0
     elif not np.isnan(pe) and pe > 0:
-        if pe < 20: score += 2
-        elif pe < 35: score += 1
+        if not np.isnan(sec_pe) and sec_pe > 0:
+            if pe < sec_pe * 0.8: score += 2.0
+            elif pe < sec_pe: score += 1.0
+        else:
+            if pe < 20: score += 2.0
+            elif pe < 35: score += 1.0
 
     # ── Debt / Equity ─────────────────────────────────────────────────────────
     if not np.isnan(debt_eq):
-        if debt_eq < 50:
-            score += 1.5
-        elif debt_eq < 100:
-            score += 0.5
+        if not np.isnan(sec_debt) and sec_debt > 0:
+            if debt_eq < sec_debt * 0.8: score += 1.5
+            elif debt_eq < sec_debt: score += 0.5
+        else:
+            if debt_eq < 50: score += 1.5
+            elif debt_eq < 100: score += 0.5
     else:
         score += 0.5
 
@@ -60,19 +75,13 @@ def compute_fund_score(
     if not np.isnan(sharpe) and sharpe > 1.0:
         score += 1.0
 
-    return min(int(score), 10)
+    return min(float(score), 10.0)
 
 
-def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nifty_df: pd.DataFrame = None) -> float:
+def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nifty_df: pd.DataFrame = None) -> dict:
     """
     Evaluates technical indicators and returns a Tech Score between -1 and +1.
     """
-    def _safe_float(val, default=np.nan) -> float:
-        try:
-            return float(val) if val is not None and not (isinstance(val, float) and np.isnan(val)) else default
-        except Exception:
-            return default
-
     close  = _safe_float(latest["Close"])
     
     sma50  = _safe_float(latest["SMA_50"])
@@ -114,20 +123,25 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
     )
 
     st_dir        = _safe_float(latest.get("ST_Direction", np.nan), default=np.nan)
-    sig_supertrend = 0 if np.isnan(st_dir) else int(-st_dir)   # -1→1 (bull), 1→-1 (bear)
+    sig_supertrend = 0 if np.isnan(st_dir) else int(-st_dir)
 
-    obv_latest = _safe_float(latest.get("OBV", np.nan))
-    obv_ema    = _safe_float(latest.get("OBV_EMA20", np.nan))
-    sig_obv    = 1 if obv_latest > obv_ema else -1
+    vpt = _safe_float(latest.get("VPT", np.nan))
+    vpt_ema = _safe_float(latest.get("VPT_EMA20", np.nan))
+    sig_vpt = 1 if vpt > vpt_ema else (-1 if vpt < vpt_ema else 0)
+
+    span_a = _safe_float(latest.get("Ichimoku_SpanA", np.nan))
+    span_b = _safe_float(latest.get("Ichimoku_SpanB", np.nan))
+    sig_ichimoku = 1 if (close > span_a and close > span_b) else (-1 if (close < span_a and close < span_b) else 0)
 
     weighted_signals = [
         (sig_supertrend, 2.0),
         (sig_price_sma200, 2.0),
         (sig_sma50_sma200, 2.0),
         (sig_adx, 2.0),
+        (sig_ichimoku, 1.5),
         (sig_macd, 1.0),
         (sig_rsi, 1.0),
-        (sig_obv, 1.0),
+        (sig_vpt, 1.0),
         (sig_price_sma50, 1.0),
         (sig_stoch, 0.5),
         (sig_cci, 0.5),
@@ -144,20 +158,33 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
     bull = sum(1 for v, w in weighted_signals if v == 1)
     bear = sum(1 for v, w in weighted_signals if v == -1)
 
-    rs_score = 0
+    rs_1m, rs_3m, rs_6m = np.nan, np.nan, np.nan
+    if nifty_df is not None and len(df) >= 21 and len(nifty_df) >= 21:
+        try:
+            stock_1m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-21])) - 1
+            nifty_1m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-21])) - 1
+            rs_1m = stock_1m - nifty_1m
+        except Exception: pass
+        
     if nifty_df is not None and len(df) >= 60 and len(nifty_df) >= 60:
         try:
             stock_3m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-60])) - 1
             nifty_3m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-60])) - 1
-            rs_score = stock_3m - nifty_3m
-            if rs_score < -0.10:
-                score -= 0.2
-        except Exception:
-            pass
+            rs_3m = stock_3m - nifty_3m
+        except Exception: pass
+        
+    if nifty_df is not None and len(df) >= 120 and len(nifty_df) >= 120:
+        try:
+            stock_6m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-120])) - 1
+            nifty_6m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-120])) - 1
+            rs_6m = stock_6m - nifty_6m
+        except Exception: pass
 
     return {
         "score": score,
-        "rs_score": rs_score,
+        "rs_1m": rs_1m,
+        "rs_3m": rs_3m,
+        "rs_6m": rs_6m,
         "bull": bull,
         "bear": bear,
         "sig_price_sma50": sig_price_sma50,
@@ -172,29 +199,35 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
         "sig_vol": sig_vol,
         "sig_adx": sig_adx,
         "sig_supertrend": sig_supertrend,
-        "sig_obv": sig_obv
+        "sig_vpt": sig_vpt,
+        "sig_ichimoku": sig_ichimoku
     }
 
-def get_conviction_rating(tech_score: float, fund_score: int, market_regime: str, weekly_bullish: bool) -> str:
-    """Map (Tech_Score, Fund_Score) → qualitative conviction label."""
-    if tech_score > 0.4 and fund_score >= 7:
+def get_conviction_rating(percentile: float, regime_score: int, weekly_bullish: bool) -> str:
+    """Map composite percentile across universe -> qualitative conviction label."""
+    if np.isnan(percentile):
+        return "Unknown"
+        
+    if percentile >= 90:
         rating = "Strong Buy"
-    elif tech_score > 0.2 and fund_score >= 5:
+    elif percentile >= 70:
         rating = "Buy"
-    elif tech_score > -0.2 and fund_score >= 3:
+    elif percentile >= 40:
         rating = "Hold"
-    elif tech_score <= -0.4 or fund_score <= 1:
-        rating = "Avoid"
-    else:
+    elif percentile >= 20:
         rating = "Caution"
+    else:
+        rating = "Avoid"
 
     if rating == "Strong Buy" and not weekly_bullish:
         rating = "Buy"
 
-    if market_regime == "Bearish":
-        if rating == "Strong Buy":
-            rating = "Buy"
-        elif rating == "Buy":
-            rating = "Hold"
+    # Market regime adjustment (-3 to +3)
+    if regime_score <= -2:
+        if rating == "Strong Buy": rating = "Buy"
+        elif rating == "Buy": rating = "Hold"
+    elif regime_score >= 2:
+        if rating == "Buy": rating = "Strong Buy"
+        elif rating == "Hold": rating = "Buy"
 
     return rating
