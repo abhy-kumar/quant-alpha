@@ -108,10 +108,6 @@ export default function App() {
       const tickers = currentData.map(d => d.Ticker)
       const res = await axios.post('/api/live_data', { tickers })
       
-      if (res.data.status === 'market_closed') {
-         return 'market_closed'
-      }
-
       if (res.data.status === 'ok') {
          const livePrices = res.data.data
          const updatedData = currentData.map(d => {
@@ -130,6 +126,9 @@ export default function App() {
          const now = new Date()
          setLastUpdated(now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) + ' IST')
          setIsDynamic(true)
+         if (res.data.is_market_closed) {
+            return 'market_closed'
+         }
          return 'ok'
       }
     } catch(err) {

@@ -30,10 +30,16 @@ export default async function handler(req, res) {
 
     const isWeekend = day === 0 || day === 6
     const isOutsideMarketHours = hour < 9 || hour > 16 || (hour === 16 && minute >= 30)
+    const isMarketClosed = isWeekend || isOutsideMarketHours
 
-    if (isWeekend || isOutsideMarketHours) {
-      return res.status(200).json({ status: 'market_closed' })
+    if (isMarketClosed) {
+      // Cache heavily on Vercel Edge for 6 hours when market is closed to save execution limits
+      res.setHeader('Cache-Control', 's-maxage=21600, stale-while-revalidate=86400')
+    } else {
+      // Cache for 60 seconds during market hours
+      res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120')
     }
+
     let tickers = req.body?.tickers || req.query.tickers
     
     if (!tickers) {
@@ -79,6 +85,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       status: 'ok',
+      is_market_closed: isMarketClosed,
       data: results,
       nifty_50: niftyData,
       timestamp: new Date().toISOString()
