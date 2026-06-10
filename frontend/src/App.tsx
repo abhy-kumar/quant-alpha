@@ -146,7 +146,7 @@ export default function App() {
   // Fetch static data
   const fetchData = async () => {
     try {
-      const res = await axios.get(STATIC_URL)
+      const res = await axios.get(`${STATIC_URL}?t=${new Date().getTime()}`)
       
       if (res.data.status === 'ok' && res.data.data.length > 0) {
         const sortedData = res.data.data.sort((a: any, b: any) => a.Ticker.localeCompare(b.Ticker))
