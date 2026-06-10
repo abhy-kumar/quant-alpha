@@ -36,6 +36,7 @@ _YF_SESSION.headers.update({
 from indicators import add_indicators, compute_metrics
 from nse_fetcher import get_liquid_universe
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from recommendation import compute_fund_score, compute_tech_score, get_conviction_rating
 
 _PERIOD   = "1y"
 _INTERVAL = "1d"
@@ -203,96 +204,6 @@ def _safe_float(val, default=np.nan) -> float:
         return default
 
 
-# ---------------------------------------------------------------------------
-# Fundamentals scoring
-# ---------------------------------------------------------------------------
-
-def _compute_fund_score(
-    roe_pct: float,
-    pe: float,
-    fwd_pe: float,
-    debt_eq: float,
-    div_yield_pct: float,
-    mkt_cap_b: float,
-    sharpe: float,
-    eps_growth: float,
-    rev_growth: float
-) -> int:
-    """
-    Score fundamental quality on a 0–10 integer scale.
-    """
-    score = 0.0
-
-    # ── ROE ──────────────────────────────────────────────────────────────────
-    if not np.isnan(roe_pct):
-        if roe_pct >= 15:
-            score += 1.5
-        elif roe_pct >= 8:
-            score += 0.5
-
-    # ── Valuation / Growth (PEG) ─────────────────────────────────────────────
-    if not np.isnan(pe) and not np.isnan(eps_growth) and eps_growth > 0:
-        peg = pe / (eps_growth * 100)
-        if peg < 1.0: score += 2
-        elif peg < 1.5: score += 1
-    elif not np.isnan(pe) and pe > 0:
-        if pe < 20: score += 2
-        elif pe < 35: score += 1
-
-    # ── Debt / Equity ─────────────────────────────────────────────────────────
-    if not np.isnan(debt_eq):
-        if debt_eq < 50:
-            score += 1.5
-        elif debt_eq < 100:
-            score += 0.5
-    else:
-        score += 0.5
-
-    # ── Growth ───────────────────────────────────────────────────────────────
-    if not np.isnan(eps_growth) and eps_growth > 0.15:
-        score += 1.5
-    if not np.isnan(rev_growth) and rev_growth > 0.10:
-        score += 1.0
-
-    # ── Dividend Yield ────────────────────────────────────────────────────────
-    if not np.isnan(div_yield_pct) and div_yield_pct > 1.0:
-        score += 0.5
-
-    # ── Market Cap ────────────────────────────────────────────────────────────
-    if not np.isnan(mkt_cap_b) and mkt_cap_b >= 10:
-        score += 1.0
-
-    # ── Sharpe ───────────────────────────────────────────────────────────────
-    if not np.isnan(sharpe) and sharpe > 1.0:
-        score += 1.0
-
-    return min(int(score), 10)
-
-
-def _conviction_rating(tech_score: float, fund_score: int, market_regime: str, weekly_bullish: bool) -> str:
-    """Map (Tech_Score, Fund_Score) → qualitative conviction label."""
-    if tech_score > 0.4 and fund_score >= 7:
-        rating = "Strong Buy"
-    elif tech_score > 0.2 and fund_score >= 5:
-        rating = "Buy"
-    elif tech_score > -0.2 and fund_score >= 3:
-        rating = "Hold"
-    elif tech_score <= -0.4 or fund_score <= 1:
-        rating = "Avoid"
-    else:
-        rating = "Caution"
-
-    if rating == "Strong Buy" and not weekly_bullish:
-        rating = "Buy"
-
-    if market_regime == "Bearish":
-        if rating == "Strong Buy":
-            rating = "Buy"
-        elif rating == "Buy":
-            rating = "Hold"
-
-    return rating
-
 
 # ---------------------------------------------------------------------------
 # Main scanner
@@ -354,89 +265,13 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             close  = _safe_float(latest["Close"])
             chg    = (close / _safe_float(prev["Close"]) - 1) * 100
 
-            # ── Signals ───────────────────────────────────────────────────────
-            sma50  = _safe_float(latest["SMA_50"])
-            sma200 = _safe_float(latest["SMA_200"])
-
-            sig_price_sma50    = 1 if close > sma50  else -1
-            sig_price_sma200   = 1 if close > sma200 else -1
-            sig_sma50_sma200   = 1 if sma50  > sma200 else -1
-
-            rsi = _safe_float(latest["RSI"])
-            sig_rsi = 1 if rsi < 30 else (-1 if rsi > 70 else 0)
-
-            macd      = _safe_float(latest["MACD"])
-            macd_sig  = _safe_float(latest["MACD_Signal"])
-            macd_hist = _safe_float(latest["MACD_Hist"])
-            prev_hist = _safe_float(prev["MACD_Hist"])
-            sig_macd      = 1 if macd > macd_sig  else -1
-            sig_macd_hist = 1 if macd_hist > prev_hist else -1
-
-            k, d  = _safe_float(latest["Stoch_%K"]), _safe_float(latest["Stoch_%D"])
-            sig_stoch = 1 if (k < 20 and k > d) else (-1 if (k > 80 and k < d) else 0)
-
-            bb_b     = _safe_float(latest["BB_%B"])
-            sig_bb   = 1 if bb_b < 0.05 else (-1 if bb_b > 0.95 else 0)
-
-            cci      = _safe_float(latest["CCI"])
-            sig_cci  = 1 if cci < -100 else (-1 if cci > 100 else 0)
-
-            price_up  = close > _safe_float(prev["Close"])
-            vol_above = _safe_float(latest["Volume"]) > _safe_float(latest["VOL_MA20"])
-            sig_vol   = 1 if (price_up and vol_above) else (-1 if (not price_up and vol_above) else 0)
-
-            adx      = _safe_float(latest["ADX"])
-            plus_di  = _safe_float(latest["Plus_DI"])
-            minus_di = _safe_float(latest["Minus_DI"])
-            sig_adx  = (
-                1  if adx > 25 and plus_di  > minus_di else
-                -1 if adx > 25 and minus_di > plus_di  else 0
-            )
-
-            st_dir        = _safe_float(latest.get("ST_Direction", np.nan), default=np.nan)
-            sig_supertrend = 0 if np.isnan(st_dir) else int(-st_dir)   # -1→1 (bull), 1→-1 (bear)
-
-            obv_latest = _safe_float(latest.get("OBV", np.nan))
-            obv_ema    = _safe_float(latest.get("OBV_EMA20", np.nan))
-            sig_obv    = 1 if obv_latest > obv_ema else -1
+            tech = compute_tech_score(latest, prev, df, nifty_df)
+            score = tech["score"]
+            bull = tech["bull"]
+            bear = tech["bear"]
             
             weekly_st_dir = _safe_float(latest.get("Weekly_ST_Direction", np.nan))
             weekly_bullish = weekly_st_dir == -1
-
-            weighted_signals = [
-                (sig_supertrend, 2.0),
-                (sig_price_sma200, 2.0),
-                (sig_sma50_sma200, 2.0),
-                (sig_adx, 2.0),
-                (sig_macd, 1.0),
-                (sig_rsi, 1.0),
-                (sig_obv, 1.0),
-                (sig_price_sma50, 1.0),
-                (sig_stoch, 0.5),
-                (sig_cci, 0.5),
-                (sig_bb, 0.5),
-                (sig_macd_hist, 0.5)
-            ]
-
-            bull_score = sum(w for v, w in weighted_signals if v == 1)
-            bear_score = sum(w for v, w in weighted_signals if v == -1)
-            total_weight = sum(w for _, w in weighted_signals)
-            
-            score = (bull_score - bear_score) / total_weight if total_weight else 0
-            
-            rs_score = 0
-            if nifty_df is not None and len(df) >= 60 and len(nifty_df) >= 60:
-                try:
-                    stock_3m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-60])) - 1
-                    nifty_3m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-60])) - 1
-                    rs_score = stock_3m - nifty_3m
-                    if rs_score < -0.10:
-                        score -= 0.2
-                except Exception:
-                    pass
-            
-            bull = sum(1 for v, w in weighted_signals if v == 1)
-            bear = sum(1 for v, w in weighted_signals if v == -1)
 
             long_name = info.get("longName") or info.get("shortName") or ticker.replace('.NS', '').replace('.BO', '')
             is_etf = "BEES" in ticker.upper() or "ETF" in ticker.upper() or "ETF" in long_name.upper()
@@ -512,13 +347,13 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             else:
                 sector = info.get("sector", "Unknown") or "Unknown"
                 industry = info.get("industry", "Unknown") or "Unknown"
-                fund_score = _compute_fund_score(
+                fund_score = compute_fund_score(
                     roe_pct, pe, fwd_pe, debt_eq,
                     div_yield_pct, mkt_cap_b, sharpe,
                     eps_growth, rev_growth
                 )
                 
-            conviction = _conviction_rating(score, fund_score, market_regime, weekly_bullish)
+            conviction = get_conviction_rating(score, fund_score, market_regime, weekly_bullish)
 
             rows.append({
                 # ── Identity ──────────────────────────────────────────────
@@ -547,32 +382,32 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
                 "Fund_Score":       fund_score,
                 "Conviction":       conviction,
                 # ── Indicator values ──────────────────────────────────────
-                "RSI_Value":        round(rsi, 2),
-                "MACD_Value":       round(macd, 4),
-                "CCI_Value":        round(cci, 2),
-                "ATR_Value":        round(_safe_float(latest["ATR"]), 2),
-                "ADX_Value":        round(adx, 2),
-                "Plus_DI":          round(plus_di, 2),
-                "Minus_DI":         round(minus_di, 2),
-                "BB_%B_Value":      round(bb_b, 3),
-                "ST_Signal":        "Bullish" if sig_supertrend == 1 else "Bearish",
-                "Volume":           int(_safe_float(latest["Volume"], 0)),
+                "RSI_Value":        round(_safe_float(latest.get("RSI", np.nan)), 2),
+                "MACD_Value":       round(_safe_float(latest.get("MACD", np.nan)), 4),
+                "CCI_Value":        round(_safe_float(latest.get("CCI", np.nan)), 2),
+                "ATR_Value":        round(_safe_float(latest.get("ATR", np.nan)), 2),
+                "ADX_Value":        round(_safe_float(latest.get("ADX", np.nan)), 2),
+                "Plus_DI":          round(_safe_float(latest.get("Plus_DI", np.nan)), 2),
+                "Minus_DI":         round(_safe_float(latest.get("Minus_DI", np.nan)), 2),
+                "BB_%B_Value":      round(_safe_float(latest.get("BB_%B", np.nan)), 3),
+                "ST_Signal":        "Bullish" if tech["sig_supertrend"] == 1 else "Bearish",
+                "Volume":           int(_safe_float(latest.get("Volume", 0), 0)),
                 "Vol_vs_Avg_%":     round(
-                    (_safe_float(latest["Volume"]) / max(_safe_float(latest["VOL_MA20"]), 1) - 1) * 100, 1
+                    (_safe_float(latest.get("Volume", 0)) / max(_safe_float(latest.get("VOL_MA20", 1)), 1) - 1) * 100, 1
                 ),
                 # ── Signal flags ─────────────────────────────────────────
-                "Sig_Price_vs_SMA50":   sig_price_sma50,
-                "Sig_Price_vs_SMA200":  sig_price_sma200,
-                "Sig_SMA50_vs_SMA200":  sig_sma50_sma200,
-                "Sig_RSI":              sig_rsi,
-                "Sig_MACD_Cross":       sig_macd,
-                "Sig_MACD_Hist":        sig_macd_hist,
-                "Sig_Stoch":            sig_stoch,
-                "Sig_BB":               sig_bb,
-                "Sig_CCI":              sig_cci,
-                "Sig_Volume":           sig_vol,
-                "Sig_ADX":              sig_adx,
-                "Sig_Supertrend":       sig_supertrend,
+                "Sig_Price_vs_SMA50":   tech["sig_price_sma50"],
+                "Sig_Price_vs_SMA200":  tech["sig_price_sma200"],
+                "Sig_SMA50_vs_SMA200":  tech["sig_sma50_sma200"],
+                "Sig_RSI":              tech["sig_rsi"],
+                "Sig_MACD_Cross":       tech["sig_macd"],
+                "Sig_MACD_Hist":        tech["sig_macd_hist"],
+                "Sig_Stoch":            tech["sig_stoch"],
+                "Sig_BB":               tech["sig_bb"],
+                "Sig_CCI":              tech["sig_cci"],
+                "Sig_Volume":           tech["sig_vol"],
+                "Sig_ADX":              tech["sig_adx"],
+                "Sig_Supertrend":       tech["sig_supertrend"],
                 # ── Composite scores ─────────────────────────────────────
                 "Tech_Score":       round(score, 3),
                 "Bull_Count":       bull,
