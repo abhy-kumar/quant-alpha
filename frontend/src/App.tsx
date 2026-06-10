@@ -36,6 +36,9 @@ interface DashboardData {
   "Div_Yield_%"?: number
   "Market_Cap_B"?: number
   "52W_High"?: number
+  "52W_Low"?: number
+  "All_Time_High"?: number
+  "All_Time_Low"?: number
   Sig_Price_vs_SMA50?: number
   Sig_Price_vs_SMA200?: number
   Sig_SMA50_vs_SMA200?: number
@@ -517,15 +520,28 @@ export default function App() {
                         {selectedAsset?.News_Sentiment !== undefined && selectedAsset.News_Sentiment !== null ? `Sentiment: ${selectedAsset.News_Sentiment}` : ''}
                       </span>
                     </h3>
-                    <div className="mb-4">
-                      <div className="font-mono text-[10px] text-muted uppercase">Name</div>
-                      <div className="font-display text-sm mt-1 text-primary truncate" title={selectedAsset?.Long_Name || 'N/A'}>{selectedAsset?.Long_Name || 'N/A'}</div>
+                    <div className="mb-4 flex justify-between items-end">
+                      <div className="overflow-hidden pr-2">
+                        <div className="font-mono text-[10px] text-muted uppercase">Name</div>
+                        <div className="font-display text-sm mt-1 text-primary truncate" title={selectedAsset?.Long_Name || 'N/A'}>{selectedAsset?.Long_Name || 'N/A'}</div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-mono text-[10px] text-muted uppercase">Live Price</div>
+                        <div className="font-display text-lg font-semibold text-primary">₹{num(selectedAsset?.Price)}</div>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                      {/* Row 1: CEO, Mkt Cap */}
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">CEO</div>
                         <div className="font-mono text-xs mt-1 text-primary truncate" title={selectedAsset?.CEO || 'N/A'}>{selectedAsset?.CEO || 'N/A'}</div>
                       </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Market Cap</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Market_Cap_B ? `₹${num(selectedAsset?.Market_Cap_B)}B` : 'N/A'}</div>
+                      </div>
+                      
+                      {/* Row 2: Revenue, Profit */}
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">Revenue</div>
                         <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue / 1e9)}B` : 'N/A'}</div>
@@ -534,9 +550,35 @@ export default function App() {
                         <div className="font-mono text-[10px] text-muted uppercase">Profit</div>
                         <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income / 1e9)}B` : 'N/A'}</div>
                       </div>
+
+                      {/* Row 3: EBITDA, Div Yield */}
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">EBITDA</div>
                         <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA / 1e9)}B` : 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Div Yield</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.["Div_Yield_%"] ? `${num(selectedAsset?.["Div_Yield_%"])}%` : 'N/A'}</div>
+                      </div>
+                      
+                      {/* Row 3: 52W High, 52W Low */}
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">52W High</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.["52W_High"] ? `₹${num(selectedAsset?.["52W_High"])}` : 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">52W Low</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.["52W_Low"] ? `₹${num(selectedAsset?.["52W_Low"])}` : 'N/A'}</div>
+                      </div>
+                      
+                      {/* Row 4: ATH, ATL */}
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">All-Time High</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.All_Time_High ? `₹${num(selectedAsset?.All_Time_High)}` : 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">All-Time Low</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.All_Time_Low ? `₹${num(selectedAsset?.All_Time_Low)}` : 'N/A'}</div>
                       </div>
                     </div>
                   </div>
