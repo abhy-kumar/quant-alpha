@@ -62,7 +62,6 @@ interface DashboardData {
   Net_Income?: number
   EBITDA?: number
   News_Sentiment?: number
-  ATH_Source?: string
 }
 
 // Diagnostics removed, using static JSON
