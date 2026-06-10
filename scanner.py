@@ -62,6 +62,20 @@ def _fetch_ohlcv(ticker: str) -> pd.DataFrame:
 
 from bs4 import BeautifulSoup
 import re
+import json
+import os
+
+CACHE_FILE = 'data/sector_cache.json'
+try:
+    with open(CACHE_FILE, 'r') as f:
+        SECTOR_CACHE = json.load(f)
+except Exception:
+    SECTOR_CACHE = {}
+
+def save_sector_cache():
+    os.makedirs('data', exist_ok=True)
+    with open(CACHE_FILE, 'w') as f:
+        json.dump(SECTOR_CACHE, f, indent=2)
 
 def _fetch_info(ticker: str) -> dict:
     info = {}
@@ -73,17 +87,31 @@ def _fetch_info(ticker: str) -> dict:
 
     # Fallback to Screener.in for critical missing fundamental data on Indian equities
     sym = ticker.replace('.NS', '').replace('.BO', '')
-    try:
-        url = f"https://www.screener.in/company/{sym}/consolidated/"
-        resp = _YF_SESSION.get(url, timeout=5)
-        if resp.status_code != 200:
-            url = f"https://www.screener.in/company/{sym}/"
+    
+    needs_fundamentals = pd.isna(_safe_float(info.get('trailingPE'))) or pd.isna(_safe_float(info.get('returnOnEquity')))
+    needs_sector = sym not in SECTOR_CACHE
+    
+    if needs_fundamentals or needs_sector:
+        try:
+            url = f"https://www.screener.in/company/{sym}/consolidated/"
             resp = _YF_SESSION.get(url, timeout=5)
-            
-        if resp.status_code == 200:
-            soup = BeautifulSoup(resp.text, 'html.parser')
-            
-            # Scrape top ratios
+            if resp.status_code != 200:
+                url = f"https://www.screener.in/company/{sym}/"
+                resp = _YF_SESSION.get(url, timeout=5)
+                
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, 'html.parser')
+                
+                # Scrape Sector and Industry if needed
+                if needs_sector:
+                    market_links = [a.text.strip() for a in soup.find_all('a') if a.get('href', '').startswith('/market/')]
+                    if market_links:
+                        SECTOR_CACHE[sym] = {
+                            'sector': market_links[0],
+                            'industry': market_links[-1] if len(market_links) > 1 else market_links[0]
+                        }
+                
+                # Scrape top ratios
             ratios = soup.select('ul#top-ratios li')
             for r in ratios:
                 name_elem = r.find('span', class_='name')
@@ -125,8 +153,13 @@ def _fetch_info(ticker: str) -> dict:
                             except ValueError:
                                 pass
                             break
-    except Exception as e:
-        pass
+        except Exception as e:
+            pass
+
+    # Apply cache to info
+    if sym in SECTOR_CACHE:
+        info['sector'] = SECTOR_CACHE[sym].get('sector', info.get('sector'))
+        info['industry'] = SECTOR_CACHE[sym].get('industry', info.get('industry'))
 
     return info
 
@@ -423,6 +456,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         with open("frontend/public/market_data.json", "w") as f:
             json.dump(output_data, f, indent=2)
 
+        save_sector_cache()
         print(f"Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
         
         # Save to database
