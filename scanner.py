@@ -518,7 +518,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
     result_df = pd.DataFrame(final_rows)
     if not result_df.empty:
         result_df.sort_values("Tech_Score", ascending=False, inplace=True, ignore_index=True)
-        result_df = result_df.where(pd.notnull(result_df), None)
+        result_df = result_df.replace({np.nan: None})
         
         output_data = {
             "status": "ok",
