@@ -292,7 +292,7 @@ export default function App() {
             <button 
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 font-mono text-xs uppercase tracking-widest transition-all duration-300 ${activeTab === tab.id ? 'bg-primary text-background shadow-md' : 'border border-btn-border text-muted hover:text-primary hover:border-primary'}`}
+              className={`flex items-center gap-2 px-4 py-2 font-mono text-xs uppercase tracking-widest transition-all duration-300 border ${activeTab === tab.id ? 'border-primary bg-primary text-background shadow-md' : 'border-btn-border text-muted hover:text-primary hover:border-primary'}`}
             >
               <tab.icon size={14} /> <span className="hidden md:inline">{tab.label}</span>
             </button>
