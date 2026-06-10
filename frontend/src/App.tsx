@@ -520,18 +520,25 @@ export default function App() {
                         {selectedAsset?.News_Sentiment !== undefined && selectedAsset.News_Sentiment !== null ? `Sentiment: ${selectedAsset.News_Sentiment}` : ''}
                       </span>
                     </h3>
-                    <div className="mb-4 flex justify-between items-end">
-                      <div className="overflow-hidden pr-2">
-                        <div className="font-mono text-[10px] text-muted uppercase">Name</div>
-                        <div className="font-display text-sm mt-1 text-primary truncate" title={selectedAsset?.Long_Name || 'N/A'}>{selectedAsset?.Long_Name || 'N/A'}</div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className="font-mono text-[10px] text-muted uppercase">Live Price</div>
-                        <div className="font-display text-lg font-semibold text-primary">₹{num(selectedAsset?.Price)}</div>
-                      </div>
+                    <div className="mb-6">
+                      <div className="font-mono text-[10px] text-muted uppercase">Name</div>
+                      <div className="font-display text-sm mt-1 text-primary" title={selectedAsset?.Long_Name || 'N/A'}>{selectedAsset?.Long_Name || 'N/A'}</div>
                     </div>
                     <div className="grid grid-cols-2 gap-y-4 gap-x-2">
-                      {/* Row 1: CEO, Mkt Cap */}
+                      {/* Row 1: Live Price, 1D Change */}
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Live Price</div>
+                        <div className="font-display text-base font-semibold text-primary mt-1">₹{num(selectedAsset?.Price)}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">1D Change</div>
+                        <div className={`font-mono text-xs mt-1 flex items-center font-semibold ${selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] > 0 ? 'text-green-500' : selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] < 0 ? 'text-red-500' : 'text-primary'}`}>
+                          {selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] > 0 ? <TrendingUp size={12} className="mr-1"/> : selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] < 0 ? <TrendingUp size={12} className="mr-1 rotate-180"/> : null}
+                          {selectedAsset?.["1d_Chg_%"] ? `${Math.abs(selectedAsset["1d_Chg_%"]).toFixed(2)}%` : 'N/A'}
+                        </div>
+                      </div>
+
+                      {/* Row 2: CEO, Mkt Cap */}
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">CEO</div>
                         <div className="font-mono text-xs mt-1 text-primary truncate" title={selectedAsset?.CEO || 'N/A'}>{selectedAsset?.CEO || 'N/A'}</div>
