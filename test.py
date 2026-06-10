@@ -1,0 +1,1 @@
+﻿import requests; from bs4 import BeautifulSoup; r = requests.get('https://www.screener.in/company/RELIANCE/'); soup = BeautifulSoup(r.text, 'html.parser'); print([span.text.strip().lower() for span in soup.select('ul#top-ratios li span.name')])

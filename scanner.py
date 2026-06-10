@@ -450,6 +450,8 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
                     pe = close / eps
 
             fwd_pe        = _safe_float(info.get("forwardPE"))
+            if pd.isna(fwd_pe):
+                fwd_pe = pe
             debt_eq       = _safe_float(info.get("debtToEquity"))
             div_yield_pct = round(_safe_float(info.get("dividendYield"), 0), 2)
             mkt_cap_b     = round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2)
