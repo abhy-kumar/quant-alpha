@@ -438,8 +438,8 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             bull = sum(1 for v, w in weighted_signals if v == 1)
             bear = sum(1 for v, w in weighted_signals if v == -1)
 
-            # ── Fundamentals ──────────────────────────────────────────────────
-            is_etf = "BEES" in ticker.upper() or "ETF" in ticker.upper()
+            long_name = info.get("longName") or info.get("shortName") or ticker.replace('.NS', '').replace('.BO', '')
+            is_etf = "BEES" in ticker.upper() or "ETF" in ticker.upper() or "ETF" in long_name.upper()
 
             roe_pct       = round((_safe_float(info.get("returnOnEquity"), 0)) * 100, 2)
             
