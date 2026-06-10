@@ -528,15 +528,15 @@ export default function App() {
                       </div>
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">Revenue</div>
-                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Total_Revenue ? `$${num(selectedAsset?.Total_Revenue / 1e9)}B` : 'N/A'}</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue / 1e9)}B` : 'N/A'}</div>
                       </div>
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">Profit</div>
-                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Net_Income ? `$${num(selectedAsset?.Net_Income / 1e9)}B` : 'N/A'}</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income / 1e9)}B` : 'N/A'}</div>
                       </div>
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">EBITDA</div>
-                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.EBITDA ? `$${num(selectedAsset?.EBITDA / 1e9)}B` : 'N/A'}</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA / 1e9)}B` : 'N/A'}</div>
                       </div>
                     </div>
                   </div>
