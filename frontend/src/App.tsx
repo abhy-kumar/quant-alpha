@@ -38,7 +38,9 @@ interface DashboardData {
   "52W_High"?: number
   "52W_Low"?: number
   "All_Time_High"?: number
+  "ATH_Source"?: string
   "All_Time_Low"?: number
+  "ATL_Source"?: string
   Sig_Price_vs_SMA50?: number
   Sig_Price_vs_SMA200?: number
   Sig_SMA50_vs_SMA200?: number
@@ -279,7 +281,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-300">
       {/* Header */}
-      <header className="border-b border-border py-6 px-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card">
+      <header className="px-10 py-6 border-b border-border bg-card flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 shadow-sm">
         <div>
           <h1 className="font-display font-semibold text-2xl uppercase tracking-wider text-primary">
             Quantitative <span className="text-brand">Alpha</span>
@@ -306,7 +308,7 @@ export default function App() {
           </div>
         </div>
         
-        <div className="flex gap-2 items-center">
+        <div className="flex flex-wrap gap-2 items-center w-full xl:w-auto justify-start xl:justify-end">
           {[
             { id: 'picks', label: 'Top Signals', icon: TrendingUp },
             { id: 'fundamentals', label: 'Screening', icon: Database },
@@ -616,7 +618,12 @@ export default function App() {
                       </div>
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">All-Time Low</div>
-                        <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.All_Time_Low ? `₹${num(selectedAsset?.All_Time_Low)}` : 'N/A'}</div>
+                        <div className="font-mono text-xs mt-1 text-primary truncate flex items-center gap-1">
+                          {selectedAsset?.All_Time_Low ? `₹${num(selectedAsset?.All_Time_Low)}` : 'N/A'}
+                          {selectedAsset?.ATL_Source === '52W' && (
+                            <span className="text-[8px] text-sub border border-border px-1 py-0.5 rounded-sm leading-none mt-px" title="True ATL data unavailable; falling back to 52W low">52W</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -888,7 +895,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-border mt-12 py-12 px-10 bg-card">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 items-start">
           
           <div className="flex flex-col gap-6 w-full max-w-xs opacity-90">
             <div className="flex flex-col gap-2 border border-border bg-card p-4 rounded-sm shadow-sm">

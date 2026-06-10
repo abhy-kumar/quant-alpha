@@ -47,9 +47,9 @@ def _fetch_ohlcv_with_retry(ticker: str, period: str = PERIOD) -> pd.DataFrame:
             )
             if df.empty:
                 raise ValueError("Empty OHLCV response")
-            df.dropna(inplace=True)
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
+            df.dropna(subset=['Close'], inplace=True)
             if len(df) < MIN_ROWS and period == PERIOD:
                 raise ValueError(f"Only {len(df)} rows")
             return df
@@ -66,15 +66,25 @@ def _get_ath(ticker: str, default_52w: float) -> tuple[float, str]:
         return cached_ath, "Historical"
     return default_52w, "52W"
 
+def _get_atl(ticker: str, default_52w_low: float) -> tuple[float, str]:
+    sym = ticker.replace('.NS', '').replace('.BO', '')
+    cached_atl = cache_manager.get("atl", sym, ttl=CACHE_TTL_ATH)
+    if cached_atl is not None:
+        return cached_atl, "Historical"
+    return default_52w_low, "52W"
+
 def _background_fetch_ath(tickers_to_fetch: list[str]):
     for ticker in tickers_to_fetch:
         sym = ticker.replace('.NS', '').replace('.BO', '')
         try:
             df = _fetch_ohlcv_with_retry(ticker, period="max")
             actual_ath = _safe_float(df["High"].max())
+            actual_atl = _safe_float(df["Low"].min())
             if not np.isnan(actual_ath):
                 cache_manager.set("ath", sym, round(actual_ath, 2))
-                cache_manager.save_all()
+            if not np.isnan(actual_atl):
+                cache_manager.set("atl", sym, round(actual_atl, 2))
+            cache_manager.save_all()
         except Exception:
             pass
         time.sleep(0.5)
@@ -255,12 +265,16 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         try:
             info = _fetch_info(ticker)
             fifty_two_high = _safe_float(info.get("fiftyTwoWeekHigh"))
+            fifty_two_low = _safe_float(info.get("fiftyTwoWeekLow"))
             df_high = _safe_float(df["High"].max()) if df is not None and not df.empty else np.nan
+            df_low = _safe_float(df["Low"].min()) if df is not None and not df.empty else np.nan
             base_high = np.nanmax([df_high, fifty_two_high]) if not np.isnan(np.nanmax([df_high, fifty_two_high])) else np.nan
+            base_low = np.nanmin([df_low, fifty_two_low]) if not np.isnan(np.nanmin([df_low, fifty_two_low])) else np.nan
             ath, ath_source = _get_ath(ticker, base_high)
-            return ticker, info, ath, ath_source, None
+            atl, atl_source = _get_atl(ticker, base_low)
+            return ticker, info, ath, ath_source, atl, atl_source, None
         except Exception as e:
-            return ticker, None, None, None, e
+            return ticker, None, None, None, None, None, e
 
     ohlcv_results = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS_OHLCV) as executor:
@@ -279,9 +293,9 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         futures = {executor.submit(fetch_info_job, t, ohlcv_results[t]): t for t in valid_tickers}
         completed = 0
         for future in concurrent.futures.as_completed(futures):
-            t, info, ath, ath_source, err = future.result()
+            t, info, ath, ath_source, atl, atl_source, err = future.result()
             if info is not None:
-                info_results[t] = {"info": info, "ath": ath, "ath_source": ath_source}
+                info_results[t] = {"info": info, "ath": ath, "ath_source": ath_source, "atl": atl, "atl_source": atl_source}
             completed += 1
             if progress_callback: progress_callback(total + completed, total * 2, f"Fetching Info {t}")
 
@@ -356,7 +370,9 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             "ticker": ticker, "is_etf": is_etf, "sector": sector, "industry": industry,
             "info": info, "tech": tech, "met": met, "latest": latest, "prev": prev,
             "rs_composite": rs_score, "pe": pe, "roe": roe_pct, "debt_eq": debt_eq,
-            "ath": data["ath"], "ath_source": data["ath_source"], "long_name": long_name
+            "ath": data["ath"], "ath_source": data["ath_source"], 
+            "atl": data["atl"], "atl_source": data["atl_source"],
+            "long_name": long_name
         })
 
     sector_medians = {}
@@ -472,7 +488,9 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             "52W_Low":          _safe_float(info.get("fiftyTwoWeekLow")),
             "All_Time_High":    item["ath"],
             "ATH_Source":       item["ath_source"],
-            "Fund_Score":       round(item["fund_score"], 1),
+            "All_Time_Low":     item["atl"],
+            "ATL_Source":       item["atl_source"],
+            "Fund_Score":       round(item["fund_score"], 2),
             "Composite_Score":  round(item["composite_score"], 2),
             "Composite_Score_Tech": round(item["composite_score_tech"], 2),
             "Composite_Score_Fund": round(item["composite_score_fund"], 2),
