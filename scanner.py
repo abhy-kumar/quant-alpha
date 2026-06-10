@@ -460,7 +460,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             eps_growth = _safe_float(info.get("earningsGrowth"))
             rev_growth = _safe_float(info.get("revenueGrowth"))
 
-            long_name = info.get("longName", "Unknown")
+            long_name = info.get("longName") or info.get("shortName") or ticker.replace('.NS', '').replace('.BO', '')
             total_revenue = _safe_float(info.get("totalRevenue"))
             net_income = _safe_float(info.get("netIncomeToCommon"))
             ebitda = _safe_float(info.get("ebitda"))
