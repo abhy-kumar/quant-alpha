@@ -45,7 +45,10 @@ stock-dashboard/
 │       ├── components/         # Reusable UI components (shadcn/ui)
 │       └── App.tsx             # Main dashboard interface
 ├── assets/                     # Documentation assets and logos
-├── scanner.py                  # Core Python algorithmic and data extraction engine
+├── nse_fetcher.py              # Fetches the active universe of NSE liquid stocks
+├── indicators.py               # Technical indicator mathematical models
+├── recommendation.py           # Core scoring models and conviction algorithms
+├── scanner.py                  # Orchestrator and data extraction engine
 └── requirements.txt            # Python dependencies
 ```
 
@@ -57,6 +60,46 @@ The platform operates on a decoupled, highly efficient stack designed for maximu
 - **Data Engine**: Python (`pandas`, `numpy`, `yfinance`, `vaderSentiment`)
 - **Data Delivery**: Automated static JSON artifacts served directly to the client
 - **Serverless API**: Vercel Serverless Functions for real-time data streaming
+
+```text
++-------------------------------------------------------------------------+
+|                              DATA PIPELINE                              |
++-------------------------------------------------------------------------+
+|  [nse_fetcher.py]                                                       |
+|  1. Fetches top 150 NSE liquid stocks                                   |
+|         |                                                               |
+|         v                                                               |
+|  [scanner.py] (Main Orchestrator)                                       |
+|  2. Downloads historical OHLCV & Fundamental Data via yfinance/screener |
+|         |                                                               |
+|         +--> [indicators.py]                                            |
+|         |    - Computes RSI, MACD, Bollinger Bands, Supertrend          |
+|         |                                                               |
+|         +--> [recommendation.py]                                        |
+|         |    - Calculates Tech Score, Fund Score & Conviction Rating    |
+|         |                                                               |
+|  3. Synthesizes data and writes to static artifacts                     |
++---------+-----------------------------------+---------------------------+
+          |                                   |
+          v                                   v
++------------------------+      +---------------------------+
+|    market_data.json    |      | historical_scans (SQLite) |
+| (Static JSON Payload)  |      |   (Data Persistence)      |
++---------+--------------+      +---------------------------+
+          |
+          v
++-------------------------------------------------------------------------+
+|                               FRONTEND                                  |
++-------------------------------------------------------------------------+
+|  [React / Vite Dashboard]                                               |
+|  - Loads static market_data.json on initialization                      |
+|         |                                                               |
+|         v                                                               |
+|  [Vercel Serverless Functions]                                          |
+|  - /api/live_data.ts : Real-time polling during market hours            |
+|  - /api/chart.ts     : Intraday high-resolution charting                |
++-------------------------------------------------------------------------+
+```
 
 ## <img src="https://unpkg.com/lucide-static@0.321.0/icons/terminal.svg" width="24" height="24" align="top" /> Local Setup
 
