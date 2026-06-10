@@ -514,7 +514,7 @@ export default function App() {
                     <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-4 border-b border-border pb-2 font-semibold flex justify-between">
                       Company Profile
                       <span className={Number(selectedAsset?.News_Sentiment) > 0.1 ? "text-green-600 dark:text-green-500" : Number(selectedAsset?.News_Sentiment) < -0.1 ? "text-red-600 dark:text-red-500" : "text-muted"}>
-                        {selectedAsset?.News_Sentiment !== undefined && selectedAsset.News_Sentiment !== null && selectedAsset.News_Sentiment !== "" ? `Sentiment: ${selectedAsset.News_Sentiment}` : ''}
+                        {selectedAsset?.News_Sentiment !== undefined && selectedAsset.News_Sentiment !== null ? `Sentiment: ${selectedAsset.News_Sentiment}` : ''}
                       </span>
                     </h3>
                     <div className="mb-4">
