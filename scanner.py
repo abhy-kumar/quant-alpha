@@ -9,6 +9,8 @@ import queue
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 import requests
+import os
+import sqlite3
 import pandas as pd
 import numpy as np
 import yfinance as yf
@@ -28,7 +30,7 @@ from recommendation import compute_fund_score, compute_tech_score, get_convictio
 IST = timezone(timedelta(hours=5, minutes=30))
 _YF_SESSION = requests.Session()
 _YF_SESSION.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 })
 
 cache_manager = CacheManager()
@@ -62,18 +64,20 @@ def _get_ath(ticker: str, default_52w: float) -> tuple[float, str]:
     cached_ath = cache_manager.get("ath", sym, ttl=CACHE_TTL_ATH)
     if cached_ath is not None:
         return cached_ath, "Historical"
-        
-    try:
-        df = _fetch_ohlcv_with_retry(ticker, period="max")
-        actual_ath = _safe_float(df["High"].max())
-        if not np.isnan(actual_ath):
-            ath = round(actual_ath, 2)
-            cache_manager.set("ath", sym, ath)
-            return ath, "Historical"
-    except Exception:
-        pass
-    
     return default_52w, "52W"
+
+def _background_fetch_ath(tickers_to_fetch: list[str]):
+    for ticker in tickers_to_fetch:
+        sym = ticker.replace('.NS', '').replace('.BO', '')
+        try:
+            df = _fetch_ohlcv_with_retry(ticker, period="max")
+            actual_ath = _safe_float(df["High"].max())
+            if not np.isnan(actual_ath):
+                cache_manager.set("ath", sym, round(actual_ath, 2))
+                cache_manager.save_all()
+        except Exception:
+            pass
+        time.sleep(0.5)
 
 def _fetch_info(ticker: str) -> dict:
     sym = ticker.replace('.NS', '').replace('.BO', '')
@@ -297,11 +301,12 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         
         rs_score = 0.0
         rs_components = []
-        if not np.isnan(tech["rs_6m"]): rs_components.append(tech["rs_6m"] * 0.5)
-        if not np.isnan(tech["rs_3m"]): rs_components.append(tech["rs_3m"] * 0.3)
-        if not np.isnan(tech["rs_1m"]): rs_components.append(tech["rs_1m"] * 0.2)
+        if not np.isnan(tech["rs_6m"]): rs_components.append((tech["rs_6m"], 0.5))
+        if not np.isnan(tech["rs_3m"]): rs_components.append((tech["rs_3m"], 0.3))
+        if not np.isnan(tech["rs_1m"]): rs_components.append((tech["rs_1m"], 0.2))
         if rs_components:
-            rs_score = sum(rs_components)
+            total_weight = sum(w for val, w in rs_components)
+            rs_score = sum(val * (w / total_weight) for val, w in rs_components)
             rs_composites.append(rs_score)
             
         sym = ticker.replace('.NS', '').replace('.BO', '')
@@ -316,7 +321,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         close = _safe_float(latest["Close"])
         if pd.isna(pe):
             eps = _safe_float(info.get("trailingEps"))
-            if not pd.isna(eps) and eps < 0 and close > 0:
+            if not pd.isna(eps) and eps != 0 and close > 0:
                 pe = close / eps
                 
         roe_pct = round((_safe_float(info.get("returnOnEquity"), 0)) * 100, 2)
@@ -475,7 +480,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
     result_df = pd.DataFrame(final_rows)
     if not result_df.empty:
         result_df.sort_values("Tech_Score", ascending=False, inplace=True, ignore_index=True)
-        result_df = result_df.fillna("")
+        result_df = result_df.where(pd.notnull(result_df), None)
         
         output_data = {
             "status": "ok",
@@ -484,9 +489,6 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             "market_regime_score": regime_score,
             "data": result_df.to_dict(orient="records")
         }
-        
-        import os
-        import sqlite3
         
         os.makedirs("frontend/public", exist_ok=True)
         with open("frontend/public/market_data.json", "w") as f:
@@ -513,6 +515,10 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             log.info(f"Successfully appended {len(sql_df)} records to historical_scans database.")
         except Exception as e:
             log.error(f"Failed to save to database: {e}")
+
+        missing_aths = [row["Ticker"] for row in final_rows if row["ATH_Source"] == "52W"]
+        if missing_aths:
+            threading.Thread(target=_background_fetch_ath, args=(missing_aths,), daemon=True).start()
 
     return result_df
 

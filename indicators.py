@@ -76,9 +76,6 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     # ── NEW: Supertrend ───────────────────────────────────────────────────────
     df = _add_supertrend(df, period=10, multiplier=3.0)
 
-    # ── NEW: OBV ──────────────────────────────────────────────────────────────
-    df = _add_obv(df)
-
     # ── NEW: Weekly Supertrend ───────────────────────────────────────────────
     df = add_weekly_supertrend(df)
 
@@ -242,24 +239,6 @@ def _add_supertrend(
 
 
 # ---------------------------------------------------------------------------
-# OBV (On-Balance Volume)
-# ---------------------------------------------------------------------------
-
-def _add_obv(df: pd.DataFrame) -> pd.DataFrame:
-    """Calculate On-Balance Volume and its 20-EMA."""
-    close = df["Close"]
-    vol = df["Volume"]
-    
-    close_diff = close.diff()
-    direction = np.where(close_diff > 0, 1, np.where(close_diff < 0, -1, 0))
-    obv = (vol * direction).cumsum()
-    
-    df["OBV"] = obv
-    df["OBV_EMA20"] = obv.ewm(span=20, adjust=False).mean()
-    return df
-
-
-# ---------------------------------------------------------------------------
 # VPT (Volume Price Trend)
 # ---------------------------------------------------------------------------
 
@@ -291,13 +270,13 @@ def _add_ichimoku(df: pd.DataFrame) -> pd.DataFrame:
     period26_low = low.rolling(window=26).min()
     df["Ichimoku_Kijun"] = (period26_high + period26_low) / 2
     
-    # Senkou Span A (Shifted forward 26 periods) -> value at t is (Tenkan(t-26) + Kijun(t-26))/2
-    df["Ichimoku_SpanA"] = ((df["Ichimoku_Tenkan"] + df["Ichimoku_Kijun"]) / 2).shift(26)
+    # Senkou Span A (Current cloud level, no forward shift)
+    df["Ichimoku_SpanA"] = (df["Ichimoku_Tenkan"] + df["Ichimoku_Kijun"]) / 2
     
-    # Senkou Span B (52 period, shifted forward 26 periods)
+    # Senkou Span B (52 period, current cloud level, no forward shift)
     period52_high = high.rolling(window=52).max()
     period52_low = low.rolling(window=52).min()
-    df["Ichimoku_SpanB"] = ((period52_high + period52_low) / 2).shift(26)
+    df["Ichimoku_SpanB"] = (period52_high + period52_low) / 2
     
     return df
 
@@ -348,7 +327,7 @@ def compute_metrics(df: pd.DataFrame) -> dict:
         if len(df) > 1 else 0
     )
     ann_vol  = float(returns.std()) * np.sqrt(252) if len(returns) > 1 else 0
-    sharpe   = ann_ret / ann_vol if ann_vol else 0
+    sharpe   = (ann_ret - 0.065) / ann_vol if ann_vol else 0
 
     roll_max  = close.cummax()
     drawdowns = (close - roll_max) / roll_max
