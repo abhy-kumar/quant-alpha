@@ -73,6 +73,12 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     # ── NEW: Supertrend ───────────────────────────────────────────────────────
     df = _add_supertrend(df, period=10, multiplier=3.0)
 
+    # ── NEW: OBV ──────────────────────────────────────────────────────────────
+    df = _add_obv(df)
+
+    # ── NEW: Weekly Supertrend ───────────────────────────────────────────────
+    df = add_weekly_supertrend(df)
+
     return df
 
 
@@ -198,6 +204,57 @@ def _add_supertrend(
 
     df["Supertrend"]   = supertrend
     df["ST_Direction"] = direction
+    return df
+
+
+# ---------------------------------------------------------------------------
+# OBV (On-Balance Volume)
+# ---------------------------------------------------------------------------
+
+def _add_obv(df: pd.DataFrame) -> pd.DataFrame:
+    """Calculate On-Balance Volume and its 20-EMA."""
+    close = df["Close"]
+    vol = df["Volume"]
+    
+    close_diff = close.diff()
+    direction = np.where(close_diff > 0, 1, np.where(close_diff < 0, -1, 0))
+    obv = (vol * direction).cumsum()
+    
+    df["OBV"] = obv
+    df["OBV_EMA20"] = obv.ewm(span=20, adjust=False).mean()
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Weekly Supertrend
+# ---------------------------------------------------------------------------
+
+def add_weekly_supertrend(df: pd.DataFrame) -> pd.DataFrame:
+    """Resample to weekly to calculate weekly Supertrend."""
+    if not isinstance(df.index, pd.DatetimeIndex):
+        df["Weekly_ST_Direction"] = np.nan
+        return df
+        
+    weekly_df = df.resample('W-FRI').agg({
+        'Open': 'first',
+        'High': 'max',
+        'Low': 'min',
+        'Close': 'last',
+        'Volume': 'sum'
+    }).dropna()
+    
+    if len(weekly_df) < 5:
+        df["Weekly_ST_Direction"] = np.nan
+        return df
+        
+    weekly_df = _add_atr(weekly_df, period=10)
+    weekly_df = _add_supertrend(weekly_df, period=10, multiplier=3.0)
+    
+    st_dir_weekly = weekly_df[["ST_Direction"]].rename(columns={"ST_Direction": "Weekly_ST_Direction"})
+    
+    df = df.join(st_dir_weekly, how='left')
+    df["Weekly_ST_Direction"] = df["Weekly_ST_Direction"].ffill()
+    
     return df
 
 

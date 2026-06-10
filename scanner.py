@@ -187,74 +187,83 @@ def _compute_fund_score(
     div_yield_pct: float,
     mkt_cap_b: float,
     sharpe: float,
+    eps_growth: float,
+    rev_growth: float
 ) -> int:
     """
     Score fundamental quality on a 0–10 integer scale.
-
-    ROE         → up to 2 pts  (quality of returns)
-    P/E         → up to 2 pts  (valuation)
-    Debt/Equity → up to 2 pts  (financial risk)
-    Fwd vs Ttm  → 1 pt         (growth expectation)
-    Div Yield   → 1 pt         (shareholder return)
-    Market Cap  → 1 pt         (scale/stability)
-    Sharpe      → 1 pt         (risk-adjusted performance)
     """
-    score = 0
+    score = 0.0
 
     # ── ROE ──────────────────────────────────────────────────────────────────
     if not np.isnan(roe_pct):
         if roe_pct >= 15:
-            score += 2
+            score += 1.5
         elif roe_pct >= 8:
-            score += 1
+            score += 0.5
 
-    # ── P/E ──────────────────────────────────────────────────────────────────
-    if not np.isnan(pe) and pe > 0:
-        if pe < 20:
-            score += 2
-        elif pe < 35:
-            score += 1
+    # ── Valuation / Growth (PEG) ─────────────────────────────────────────────
+    if not np.isnan(pe) and not np.isnan(eps_growth) and eps_growth > 0:
+        peg = pe / (eps_growth * 100)
+        if peg < 1.0: score += 2
+        elif peg < 1.5: score += 1
+    elif not np.isnan(pe) and pe > 0:
+        if pe < 20: score += 2
+        elif pe < 35: score += 1
 
     # ── Debt / Equity ─────────────────────────────────────────────────────────
     if not np.isnan(debt_eq):
         if debt_eq < 0.5:
-            score += 2
+            score += 1.5
         elif debt_eq < 1.0:
-            score += 1
+            score += 0.5
     else:
-        score += 1   # benefit of doubt when no debt data available
+        score += 0.5
 
-    # ── Forward P/E vs Trailing (growth expectation) ─────────────────────────
-    if (not np.isnan(fwd_pe) and not np.isnan(pe)
-            and pe > 0 and fwd_pe > 0 and fwd_pe < pe):
-        score += 1
+    # ── Growth ───────────────────────────────────────────────────────────────
+    if not np.isnan(eps_growth) and eps_growth > 0.15:
+        score += 1.5
+    if not np.isnan(rev_growth) and rev_growth > 0.10:
+        score += 1.0
 
     # ── Dividend Yield ────────────────────────────────────────────────────────
     if not np.isnan(div_yield_pct) and div_yield_pct > 1.0:
-        score += 1
+        score += 0.5
 
     # ── Market Cap ────────────────────────────────────────────────────────────
     if not np.isnan(mkt_cap_b) and mkt_cap_b >= 10:
-        score += 1
+        score += 1.0
 
     # ── Sharpe ───────────────────────────────────────────────────────────────
     if not np.isnan(sharpe) and sharpe > 1.0:
-        score += 1
+        score += 1.0
 
-    return min(score, 10)
+    return min(int(score), 10)
 
 
-def _conviction_rating(tech_score: float, fund_score: int) -> str:
+def _conviction_rating(tech_score: float, fund_score: int, market_regime: str, weekly_bullish: bool) -> str:
     """Map (Tech_Score, Fund_Score) → qualitative conviction label."""
     if tech_score > 0.4 and fund_score >= 7:
-        return "Strong Buy"
-    if tech_score > 0.2 and fund_score >= 5:
-        return "Buy"
-    if tech_score > -0.2 and fund_score >= 3:
-        return "Hold"
-    if tech_score <= -0.4 or fund_score <= 1:
-        return "Avoid"
-    return "Caution"
+        rating = "Strong Buy"
+    elif tech_score > 0.2 and fund_score >= 5:
+        rating = "Buy"
+    elif tech_score > -0.2 and fund_score >= 3:
+        rating = "Hold"
+    elif tech_score <= -0.4 or fund_score <= 1:
+        rating = "Avoid"
+    else:
+        rating = "Caution"
+
+    if rating == "Strong Buy" and not weekly_bullish:
+        rating = "Buy"
+
+    if market_regime == "Bearish":
+        if rating == "Strong Buy":
+            rating = "Buy"
+        elif rating == "Buy":
+            rating = "Hold"
+
+    return rating
 
 
 # ---------------------------------------------------------------------------
@@ -277,6 +286,27 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
     total     = len(tickers)
     rows: list[dict] = []
     log:  list[dict] = []
+
+    # ── Market Regime ────────────────────────────────────────────────────────
+    market_regime = "Neutral"
+    nifty_df = None
+    try:
+        nifty_df = _fetch_ohlcv("^NSEI")
+        if not nifty_df.empty:
+            nifty_df = add_indicators(nifty_df)
+            nifty_latest = nifty_df.iloc[-1]
+            nifty_close = _safe_float(nifty_latest["Close"])
+            nifty_sma200 = _safe_float(nifty_latest["SMA_200"])
+            nifty_sma50 = _safe_float(nifty_latest["SMA_50"])
+            
+            if nifty_close > nifty_sma200 and nifty_sma50 > nifty_sma200:
+                market_regime = "Bullish"
+            elif nifty_close < nifty_sma200:
+                market_regime = "Bearish"
+    except Exception as e:
+        print(f"Failed to fetch Nifty: {e}")
+
+
 
     for i, ticker in enumerate(tickers):
         if progress_callback is not None:
@@ -337,15 +367,47 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             st_dir        = _safe_float(latest.get("ST_Direction", np.nan), default=np.nan)
             sig_supertrend = 0 if np.isnan(st_dir) else int(-st_dir)   # -1→1 (bull), 1→-1 (bear)
 
-            signals = [
-                sig_price_sma50, sig_price_sma200, sig_sma50_sma200,
-                sig_rsi, sig_macd, sig_macd_hist, sig_stoch,
-                sig_bb, sig_cci, sig_vol, sig_adx, sig_supertrend,
+            obv_latest = _safe_float(latest.get("OBV", np.nan))
+            obv_ema    = _safe_float(latest.get("OBV_EMA20", np.nan))
+            sig_obv    = 1 if obv_latest > obv_ema else -1
+            
+            weekly_st_dir = _safe_float(latest.get("Weekly_ST_Direction", np.nan))
+            weekly_bullish = weekly_st_dir == -1
+
+            weighted_signals = [
+                (sig_supertrend, 2.0),
+                (sig_price_sma200, 2.0),
+                (sig_sma50_sma200, 2.0),
+                (sig_adx, 2.0),
+                (sig_macd, 1.0),
+                (sig_rsi, 1.0),
+                (sig_obv, 1.0),
+                (sig_price_sma50, 1.0),
+                (sig_stoch, 0.5),
+                (sig_cci, 0.5),
+                (sig_bb, 0.5),
+                (sig_macd_hist, 0.5)
             ]
 
-            bull  = sum(1 for v in signals if v == 1)
-            bear  = sum(1 for v in signals if v == -1)
-            score = (bull - bear) / len(signals)
+            bull_score = sum(w for v, w in weighted_signals if v == 1)
+            bear_score = sum(w for v, w in weighted_signals if v == -1)
+            total_weight = sum(w for _, w in weighted_signals)
+            
+            score = (bull_score - bear_score) / total_weight if total_weight else 0
+            
+            rs_score = 0
+            if nifty_df is not None and len(df) >= 60 and len(nifty_df) >= 60:
+                try:
+                    stock_3m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-60])) - 1
+                    nifty_3m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-60])) - 1
+                    rs_score = stock_3m - nifty_3m
+                    if rs_score < -0.10:
+                        score -= 0.2
+                except Exception:
+                    pass
+            
+            bull = sum(1 for v, w in weighted_signals if v == 1)
+            bear = sum(1 for v, w in weighted_signals if v == -1)
 
             # ── Fundamentals ──────────────────────────────────────────────────
             is_etf = "BEES" in ticker.upper() or "ETF" in ticker.upper()
@@ -364,6 +426,9 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             mkt_cap_b     = round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2)
             sharpe        = met["Sharpe"]
 
+            eps_growth = _safe_float(info.get("earningsGrowth"))
+            rev_growth = _safe_float(info.get("revenueGrowth"))
+
             if is_etf:
                 sector = "ETF"
                 industry = "Exchange Traded Fund"
@@ -373,10 +438,11 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
                 industry = info.get("industry", "Unknown") or "Unknown"
                 fund_score = _compute_fund_score(
                     roe_pct, pe, fwd_pe, debt_eq,
-                    div_yield_pct, mkt_cap_b, sharpe
+                    div_yield_pct, mkt_cap_b, sharpe,
+                    eps_growth, rev_growth
                 )
                 
-            conviction = _conviction_rating(score, fund_score)
+            conviction = _conviction_rating(score, fund_score, market_regime, weekly_bullish)
 
             rows.append({
                 # ── Identity ──────────────────────────────────────────────
