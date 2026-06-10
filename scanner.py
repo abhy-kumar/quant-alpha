@@ -463,6 +463,11 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             net_income = _safe_float(info.get("netIncomeToCommon"))
             ebitda = _safe_float(info.get("ebitda"))
             
+            fifty_two_high = _safe_float(info.get("fiftyTwoWeekHigh"))
+            fifty_two_low = _safe_float(info.get("fiftyTwoWeekLow"))
+            all_time_high = round(_safe_float(df["High"].max()), 2) if not df.empty else np.nan
+            all_time_low = round(_safe_float(df["Low"].min()), 2) if not df.empty else np.nan
+            
             ceo_name = "Unknown"
             officers = info.get("companyOfficers", [])
             if officers:
@@ -528,9 +533,13 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
                 "P/E":              np.nan if is_etf else (pe if pd.isna(pe) else round(pe, 2)),
                 "Forward_P/E":      np.nan if is_etf else (fwd_pe if pd.isna(fwd_pe) else round(fwd_pe, 2)),
                 "ROE_%":            np.nan if is_etf else roe_pct,
-                "Debt_to_Equity":   np.nan if is_etf else debt_eq,
+                "Debt_to_Equity":   np.nan if is_etf else round(debt_eq, 2),
                 "Div_Yield_%":      np.nan if is_etf else div_yield_pct,
                 "Market_Cap_B":     np.nan if is_etf else mkt_cap_b,
+                "52W_High":         fifty_two_high,
+                "52W_Low":          fifty_two_low,
+                "All_Time_High":    all_time_high,
+                "All_Time_Low":     all_time_low,
                 "Fund_Score":       fund_score,
                 "Conviction":       conviction,
                 # ── Indicator values ──────────────────────────────────────
@@ -547,8 +556,6 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
                 "Vol_vs_Avg_%":     round(
                     (_safe_float(latest["Volume"]) / max(_safe_float(latest["VOL_MA20"]), 1) - 1) * 100, 1
                 ),
-                "52W_High":         round(float(df["High"].max()), 2),
-                "52W_Low":          round(float(df["Low"].min()),  2),
                 # ── Signal flags ─────────────────────────────────────────
                 "Sig_Price_vs_SMA50":   sig_price_sma50,
                 "Sig_Price_vs_SMA200":  sig_price_sma200,
