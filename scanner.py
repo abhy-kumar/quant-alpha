@@ -164,7 +164,7 @@ def _fetch_info(ticker: str) -> dict:
                     elif 'roe' in name and pd.isna(_safe_float(info.get('returnOnEquity'))):
                         info['returnOnEquity'] = val / 100.0
                     elif 'dividend yield' in name and pd.isna(_safe_float(info.get('dividendYield'))):
-                        info['dividendYield'] = val / 100.0
+                        info['dividendYield'] = val
 
             # Scrape peers table for Debt to Equity
             peers_table = soup.find('table', class_='data-table')
@@ -241,9 +241,9 @@ def _compute_fund_score(
 
     # ── Debt / Equity ─────────────────────────────────────────────────────────
     if not np.isnan(debt_eq):
-        if debt_eq < 0.5:
+        if debt_eq < 50:
             score += 1.5
-        elif debt_eq < 1.0:
+        elif debt_eq < 100:
             score += 0.5
     else:
         score += 0.5
@@ -451,7 +451,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
 
             fwd_pe        = _safe_float(info.get("forwardPE"))
             debt_eq       = _safe_float(info.get("debtToEquity"))
-            div_yield_pct = round((_safe_float(info.get("dividendYield"), 0)) * 100, 2)
+            div_yield_pct = round(_safe_float(info.get("dividendYield"), 0), 2)
             mkt_cap_b     = round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2)
             sharpe        = met["Sharpe"]
 
@@ -465,8 +465,10 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             
             fifty_two_high = _safe_float(info.get("fiftyTwoWeekHigh"))
             fifty_two_low = _safe_float(info.get("fiftyTwoWeekLow"))
-            all_time_high = round(_safe_float(df["High"].max()), 2) if not df.empty else np.nan
-            all_time_low = round(_safe_float(df["Low"].min()), 2) if not df.empty else np.nan
+            df_high = _safe_float(df["High"].max()) if not df.empty else np.nan
+            df_low = _safe_float(df["Low"].min()) if not df.empty else np.nan
+            all_time_high = round(np.nanmax([df_high, fifty_two_high]), 2) if not np.isnan(np.nanmax([df_high, fifty_two_high])) else np.nan
+            all_time_low = round(np.nanmin([df_low, fifty_two_low]), 2) if not np.isnan(np.nanmin([df_low, fifty_two_low])) else np.nan
             
             ceo_name = "Unknown"
             officers = info.get("companyOfficers", [])
