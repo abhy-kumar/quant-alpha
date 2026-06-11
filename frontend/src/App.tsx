@@ -203,7 +203,7 @@ export default function App() {
     const fetchChart = async () => {
       setChartLoading(true)
       try {
-        const res = await axios.get(`/api/chart?ticker=${selectedTicker}&period=${chartPeriod}&interval=${chartInterval}`)
+        const res = await axios.get(`/api/chart?ticker=${encodeURIComponent(selectedTicker)}&period=${chartPeriod}&interval=${chartInterval}`)
         if (res.data.status === 'ok') {
           setChartData(res.data.data)
         } else {
