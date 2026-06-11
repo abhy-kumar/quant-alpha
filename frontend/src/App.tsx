@@ -761,7 +761,7 @@ export default function App() {
                               <YAxis 
                                 yAxisId="volume"
                                 orientation="right"
-                                domain={[0, 'dataMax * 4']} 
+                                domain={[0, dataMax => dataMax * 4]} 
                                 hide={true}
                               />
                               <Tooltip 
@@ -771,7 +771,7 @@ export default function App() {
                               />
                               <Legend verticalAlign="top" height={36} align="right" wrapperStyle={{fontFamily: 'Space Mono', fontSize: '10px', color: isDark ? '#71717A' : '#64748b'}}/>
                               
-                              <Bar yAxisId="volume" name="Volume" dataKey="volume" fill={isDark ? "#27272A" : "#e2e8f0"} barSize={4} />
+                              <Bar yAxisId="volume" name="Volume" dataKey="volume" fill={isDark ? "#3F3F46" : "#cbd5e1"} maxBarSize={6} />
                               <Area yAxisId="price" type="monotone" name="Close" dataKey="close" stroke="#C8102E" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
                               <Line yAxisId="price" type="monotone" name="SMA 50" dataKey="sma50" stroke="#3B82F6" strokeWidth={1} dot={false} />
                               <Line yAxisId="price" type="monotone" name="SMA 200" dataKey="sma200" stroke="#F59E0B" strokeWidth={1} dot={false} strokeDasharray="5 5" />
