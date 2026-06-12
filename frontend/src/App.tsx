@@ -135,11 +135,19 @@ export default function App() {
   }
   
   const sortedData = useMemo(() => {
+    const stringFields = new Set(['Ticker', 'Sector', 'Conviction', 'Industry', 'Long_Name', 'ST_Signal'])
     const arr = [...data]
     arr.sort((a, b) => {
-      const av = Number((a as any)[sortKey]) || 0
-      const bv = Number((b as any)[sortKey]) || 0
-      return sortDir === 'asc' ? av - bv : bv - av
+      const av = (a as any)[sortKey]
+      const bv = (b as any)[sortKey]
+      if (stringFields.has(sortKey)) {
+        const as = String(av || '').toLowerCase()
+        const bs = String(bv || '').toLowerCase()
+        return sortDir === 'asc' ? as.localeCompare(bs) : bs.localeCompare(as)
+      }
+      const an = Number(av) || 0
+      const bn = Number(bv) || 0
+      return sortDir === 'asc' ? an - bn : bn - an
     })
     return arr
   }, [data, sortKey, sortDir])
@@ -347,9 +355,9 @@ export default function App() {
     )
   }
 
-  const SortHeader = ({ field, children }: { field: string; children: React.ReactNode }) => (
+  const SortHeader = ({ field, children, align = 'left' }: { field: string; children: React.ReactNode; align?: 'left' | 'right' }) => (
     <th 
-      className="p-4 font-semibold cursor-pointer hover:text-brand transition-colors select-none"
+      className={`p-3 font-semibold cursor-pointer hover:text-brand transition-colors select-none text-${align}`}
       onClick={() => handleSort(field)}
     >
       <span className="flex items-center gap-1">
@@ -370,25 +378,25 @@ export default function App() {
           <div className="h-4 w-px bg-border hidden sm:block"></div>
           <span className="font-mono text-[10px] text-sub tracking-widest uppercase hidden lg:block whitespace-nowrap">Alpha Research & Investment Club | FMS Delhi</span>
           <div className="flex-1"></div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {niftyData && (
-              <span className={`px-2 py-1 font-mono text-[10px] border border-border whitespace-nowrap ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
-                NIFTY 50: {niftyData.price} ({niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%)
+              <span className={`px-2 py-1 font-mono text-[10px] border border-border ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
+                NIFTY: {niftyData.price} ({niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%)
               </span>
             )}
             {coveragePct !== null && (
-              <span className="px-2 py-1 font-mono text-[10px] border border-border text-muted whitespace-nowrap hidden sm:block">
+              <span className="px-2 py-1 font-mono text-[10px] border border-border text-muted hidden sm:block">
                 Coverage: {coveragePct}%
               </span>
             )}
             {marketRegimeScore !== null && (
-              <span className={`px-2 py-1 font-mono text-[10px] border border-border whitespace-nowrap ${marketRegimeScore > 0 ? 'text-green-600 dark:text-green-500' : marketRegimeScore < 0 ? 'text-red-600 dark:text-red-500' : 'text-muted'}`}>
+              <span className={`px-2 py-1 font-mono text-[10px] border border-border ${marketRegimeScore > 0 ? 'text-green-600 dark:text-green-500' : marketRegimeScore < 0 ? 'text-red-600 dark:text-red-500' : 'text-muted'}`}>
                 Regime: {marketRegimeScore > 0 ? 'Bullish' : marketRegimeScore < 0 ? 'Bearish' : 'Neutral'} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
               </span>
             )}
             <button 
               onClick={() => setIsDark(!isDark)}
-              className="p-1.5 border border-border text-muted hover:text-primary hover:border-primary transition-colors ml-1"
+              className="p-1.5 border border-border text-muted hover:text-primary hover:border-primary transition-colors"
               title="Toggle Theme"
             >
               {isDark ? <Sun size={14} /> : <Moon size={14} />}
@@ -545,15 +553,15 @@ export default function App() {
                       <tr className="border-b border-border text-sub uppercase tracking-widest bg-black/5 dark:bg-black/50">
                         <SortHeader field="Ticker">Ticker</SortHeader>
                         <SortHeader field="Sector">Sector</SortHeader>
-                        <SortHeader field="Price">LTP</SortHeader>
-                        <SortHeader field="Composite_Score">Composite</SortHeader>
-                        <SortHeader field="Tech_Score">Tech</SortHeader>
-                        <SortHeader field="Fund_Score">Fund</SortHeader>
-                        <SortHeader field="Research_Score">Research</SortHeader>
-                        <SortHeader field="Piotroski_F">F-Score</SortHeader>
-                        <SortHeader field="Momentum_12M">12M Mom</SortHeader>
-                        <SortHeader field="P/E">P/E</SortHeader>
-                        <SortHeader field="Debt_to_Equity">D/E</SortHeader>
+                        <SortHeader field="Price" align="right">LTP</SortHeader>
+                        <SortHeader field="Composite_Score" align="right">Composite</SortHeader>
+                        <SortHeader field="Tech_Score" align="right">Tech</SortHeader>
+                        <SortHeader field="Fund_Score" align="right">Fund</SortHeader>
+                        <SortHeader field="Research_Score" align="right">Research</SortHeader>
+                        <SortHeader field="Piotroski_F" align="right">F-Score</SortHeader>
+                        <SortHeader field="Momentum_12M" align="right">12M Mom</SortHeader>
+                        <SortHeader field="P/E" align="right">P/E</SortHeader>
+                        <SortHeader field="Debt_to_Equity" align="right">D/E</SortHeader>
                         <SortHeader field="Conviction">Conviction</SortHeader>
                         <th className="p-4"></th>
                       </tr>
@@ -564,19 +572,19 @@ export default function App() {
                           <tr 
                             className={`border-b border-border hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-200 ${expandedRow === row.Ticker ? 'bg-black/5 dark:bg-white/5' : ''}`}
                           >
-                            <td className="p-4 text-primary font-medium cursor-pointer" onClick={() => handleHeatmapClick(row.Ticker)}>{row.Ticker.replace('.NS', '')}</td>
-                            <td className="p-4 text-muted">{row.Sector || '-'}</td>
-                            <td className="p-4 text-right text-muted">{num(row.Price)}</td>
-                            <td className={`p-4 text-right font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
-                            <td className={`p-4 text-right font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
-                            <td className={`p-4 text-right font-medium ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
-                            <td className={`p-4 text-right font-medium ${Number(row.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Research_Score) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(row.Research_Score)}</td>
-                            <td className={`p-4 text-right font-medium ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}<span className="text-muted">/9</span></td>
-                            <td className={`p-4 text-right font-medium ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</td>
-                            <td className="p-4 text-right text-muted">{num(row['P/E'])}</td>
-                            <td className="p-4 text-right text-muted">{num(row['Debt_to_Equity'])}</td>
-                            <td className="p-4 text-right text-primary font-medium">{row.Conviction || 'N/A'}</td>
-                            <td className="p-4 text-center">
+                            <td className="p-3 text-primary font-medium cursor-pointer" onClick={() => handleHeatmapClick(row.Ticker)}>{row.Ticker.replace('.NS', '')}</td>
+                            <td className="p-3 text-muted">{row.Sector || '-'}</td>
+                            <td className="p-3 text-right text-muted">{num(row.Price)}</td>
+                            <td className={`p-3 text-right font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
+                            <td className={`p-3 text-right font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
+                            <td className={`p-3 text-right font-medium ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
+                            <td className={`p-3 text-right font-medium ${Number(row.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Research_Score) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(row.Research_Score)}</td>
+                            <td className={`p-3 text-right font-medium ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}<span className="text-muted">/9</span></td>
+                            <td className={`p-3 text-right font-medium ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</td>
+                            <td className="p-3 text-right text-muted">{num(row['P/E'])}</td>
+                            <td className="p-3 text-right text-muted">{num(row['Debt_to_Equity'])}</td>
+                            <td className="p-3 text-primary font-medium">{row.Conviction || 'N/A'}</td>
+                            <td className="p-3 text-center">
                               <button 
                                 onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
                                 className="text-sub hover:text-brand transition-colors"
