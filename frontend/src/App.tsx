@@ -336,11 +336,11 @@ export default function App() {
     const barColor = color || (value >= 7 ? 'bg-green-500' : value >= 4 ? 'bg-amber-500' : 'bg-red-500')
     return (
       <div className="flex items-center gap-2">
-        <span className="text-muted w-16 text-right">{label}</span>
-        <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
-          <div className={`h-full rounded-full ${barColor} transition-all`} style={{width: `${pct}%`}}></div>
+        <span className="text-muted text-[10px] font-mono w-20 shrink-0">{label}</span>
+        <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+          <div className={`h-full rounded-full ${barColor}`} style={{width: `${pct}%`}}></div>
         </div>
-        <span className="text-primary w-8 text-right font-medium">{typeof value === 'number' ? value.toFixed(1) : value}</span>
+        <span className="text-sub text-[10px] font-mono w-6 text-right shrink-0">{value.toFixed(1)}</span>
       </div>
     )
   }
@@ -360,60 +360,60 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-300">
       {/* Header */}
-      <header className="px-10 py-6 border-b border-border bg-card flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 shadow-sm">
-        <div>
-          <h1 className="font-display font-semibold text-2xl uppercase tracking-wider text-primary">
-            Quantitative <span className="text-brand">Alpha</span>
-          </h1>
-          <div className="font-mono text-[10px] text-sub tracking-widest mt-2 uppercase flex flex-col gap-3">
-            <div>Alpha Research & Investment Club | FMS Delhi</div>
-            <div className="flex flex-wrap items-center gap-2">
-              {niftyData && (
-                <span className={`px-2 py-0.5 rounded-sm bg-card border border-border font-semibold flex items-center gap-1 w-fit ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
-                  NIFTY 50: {niftyData.price} ({niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%)
-                </span>
-              )}
-              {coveragePct !== null && (
-                <span className="px-2 py-0.5 rounded-sm bg-card border border-border flex items-center gap-1 w-fit text-muted">
-                  Scan Coverage: {coveragePct}%
-                </span>
-              )}
-              {marketRegimeScore !== null && (
-                <span className={`px-2 py-0.5 rounded-sm bg-card border border-border font-semibold flex items-center gap-1 w-fit ${marketRegimeScore > 0 ? 'text-green-600 dark:text-green-500' : marketRegimeScore < 0 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>
-                  Regime: {marketRegimeScore > 0 ? 'Bullish' : marketRegimeScore < 0 ? 'Bearish' : 'Neutral'} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
-                </span>
-              )}
-            </div>
+      <header className="px-6 py-4 border-b border-border bg-card">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <h1 className="font-display font-semibold text-xl uppercase tracking-wider text-primary">
+              Quantitative <span className="text-brand">Alpha</span>
+            </h1>
+            <div className="h-4 w-px bg-border hidden sm:block"></div>
+            <span className="font-mono text-[10px] text-sub tracking-widest uppercase hidden sm:block">Alpha Research & Investment Club | FMS Delhi</span>
           </div>
-        </div>
-        
-        <div className="flex flex-wrap gap-2 items-center w-full xl:w-auto justify-start xl:justify-end">
-          {[
-            { id: 'picks', label: 'Top Signals', icon: TrendingUp },
-            { id: 'fundamentals', label: 'Screening', icon: Database },
-            { id: 'charting', label: 'Charting', icon: BarChart2 },
-            { id: 'heatmap', label: 'Sector Heatmap', icon: Layers }
-          ].map(tab => (
+          
+          <div className="flex flex-wrap items-center gap-2">
+            {niftyData && (
+              <span className={`px-2 py-1 font-mono text-[10px] border border-border ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
+                NIFTY 50: {niftyData.price} ({niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%)
+              </span>
+            )}
+            {coveragePct !== null && (
+              <span className="px-2 py-1 font-mono text-[10px] border border-border text-muted">
+                Coverage: {coveragePct}%
+              </span>
+            )}
+            {marketRegimeScore !== null && (
+              <span className={`px-2 py-1 font-mono text-[10px] border border-border ${marketRegimeScore > 0 ? 'text-green-600 dark:text-green-500' : marketRegimeScore < 0 ? 'text-red-600 dark:text-red-500' : 'text-muted'}`}>
+                Regime: {marketRegimeScore > 0 ? 'Bullish' : marketRegimeScore < 0 ? 'Bearish' : 'Neutral'} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
+              </span>
+            )}
+            <div className="h-4 w-px bg-border"></div>
+            {[
+              { id: 'picks', label: 'Signals', icon: TrendingUp },
+              { id: 'fundamentals', label: 'Screen', icon: Database },
+              { id: 'charting', label: 'Charts', icon: BarChart2 },
+              { id: 'heatmap', label: 'Heatmap', icon: Layers }
+            ].map(tab => (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-1.5 px-3 py-1 font-mono text-[10px] uppercase tracking-widest transition-all border ${activeTab === tab.id ? 'border-primary bg-primary text-background' : 'border-border text-muted hover:text-primary hover:border-primary'}`}
+              >
+                <tab.icon size={12} /> <span className="hidden md:inline">{tab.label}</span>
+              </button>
+            ))}
             <button 
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 font-mono text-xs uppercase tracking-widest transition-all duration-300 border ${activeTab === tab.id ? 'border-primary bg-primary text-background shadow-md' : 'border-btn-border text-muted hover:text-primary hover:border-primary'}`}
+              onClick={() => setIsDark(!isDark)}
+              className="p-1.5 border border-border text-muted hover:text-primary hover:border-primary transition-colors"
+              title="Toggle Theme"
             >
-              <tab.icon size={14} /> <span className="hidden md:inline">{tab.label}</span>
+              {isDark ? <Sun size={14} /> : <Moon size={14} />}
             </button>
-          ))}
-          <button 
-            onClick={() => setIsDark(!isDark)}
-            className="ml-2 p-2 border border-btn-border text-muted hover:text-primary hover:border-primary transition-colors rounded-sm"
-            title="Toggle Theme"
-          >
-            {isDark ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow p-10 max-w-7xl mx-auto w-full">
+      <main className="flex-grow px-6 py-8 max-w-7xl mx-auto w-full">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-64 gap-6 max-w-md mx-auto">
             <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
@@ -438,34 +438,29 @@ export default function App() {
             
             {/* VIEW: TOP PICKS */}
             {activeTab === 'picks' && (
-              <div className="space-y-12">
-                <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-1.5 bg-brand rounded-full shadow-[0_0_10px_rgba(225,29,72,0.5)]"></div>
-                      <h2 className="font-display font-bold text-3xl tracking-wide text-primary flex items-center gap-4">
-                        High Conviction Signals
-                        <span className="flex h-2.5 w-2.5 relative">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand"></span>
-                        </span>
-                      </h2>
-                    </div>
-                    <p className="font-mono text-muted text-sm max-w-2xl pl-4 border-l-2 border-border/60">
-                      Top 3 algorithmic picks automatically ranked by your selected investment horizon.
-                    </p>
+              <div className="space-y-8">
+                <section className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-1 bg-brand rounded-full"></div>
+                    <h2 className="font-display font-bold text-xl tracking-wide text-primary">
+                      High Conviction Signals
+                    </h2>
+                    <span className="flex h-2 w-2 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
+                    </span>
                   </div>
                   
-                  <div className="flex bg-card border border-border p-1 rounded-sm shadow-sm">
+                  <div className="flex bg-card border border-border p-0.5">
                     <button 
                       onClick={() => setHorizon('short')}
-                      className={`px-4 py-2 font-mono text-xs uppercase tracking-widest transition-all ${horizon === 'short' ? 'bg-brand text-white shadow-sm' : 'text-muted hover:text-primary'}`}
+                      className={`px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest transition-all ${horizon === 'short' ? 'bg-brand text-white' : 'text-muted hover:text-primary'}`}
                     >
                       Short Term
                     </button>
                     <button 
                       onClick={() => setHorizon('long')}
-                      className={`px-4 py-2 font-mono text-xs uppercase tracking-widest transition-all ${horizon === 'long' ? 'bg-brand text-white shadow-sm' : 'text-muted hover:text-primary'}`}
+                      className={`px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest transition-all ${horizon === 'long' ? 'bg-brand text-white' : 'text-muted hover:text-primary'}`}
                     >
                       Long Term
                     </button>
@@ -477,12 +472,12 @@ export default function App() {
                     <div 
                       key={stock.Ticker} 
                       onClick={() => handleHeatmapClick(stock.Ticker)}
-                      className="p-8 border border-border bg-card shadow-sm hover:shadow-md hover:border-brand/50 transition-all duration-300 cursor-pointer group"
+                      className="p-6 border border-border bg-card shadow-sm hover:shadow-md hover:border-brand/50 transition-all duration-300 cursor-pointer group"
                     >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="font-mono text-[10px] text-sub uppercase tracking-widest group-hover:text-brand transition-colors">
-                          Pick 0{i + 1} • {horizon === 'short' ? 'Momentum' : 'Value'}
-                        </div>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-mono text-[10px] text-sub uppercase tracking-widest group-hover:text-brand transition-colors">
+                          #{i + 1} • {horizon === 'short' ? 'Momentum' : 'Value'}
+                        </span>
                         <span className={`font-mono text-[10px] px-2 py-0.5 border rounded-sm ${
                           stock.Conviction === 'Strong Buy' ? 'border-green-500 text-green-600 dark:text-green-400 bg-green-500/10' :
                           stock.Conviction === 'Buy' ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-500/10' :
@@ -491,46 +486,40 @@ export default function App() {
                           {stock.Conviction || 'N/A'}
                         </span>
                       </div>
-                      <h3 className="font-display font-semibold text-2xl mb-1 text-primary">{stock.Ticker.replace('.NS', '')}<span className="text-brand">.</span></h3>
-                      <div className="font-mono text-xs text-brand tracking-widest mb-4 uppercase">
+                      <h3 className="font-display font-semibold text-xl text-primary">{stock.Ticker.replace('.NS', '')}<span className="text-brand">.</span></h3>
+                      <div className="font-mono text-[10px] text-brand tracking-widest mt-1 mb-4 uppercase">
                         {stock.Sector || 'Equities'}
                       </div>
                       
-                      <div className="mb-4 p-3 border border-border rounded-sm bg-black/5 dark:bg-black/20">
-                        <div className="font-mono text-[10px] text-muted uppercase mb-2">Score Breakdown</div>
-                        <div className="space-y-1.5">
-                          {scoreBar('Composite', Number(stock.Composite_Score) || 0)}
-                          {scoreBar('Tech', Number(stock.Tech_Score) || 0)}
-                          {scoreBar('Fund', Number(stock.Fund_Score) || 0)}
-                          {scoreBar('Research', Number(stock.Research_Score) || 0)}
-                        </div>
+                      <div className="space-y-1 mb-4 py-3 border-y border-border">
+                        {scoreBar('Composite', Number(stock.Composite_Score) || 0)}
+                        {scoreBar('Tech', Number(stock.Tech_Score) || 0)}
+                        {scoreBar('Fund', Number(stock.Fund_Score) || 0)}
+                        {scoreBar('Research', Number(stock.Research_Score) || 0)}
                       </div>
 
-                      <div className="grid grid-cols-3 gap-3 font-mono text-[10px]">
-                        <div className="flex flex-col gap-0.5">
+                      <div className="grid grid-cols-3 gap-2 font-mono text-[10px]">
+                        <div className="flex flex-col">
                           <span className="text-muted">Piotroski</span>
                           <span className={`font-semibold ${Number(stock.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(stock.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{stock.Piotroski_F ?? '-'}/9</span>
                         </div>
-                        <div className="flex flex-col gap-0.5">
+                        <div className="flex flex-col">
                           <span className="text-muted">12M Mom</span>
                           <span className={`font-semibold ${colorCode(stock.Momentum_12M)}`}>{stock.Momentum_12M != null ? `${(stock.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</span>
                         </div>
-                        <div className="flex flex-col gap-0.5">
+                        <div className="flex flex-col">
                           <span className="text-muted">P/E</span>
                           <span className="text-primary">{num(stock['P/E'])}</span>
                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-3 font-mono text-[10px] mt-2">
-                        <div className="flex flex-col gap-0.5">
+                        <div className="flex flex-col">
                           <span className="text-muted">ROE</span>
                           <span className="text-primary">{num(stock['ROE_%'])}%</span>
                         </div>
-                        <div className="flex flex-col gap-0.5">
+                        <div className="flex flex-col">
                           <span className="text-muted">Mkt Cap</span>
                           <span className="text-primary">{num(stock.Market_Cap_B)}B</span>
                         </div>
-                        <div className="flex flex-col gap-0.5">
+                        <div className="flex flex-col">
                           <span className="text-muted">Vol 60D</span>
                           <span className={`font-semibold ${Number(stock.Vol_60D) < 25 ? 'text-green-600 dark:text-green-500' : Number(stock.Vol_60D) > 40 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(stock.Vol_60D)}%</span>
                         </div>
@@ -543,8 +532,12 @@ export default function App() {
 
             {/* VIEW: FUNDAMENTALS & SCREENING */}
             {activeTab === 'fundamentals' && (
-              <div className="space-y-6">
-                <h2 className="font-display font-semibold text-2xl tracking-wide text-primary">Raw Telemetry</h2>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-6 w-1 bg-brand rounded-full"></div>
+                  <h2 className="font-display font-bold text-xl tracking-wide text-primary">Universe Screening</h2>
+                  <span className="font-mono text-[10px] text-muted">({data.length} stocks)</span>
+                </div>
                 <div className="overflow-x-auto border border-border bg-card shadow-sm rounded-sm">
                   <table className="w-full text-left font-mono text-xs">
                     <thead>
@@ -1163,8 +1156,11 @@ export default function App() {
 
             {/* VIEW: SECTOR HEATMAP */}
             {activeTab === 'heatmap' && (
-              <div className="space-y-6">
-                <h2 className="font-display font-semibold text-2xl tracking-wide text-primary/90">Sector Dispersion</h2>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-6 w-1 bg-brand rounded-full"></div>
+                  <h2 className="font-display font-bold text-xl tracking-wide text-primary">Sector Heatmap</h2>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {Object.keys(sectorMap).map(sector => (
                     <div key={sector} className="border border-border bg-card p-6 shadow-sm hover:border-brand/50 transition-colors">
@@ -1202,38 +1198,24 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border mt-12 py-12 px-10 bg-card">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 items-start">
-          
-          <div className="flex flex-col gap-6 w-full max-w-xs opacity-90">
-            <div className="flex flex-col gap-2 border border-border bg-card p-4 rounded-sm shadow-sm">
-              <h4 className="font-mono text-brand text-xs uppercase tracking-widest font-bold">System Status</h4>
-              <div className="flex justify-between text-xs font-mono uppercase tracking-wider text-muted mt-2">
-                <span className="flex items-center gap-2"><Database size={12} /> Database</span>
-                <span className="text-primary">Static JSON</span>
-              </div>
-              <div className="flex justify-between text-xs font-mono uppercase tracking-wider text-muted border-t border-border/50 pt-2">
-                <span className="flex items-center gap-2"><Activity size={12} /> Last Updated</span>
-                <span className="text-primary text-right flex flex-col items-end">
-                  {lastUpdated} 
-                  {isDynamic && <span className="text-[10px] text-brand ml-1">(Dynamic)</span>}
-                </span>
-              </div>
-            </div>
+      <footer className="border-t border-border mt-12 py-6 px-6 bg-card">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <span className="font-mono text-[10px] text-muted uppercase tracking-widest">
+              <Activity size={10} className="inline mr-1" />{lastUpdated || 'Not loaded'}
+              {isDynamic && <span className="text-brand ml-1">Live</span>}
+            </span>
+            <span className="h-3 w-px bg-border"></span>
+            <span className="font-mono text-[10px] text-muted uppercase tracking-widest">
+              Static JSON • NSE Bhav Copy
+            </span>
           </div>
-
-          <div>
-            <h4 className="font-display font-semibold text-lg mb-4 uppercase text-primary">Disclaimer</h4>
-            <p className="font-mono text-xs text-sub leading-relaxed">
-              This platform is for educational purposes only and does not constitute financial advice. 
-              The models and signals provided are experimental. Always consult a certified financial advisor before making investment decisions. 
-              Alpha Research and Investment Club, FMS Delhi is not responsible for any trading losses incurred.
-            </p>
-          </div>
-
-          <div className="md:text-right flex flex-col justify-center h-full">
-             <p className="font-mono text-xs text-muted">Alpha Research and Investment Club<br/>FMS Delhi</p>
-             <p className="font-mono text-[10px] text-sub mt-4 tracking-widest uppercase">Made with &hearts; by Abhishek Kumar</p>
+          <div className="flex items-center gap-4">
+            <span className="font-mono text-[10px] text-sub leading-relaxed max-w-lg">
+              Educational purposes only. Not financial advice. Alpha Research & Investment Club, FMS Delhi.
+            </span>
+            <span className="h-3 w-px bg-border hidden md:block"></span>
+            <span className="font-mono text-[10px] text-sub uppercase tracking-widest whitespace-nowrap">Made with &#9829;</span>
           </div>
         </div>
       </footer>
