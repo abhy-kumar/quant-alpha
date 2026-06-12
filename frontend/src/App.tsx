@@ -120,6 +120,29 @@ export default function App() {
   
   // Screener popover
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
+  
+  // Sort state for screening table
+  const [sortKey, setSortKey] = useState<string>('Composite_Score')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  
+  const handleSort = (key: string) => {
+    if (sortKey === key) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('desc')
+    }
+  }
+  
+  const sortedData = useMemo(() => {
+    const arr = [...data]
+    arr.sort((a, b) => {
+      const av = Number((a as any)[sortKey]) || 0
+      const bv = Number((b as any)[sortKey]) || 0
+      return sortDir === 'asc' ? av - bv : bv - av
+    })
+    return arr
+  }, [data, sortKey, sortDir])
 
   // Apply theme to document root
   useEffect(() => {
@@ -308,6 +331,32 @@ export default function App() {
     return <span className="text-muted">Neutral</span>
   }
 
+  const scoreBar = (label: string, value: number, max: number = 10, color?: string) => {
+    const pct = Math.min((value / max) * 100, 100)
+    const barColor = color || (value >= 7 ? 'bg-green-500' : value >= 4 ? 'bg-amber-500' : 'bg-red-500')
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-muted w-16 text-right">{label}</span>
+        <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
+          <div className={`h-full rounded-full ${barColor} transition-all`} style={{width: `${pct}%`}}></div>
+        </div>
+        <span className="text-primary w-8 text-right font-medium">{typeof value === 'number' ? value.toFixed(1) : value}</span>
+      </div>
+    )
+  }
+
+  const SortHeader = ({ field, children }: { field: string; children: React.ReactNode }) => (
+    <th 
+      className="p-4 font-semibold cursor-pointer hover:text-brand transition-colors select-none"
+      onClick={() => handleSort(field)}
+    >
+      <span className="flex items-center gap-1">
+        {children}
+        {sortKey === field && <span className="text-brand">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+      </span>
+    </th>
+  )
+
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-300">
       {/* Header */}
@@ -443,26 +492,21 @@ export default function App() {
                         </span>
                       </div>
                       <h3 className="font-display font-semibold text-2xl mb-1 text-primary">{stock.Ticker.replace('.NS', '')}<span className="text-brand">.</span></h3>
-                      <div className="font-mono text-xs text-brand tracking-widest mb-6 uppercase">
+                      <div className="font-mono text-xs text-brand tracking-widest mb-4 uppercase">
                         {stock.Sector || 'Equities'}
                       </div>
                       
-                      <div className="grid grid-cols-3 gap-3 font-mono text-xs border-t border-border pt-4 mt-4">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-muted">Composite</span>
-                          <span className={`text-lg font-semibold ${colorCode(stock.Composite_Score)}`}>{num(stock.Composite_Score)}</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-muted">Tech</span>
-                          <span className={`text-sm font-semibold ${colorCode(stock.Tech_Score)}`}>{num(stock.Tech_Score)}</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-muted">Research</span>
-                          <span className={`text-sm font-semibold ${Number(stock.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : Number(stock.Research_Score) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(stock.Research_Score)}/10</span>
+                      <div className="mb-4 p-3 border border-border rounded-sm bg-black/5 dark:bg-black/20">
+                        <div className="font-mono text-[10px] text-muted uppercase mb-2">Score Breakdown</div>
+                        <div className="space-y-1.5">
+                          {scoreBar('Composite', Number(stock.Composite_Score) || 0)}
+                          {scoreBar('Tech', Number(stock.Tech_Score) || 0)}
+                          {scoreBar('Fund', Number(stock.Fund_Score) || 0)}
+                          {scoreBar('Research', Number(stock.Research_Score) || 0)}
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-3 font-mono text-[10px] mt-3">
+                      <div className="grid grid-cols-3 gap-3 font-mono text-[10px]">
                         <div className="flex flex-col gap-0.5">
                           <span className="text-muted">Piotroski</span>
                           <span className={`font-semibold ${Number(stock.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(stock.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{stock.Piotroski_F ?? '-'}/9</span>
@@ -505,23 +549,23 @@ export default function App() {
                   <table className="w-full text-left font-mono text-xs">
                     <thead>
                       <tr className="border-b border-border text-sub uppercase tracking-widest bg-black/5 dark:bg-black/50">
-                        <th className="p-4 font-semibold">Ticker</th>
-                        <th className="p-4 font-semibold">Sector</th>
-                        <th className="p-4 font-semibold text-right">LTP</th>
-                        <th className="p-4 font-semibold text-right">Composite</th>
-                        <th className="p-4 font-semibold text-right">Tech</th>
-                        <th className="p-4 font-semibold text-right">Fund</th>
-                        <th className="p-4 font-semibold text-right">Research</th>
-                        <th className="p-4 font-semibold text-right">F-Score</th>
-                        <th className="p-4 font-semibold text-right">12M Mom</th>
-                        <th className="p-4 font-semibold text-right">P/E</th>
-                        <th className="p-4 font-semibold text-right">Debt/Eq</th>
-                        <th className="p-4 font-semibold text-right">Conviction</th>
+                        <SortHeader field="Ticker">Ticker</SortHeader>
+                        <SortHeader field="Sector">Sector</SortHeader>
+                        <SortHeader field="Price">LTP</SortHeader>
+                        <SortHeader field="Composite_Score">Composite</SortHeader>
+                        <SortHeader field="Tech_Score">Tech</SortHeader>
+                        <SortHeader field="Fund_Score">Fund</SortHeader>
+                        <SortHeader field="Research_Score">Research</SortHeader>
+                        <SortHeader field="Piotroski_F">F-Score</SortHeader>
+                        <SortHeader field="Momentum_12M">12M Mom</SortHeader>
+                        <SortHeader field="P/E">P/E</SortHeader>
+                        <SortHeader field="Debt_to_Equity">D/E</SortHeader>
+                        <SortHeader field="Conviction">Conviction</SortHeader>
                         <th className="p-4"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {data.map((row, i) => (
+                      {sortedData.map((row, i) => (
                         <React.Fragment key={i}>
                           <tr 
                             className={`border-b border-border hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-200 ${expandedRow === row.Ticker ? 'bg-black/5 dark:bg-white/5' : ''}`}
@@ -1048,6 +1092,25 @@ export default function App() {
                     </div>
                   </div>
 
+                  {/* Score Breakdown */}
+                  {selectedAsset && (
+                    <div className="border border-border bg-card p-6 shadow-sm">
+                      <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-4 border-b border-border pb-2 font-semibold">Score Breakdown</h3>
+                      <div className="space-y-2">
+                        {scoreBar('Composite', Number(selectedAsset.Composite_Score) || 0)}
+                        {scoreBar('Tech', Number(selectedAsset.Tech_Score) || 0)}
+                        {scoreBar('Fund', Number(selectedAsset.Fund_Score) || 0)}
+                        {scoreBar('Research', Number(selectedAsset.Research_Score) || 0)}
+                        <div className="border-t border-border pt-2 mt-2">
+                          {scoreBar('Piotroski', (Number(selectedAsset.Piotroski_F) || 0) * 10 / 9)}
+                          {scoreBar('Gross Profit', Number(selectedAsset.Gross_Profit_Score) || 0)}
+                          {scoreBar('Earnings Q', Number(selectedAsset.Earnings_Quality) || 0)}
+                          {scoreBar('Volatility', Number(selectedAsset.Vol_60D) < 50 ? 10 - (Number(selectedAsset.Vol_60D) || 0) / 5 : 0)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Peer Comparison */}
                   <div className="border border-border bg-card mt-4 shadow-sm rounded-sm">
                     <div className="p-6 border-b border-border bg-black/5 dark:bg-black/20">
@@ -1110,12 +1173,12 @@ export default function App() {
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {sectorMap[sector].map(stock => {
-                          const s = Number(stock.Tech_Score)
-                          const isPos = s > 0
-                          const isNeg = s < 0
-                          const bg = isPos ? 'bg-green-600/10 dark:bg-green-500/10 text-green-600 dark:text-green-500 border-green-600/30 dark:border-green-500/30 hover:bg-green-600/20 hover:border-green-600 font-medium' : 
-                                     isNeg ? 'bg-red-600/10 dark:bg-red-500/10 text-red-600 dark:text-red-500 border-red-600/30 dark:border-red-500/30 hover:bg-red-600/20 hover:border-red-600 font-medium' : 
-                                     'bg-btn-border text-muted border-transparent hover:border-primary/30 hover:text-primary font-medium'
+                          const s = Number(stock.Composite_Score || 0)
+                          const isHigh = s >= 6.5
+                          const isLow = s <= 3.5
+                          const bg = isHigh ? 'bg-green-600/10 dark:bg-green-500/10 text-green-600 dark:text-green-500 border-green-600/30 dark:border-green-500/30 hover:bg-green-600/20 hover:border-green-600 font-medium' : 
+                                     isLow ? 'bg-red-600/10 dark:bg-red-500/10 text-red-600 dark:text-red-500 border-red-600/30 dark:border-red-500/30 hover:bg-red-600/20 hover:border-red-600 font-medium' : 
+                                     'bg-amber-600/10 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 border-amber-600/30 dark:border-amber-500/30 hover:bg-amber-600/20 hover:border-amber-600 font-medium'
                           return (
                             <div 
                               key={stock.Ticker} 
