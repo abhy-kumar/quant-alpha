@@ -42,36 +42,33 @@ def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
 
     # ── Profitability ──────────────────────────────────────────────────────
     roe = _safe_float(info.get("returnOnEquity"), default=0)
-    if roe > 0:
-        score += 1  # ROA > 0 (using ROE as proxy)
+    roa = _safe_float(info.get("returnOnAssets"), default=0)
+    if roe > 0 or roa > 0:
+        score += 1
 
-    # CFO: use operating cashflow as proxy
     cfo = _safe_float(info.get("operatingCashflow"), default=0)
     if cfo > 0:
         score += 1
 
-    # ΔROA: positive earningsGrowth implies improving profitability
     earnings_growth = _safe_float(info.get("earningsGrowth"), default=0)
     if earnings_growth > 0:
         score += 1
 
-    # Accruals quality: CFO > Net Income
     net_income = _safe_float(info.get("netIncomeToCommon"), default=0)
     if cfo > 0 and net_income > 0 and cfo > net_income:
         score += 1
     elif cfo > 0 and net_income <= 0:
-        score += 1  # Positive cash flow despite losses = quality
+        score += 1
 
     # ── Leverage / Liquidity ───────────────────────────────────────────────
     debt_eq = _safe_float(info.get("debtToEquity"), default=0)
-    if debt_eq >= 0 and debt_eq < 100:  # Low leverage
+    if debt_eq >= 0 and debt_eq < 100:
         score += 1
 
     current_ratio = _safe_float(info.get("currentRatio"), default=1.5)
     if current_ratio > 1.2:
         score += 1
 
-    # No dilution: shares outstanding stable or decreasing
     shares = _safe_float(info.get("sharesOutstanding"), default=0)
     float_shares = _safe_float(info.get("floatShares"), default=0)
     if shares > 0 and float_shares > 0:
@@ -79,19 +76,26 @@ def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
         if insider_pct > 0.1:
             score += 1
     elif shares > 0:
-        score += 1  # Can't determine, give benefit of doubt
+        score += 1
 
     # ── Efficiency ─────────────────────────────────────────────────────────
     rev_growth = _safe_float(info.get("revenueGrowth"), default=0)
     if rev_growth > 0:
         score += 1
 
-    # Asset turnover proxy: revenue / total assets
     total_rev = _safe_float(info.get("totalRevenue"), default=0)
     total_assets = _safe_float(info.get("totalAssets"), default=0)
+    if total_assets <= 0:
+        bv = _safe_float(info.get("bookValue"), default=0)
+        shares_val = _safe_float(info.get("sharesOutstanding"), default=0)
+        total_debt = _safe_float(info.get("totalDebt"), default=0)
+        total_cash = _safe_float(info.get("totalCash"), default=0)
+        if bv > 0 and shares_val > 0:
+            total_assets = bv * shares_val + total_debt - total_cash
+
     if total_assets > 0 and total_rev > 0:
         turnover = total_rev / total_assets
-        if turnover > 0.5:  # Reasonable asset utilization
+        if turnover > 0.5:
             score += 1
     elif total_rev > 0:
         score += 1
@@ -104,18 +108,24 @@ def compute_gross_profitability(info: dict) -> float:
     Gross Profitability (Novy-Marx 2013, JFE).
     GP/Total Assets is the single most powerful accounting-based predictor.
 
-    Returns a 0-10 score normalized against sector median (if available).
+    Fallback: uses grossMargins directly from yfinance when totalAssets unavailable.
+    Returns a 0-10 score.
     """
+    gp_ratio = np.nan
+
     gross_profit = _safe_float(info.get("grossProfits"), default=np.nan)
     total_assets = _safe_float(info.get("totalAssets"), default=np.nan)
 
-    if np.isnan(gross_profit) or np.isnan(total_assets) or total_assets == 0:
+    if not np.isnan(gross_profit) and not np.isnan(total_assets) and total_assets > 0:
+        gp_ratio = gross_profit / total_assets
+    else:
+        gross_margin = _safe_float(info.get("grossMargins"), default=np.nan)
+        if not np.isnan(gross_margin):
+            gp_ratio = gross_margin
+
+    if np.isnan(gp_ratio):
         return np.nan
 
-    gp_ratio = gross_profit / total_assets
-
-    # Map to 0-10 scale
-    # Typical range: 0.05 (low) to 0.60+ (high) for Indian companies
     if gp_ratio >= 0.50:
         return 10.0
     elif gp_ratio >= 0.35:
@@ -370,42 +380,43 @@ def compute_earnings_quality(info: dict) -> float:
     """
     Earnings Quality Factor (Sloan 1996, Richardson et al. 2005).
     High-accrual earnings are less persistent than high-cashflow earnings.
-
-    Uses the Beneish M-Score concept (simplified) to detect potential
-    earnings manipulation.
-
     Returns 0-10 quality score.
     """
-    score = 5.0  # Neutral default
+    score = 5.0
 
     cfo = _safe_float(info.get("operatingCashflow"), default=np.nan)
     net_income = _safe_float(info.get("netIncomeToCommon"), default=np.nan)
     total_rev = _safe_float(info.get("totalRevenue"), default=np.nan)
     total_assets = _safe_float(info.get("totalAssets"), default=np.nan)
 
-    # Cash flow to earnings ratio
+    if np.isnan(total_assets) or total_assets <= 0:
+        bv = _safe_float(info.get("bookValue"), default=0)
+        shares_val = _safe_float(info.get("sharesOutstanding"), default=0)
+        total_debt = _safe_float(info.get("totalDebt"), default=0)
+        total_cash = _safe_float(info.get("totalCash"), default=0)
+        if bv > 0 and shares_val > 0:
+            total_assets = bv * shares_val + total_debt - total_cash
+
     if not np.isnan(cfo) and not np.isnan(net_income) and net_income > 0:
         cfo_ratio = cfo / net_income
         if cfo_ratio > 1.5:
-            score += 2.0  # Very high quality
+            score += 2.0
         elif cfo_ratio > 1.0:
-            score += 1.0  # Good quality
+            score += 1.0
         elif cfo_ratio < 0.5:
-            score -= 2.0  # Low quality: earnings not backed by cash
+            score -= 2.0
         elif cfo_ratio < 0.8:
             score -= 1.0
     elif not np.isnan(cfo) and cfo > 0 and (np.isnan(net_income) or net_income <= 0):
-        score += 1.0  # Positive CFO despite losses
+        score += 1.0
 
-    # Revenue consistency proxy
-    if not np.isnan(total_rev) and not np.isnan(total_assets) and total_assets > 0:
+    if not np.isnan(total_rev) and total_assets > 0:
         asset_turnover = total_rev / total_assets
         if asset_turnover > 1.0:
             score += 1.0
         elif asset_turnover < 0.3:
             score -= 1.0
 
-    # Interest coverage proxy
     ebitda = _safe_float(info.get("ebitda"), default=np.nan)
     total_debt = _safe_float(info.get("totalDebt"), default=np.nan)
     interest_exp = _safe_float(info.get("interestExpense"), default=np.nan)
@@ -416,6 +427,19 @@ def compute_earnings_quality(info: dict) -> float:
             score += 1.0
         elif coverage < 2:
             score -= 1.0
+    elif not np.isnan(ebitda) and not np.isnan(total_debt) and total_debt > 0:
+        debt_service = ebitda / total_debt
+        if debt_service > 0.5:
+            score += 0.5
+        elif debt_service < 0.1:
+            score -= 0.5
+
+    profit_margin = _safe_float(info.get("profitMargins"), default=np.nan)
+    if not np.isnan(profit_margin):
+        if profit_margin > 0.15:
+            score += 0.5
+        elif profit_margin < 0:
+            score -= 0.5
 
     return max(0.0, min(10.0, score))
 

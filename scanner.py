@@ -35,7 +35,8 @@ _YF_SESSION.headers.update({
 })
 
 cache_manager = CacheManager()
-screener_banned = threading.Event()
+screener_failures = 0
+SCREENER_MAX_FAILURES = 10
 vader = SentimentIntensityAnalyzer()
 
 def _fetch_ohlcv_with_retry(ticker: str, period: str = PERIOD) -> pd.DataFrame:
@@ -125,7 +126,7 @@ def _fetch_info(ticker: str) -> dict:
 
     needs_fundamentals = pd.isna(_safe_float(info.get('trailingPE'))) or pd.isna(_safe_float(info.get('returnOnEquity')))
     
-    if (needs_fundamentals or needs_sector) and not screener_banned.is_set():
+    if (needs_fundamentals or needs_sector) and screener_failures < SCREENER_MAX_FAILURES:
         try:
             url = f"https://www.screener.in/company/{sym}/consolidated/"
             resp = _YF_SESSION.get(url, timeout=5)
@@ -204,12 +205,22 @@ def _fetch_info(ticker: str) -> dict:
                                     except: pass
                                 peers.append(peer_data)
                     info['screener_peers'] = peers
-        except Exception:
-            screener_banned.set()
+        except Exception as e:
+            screener_failures += 1
+            if screener_failures >= SCREENER_MAX_FAILURES:
+                log.warning(f"Screener.in disabled after {screener_failures} failures")
             
     if cached_sector:
         info['sector'] = cached_sector.get('sector', info.get('sector'))
         info['industry'] = cached_sector.get('industry', info.get('industry'))
+
+    if _safe_float(info.get('totalAssets')) is None or np.isnan(_safe_float(info.get('totalAssets'), default=np.nan)):
+        bv = _safe_float(info.get('bookValue'), default=0)
+        shares = _safe_float(info.get('sharesOutstanding'), default=0)
+        total_debt = _safe_float(info.get('totalDebt'), default=0)
+        total_cash = _safe_float(info.get('totalCash'), default=0)
+        if bv > 0 and shares > 0:
+            info['totalAssets'] = bv * shares + total_debt - total_cash
 
     cache_manager.set("fundamentals", sym, info)
     
