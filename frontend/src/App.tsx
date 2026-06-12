@@ -81,14 +81,14 @@ interface DashboardData {
   Reversion_Signal?: number
   Z_Score_60?: number
   Earnings_Quality?: number
-  Promoter_Holding_%?: number
-  Promoter_Pledging_%?: number
+  "Promoter_Holding_%"?: number
+  "Promoter_Pledging_%"?: number
   Bull_Count?: number
   Bear_Count?: number
-  Total_Return_%?: number
-  Ann_Vol_%?: number
+  "Total_Return_%"?: number
+  "Ann_Vol_%"?: number
   Sharpe?: number
-  Max_Drawdown_%?: number
+  "Max_Drawdown_%"?: number
 }
 
 // Diagnostics removed, using static JSON
