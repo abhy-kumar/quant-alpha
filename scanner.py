@@ -393,7 +393,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         rows_intermediate.append({
             "ticker": ticker, "is_etf": is_etf, "sector": sector, "industry": industry,
             "info": info, "tech": tech, "met": met, "latest": latest, "prev": prev,
-            "rs_composite": rs_score, "pe": pe, "roe": roe_pct, "debt_eq": debt_eq,
+            "df": df, "rs_composite": rs_score, "pe": pe, "roe": roe_pct, "debt_eq": debt_eq,
             "ath": data["ath"], "ath_source": data["ath_source"], 
             "atl": data["atl"], "atl_source": data["atl_source"],
             "long_name": long_name

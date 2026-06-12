@@ -446,31 +446,39 @@ def compute_earnings_quality(info: dict) -> float:
 
 def compute_research_composite(
     info: dict,
-    df: pd.DataFrame,
+    df: pd.DataFrame = None,
     nifty_df: pd.DataFrame = None,
     sector_medians: dict = None,
 ) -> dict:
     """
     Compute all research-backed factors and return a unified dictionary
     that can be integrated into the scanner's scoring pipeline.
-
-    Factor weights based on research:
-      - Piotroski F-Score:          0.15  (Piotroski 2000)
-      - Gross Profitability:        0.15  (Novy-Marx 2013)
-      - Momentum Z-Score:           0.25  (Jegadeesh & Titman 1993)
-      - Low Volatility:             0.15  (Baker, Bradley & Wurgler 2011)
-      - Mean Reversion:             0.10  (De Bondt & Thaler 1985)
-      - Earnings Quality:           0.10  (Sloan 1996)
-      - Existing Tech Score:        0.10  (technical analysis baseline)
     """
-    f_score = compute_piotroski_f_score(info, df)
-    gp_score = compute_gross_profitability(info)
-    mom = compute_momentum_z_score(df, nifty_df)
-    vol = compute_volatility_factor(df, info)
-    reversion = compute_mean_reversion_signal(df, info)
-    eq_score = compute_earnings_quality(info)
+    _empty = {
+        "piotroski_f_score": 0, "f_score_norm": 0, "gross_profit_score": 5.0,
+        "momentum_composite": np.nan, "momentum_score": 5.0, "risk_adj_mom": np.nan,
+        "vol_60d": np.nan, "vol_120d": np.nan, "downside_dev": np.nan,
+        "vol_score": 5.0, "reversion_signal": 0, "reversion_score": 5.0,
+        "z_score_60": 0, "earnings_quality_score": 5.0, "research_composite": 5.0,
+        "mom_1m": np.nan, "mom_3m": np.nan, "mom_6m": np.nan,
+        "mom_12m": np.nan, "mom_12m_skip1": np.nan,
+    }
 
-    # Normalize F-Score to 0-10
+    if df is None or len(df) < 21:
+        return _empty
+
+    try:
+        f_score = compute_piotroski_f_score(info, df)
+        gp_score = compute_gross_profitability(info)
+        mom = compute_momentum_z_score(df, nifty_df)
+        vol = compute_volatility_factor(df, info)
+        reversion = compute_mean_reversion_signal(df, info)
+        eq_score = compute_earnings_quality(info)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return _empty
+
     f_score_norm = (f_score / 9.0) * 10.0
 
     # Normalize momentum to 0-10 using composite_mom
