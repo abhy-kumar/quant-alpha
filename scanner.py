@@ -35,7 +35,7 @@ _YF_SESSION.headers.update({
 })
 
 cache_manager = CacheManager()
-screener_failures = 0
+_screener_state = {"failures": 0}
 SCREENER_MAX_FAILURES = 10
 vader = SentimentIntensityAnalyzer()
 
@@ -126,7 +126,7 @@ def _fetch_info(ticker: str) -> dict:
 
     needs_fundamentals = pd.isna(_safe_float(info.get('trailingPE'))) or pd.isna(_safe_float(info.get('returnOnEquity')))
     
-    if (needs_fundamentals or needs_sector) and screener_failures < SCREENER_MAX_FAILURES:
+    if (needs_fundamentals or needs_sector) and _screener_state["failures"] < SCREENER_MAX_FAILURES:
         try:
             url = f"https://www.screener.in/company/{sym}/consolidated/"
             resp = _YF_SESSION.get(url, timeout=5)
@@ -206,9 +206,9 @@ def _fetch_info(ticker: str) -> dict:
                                 peers.append(peer_data)
                     info['screener_peers'] = peers
         except Exception as e:
-            screener_failures += 1
-            if screener_failures >= SCREENER_MAX_FAILURES:
-                log.warning(f"Screener.in disabled after {screener_failures} failures")
+            _screener_state["failures"] += 1
+            if _screener_state["failures"] >= SCREENER_MAX_FAILURES:
+                log.warning(f"Screener.in disabled after {_screener_state['failures']} failures")
             
     if cached_sector:
         info['sector'] = cached_sector.get('sector', info.get('sector'))
@@ -283,6 +283,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             df = add_indicators(df)
             return ticker, df, None
         except Exception as e:
+            log.warning(f"OHLCV failed for {ticker}: {type(e).__name__}: {e}")
             return ticker, None, e
             
     def fetch_info_job(ticker, df):
@@ -313,6 +314,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             
     info_results = {}
     valid_tickers = list(ohlcv_results.keys())
+    log.info(f"OHLCV succeeded for {len(valid_tickers)} tickers, fetching info...")
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS_FUNDAMENTALS) as executor:
         futures = {executor.submit(fetch_info_job, t, ohlcv_results[t]): t for t in valid_tickers}
         completed = 0
@@ -320,8 +322,12 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             t, info, ath, ath_source, atl, atl_source, err = future.result()
             if info is not None:
                 info_results[t] = {"info": info, "ath": ath, "ath_source": ath_source, "atl": atl, "atl_source": atl_source}
+            else:
+                log.warning(f"Info failed for {t}: {err}")
             completed += 1
             if progress_callback: progress_callback(total + completed, total * 2, f"Fetching Info {t}")
+    
+    log.info(f"Info succeeded for {len(info_results)} tickers")
 
     for t in valid_tickers:
         if t in info_results:

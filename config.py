@@ -10,7 +10,7 @@ INTERVAL = "1d"
 MIN_ROWS = 50
 
 # Concurrency limits
-MAX_WORKERS_OHLCV = 8
+MAX_WORKERS_OHLCV = 4
 MAX_WORKERS_FUNDAMENTALS = 2
 
 # Cache Expirations (in seconds)
