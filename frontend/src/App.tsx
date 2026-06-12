@@ -360,55 +360,54 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-300">
       {/* Header */}
-      <header className="px-6 py-4 border-b border-border bg-card">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <h1 className="font-display font-semibold text-xl uppercase tracking-wider text-primary">
-              Quantitative <span className="text-brand">Alpha</span>
-            </h1>
-            <div className="h-4 w-px bg-border hidden sm:block"></div>
-            <span className="font-mono text-[10px] text-sub tracking-widest uppercase hidden sm:block">Alpha Research & Investment Club | FMS Delhi</span>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-2">
+      <header className="border-b border-border bg-card">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
+          <h1 className="font-display font-semibold text-xl uppercase tracking-wider text-primary whitespace-nowrap">
+            Quantitative <span className="text-brand">Alpha</span>
+          </h1>
+          <div className="h-4 w-px bg-border hidden sm:block"></div>
+          <span className="font-mono text-[10px] text-sub tracking-widest uppercase hidden lg:block whitespace-nowrap">Alpha Research & Investment Club | FMS Delhi</span>
+          <div className="flex-1"></div>
+          <div className="flex items-center gap-2">
             {niftyData && (
-              <span className={`px-2 py-1 font-mono text-[10px] border border-border ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
+              <span className={`px-2 py-1 font-mono text-[10px] border border-border whitespace-nowrap ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
                 NIFTY 50: {niftyData.price} ({niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%)
               </span>
             )}
             {coveragePct !== null && (
-              <span className="px-2 py-1 font-mono text-[10px] border border-border text-muted">
+              <span className="px-2 py-1 font-mono text-[10px] border border-border text-muted whitespace-nowrap hidden sm:block">
                 Coverage: {coveragePct}%
               </span>
             )}
             {marketRegimeScore !== null && (
-              <span className={`px-2 py-1 font-mono text-[10px] border border-border ${marketRegimeScore > 0 ? 'text-green-600 dark:text-green-500' : marketRegimeScore < 0 ? 'text-red-600 dark:text-red-500' : 'text-muted'}`}>
+              <span className={`px-2 py-1 font-mono text-[10px] border border-border whitespace-nowrap ${marketRegimeScore > 0 ? 'text-green-600 dark:text-green-500' : marketRegimeScore < 0 ? 'text-red-600 dark:text-red-500' : 'text-muted'}`}>
                 Regime: {marketRegimeScore > 0 ? 'Bullish' : marketRegimeScore < 0 ? 'Bearish' : 'Neutral'} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
               </span>
             )}
-            <div className="h-4 w-px bg-border"></div>
-            {[
-              { id: 'picks', label: 'Signals', icon: TrendingUp },
-              { id: 'fundamentals', label: 'Screen', icon: Database },
-              { id: 'charting', label: 'Charts', icon: BarChart2 },
-              { id: 'heatmap', label: 'Heatmap', icon: Layers }
-            ].map(tab => (
-              <button 
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-1.5 px-3 py-1 font-mono text-[10px] uppercase tracking-widest transition-all border ${activeTab === tab.id ? 'border-primary bg-primary text-background' : 'border-border text-muted hover:text-primary hover:border-primary'}`}
-              >
-                <tab.icon size={12} /> <span className="hidden md:inline">{tab.label}</span>
-              </button>
-            ))}
             <button 
               onClick={() => setIsDark(!isDark)}
-              className="p-1.5 border border-border text-muted hover:text-primary hover:border-primary transition-colors"
+              className="p-1.5 border border-border text-muted hover:text-primary hover:border-primary transition-colors ml-1"
               title="Toggle Theme"
             >
               {isDark ? <Sun size={14} /> : <Moon size={14} />}
             </button>
           </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-6 pb-3 flex items-center gap-1">
+          {[
+            { id: 'picks', label: 'Signals', icon: TrendingUp },
+            { id: 'fundamentals', label: 'Screen', icon: Database },
+            { id: 'charting', label: 'Charts', icon: BarChart2 },
+            { id: 'heatmap', label: 'Heatmap', icon: Layers }
+          ].map(tab => (
+            <button 
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest transition-all border ${activeTab === tab.id ? 'border-primary bg-primary text-background' : 'border-border text-muted hover:text-primary hover:border-primary'}`}
+            >
+              <tab.icon size={12} /> {tab.label}
+            </button>
+          ))}
         </div>
       </header>
 
@@ -1198,24 +1197,34 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border mt-12 py-6 px-6 bg-card">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <span className="font-mono text-[10px] text-muted uppercase tracking-widest">
-              <Activity size={10} className="inline mr-1" />{lastUpdated || 'Not loaded'}
-              {isDynamic && <span className="text-brand ml-1">Live</span>}
-            </span>
-            <span className="h-3 w-px bg-border"></span>
-            <span className="font-mono text-[10px] text-muted uppercase tracking-widest">
-              Static JSON • NSE Bhav Copy
-            </span>
+      <footer className="border-t border-border mt-12 py-8 px-6 bg-card">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+          
+          <div className="flex flex-col gap-2">
+            <h4 className="font-mono text-brand text-[10px] uppercase tracking-widest font-bold">System Status</h4>
+            <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted">
+              <Database size={10} /> <span>Database</span>
+              <span className="text-primary">Static JSON</span>
+            </div>
+            <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted">
+              <Activity size={10} /> <span>Last Updated</span>
+              <span className="text-primary">{lastUpdated}</span>
+              {isDynamic && <span className="text-brand">Live</span>}
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="font-mono text-[10px] text-sub leading-relaxed max-w-lg">
-              Educational purposes only. Not financial advice. Alpha Research & Investment Club, FMS Delhi.
-            </span>
-            <span className="h-3 w-px bg-border hidden md:block"></span>
-            <span className="font-mono text-[10px] text-sub uppercase tracking-widest whitespace-nowrap">Made with &#9829;</span>
+
+          <div>
+            <h4 className="font-display font-semibold text-sm mb-2 uppercase text-primary">Disclaimer</h4>
+            <p className="font-mono text-[10px] text-sub leading-relaxed">
+              This platform is for educational purposes only and does not constitute financial advice. 
+              The models and signals provided are experimental. Always consult a certified financial advisor before making investment decisions. 
+              Alpha Research and Investment Club, FMS Delhi is not responsible for any trading losses incurred.
+            </p>
+          </div>
+
+          <div className="md:text-right">
+            <p className="font-mono text-[10px] text-muted">Alpha Research and Investment Club<br/>FMS Delhi</p>
+            <p className="font-mono text-[10px] text-sub mt-2 tracking-widest uppercase">Made with &#9829; by Abhishek Kumar</p>
           </div>
         </div>
       </footer>
