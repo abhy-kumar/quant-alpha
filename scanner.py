@@ -27,6 +27,10 @@ from nse_fetcher import get_liquid_universe, download_bhav_copy, get_market_brea
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from recommendation import compute_fund_score, compute_tech_score, get_conviction_rating
 from research_factors import compute_research_composite
+from data_pipeline import (
+    store_daily_ohlcv, store_factor_history, create_outcome_entries,
+    update_outcome_tracking, store_regime_history, store_scan_summary,
+)
 
 IST = timezone(timedelta(hours=5, minutes=30))
 _YF_SESSION = requests.Session()
@@ -250,6 +254,7 @@ def _fetch_info(ticker: str) -> dict:
 
 def run_scanner(progress_callback=None) -> pd.DataFrame:
     scan_time = datetime.now(IST)
+    scan_start = time.time()
     tickers = get_liquid_universe(top_n=150)
     total = len(tickers)
     
@@ -616,6 +621,9 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         log.info(f"Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
         
         _archive_scan(result_df, scan_time)
+        _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pct,
+                       len(tickers), len(ohlcv_results), len(info_results), len(final_rows),
+                       regime_score, scan_time, time.time() - scan_start)
 
     return result_df
 
@@ -670,6 +678,27 @@ def _archive_scan(result_df: pd.DataFrame, scan_time: datetime) -> None:
         log.info(f"Successfully archived {len(sql_df)} records to historical_scans database.")
     except Exception as e:
         log.error(f"Failed to archive scan: {e}")
+
+
+def _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pct,
+                   requested, ohlcv_ok, info_ok, final, regime_score, scan_time, duration=0):
+    """Store all data for ML pipeline."""
+    scan_date = scan_time.strftime("%Y-%m-%d")
+    try:
+        store_daily_ohlcv(ohlcv_results, scan_date)
+        store_factor_history(final_rows, scan_date)
+        create_outcome_entries(final_rows, scan_date)
+        update_outcome_tracking(scan_date, ohlcv_results)
+        store_regime_history(scan_date, regime_score, nifty_df, breadth_pct, coverage_pct, final)
+
+        top_5 = [r["Ticker"] for r in final_rows[:5]]
+        bottom_5 = [r["Ticker"] for r in final_rows[-5:]]
+        store_scan_summary(scan_date, duration, requested, ohlcv_ok, info_ok, final,
+                          coverage_pct, regime_score, top_5, bottom_5)
+        log.info(f"ML data pipeline: stored OHLCV, factors, outcomes, regime for {scan_date}")
+    except Exception as e:
+        log.error(f"ML data pipeline failed: {e}")
+
 
 if __name__ == "__main__":
     run_scanner()
