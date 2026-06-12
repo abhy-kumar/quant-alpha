@@ -21,7 +21,7 @@ class TestIndicators(unittest.TestCase):
         df = _add_vpt(df)
         self.assertTrue("VPT" in df.columns)
         self.assertTrue("VPT_EMA20" in df.columns)
-        self.assertTrue(np.isnan(df["VPT"].iloc[0]))
+        self.assertAlmostEqual(df["VPT"].iloc[0], 0.0)
         self.assertAlmostEqual(df["VPT"].iloc[1], 2000 * 0.1)
 
     def test_add_ichimoku(self):

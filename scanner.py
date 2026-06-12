@@ -26,6 +26,7 @@ from indicators import add_indicators, compute_metrics
 from nse_fetcher import get_liquid_universe, download_bhav_copy, get_market_breadth
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from recommendation import compute_fund_score, compute_tech_score, get_conviction_rating
+from research_factors import compute_research_composite
 
 IST = timezone(timedelta(hours=5, minutes=30))
 _YF_SESSION = requests.Session()
@@ -50,6 +51,18 @@ def _fetch_ohlcv_with_retry(ticker: str, period: str = PERIOD) -> pd.DataFrame:
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
             df.dropna(subset=['Close'], inplace=True)
+            
+            required_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
+            missing = [c for c in required_cols if c not in df.columns]
+            if missing:
+                raise ValueError(f"Missing OHLCV columns: {missing}")
+            
+            if (df['Close'] <= 0).any():
+                df = df[df['Close'] > 0]
+            
+            if (df['High'] < df['Low']).any():
+                df.loc[df['High'] < df['Low'], ['High', 'Low']] = df.loc[df['High'] < df['Low'], ['Low', 'High']].values
+            
             if len(df) < MIN_ROWS and period == PERIOD:
                 raise ValueError(f"Only {len(df)} rows")
             return df
@@ -391,11 +404,12 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         tech = item["tech"]
         met = item["met"]
         latest = item["latest"]
+        df = item.get("df")
         
         score = tech["score"]
         
         if len(rs_series) > 0:
-            rs_pctile = sum(rs_series < item["rs_composite"]) / len(rs_series) * 100
+            rs_pctile = sum(rs_series <= item["rs_composite"]) / len(rs_series) * 100
             if rs_pctile >= 75:
                 score = min(score + 0.2, 1.0)
             elif rs_pctile <= 25:
@@ -411,6 +425,13 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         
         if item["is_etf"]:
             fund_score = 5.0
+            research = {"research_composite": 5.0, "piotroski_f_score": 0, "gross_profit_score": np.nan,
+                        "momentum_composite": np.nan, "momentum_score": 5.0, "risk_adj_mom": np.nan,
+                        "vol_60d": np.nan, "vol_120d": np.nan, "downside_dev": np.nan, "vol_score": 5.0,
+                        "reversion_signal": 0, "reversion_score": 5.0, "z_score_60": 0,
+                        "earnings_quality_score": 5.0, "f_score_norm": 0,
+                        "mom_1m": np.nan, "mom_3m": np.nan, "mom_6m": np.nan,
+                        "mom_12m": np.nan, "mom_12m_skip1": np.nan}
         else:
             medians = sector_medians.get(item["sector"], {})
             fund_score = compute_fund_score(
@@ -422,22 +443,28 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
                 promoter_pledging=_safe_float(info.get("promoter_pledging")),
                 sector_medians=medians
             )
+            research = compute_research_composite(info, df, nifty_df, sector_medians.get(item["sector"]))
             
         norm_tech = (score + 1) * 5
         sentiment = _safe_float(info.get("news_sentiment"))
         if sentiment > 0.5: norm_tech = min(10.0, norm_tech + 0.5)
         elif sentiment < -0.5: norm_tech = max(0.0, norm_tech - 0.5)
 
-        composite_score = (norm_tech * 0.6) + (fund_score * 0.4)
-        composite_score_tech = (norm_tech * 0.8) + (fund_score * 0.2)
-        composite_score_fund = (norm_tech * 0.3) + (fund_score * 0.7)
+        research_composite = research["research_composite"]
+
+        composite_score = (norm_tech * 0.35) + (fund_score * 0.30) + (research_composite * 0.35)
+        composite_score_tech = (norm_tech * 0.50) + (fund_score * 0.15) + (research_composite * 0.35)
+        composite_score_fund = (norm_tech * 0.15) + (fund_score * 0.55) + (research_composite * 0.30)
+        composite_score_mom = (research_composite * 0.50) + (norm_tech * 0.30) + (fund_score * 0.20)
 
         item["composite_score"] = composite_score
         item["composite_score_tech"] = composite_score_tech
         item["composite_score_fund"] = composite_score_fund
+        item["composite_score_mom"] = composite_score_mom
         item["fund_score"] = fund_score
         item["final_tech"] = score
         item["rs_pctile"] = rs_pctile
+        item["research"] = research
 
     comp_scores = pd.Series([x["composite_score"] for x in rows_intermediate])
     for item in rows_intermediate:
@@ -466,6 +493,8 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         close = _safe_float(latest["Close"])
         chg = (close / _safe_float(item["prev"]["Close"]) - 1) * 100
         
+        research = item.get("research", {})
+        
         final_rows.append({
             "Ticker":           item["ticker"].upper(),
             "Sector":           item["sector"],
@@ -491,9 +520,23 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             "All_Time_Low":     item["atl"],
             "ATL_Source":       item["atl_source"],
             "Fund_Score":       round(item["fund_score"], 2),
+            "Research_Score":   round(research.get("research_composite", 5.0), 2),
             "Composite_Score":  round(item["composite_score"], 2),
             "Composite_Score_Tech": round(item["composite_score_tech"], 2),
             "Composite_Score_Fund": round(item["composite_score_fund"], 2),
+            "Composite_Score_Mom":  round(item.get("composite_score_mom", 5.0), 2),
+            "Piotroski_F":      research.get("piotroski_f_score", 0),
+            "Gross_Profit_Score": round(research.get("gross_profit_score", 5.0), 2) if not np.isnan(research.get("gross_profit_score", np.nan)) else None,
+            "Momentum_1M":      round(research.get("mom_1m", np.nan), 4) if not np.isnan(research.get("mom_1m", np.nan)) else None,
+            "Momentum_3M":      round(research.get("mom_3m", np.nan), 4) if not np.isnan(research.get("mom_3m", np.nan)) else None,
+            "Momentum_6M":      round(research.get("mom_6m", np.nan), 4) if not np.isnan(research.get("mom_6m", np.nan)) else None,
+            "Momentum_12M":     round(research.get("mom_12m", np.nan), 4) if not np.isnan(research.get("mom_12m", np.nan)) else None,
+            "Risk_Adj_Mom":     round(research.get("risk_adj_mom", np.nan), 3) if not np.isnan(research.get("risk_adj_mom", np.nan)) else None,
+            "Vol_60D":          round(research.get("vol_60d", np.nan) * 100, 2) if not np.isnan(research.get("vol_60d", np.nan)) else None,
+            "Downside_Dev":     round(research.get("downside_dev", np.nan) * 100, 2) if not np.isnan(research.get("downside_dev", np.nan)) else None,
+            "Reversion_Signal": research.get("reversion_signal", 0),
+            "Z_Score_60":       round(research.get("z_score_60", 0), 2),
+            "Earnings_Quality": round(research.get("earnings_quality_score", 5.0), 2),
             "ROCE_%":           np.nan if is_etf else _safe_float(info.get("roce")),
             "Promoter_Holding_%": np.nan if is_etf else _safe_float(info.get("promoter_holding")),
             "Promoter_Pledging_%": np.nan if is_etf else _safe_float(info.get("promoter_pledging")),
@@ -535,7 +578,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
 
     result_df = pd.DataFrame(final_rows)
     if not result_df.empty:
-        result_df.sort_values("Tech_Score", ascending=False, inplace=True, ignore_index=True)
+        result_df.sort_values("Composite_Score", ascending=False, inplace=True, ignore_index=True)
         result_df = result_df.replace({np.nan: None})
         
         output_data = {
@@ -543,6 +586,8 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             "last_updated": scan_time.strftime("%Y-%m-%d %I:%M %p IST"),
             "coverage_pct": coverage_pct,
             "market_regime_score": regime_score,
+            "scan_version": "2.0",
+            "factors": ["tech", "fund", "research", "momentum"],
             "data": result_df.to_dict(orient="records")
         }
         
@@ -553,29 +598,61 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         cache_manager.save_all()
         log.info(f"Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
         
-        try:
-            os.makedirs("data", exist_ok=True)
-            conn = sqlite3.connect("data/market_scans.db")
-            sql_df = result_df.copy()
-            sql_df["Scan_Date"] = scan_time.strftime("%Y-%m-%d %H:%M:%S")
-            cursor = conn.cursor()
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='historical_scans'")
-            if cursor.fetchone():
-                cursor.execute("PRAGMA table_info(historical_scans)")
-                existing_cols = {col[1] for col in cursor.fetchall()}
-                for col in sql_df.columns:
-                    if col not in existing_cols:
-                        dtype = "REAL"
-                        if sql_df[col].dtype == object: dtype = "TEXT"
-                        elif pd.api.types.is_integer_dtype(sql_df[col]): dtype = "INTEGER"
-                        cursor.execute(f'ALTER TABLE historical_scans ADD COLUMN "{col}" {dtype}')
-            sql_df.to_sql("historical_scans", conn, if_exists="append", index=False)
-            conn.close()
-            log.info(f"Successfully appended {len(sql_df)} records to historical_scans database.")
-        except Exception as e:
-            log.error(f"Failed to save to database: {e}")
+        _archive_scan(result_df, scan_time)
 
     return result_df
+
+
+def _archive_scan(result_df: pd.DataFrame, scan_time: datetime) -> None:
+    """Archive scan results to SQLite with schema migration support."""
+    try:
+        os.makedirs("data", exist_ok=True)
+        conn = sqlite3.connect("data/market_scans.db")
+        sql_df = result_df.copy()
+        sql_df["Scan_Date"] = scan_time.strftime("%Y-%m-%d %H:%M:%S")
+        sql_df["Scan_Date_UTC"] = scan_time.isoformat()
+        cursor = conn.cursor()
+        
+        table_exists = cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='historical_scans'"
+        ).fetchone() is not None
+        
+        if table_exists:
+            cursor.execute("PRAGMA table_info(historical_scans)")
+            existing_cols = {col[1] for col in cursor.fetchall()}
+            for col in sql_df.columns:
+                if col not in existing_cols:
+                    dtype = "REAL"
+                    if sql_df[col].dtype == object:
+                        dtype = "TEXT"
+                    elif pd.api.types.is_integer_dtype(sql_df[col]):
+                        dtype = "INTEGER"
+                    cursor.execute(f'ALTER TABLE historical_scans ADD COLUMN "{col}" {dtype}')
+        else:
+            cursor.execute('''
+                CREATE TABLE historical_scans (
+                    Scan_Date TEXT,
+                    Scan_Date_UTC TEXT,
+                    Ticker TEXT,
+                    Composite_Score REAL,
+                    Tech_Score REAL,
+                    Fund_Score REAL,
+                    Research_Score REAL,
+                    Conviction TEXT,
+                    Sector TEXT,
+                    Price REAL,
+                    UNIQUE(Scan_Date, Ticker)
+                )
+            ''')
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_scan_date ON historical_scans(Scan_Date)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_ticker ON historical_scans(Ticker)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_composite ON historical_scans(Composite_Score)")
+        
+        sql_df.to_sql("historical_scans", conn, if_exists="append", index=False)
+        conn.close()
+        log.info(f"Successfully archived {len(sql_df)} records to historical_scans database.")
+    except Exception as e:
+        log.error(f"Failed to archive scan: {e}")
 
 if __name__ == "__main__":
     run_scanner()

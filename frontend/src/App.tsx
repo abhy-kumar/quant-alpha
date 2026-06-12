@@ -18,6 +18,7 @@ import {
 interface DashboardData {
   Ticker: string
   Sector: string
+  Industry?: string
   Price: number
   Prev_Close: number
   RSI_Value: number
@@ -26,6 +27,11 @@ interface DashboardData {
   ST_Signal: string
   Tech_Score: number
   Fund_Score: number
+  Research_Score: number
+  Composite_Score: number
+  Composite_Score_Tech: number
+  Composite_Score_Fund: number
+  Composite_Score_Mom: number
   Conviction: string
   Scan_Time: string
   "1d_Chg_%"?: number
@@ -33,6 +39,7 @@ interface DashboardData {
   "Forward_P/E"?: number
   "Debt_to_Equity"?: number
   "ROE_%"?: number
+  "ROCE_%"?: number
   "Div_Yield_%"?: number
   "Market_Cap_B"?: number
   "52W_High"?: number
@@ -62,6 +69,26 @@ interface DashboardData {
   Net_Income?: number
   EBITDA?: number
   News_Sentiment?: number
+  Piotroski_F?: number
+  Gross_Profit_Score?: number
+  Momentum_1M?: number
+  Momentum_3M?: number
+  Momentum_6M?: number
+  Momentum_12M?: number
+  Risk_Adj_Mom?: number
+  Vol_60D?: number
+  Downside_Dev?: number
+  Reversion_Signal?: number
+  Z_Score_60?: number
+  Earnings_Quality?: number
+  Promoter_Holding_%?: number
+  Promoter_Pledging_%?: number
+  Bull_Count?: number
+  Bear_Count?: number
+  Total_Return_%?: number
+  Ann_Vol_%?: number
+  Sharpe?: number
+  Max_Drawdown_%?: number
 }
 
 // Diagnostics removed, using static JSON
@@ -221,21 +248,25 @@ export default function App() {
 
   // Logic
   const topPicks = useMemo(() => {
-    let filtered = [...data]
+    let filtered = [...data].filter(d => !d.Ticker.includes('BEES') && d.Sector !== 'ETF')
     if (horizon === 'short') {
-      filtered = filtered.filter(d => {
-        const fund = Number(d.Fund_Score)
-        return isNaN(fund) || d.Fund_Score === ("" as any) || fund >= 5
-      }).sort((a, b) => Number(b.Tech_Score) - Number(a.Tech_Score))
+      filtered = filtered
+        .filter(d => {
+          const fund = Number(d.Fund_Score)
+          return isNaN(fund) || fund >= 5
+        })
+        .sort((a, b) => Number(b.Composite_Score || 0) - Number(a.Composite_Score || 0))
     } else {
-      filtered = filtered.filter(d => {
-        const tech = Number(d.Tech_Score)
-        return !isNaN(tech) && tech > 0
-      }).sort((a, b) => {
-        const fa = Number(a.Fund_Score) || 0
-        const fb = Number(b.Fund_Score) || 0
-        return fb - fa
-      })
+      filtered = filtered
+        .filter(d => {
+          const research = Number(d.Research_Score)
+          return !isNaN(research) && research > 5
+        })
+        .sort((a, b) => {
+          const ra = Number(a.Composite_Score_Fund || 0)
+          const rb = Number(b.Composite_Score_Fund || 0)
+          return rb - ra
+        })
     }
     return filtered.slice(0, 3)
   }, [data, horizon])
@@ -399,38 +430,65 @@ export default function App() {
                       onClick={() => handleHeatmapClick(stock.Ticker)}
                       className="p-8 border border-border bg-card shadow-sm hover:shadow-md hover:border-brand/50 transition-all duration-300 cursor-pointer group"
                     >
-                      <div className="font-mono text-[10px] text-sub uppercase tracking-widest mb-4 group-hover:text-brand transition-colors">
-                        Pick 0{i + 1} • {horizon === 'short' ? 'Momentum' : 'Value'}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="font-mono text-[10px] text-sub uppercase tracking-widest group-hover:text-brand transition-colors">
+                          Pick 0{i + 1} • {horizon === 'short' ? 'Momentum' : 'Value'}
+                        </div>
+                        <span className={`font-mono text-[10px] px-2 py-0.5 border rounded-sm ${
+                          stock.Conviction === 'Strong Buy' ? 'border-green-500 text-green-600 dark:text-green-400 bg-green-500/10' :
+                          stock.Conviction === 'Buy' ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-500/10' :
+                          'border-border text-muted'
+                        }`}>
+                          {stock.Conviction || 'N/A'}
+                        </span>
                       </div>
                       <h3 className="font-display font-semibold text-2xl mb-1 text-primary">{stock.Ticker.replace('.NS', '')}<span className="text-brand">.</span></h3>
                       <div className="font-mono text-xs text-brand tracking-widest mb-6 uppercase">
                         {stock.Sector || 'Equities'}
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4 font-mono text-xs border-t border-border pt-4 mt-4">
+                      <div className="grid grid-cols-3 gap-3 font-mono text-xs border-t border-border pt-4 mt-4">
                         <div className="flex flex-col gap-1">
-                          <span className="text-muted">Tech Score</span>
-                          <span className={`text-lg font-semibold ${colorCode(stock.Tech_Score)}`}>{num(stock.Tech_Score)}</span>
+                          <span className="text-muted">Composite</span>
+                          <span className={`text-lg font-semibold ${colorCode(stock.Composite_Score)}`}>{num(stock.Composite_Score)}</span>
                         </div>
                         <div className="flex flex-col gap-1">
-                          <span className="text-muted">Fund Score</span>
-                          <span className={`text-lg font-semibold ${Number(stock.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(stock.Fund_Score)}/10</span>
+                          <span className="text-muted">Tech</span>
+                          <span className={`text-sm font-semibold ${colorCode(stock.Tech_Score)}`}>{num(stock.Tech_Score)}</span>
                         </div>
                         <div className="flex flex-col gap-1">
-                          <span className="text-muted">P/E Ratio</span>
+                          <span className="text-muted">Research</span>
+                          <span className={`text-sm font-semibold ${Number(stock.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : Number(stock.Research_Score) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(stock.Research_Score)}/10</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3 font-mono text-[10px] mt-3">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-muted">Piotroski</span>
+                          <span className={`font-semibold ${Number(stock.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(stock.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{stock.Piotroski_F ?? '-'}/9</span>
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-muted">12M Mom</span>
+                          <span className={`font-semibold ${colorCode(stock.Momentum_12M)}`}>{stock.Momentum_12M != null ? `${(stock.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</span>
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-muted">P/E</span>
                           <span className="text-primary">{num(stock['P/E'])}</span>
                         </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-muted">ROE %</span>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3 font-mono text-[10px] mt-2">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-muted">ROE</span>
                           <span className="text-primary">{num(stock['ROE_%'])}%</span>
                         </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-muted">Market Cap</span>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-muted">Mkt Cap</span>
                           <span className="text-primary">{num(stock.Market_Cap_B)}B</span>
                         </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-muted">Conviction</span>
-                          <span className="text-primary font-medium">{stock.Conviction || 'N/A'}</span>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-muted">Vol 60D</span>
+                          <span className={`font-semibold ${Number(stock.Vol_60D) < 25 ? 'text-green-600 dark:text-green-500' : Number(stock.Vol_60D) > 40 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(stock.Vol_60D)}%</span>
                         </div>
                       </div>
                     </div>
@@ -450,10 +508,13 @@ export default function App() {
                         <th className="p-4 font-semibold">Ticker</th>
                         <th className="p-4 font-semibold">Sector</th>
                         <th className="p-4 font-semibold text-right">LTP</th>
-                        <th className="p-4 font-semibold text-right">Tech Score</th>
-                        <th className="p-4 font-semibold text-right">Fund Score</th>
+                        <th className="p-4 font-semibold text-right">Composite</th>
+                        <th className="p-4 font-semibold text-right">Tech</th>
+                        <th className="p-4 font-semibold text-right">Fund</th>
+                        <th className="p-4 font-semibold text-right">Research</th>
+                        <th className="p-4 font-semibold text-right">F-Score</th>
+                        <th className="p-4 font-semibold text-right">12M Mom</th>
                         <th className="p-4 font-semibold text-right">P/E</th>
-                        <th className="p-4 font-semibold text-right">Fwd P/E</th>
                         <th className="p-4 font-semibold text-right">Debt/Eq</th>
                         <th className="p-4 font-semibold text-right">Conviction</th>
                         <th className="p-4"></th>
@@ -468,10 +529,13 @@ export default function App() {
                             <td className="p-4 text-primary font-medium cursor-pointer" onClick={() => handleHeatmapClick(row.Ticker)}>{row.Ticker.replace('.NS', '')}</td>
                             <td className="p-4 text-muted">{row.Sector || '-'}</td>
                             <td className="p-4 text-right text-muted">{num(row.Price)}</td>
+                            <td className={`p-4 text-right font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
                             <td className={`p-4 text-right font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
                             <td className={`p-4 text-right font-medium ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
+                            <td className={`p-4 text-right font-medium ${Number(row.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Research_Score) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(row.Research_Score)}</td>
+                            <td className={`p-4 text-right font-medium ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}<span className="text-muted">/9</span></td>
+                            <td className={`p-4 text-right font-medium ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</td>
                             <td className="p-4 text-right text-muted">{num(row['P/E'])}</td>
-                            <td className="p-4 text-right text-muted">{num(row['Forward_P/E'])}</td>
                             <td className="p-4 text-right text-muted">{num(row['Debt_to_Equity'])}</td>
                             <td className="p-4 text-right text-primary font-medium">{row.Conviction || 'N/A'}</td>
                             <td className="p-4 text-center">
@@ -487,23 +551,101 @@ export default function App() {
                           {/* Expanded Score Breakdown Row */}
                           {expandedRow === row.Ticker && (
                             <tr className="bg-black/5 dark:bg-black/20 border-b border-border">
-                              <td colSpan={10} className="p-6">
-                                <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-4">Algorithmic Signal Breakdown</h4>
-                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 font-mono text-xs">
-                                  <div><span className="text-muted block mb-1">Price vs SMA50</span>{getSignalLabel(row.Sig_Price_vs_SMA50)}</div>
-                                  <div><span className="text-muted block mb-1">Price vs SMA200</span>{getSignalLabel(row.Sig_Price_vs_SMA200)}</div>
-                                  <div><span className="text-muted block mb-1">SMA50 vs SMA200</span>{getSignalLabel(row.Sig_SMA50_vs_SMA200)}</div>
-                                  <div><span className="text-muted block mb-1">RSI</span>{getSignalLabel(row.Sig_RSI)}</div>
-                                  <div><span className="text-muted block mb-1">MACD Cross</span>{getSignalLabel(row.Sig_MACD_Cross)}</div>
-                                  <div><span className="text-muted block mb-1">MACD Hist</span>{getSignalLabel(row.Sig_MACD_Hist)}</div>
-                                  <div><span className="text-muted block mb-1">Stochastic</span>{getSignalLabel(row.Sig_Stoch)}</div>
-                                  <div><span className="text-muted block mb-1">Bollinger Bands</span>{getSignalLabel(row.Sig_BB)}</div>
-                                  <div><span className="text-muted block mb-1">CCI</span>{getSignalLabel(row.Sig_CCI)}</div>
-                                  <div><span className="text-muted block mb-1">Volume Spike</span>{getSignalLabel(row.Sig_Volume)}</div>
-                                  <div><span className="text-muted block mb-1">ADX Trend</span>{getSignalLabel(row.Sig_ADX)}</div>
-                                  <div><span className="text-muted block mb-1">Supertrend</span>{getSignalLabel(row.Sig_Supertrend)}</div>
-                                  <div><span className="text-muted block mb-1">Vol Price Trend</span>{getSignalLabel(row.Sig_VPT)}</div>
-                                  <div><span className="text-muted block mb-1">Ichimoku Cloud</span>{getSignalLabel(row.Sig_Ichimoku)}</div>
+                              <td colSpan={13} className="p-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                  {/* Technical Signals */}
+                                  <div>
+                                    <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-4">Technical Signals</h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 font-mono text-xs">
+                                      <div><span className="text-muted block mb-1">Price vs SMA50</span>{getSignalLabel(row.Sig_Price_vs_SMA50)}</div>
+                                      <div><span className="text-muted block mb-1">Price vs SMA200</span>{getSignalLabel(row.Sig_Price_vs_SMA200)}</div>
+                                      <div><span className="text-muted block mb-1">SMA50 vs SMA200</span>{getSignalLabel(row.Sig_SMA50_vs_SMA200)}</div>
+                                      <div><span className="text-muted block mb-1">RSI</span>{getSignalLabel(row.Sig_RSI)}</div>
+                                      <div><span className="text-muted block mb-1">MACD Cross</span>{getSignalLabel(row.Sig_MACD_Cross)}</div>
+                                      <div><span className="text-muted block mb-1">MACD Hist</span>{getSignalLabel(row.Sig_MACD_Hist)}</div>
+                                      <div><span className="text-muted block mb-1">Stochastic</span>{getSignalLabel(row.Sig_Stoch)}</div>
+                                      <div><span className="text-muted block mb-1">Bollinger Bands</span>{getSignalLabel(row.Sig_BB)}</div>
+                                      <div><span className="text-muted block mb-1">CCI</span>{getSignalLabel(row.Sig_CCI)}</div>
+                                      <div><span className="text-muted block mb-1">Volume Spike</span>{getSignalLabel(row.Sig_Volume)}</div>
+                                      <div><span className="text-muted block mb-1">ADX Trend</span>{getSignalLabel(row.Sig_ADX)}</div>
+                                      <div><span className="text-muted block mb-1">Supertrend</span>{getSignalLabel(row.Sig_Supertrend)}</div>
+                                      <div><span className="text-muted block mb-1">Vol Price Trend</span>{getSignalLabel(row.Sig_VPT)}</div>
+                                      <div><span className="text-muted block mb-1">Ichimoku Cloud</span>{getSignalLabel(row.Sig_Ichimoku)}</div>
+                                    </div>
+                                    <div className="mt-4 pt-3 border-t border-border grid grid-cols-3 gap-3 font-mono text-[10px]">
+                                      <div><span className="text-muted block">Bull Signals</span><span className="text-green-600 dark:text-green-500 font-semibold">{row.Bull_Count ?? '-'}</span></div>
+                                      <div><span className="text-muted block">Bear Signals</span><span className="text-red-600 dark:text-red-500 font-semibold">{row.Bear_Count ?? '-'}</span></div>
+                                      <div><span className="text-muted block">RS Percentile</span><span className="text-primary font-semibold">{num(row.RS_Percentile)}%</span></div>
+                                    </div>
+                                  </div>
+
+                                  {/* Research Factors */}
+                                  <div>
+                                    <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-4">Research Factors</h4>
+                                    <div className="grid grid-cols-2 gap-4 font-mono text-xs">
+                                      <div>
+                                        <span className="text-muted block mb-1">Piotroski F-Score</span>
+                                        <div className="flex items-center gap-2">
+                                          <span className={`font-semibold ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}/9</span>
+                                          <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+                                            <div className={`h-full rounded-full ${Number(row.Piotroski_F) >= 7 ? 'bg-green-500' : Number(row.Piotroski_F) <= 3 ? 'bg-red-500' : 'bg-primary'}`} style={{width: `${((row.Piotroski_F || 0) / 9) * 100}%`}}></div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted block mb-1">Gross Profitability</span>
+                                        <span className={`font-semibold ${Number(row.Gross_Profit_Score) >= 7 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Gross_Profit_Score)}/10</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted block mb-1">Earnings Quality</span>
+                                        <span className={`font-semibold ${Number(row.Earnings_Quality) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Earnings_Quality) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(row.Earnings_Quality)}/10</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted block mb-1">Volatility (60D)</span>
+                                        <span className={`font-semibold ${Number(row.Vol_60D) < 25 ? 'text-green-600 dark:text-green-500' : Number(row.Vol_60D) > 40 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(row.Vol_60D)}%</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted block mb-1">1M Momentum</span>
+                                        <span className={`font-semibold ${colorCode(row.Momentum_1M)}`}>{row.Momentum_1M != null ? `${(row.Momentum_1M * 100).toFixed(2)}%` : 'N/A'}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted block mb-1">3M Momentum</span>
+                                        <span className={`font-semibold ${colorCode(row.Momentum_3M)}`}>{row.Momentum_3M != null ? `${(row.Momentum_3M * 100).toFixed(2)}%` : 'N/A'}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted block mb-1">6M Momentum</span>
+                                        <span className={`font-semibold ${colorCode(row.Momentum_6M)}`}>{row.Momentum_6M != null ? `${(row.Momentum_6M * 100).toFixed(2)}%` : 'N/A'}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted block mb-1">12M Momentum</span>
+                                        <span className={`font-semibold ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(2)}%` : 'N/A'}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted block mb-1">Risk-Adj Mom</span>
+                                        <span className={`font-semibold ${colorCode(row.Risk_Adj_Mom)}`}>{num(row.Risk_Adj_Mom)}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted block mb-1">Z-Score (60D)</span>
+                                        <span className={`font-semibold ${Number(row.Z_Score_60) > 2 ? 'text-red-600 dark:text-red-500' : Number(row.Z_Score_60) < -2 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Z_Score_60)}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted block mb-1">Reversion Signal</span>
+                                        <span className={`font-semibold ${Number(row.Reversion_Signal) === 1 ? 'text-green-600 dark:text-green-500' : Number(row.Reversion_Signal) === -1 ? 'text-red-600 dark:text-red-500' : 'text-muted'}`}>
+                                          {Number(row.Reversion_Signal) === 1 ? 'Oversold' : Number(row.Reversion_Signal) === -1 ? 'Overbought' : 'Neutral'}
+                                        </span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted block mb-1">Downside Dev</span>
+                                        <span className="text-primary">{num(row.Downside_Dev)}%</span>
+                                      </div>
+                                    </div>
+                                    <div className="mt-4 pt-3 border-t border-border grid grid-cols-4 gap-3 font-mono text-[10px]">
+                                      <div><span className="text-muted block">Total Return</span><span className={`font-semibold ${colorCode(row['Total_Return_%'])}`}>{num(row['Total_Return_%'])}%</span></div>
+                                      <div><span className="text-muted block">Ann Vol</span><span className="text-primary">{num(row['Ann_Vol_%'])}%</span></div>
+                                      <div><span className="text-muted block">Sharpe</span><span className={`font-semibold ${colorCode(row.Sharpe)}`}>{num(row.Sharpe)}</span></div>
+                                      <div><span className="text-muted block">Max DD</span><span className="text-red-600 dark:text-red-500">{num(row['Max_Drawdown_%'])}%</span></div>
+                                    </div>
+                                  </div>
                                 </div>
                               </td>
                             </tr>
@@ -659,6 +801,67 @@ export default function App() {
                         <div className="font-mono text-[10px] text-muted uppercase">Supertrend</div>
                         <div className="font-mono text-sm mt-1 text-primary">{selectedAsset?.ST_Signal || 'N/A'}</div>
                       </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Bull / Bear</div>
+                        <div className="font-mono text-sm mt-1"><span className="text-green-600">{selectedAsset?.Bull_Count ?? '-'}</span> <span className="text-muted">/</span> <span className="text-red-600">{selectedAsset?.Bear_Count ?? '-'}</span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Research Snapshot */}
+                  <div className="border border-border bg-card p-6 shadow-sm">
+                    <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-4 border-b border-border pb-2 font-semibold flex items-center justify-between">
+                      Research Factors
+                      <span className={`font-mono text-sm ${Number(selectedAsset?.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : Number(selectedAsset?.Research_Score) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>
+                        {num(selectedAsset?.Research_Score)}/10
+                      </span>
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Piotroski F-Score</div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`font-mono text-sm font-semibold ${Number(selectedAsset?.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(selectedAsset?.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{selectedAsset?.Piotroski_F ?? '-'}/9</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Gross Profit</div>
+                        <div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.Gross_Profit_Score)}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Earnings Quality</div>
+                        <div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.Earnings_Quality)}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Z-Score (60D)</div>
+                        <div className={`font-mono text-sm mt-1 font-semibold ${Number(selectedAsset?.Z_Score_60) > 2 ? 'text-red-600 dark:text-red-500' : Number(selectedAsset?.Z_Score_60) < -2 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(selectedAsset?.Z_Score_60)}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Momentum Snapshot */}
+                  <div className="border border-border bg-card p-6 shadow-sm">
+                    <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-4 border-b border-border pb-2 font-semibold">Momentum</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">1 Month</div>
+                        <div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Momentum_1M)}`}>{selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">3 Month</div>
+                        <div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Momentum_3M)}`}>{selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">6 Month</div>
+                        <div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Momentum_6M)}`}>{selectedAsset?.Momentum_6M != null ? `${(selectedAsset.Momentum_6M * 100).toFixed(2)}%` : 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">12 Month</div>
+                        <div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Momentum_12M)}`}>{selectedAsset?.Momentum_12M != null ? `${(selectedAsset.Momentum_12M * 100).toFixed(2)}%` : 'N/A'}</div>
+                      </div>
+                      <div className="col-span-2 pt-2 border-t border-border">
+                        <div className="font-mono text-[10px] text-muted uppercase">Risk-Adjusted Mom</div>
+                        <div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Risk_Adj_Mom)}`}>{num(selectedAsset?.Risk_Adj_Mom)}</div>
+                      </div>
                     </div>
                   </div>
 
@@ -681,6 +884,45 @@ export default function App() {
                       <div>
                         <div className="font-mono text-[10px] text-muted uppercase">ROE %</div>
                         <div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.['ROE_%'])}%</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">ROCE %</div>
+                        <div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.['ROCE_%'])}%</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Promoter</div>
+                        <div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.['Promoter_Holding_%'])}%</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Risk Metrics */}
+                  <div className="border border-border bg-card p-6 shadow-sm">
+                    <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-4 border-b border-border pb-2 font-semibold">Risk Metrics</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Volatility (60D)</div>
+                        <div className={`font-mono text-sm mt-1 font-semibold ${Number(selectedAsset?.Vol_60D) < 25 ? 'text-green-600 dark:text-green-500' : Number(selectedAsset?.Vol_60D) > 40 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(selectedAsset?.Vol_60D)}%</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Downside Dev</div>
+                        <div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.Downside_Dev)}%</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Sharpe Ratio</div>
+                        <div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Sharpe)}`}>{num(selectedAsset?.Sharpe)}</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Max Drawdown</div>
+                        <div className="font-mono text-sm mt-1 text-red-600 dark:text-red-500">{num(selectedAsset?.['Max_Drawdown_%'])}%</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Ann. Volatility</div>
+                        <div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.['Ann_Vol_%'])}%</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] text-muted uppercase">Total Return</div>
+                        <div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.['Total_Return_%'])}`}>{num(selectedAsset?.['Total_Return_%'])}%</div>
                       </div>
                     </div>
                   </div>
@@ -817,11 +1059,13 @@ export default function App() {
                         <thead>
                           <tr className="border-b border-border text-sub uppercase tracking-widest">
                             <th className="p-4 font-semibold">Ticker</th>
-                            <th className="p-4 font-semibold text-right">Market Cap</th>
-                            <th className="p-4 font-semibold text-right">Tech Score</th>
-                            <th className="p-4 font-semibold text-right">Fund Score</th>
+                            <th className="p-4 font-semibold text-right">Mkt Cap</th>
+                            <th className="p-4 font-semibold text-right">Composite</th>
+                            <th className="p-4 font-semibold text-right">Tech</th>
+                            <th className="p-4 font-semibold text-right">Fund</th>
+                            <th className="p-4 font-semibold text-right">Research</th>
                             <th className="p-4 font-semibold text-right">P/E</th>
-                            <th className="p-4 font-semibold text-right">Debt/Eq</th>
+                            <th className="p-4 font-semibold text-right">F-Score</th>
                             <th className="p-4 font-semibold text-right">Conviction</th>
                           </tr>
                         </thead>
@@ -834,14 +1078,16 @@ export default function App() {
                             >
                               <td className="p-4 text-primary font-medium">{row.Ticker.replace('.NS', '')}</td>
                               <td className="p-4 text-right text-muted">{num(row.Market_Cap_B)}B</td>
+                              <td className={`p-4 text-right font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
                               <td className={`p-4 text-right font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
                               <td className={`p-4 text-right font-medium ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
+                              <td className={`p-4 text-right font-medium ${Number(row.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Research_Score)}</td>
                               <td className="p-4 text-right text-muted">{num(row['P/E'])}</td>
-                              <td className="p-4 text-right text-muted">{num(row['Debt_to_Equity'])}</td>
+                              <td className={`p-4 text-right font-medium ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}</td>
                               <td className="p-4 text-right text-primary font-medium">{row.Conviction || 'N/A'}</td>
                             </tr>
                           )) : (
-                            <tr><td colSpan={7} className="p-4 text-center text-muted">No peers found in {selectedAsset?.Sector}</td></tr>
+                            <tr><td colSpan={9} className="p-4 text-center text-muted">No peers found in {selectedAsset?.Sector}</td></tr>
                           )}
                         </tbody>
                       </table>

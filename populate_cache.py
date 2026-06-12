@@ -7,18 +7,16 @@ print(f"Pre-populating cache for {len(universe)} tickers...")
 
 for ticker in universe:
     sym = ticker.replace('.NS', '').replace('.BO', '')
-    if sym in scanner.SECTOR_CACHE:
-        print(f"[{sym}] Already cached: {scanner.SECTOR_CACHE[sym]}")
+    cached_sector = scanner.cache_manager.get("sector", sym)
+    if cached_sector:
+        print(f"[{sym}] Already cached: {cached_sector}")
         continue
         
     print(f"[{sym}] Fetching...")
-    # This will hit Screener and update SECTOR_CACHE internally
     scanner._fetch_info(ticker)
     
-    # Save incrementally so we don't lose data if it fails
-    scanner.save_sector_cache()
+    scanner.cache_manager.save_all()
     
-    # Very generous sleep to avoid rate limit
     time.sleep(1.5)
     
 print("Finished pre-populating sector cache.")

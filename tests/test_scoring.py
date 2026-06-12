@@ -27,10 +27,12 @@ class TestScoring(unittest.TestCase):
         self.assertEqual(get_conviction_rating(95, 0, True), "Strong Buy")
         # 95th percentile, bearish regime (-2)
         self.assertEqual(get_conviction_rating(95, -2, True), "Buy")
-        # 75th percentile, bullish regime (+2)
-        self.assertEqual(get_conviction_rating(75, 2, True), "Strong Buy")
+        # 95th percentile, strong bullish regime (+2), threshold drops to 85
+        self.assertEqual(get_conviction_rating(95, 2, True), "Strong Buy")
         # 95th percentile, weekly bearish
         self.assertEqual(get_conviction_rating(95, 0, False), "Buy")
+        # Mildly bearish regime (-1): Strong Buy downgrades to Buy
+        self.assertEqual(get_conviction_rating(95, -1, True), "Buy")
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,17 +2,17 @@ name: Daily Market Scan
 
 on:
   schedule:
-    # 4:15 PM IST = 10:45 AM UTC, Monday–Friday
+    # 4:15 PM IST = 10:45 UTC, Monday-Friday (after NSE close at 3:30 PM IST)
     - cron: "45 10 * * 1-5"
-  workflow_dispatch:   # also allows manual trigger from GitHub UI
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   scan:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
       - name: Checkout repository
@@ -25,10 +25,16 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install -r requirements.txt psycopg2-binary
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run market scanner
         run: python scanner.py
 
-      - name: Report result
-        run: echo "Scan completed at $(date -u '+%Y-%m-%d %H:%M UTC')"
+      - name: Commit and push updated data
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add frontend/public/market_data.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update market data [skip ci]" && git push)

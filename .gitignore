@@ -6,3 +6,10 @@ data/
 .env
 *.log
 .DS_Store
+node_modules/
+frontend/dist/
+debug_chart.json
+scanner_output.log
+test_yf.py
+frontend/test_yf2.cjs
+documentation.md

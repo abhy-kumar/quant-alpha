@@ -16,8 +16,10 @@ from datetime import datetime, timedelta
 from io import StringIO
 import time
 import pytz
+import logging
 
 IST = pytz.timezone("Asia/Kolkata")
+logger = logging.getLogger("nse_fetcher")
 
 # ---------------------------------------------------------------------------
 # Market Status
@@ -62,16 +64,34 @@ _NSE_HEADERS = {
     "Connection":      "keep-alive",
 }
 
+_cached_nse_session = None
+_nse_session_expiry = None
+
 
 def _create_nse_session() -> requests.Session:
     """Open an NSE session by hitting the homepage to seed cookies."""
+    global _cached_nse_session, _nse_session_expiry
+
+    now = datetime.now(IST)
+    if _cached_nse_session is not None and _nse_session_expiry and now < _nse_session_expiry:
+        return _cached_nse_session
+
     session = requests.Session()
     session.headers.update(_NSE_HEADERS)
-    try:
-        session.get("https://www.nseindia.com", timeout=12)
-        time.sleep(1.2)   # Let cookies settle
-    except Exception:
-        pass
+    retries = [1, 2, 4]
+    for wait in retries:
+        try:
+            resp = session.get("https://www.nseindia.com", timeout=12)
+            if resp.status_code == 200:
+                time.sleep(1.2)
+                _cached_nse_session = session
+                _nse_session_expiry = now + timedelta(minutes=30)
+                return session
+        except Exception:
+            time.sleep(wait)
+    
+    _cached_nse_session = session
+    _nse_session_expiry = now + timedelta(minutes=5)
     return session
 
 
@@ -104,22 +124,38 @@ def download_bhav_copy(max_lookback: int = 5) -> tuple[pd.DataFrame, datetime | 
         if candidate.weekday() >= 5:          # Skip weekends
             continue
         url = _bhav_url(candidate)
-        try:
-            resp = requests.get(url, headers=headers, timeout=20)
-            if resp.status_code == 200 and len(resp.content) > 2_000:
-                df = pd.read_csv(StringIO(resp.text))
-                df.columns = df.columns.str.strip()
-                if "SERIES" in df.columns:
-                    df = df[df["SERIES"].str.strip() == "EQ"].copy()
-                # Normalise numeric columns
-                for col in ["OPEN_PRICE", "HIGH_PRICE", "LOW_PRICE",
-                             "CLOSE_PRICE", "PREVCLOSE", "PREV_CLOSE", "TURNOVER_LACS", "TTL_TRD_QNTY"]:
-                    if col in df.columns:
-                        df[col] = pd.to_numeric(df[col], errors="coerce")
-                return df, candidate
-        except Exception:
-            continue
+        retries = [0, 1, 3]
+        for wait in retries:
+            try:
+                if wait > 0:
+                    time.sleep(wait)
+                resp = requests.get(url, headers=headers, timeout=20)
+                if resp.status_code == 200 and len(resp.content) > 2_000:
+                    df = pd.read_csv(StringIO(resp.text))
+                    df.columns = df.columns.str.strip()
+                    if "SERIES" in df.columns:
+                        df = df[df["SERIES"].str.strip() == "EQ"].copy()
+                    
+                    required_cols = ["SYMBOL", "CLOSE_PRICE"]
+                    if not all(col in df.columns for col in required_cols):
+                        logger.warning(f"Bhav copy missing required columns: {url}")
+                        continue
+                    
+                    for col in ["OPEN_PRICE", "HIGH_PRICE", "LOW_PRICE",
+                                 "CLOSE_PRICE", "PREVCLOSE", "PREV_CLOSE", "TURNOVER_LACS", "TTL_TRD_QNTY"]:
+                        if col in df.columns:
+                            df[col] = pd.to_numeric(df[col], errors="coerce")
+                    
+                    df = df.dropna(subset=["SYMBOL", "CLOSE_PRICE"])
+                    df = df[df["CLOSE_PRICE"] > 0]
+                    
+                    logger.info(f"Downloaded bhav copy for {candidate.strftime('%Y-%m-%d')}: {len(df)} EQ stocks")
+                    return df, candidate
+            except Exception as e:
+                logger.debug(f"Bhav fetch attempt failed for {candidate.strftime('%Y-%m-%d')}: {e}")
+                continue
 
+    logger.warning("Failed to download bhav copy after all retries")
     return pd.DataFrame(), None
 
 
@@ -188,27 +224,43 @@ def get_live_quote(session: requests.Session, symbol: str) -> dict:
     `symbol` must be the raw NSE symbol WITHOUT the '.NS' suffix.
     """
     url = f"https://www.nseindia.com/api/quote-equity?symbol={symbol.upper()}"
-    try:
-        resp = session.get(url, timeout=10)
-        if resp.status_code == 200:
-            data     = resp.json()
-            pi       = data.get("priceInfo", {})
-            idhl     = pi.get("intraDayHighLow", {})
-            whl      = pi.get("weekHighLow",     {})
-            return {
-                "symbol":     symbol,
-                "last_price": pi.get("lastPrice"),
-                "change":     pi.get("change"),
-                "pct_change": pi.get("pChange"),
-                "open":       pi.get("open"),
-                "high":       idhl.get("max"),
-                "low":        idhl.get("min"),
-                "prev_close": pi.get("previousClose"),
-                "52w_high":   whl.get("max"),
-                "52w_low":    whl.get("min"),
-            }
-    except Exception:
-        pass
+    retries = [0, 1, 3]
+    for wait in retries:
+        try:
+            if wait > 0:
+                time.sleep(wait)
+            resp = session.get(url, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                if not data or "priceInfo" not in data:
+                    logger.debug(f"No priceInfo for {symbol}")
+                    return {"symbol": symbol, "last_price": None}
+                pi   = data.get("priceInfo", {})
+                idhl = pi.get("intraDayHighLow", {})
+                whl  = pi.get("weekHighLow",     {})
+                last_price = pi.get("lastPrice")
+                if last_price is None or last_price == 0:
+                    return {"symbol": symbol, "last_price": None}
+                return {
+                    "symbol":     symbol,
+                    "last_price": last_price,
+                    "change":     pi.get("change"),
+                    "pct_change": pi.get("pChange"),
+                    "open":       pi.get("open"),
+                    "high":       idhl.get("max"),
+                    "low":        idhl.get("min"),
+                    "prev_close": pi.get("previousClose"),
+                    "52w_high":   whl.get("max"),
+                    "52w_low":    whl.get("min"),
+                }
+            elif resp.status_code == 429:
+                logger.warning(f"Rate limited on {symbol}, backing off")
+                time.sleep(5)
+                continue
+        except requests.exceptions.Timeout:
+            logger.debug(f"Timeout fetching quote for {symbol}")
+        except Exception as e:
+            logger.debug(f"Error fetching quote for {symbol}: {e}")
     return {"symbol": symbol, "last_price": None}
 
 
@@ -220,8 +272,17 @@ def get_bulk_live_quotes(symbols_ns: list[str], max_symbols: int = 40) -> pd.Dat
     """
     session = _create_nse_session()
     results = []
+    success_count = 0
+    fail_count = 0
     for sym_ns in symbols_ns[:max_symbols]:
         sym = sym_ns.replace(".NS", "")
-        results.append(get_live_quote(session, sym))
+        quote = get_live_quote(session, sym)
+        results.append(quote)
+        if quote.get("last_price") is not None:
+            success_count += 1
+        else:
+            fail_count += 1
         time.sleep(0.35)           # Be a polite client
+    
+    logger.info(f"Bulk quote fetch: {success_count} succeeded, {fail_count} failed out of {min(len(symbols_ns), max_symbols)}")
     return pd.DataFrame(results)

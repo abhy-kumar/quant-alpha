@@ -197,17 +197,17 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
             rs_1m = stock_1m - nifty_1m
         except Exception: pass
         
-    if nifty_df is not None and len(df) >= 60 and len(nifty_df) >= 60:
+    if nifty_df is not None and len(df) >= 63 and len(nifty_df) >= 63:
         try:
-            stock_3m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-60])) - 1
-            nifty_3m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-60])) - 1
+            stock_3m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-63])) - 1
+            nifty_3m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-63])) - 1
             rs_3m = stock_3m - nifty_3m
         except Exception: pass
         
-    if nifty_df is not None and len(df) >= 120 and len(nifty_df) >= 120:
+    if nifty_df is not None and len(df) >= 126 and len(nifty_df) >= 126:
         try:
-            stock_6m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-120])) - 1
-            nifty_6m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-120])) - 1
+            stock_6m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-126])) - 1
+            nifty_6m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-126])) - 1
             rs_6m = stock_6m - nifty_6m
         except Exception: pass
 
@@ -262,5 +262,7 @@ def get_conviction_rating(percentile: float, regime_score: int, weekly_bullish: 
         elif rating == "Buy": rating = "Hold"
         elif rating == "Hold": rating = "Caution"
         elif rating == "Caution": rating = "Avoid"
+    elif regime_score == -1:
+        if rating == "Strong Buy": rating = "Buy"
 
     return rating

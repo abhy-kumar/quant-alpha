@@ -245,7 +245,7 @@ def _add_supertrend(
 def _add_vpt(df: pd.DataFrame) -> pd.DataFrame:
     close = df["Close"]
     vol = df["Volume"]
-    pct_change = close.pct_change()
+    pct_change = close.pct_change().fillna(0)
     
     df["VPT"] = (vol * pct_change).cumsum()
     df["VPT_EMA20"] = df["VPT"].ewm(span=20, adjust=False).mean()
@@ -306,9 +306,17 @@ def add_weekly_supertrend(df: pd.DataFrame) -> pd.DataFrame:
     weekly_df = _add_atr(weekly_df, period=10)
     weekly_df = _add_supertrend(weekly_df, period=10, multiplier=3.0)
     
-    st_dir_weekly = weekly_df[["ST_Direction"]].rename(columns={"ST_Direction": "Weekly_ST_Direction"})
+    weekly_dir = weekly_df["ST_Direction"].copy()
+    weekly_dir.index = weekly_dir.index.tz_localize(None) if weekly_dir.index.tz else weekly_dir.index
     
-    df = df.join(st_dir_weekly, how='left')
+    daily_idx = df.index.tz_localize(None) if df.index.tz else df.index
+    
+    df["Weekly_ST_Direction"] = np.nan
+    
+    for week_end in weekly_dir.index:
+        mask = (daily_idx > week_end - pd.Timedelta(days=7)) & (daily_idx <= week_end)
+        df.loc[mask, "Weekly_ST_Direction"] = weekly_dir[week_end]
+    
     df["Weekly_ST_Direction"] = df["Weekly_ST_Direction"].ffill()
     
     return df
@@ -322,11 +330,12 @@ def compute_metrics(df: pd.DataFrame) -> dict:
     close   = df["Close"]
     returns = close.pct_change().dropna()
 
+    n_days = len(returns)
     ann_ret = (
-        (float(close.iloc[-1]) / float(close.iloc[0])) ** (252 / len(df)) - 1
-        if len(df) > 1 else 0
+        (float(close.iloc[-1]) / float(close.iloc[0])) ** (252 / n_days) - 1
+        if n_days > 0 else 0
     )
-    ann_vol  = float(returns.std()) * np.sqrt(252) if len(returns) > 1 else 0
+    ann_vol  = float(returns.std()) * np.sqrt(252) if n_days > 1 else 0
     sharpe   = (ann_ret - 0.065) / ann_vol if ann_vol else 0
 
     roll_max  = close.cummax()
