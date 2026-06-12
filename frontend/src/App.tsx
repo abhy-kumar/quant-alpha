@@ -331,9 +331,11 @@ export default function App() {
     return <span className="text-muted">Neutral</span>
   }
 
-  const scoreBar = (label: string, value: number, max: number = 10, color?: string) => {
-    const pct = Math.min((value / max) * 100, 100)
-    const barColor = color || (value >= 7 ? 'bg-green-500' : value >= 4 ? 'bg-amber-500' : 'bg-red-500')
+  const scoreBar = (label: string, value: number, min: number = 0, max: number = 10, color?: string) => {
+    const range = max - min
+    const normalized = range > 0 ? ((value - min) / range) * 100 : 0
+    const pct = Math.max(0, Math.min(normalized, 100))
+    const barColor = color || (pct >= 70 ? 'bg-green-500' : pct >= 40 ? 'bg-amber-500' : 'bg-red-500')
     return (
       <div className="flex items-center gap-2">
         <span className="text-muted text-[10px] font-mono w-20 shrink-0">{label}</span>
@@ -491,10 +493,10 @@ export default function App() {
                       </div>
                       
                       <div className="space-y-1 mb-4 py-3 border-y border-border">
-                        {scoreBar('Composite', Number(stock.Composite_Score) || 0)}
-                        {scoreBar('Tech', Number(stock.Tech_Score) || 0)}
-                        {scoreBar('Fund', Number(stock.Fund_Score) || 0)}
-                        {scoreBar('Research', Number(stock.Research_Score) || 0)}
+                        {scoreBar('Composite', Number(stock.Composite_Score) || 0, 0, 10)}
+                        {scoreBar('Tech', Number(stock.Tech_Score) || 0, -1, 1)}
+                        {scoreBar('Fund', Number(stock.Fund_Score) || 0, 0, 10)}
+                        {scoreBar('Research', Number(stock.Research_Score) || 0, 0, 10)}
                       </div>
 
                       <div className="grid grid-cols-3 gap-2 font-mono text-[10px]">
@@ -588,27 +590,34 @@ export default function App() {
                           {expandedRow === row.Ticker && (
                             <tr className="bg-black/5 dark:bg-black/20 border-b border-border">
                               <td colSpan={13} className="p-6">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                   {/* Technical Signals */}
                                   <div>
-                                    <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-4">Technical Signals</h4>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 font-mono text-xs">
-                                      <div><span className="text-muted block mb-1">Price vs SMA50</span>{getSignalLabel(row.Sig_Price_vs_SMA50)}</div>
-                                      <div><span className="text-muted block mb-1">Price vs SMA200</span>{getSignalLabel(row.Sig_Price_vs_SMA200)}</div>
-                                      <div><span className="text-muted block mb-1">SMA50 vs SMA200</span>{getSignalLabel(row.Sig_SMA50_vs_SMA200)}</div>
-                                      <div><span className="text-muted block mb-1">RSI</span>{getSignalLabel(row.Sig_RSI)}</div>
-                                      <div><span className="text-muted block mb-1">MACD Cross</span>{getSignalLabel(row.Sig_MACD_Cross)}</div>
-                                      <div><span className="text-muted block mb-1">MACD Hist</span>{getSignalLabel(row.Sig_MACD_Hist)}</div>
-                                      <div><span className="text-muted block mb-1">Stochastic</span>{getSignalLabel(row.Sig_Stoch)}</div>
-                                      <div><span className="text-muted block mb-1">Bollinger Bands</span>{getSignalLabel(row.Sig_BB)}</div>
-                                      <div><span className="text-muted block mb-1">CCI</span>{getSignalLabel(row.Sig_CCI)}</div>
-                                      <div><span className="text-muted block mb-1">Volume Spike</span>{getSignalLabel(row.Sig_Volume)}</div>
-                                      <div><span className="text-muted block mb-1">ADX Trend</span>{getSignalLabel(row.Sig_ADX)}</div>
-                                      <div><span className="text-muted block mb-1">Supertrend</span>{getSignalLabel(row.Sig_Supertrend)}</div>
-                                      <div><span className="text-muted block mb-1">Vol Price Trend</span>{getSignalLabel(row.Sig_VPT)}</div>
-                                      <div><span className="text-muted block mb-1">Ichimoku Cloud</span>{getSignalLabel(row.Sig_Ichimoku)}</div>
+                                    <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-3">Technical Signals</h4>
+                                    <div className="space-y-2 font-mono text-[11px]">
+                                      {[
+                                        ['Price vs SMA50', row.Sig_Price_vs_SMA50],
+                                        ['Price vs SMA200', row.Sig_Price_vs_SMA200],
+                                        ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200],
+                                        ['RSI', row.Sig_RSI],
+                                        ['MACD Cross', row.Sig_MACD_Cross],
+                                        ['MACD Hist', row.Sig_MACD_Hist],
+                                        ['Stochastic', row.Sig_Stoch],
+                                        ['Bollinger Bands', row.Sig_BB],
+                                        ['CCI', row.Sig_CCI],
+                                        ['Volume Spike', row.Sig_Volume],
+                                        ['ADX Trend', row.Sig_ADX],
+                                        ['Supertrend', row.Sig_Supertrend],
+                                        ['Vol Price Trend', row.Sig_VPT],
+                                        ['Ichimoku Cloud', row.Sig_Ichimoku],
+                                      ].map(([label, val]) => (
+                                        <div key={label as string} className="flex items-center justify-between">
+                                          <span className="text-muted">{label}</span>
+                                          {getSignalLabel(val)}
+                                        </div>
+                                      ))}
                                     </div>
-                                    <div className="mt-4 pt-3 border-t border-border grid grid-cols-3 gap-3 font-mono text-[10px]">
+                                    <div className="mt-3 pt-3 border-t border-border grid grid-cols-3 gap-3 font-mono text-[10px]">
                                       <div><span className="text-muted block">Bull Signals</span><span className="text-green-600 dark:text-green-500 font-semibold">{row.Bull_Count ?? '-'}</span></div>
                                       <div><span className="text-muted block">Bear Signals</span><span className="text-red-600 dark:text-red-500 font-semibold">{row.Bear_Count ?? '-'}</span></div>
                                       <div><span className="text-muted block">RS Percentile</span><span className="text-primary font-semibold">{num(row.RS_Percentile)}%</span></div>
@@ -617,63 +626,27 @@ export default function App() {
 
                                   {/* Research Factors */}
                                   <div>
-                                    <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-4">Research Factors</h4>
-                                    <div className="grid grid-cols-2 gap-4 font-mono text-xs">
-                                      <div>
-                                        <span className="text-muted block mb-1">Piotroski F-Score</span>
-                                        <div className="flex items-center gap-2">
-                                          <span className={`font-semibold ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}/9</span>
-                                          <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
-                                            <div className={`h-full rounded-full ${Number(row.Piotroski_F) >= 7 ? 'bg-green-500' : Number(row.Piotroski_F) <= 3 ? 'bg-red-500' : 'bg-primary'}`} style={{width: `${((row.Piotroski_F || 0) / 9) * 100}%`}}></div>
-                                          </div>
+                                    <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-3">Research Factors</h4>
+                                    <div className="space-y-2 font-mono text-[11px]">
+                                      {[
+                                        ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`],
+                                        ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`],
+                                        ['Earnings Quality', `${num(row.Earnings_Quality)}/10`],
+                                        ['Volatility (60D)', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : 'N/A'],
+                                        ['1M Momentum', row.Momentum_1M != null ? `${(row.Momentum_1M * 100).toFixed(2)}%` : 'N/A'],
+                                        ['3M Momentum', row.Momentum_3M != null ? `${(row.Momentum_3M * 100).toFixed(2)}%` : 'N/A'],
+                                        ['6M Momentum', row.Momentum_6M != null ? `${(row.Momentum_6M * 100).toFixed(2)}%` : 'N/A'],
+                                        ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(2)}%` : 'N/A'],
+                                        ['Risk-Adj Mom', num(row.Risk_Adj_Mom)],
+                                        ['Z-Score (60D)', num(row.Z_Score_60)],
+                                        ['Reversion Signal', Number(row.Reversion_Signal) === 1 ? 'Oversold' : Number(row.Reversion_Signal) === -1 ? 'Overbought' : 'Neutral'],
+                                        ['Downside Dev', row.Downside_Dev != null ? `${row.Downside_Dev.toFixed(1)}%` : 'N/A'],
+                                      ].map(([label, val]) => (
+                                        <div key={label as string} className="flex items-center justify-between">
+                                          <span className="text-muted">{label}</span>
+                                          <span className="text-primary">{val}</span>
                                         </div>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted block mb-1">Gross Profitability</span>
-                                        <span className={`font-semibold ${Number(row.Gross_Profit_Score) >= 7 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Gross_Profit_Score)}/10</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted block mb-1">Earnings Quality</span>
-                                        <span className={`font-semibold ${Number(row.Earnings_Quality) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Earnings_Quality) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(row.Earnings_Quality)}/10</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted block mb-1">Volatility (60D)</span>
-                                        <span className={`font-semibold ${Number(row.Vol_60D) < 25 ? 'text-green-600 dark:text-green-500' : Number(row.Vol_60D) > 40 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(row.Vol_60D)}%</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted block mb-1">1M Momentum</span>
-                                        <span className={`font-semibold ${colorCode(row.Momentum_1M)}`}>{row.Momentum_1M != null ? `${(row.Momentum_1M * 100).toFixed(2)}%` : 'N/A'}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted block mb-1">3M Momentum</span>
-                                        <span className={`font-semibold ${colorCode(row.Momentum_3M)}`}>{row.Momentum_3M != null ? `${(row.Momentum_3M * 100).toFixed(2)}%` : 'N/A'}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted block mb-1">6M Momentum</span>
-                                        <span className={`font-semibold ${colorCode(row.Momentum_6M)}`}>{row.Momentum_6M != null ? `${(row.Momentum_6M * 100).toFixed(2)}%` : 'N/A'}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted block mb-1">12M Momentum</span>
-                                        <span className={`font-semibold ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(2)}%` : 'N/A'}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted block mb-1">Risk-Adj Mom</span>
-                                        <span className={`font-semibold ${colorCode(row.Risk_Adj_Mom)}`}>{num(row.Risk_Adj_Mom)}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted block mb-1">Z-Score (60D)</span>
-                                        <span className={`font-semibold ${Number(row.Z_Score_60) > 2 ? 'text-red-600 dark:text-red-500' : Number(row.Z_Score_60) < -2 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Z_Score_60)}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted block mb-1">Reversion Signal</span>
-                                        <span className={`font-semibold ${Number(row.Reversion_Signal) === 1 ? 'text-green-600 dark:text-green-500' : Number(row.Reversion_Signal) === -1 ? 'text-red-600 dark:text-red-500' : 'text-muted'}`}>
-                                          {Number(row.Reversion_Signal) === 1 ? 'Oversold' : Number(row.Reversion_Signal) === -1 ? 'Overbought' : 'Neutral'}
-                                        </span>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted block mb-1">Downside Dev</span>
-                                        <span className="text-primary">{num(row.Downside_Dev)}%</span>
-                                      </div>
+                                      ))}
                                     </div>
                                     <div className="mt-4 pt-3 border-t border-border grid grid-cols-4 gap-3 font-mono text-[10px]">
                                       <div><span className="text-muted block">Total Return</span><span className={`font-semibold ${colorCode(row['Total_Return_%'])}`}>{num(row['Total_Return_%'])}%</span></div>
@@ -1089,15 +1062,15 @@ export default function App() {
                     <div className="border border-border bg-card p-6 shadow-sm">
                       <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-4 border-b border-border pb-2 font-semibold">Score Breakdown</h3>
                       <div className="space-y-2">
-                        {scoreBar('Composite', Number(selectedAsset.Composite_Score) || 0)}
-                        {scoreBar('Tech', Number(selectedAsset.Tech_Score) || 0)}
-                        {scoreBar('Fund', Number(selectedAsset.Fund_Score) || 0)}
-                        {scoreBar('Research', Number(selectedAsset.Research_Score) || 0)}
-                        <div className="border-t border-border pt-2 mt-2">
-                          {scoreBar('Piotroski', (Number(selectedAsset.Piotroski_F) || 0) * 10 / 9)}
-                          {scoreBar('Gross Profit', Number(selectedAsset.Gross_Profit_Score) || 0)}
-                          {scoreBar('Earnings Q', Number(selectedAsset.Earnings_Quality) || 0)}
-                          {scoreBar('Volatility', Number(selectedAsset.Vol_60D) < 50 ? 10 - (Number(selectedAsset.Vol_60D) || 0) / 5 : 0)}
+                        {scoreBar('Composite', Number(selectedAsset.Composite_Score) || 0, 0, 10)}
+                        {scoreBar('Tech', Number(selectedAsset.Tech_Score) || 0, -1, 1)}
+                        {scoreBar('Fund', Number(selectedAsset.Fund_Score) || 0, 0, 10)}
+                        {scoreBar('Research', Number(selectedAsset.Research_Score) || 0, 0, 10)}
+                        <div className="border-t border-border pt-2 mt-2 space-y-2">
+                          {scoreBar('Piotroski', Number(selectedAsset.Piotroski_F) || 0, 0, 9)}
+                          {scoreBar('Gross Profit', Number(selectedAsset.Gross_Profit_Score) || 0, 0, 10)}
+                          {scoreBar('Earnings Q', Number(selectedAsset.Earnings_Quality) || 0, 0, 10)}
+                          {scoreBar('Volatility', Number(selectedAsset.Vol_60D) || 0, 0, 60)}
                         </div>
                       </div>
                     </div>
@@ -1197,8 +1170,8 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border mt-12 py-8 px-6 bg-card">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+      <footer className="border-t border-border mt-12 bg-card">
+        <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
           
           <div className="flex flex-col gap-2">
             <h4 className="font-mono text-brand text-[10px] uppercase tracking-widest font-bold">System Status</h4>
