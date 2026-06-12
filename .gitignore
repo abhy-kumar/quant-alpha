@@ -1,8 +1,12 @@
 venv/
 __pycache__/
 *.pyc
-data/
-*.db
+data/sector_cache.json
+data/fundamentals_cache.json
+data/news_cache.json
+data/ath_cache.json
+data/etf_list.json
+data/screener.db
 .env
 *.log
 .DS_Store
