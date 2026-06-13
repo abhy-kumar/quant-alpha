@@ -360,7 +360,7 @@ export default function App() {
       className={`p-3 font-semibold cursor-pointer hover:text-brand transition-colors select-none text-${align}`}
       onClick={() => handleSort(field)}
     >
-      <span className="flex items-center gap-1">
+      <span className="inline-flex items-center gap-1">
         {children}
         {sortKey === field && <span className="text-brand">{sortDir === 'asc' ? '↑' : '↓'}</span>}
       </span>
