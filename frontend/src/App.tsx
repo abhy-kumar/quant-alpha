@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import axios from 'axios'
 import { Activity, Database, TrendingUp, BarChart2, Layers, Moon, Sun, Zap } from 'lucide-react'
-import type { DashboardData, MarketData } from './types'
+import type { DashboardData } from './types'
 import SignalsTab from './components/SignalsTab'
 import ScreenerTab from './components/ScreenerTab'
 import ChartingTab from './components/ChartingTab'
@@ -29,7 +29,6 @@ export default function App() {
   const [chartData, setChartData] = useState<any[]>([])
   const [chartLoading, setChartLoading] = useState(false)
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
-  const [sectorSummary, setSectorSummary] = useState<Record<string, any>>({})
   const [outcomeAccuracy, setOutcomeAccuracy] = useState<Record<string, any>>({})
   const [watchlist, setWatchlist] = useState<string[]>([])
 
@@ -85,7 +84,6 @@ export default function App() {
           vix_level: res.data.vix_level,
           breadth_pct: res.data.breadth_pct,
         })
-        setSectorSummary(res.data.sector_summary || {})
         setOutcomeAccuracy(res.data.outcome_accuracy || {})
         setIsDynamic(res.data.is_dynamic || false)
         if (!selectedTicker) setSelectedTicker(sortedData[0].Ticker)

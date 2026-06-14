@@ -1,4 +1,3 @@
-import React from 'react'
 import type { OutcomeAccuracy } from '../types'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts'
 

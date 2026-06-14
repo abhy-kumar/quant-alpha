@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { DashboardData } from '../types'
 import { num, colorCode, scoreBar } from './shared'
 import { TrendingUp, Search } from 'lucide-react'
@@ -21,7 +21,7 @@ interface Props {
   selectedAsset: DashboardData | null
 }
 
-function StockSearch({ data, selectedTicker, onSelect, isDark }: { data: DashboardData[]; selectedTicker: string; onSelect: (t: string) => void; isDark: boolean }) {
+function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]; selectedTicker: string; onSelect: (t: string) => void }) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -107,7 +107,7 @@ export default function ChartingTab({
       <div className="w-full xl:w-1/4 flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <label className="font-mono text-xs uppercase tracking-widest text-sub">Security</label>
-          <StockSearch data={data} selectedTicker={selectedTicker} onSelect={setSelectedTicker} isDark={isDark} />
+          <StockSearch data={data} selectedTicker={selectedTicker} onSelect={setSelectedTicker} />
         </div>
 
         {/* Company Profile */}

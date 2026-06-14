@@ -1,4 +1,3 @@
-import React from 'react'
 import type { DashboardData } from '../types'
 import { num, colorCode, scoreBar } from './shared'
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from 'recharts'
@@ -12,7 +11,7 @@ interface Props {
   sparklineData: Record<string, { time: string; close: number }[]>
 }
 
-function MiniSparkline({ data, isDark }: { data: { time: string; close: number }[]; isDark: boolean }) {
+function MiniSparkline({ data }: { data: { time: string; close: number }[] }) {
   if (!data || data.length < 2) return null
   const min = Math.min(...data.map(d => d.close))
   const max = Math.max(...data.map(d => d.close))
@@ -116,7 +115,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect, is
                     {stock.Sector || 'Equities'}
                   </div>
                 </div>
-                <MiniSparkline data={sparklineData[stock.Ticker] || []} isDark={isDark} />
+                <MiniSparkline data={sparklineData[stock.Ticker] || []} />
               </div>
               
               <div className="flex items-start gap-4 mb-4">
