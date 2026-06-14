@@ -603,13 +603,59 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         result_df.sort_values("Composite_Score", ascending=False, inplace=True, ignore_index=True)
         result_df = result_df.replace({np.nan: None})
         
+        sector_summary = {}
+        for sector, group in result_df.groupby("Sector"):
+            scores = group["Composite_Score"].dropna()
+            sector_summary[sector] = {
+                "avg_composite": round(float(scores.mean()), 2) if len(scores) > 0 else 0,
+                "avg_tech": round(float(group["Tech_Score"].dropna().mean()), 2) if len(group["Tech_Score"].dropna()) > 0 else 0,
+                "avg_fund": round(float(group["Fund_Score"].dropna().mean()), 2) if len(group["Fund_Score"].dropna()) > 0 else 0,
+                "avg_research": round(float(group["Research_Score"].dropna().mean()), 2) if len(group["Research_Score"].dropna()) > 0 else 0,
+                "strong_buys": int((group["Conviction"] == "Strong Buy").sum()),
+                "buys": int((group["Conviction"] == "Buy").sum()),
+                "holds": int((group["Conviction"] == "Hold").sum()),
+                "avoids": int((group["Conviction"] == "Avoid").sum()),
+                "count": len(group),
+            }
+
+        outcome_accuracy = {}
+        try:
+            from data_pipeline import get_outcome_accuracy
+            acc_df = get_outcome_accuracy()
+            if not acc_df.empty:
+                for _, row in acc_df.iterrows():
+                    outcome_accuracy[row["Conviction_At_Scan"]] = {
+                        "n": int(row["n"]),
+                        "win_rate_21d": round(float(row["win_rate_21d"]) * 100, 1) if row["win_rate_21d"] is not None else None,
+                        "avg_return_21d": round(float(row["avg_return_21d"]), 2) if row["avg_return_21d"] is not None else None,
+                        "win_rate_63d": round(float(row["win_rate_63d"]) * 100, 1) if row["win_rate_63d"] is not None else None,
+                        "avg_return_63d": round(float(row["avg_return_63d"]), 2) if row["avg_return_63d"] is not None else None,
+                    }
+        except Exception as e:
+            log.warning(f"Could not compute outcome accuracy: {e}")
+
+        nifty_close = _safe_float(nifty_df["Close"].iloc[-1]) if nifty_df is not None and not nifty_df.empty else None
+        nifty_change = None
+        if nifty_df is not None and len(nifty_df) > 1:
+            prev_close = _safe_float(nifty_df["Close"].iloc[-2])
+            if prev_close and prev_close > 0:
+                nifty_change = round((nifty_close / prev_close - 1) * 100, 2)
+        vix_level = _safe_float(vix_df["Close"].iloc[-1]) if vix_df is not None and not vix_df.empty else None
+        breadth_pct_val = breadth_pct if 'breadth_pct' in dir() else None
+
         output_data = {
             "status": "ok",
             "last_updated": scan_time.strftime("%Y-%m-%d %I:%M %p IST"),
             "coverage_pct": coverage_pct,
             "market_regime_score": regime_score,
+            "nifty_close": nifty_close,
+            "nifty_change_pct": nifty_change,
+            "vix_level": vix_level,
+            "breadth_pct": breadth_pct_val,
             "scan_version": "2.0",
             "factors": ["tech", "fund", "research", "momentum"],
+            "sector_summary": sector_summary,
+            "outcome_accuracy": outcome_accuracy,
             "data": result_df.to_dict(orient="records")
         }
         
@@ -635,7 +681,7 @@ def _archive_scan(result_df: pd.DataFrame, scan_time: datetime) -> None:
         conn = sqlite3.connect("data/market_scans.db")
         sql_df = result_df.copy()
         sql_df["Scan_Date"] = scan_time.strftime("%Y-%m-%d %H:%M:%S")
-        sql_df["Scan_Date_UTC"] = scan_time.isoformat()
+        sql_df["Scan_Date_UTC"] = scan_time.astimezone(timezone.utc).isoformat()
         cursor = conn.cursor()
         
         table_exists = cursor.execute(
