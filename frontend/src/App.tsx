@@ -232,31 +232,27 @@ export default function App() {
           </div>
         </div>
 
-        {/* Market Regime Banner */}
+        {/* Market Regime — compact status strip */}
         {marketRegimeScore !== null && (
-          <div className={`max-w-7xl mx-auto px-6 pb-3`}>
-            <div className={`bg-gradient-to-r ${regimeGradient} border border-border px-4 py-2.5 flex items-center gap-6 flex-wrap`}>
+          <div className="max-w-7xl mx-auto px-6 pb-3">
+            <div className={`border-l-2 ${marketRegimeScore >= 1 ? 'border-green-500' : marketRegimeScore <= -1 ? 'border-red-500' : 'border-amber-400'} border border-border bg-card px-4 py-1.5 flex items-center gap-4 flex-wrap`}>
               <div className="flex items-center gap-2">
-                <Zap size={14} className={regimeTextColor} />
-                <span className={`font-mono text-xs font-semibold uppercase tracking-wider ${regimeTextColor}`}>
+                <Zap size={11} className={regimeTextColor} />
+                <span className={`font-mono text-[10px] font-semibold uppercase tracking-widest ${regimeTextColor}`}>
                   Market Regime: {regimeLabel} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
                 </span>
               </div>
-              <div className="h-3 w-px bg-border"></div>
+              <span className="h-3 w-px bg-border"></span>
               {regimeMeta.nifty_change_pct !== undefined && regimeMeta.nifty_change_pct !== null && (
                 <span className={`font-mono text-[10px] ${regimeMeta.nifty_change_pct >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  NIFTY: {regimeMeta.nifty_change_pct >= 0 ? '+' : ''}{regimeMeta.nifty_change_pct}%
+                  NIFTY {regimeMeta.nifty_change_pct >= 0 ? '+' : ''}{regimeMeta.nifty_change_pct}%
                 </span>
               )}
               {regimeMeta.vix_level !== undefined && regimeMeta.vix_level !== null && (
-                <span className="font-mono text-[10px] text-muted">
-                  VIX: {regimeMeta.vix_level.toFixed(1)}
-                </span>
+                <span className="font-mono text-[10px] text-muted">VIX {regimeMeta.vix_level.toFixed(1)}</span>
               )}
               {regimeMeta.breadth_pct !== undefined && regimeMeta.breadth_pct !== null && (
-                <span className="font-mono text-[10px] text-muted">
-                  Breadth: {(regimeMeta.breadth_pct * 100).toFixed(0)}%
-                </span>
+                <span className="font-mono text-[10px] text-muted">Breadth {(regimeMeta.breadth_pct * 100).toFixed(0)}%</span>
               )}
             </div>
           </div>
@@ -302,6 +298,30 @@ export default function App() {
           </div>
         ) : (
           <div className="animate-in fade-in duration-500">
+            {/* Uniform tab section header */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-6 w-1 bg-brand rounded-full"></div>
+              <h2 className="font-display font-bold text-xl tracking-wide text-primary">
+                {activeTab === 'picks' && 'High Conviction Signals'}
+                {activeTab === 'fundamentals' && 'Universe Screening'}
+                {activeTab === 'charting' && 'Technical Analysis'}
+                {activeTab === 'heatmap' && 'Sector Heatmap'}
+                {activeTab === 'factorlab' && 'Factor Lab'}
+              </h2>
+              {activeTab === 'picks' && (
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
+                </span>
+              )}
+              {activeTab === 'fundamentals' && (
+                <span className="font-mono text-[10px] text-muted">({data.length} securities)</span>
+              )}
+              {activeTab === 'factorlab' && (
+                <span className="font-mono text-[10px] text-muted">Conviction Accuracy Tracker</span>
+              )}
+            </div>
+
             {activeTab === 'picks' && (
               <SignalsTab
                 topPicks={topPicks}

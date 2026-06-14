@@ -43,19 +43,8 @@ function ScoreRadar({ stock, isDark }: { stock: DashboardData; isDark: boolean }
 
 export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect, isDark }: Props) {
   return (
-    <div className="space-y-8">
-      <section className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-3">
-          <div className="h-6 w-1 bg-brand rounded-full"></div>
-          <h2 className="font-display font-bold text-xl tracking-wide text-primary">
-            High Conviction Signals
-          </h2>
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
-          </span>
-        </div>
-
+    <div className="space-y-6">
+      <div className="flex justify-end">
         <div className="flex bg-card border border-border p-0.5">
           <button
             onClick={() => setHorizon('short')}
@@ -70,7 +59,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect, is
             Long Term
           </button>
         </div>
-      </section>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {topPicks.map((stock, i) => {

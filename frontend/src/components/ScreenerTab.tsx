@@ -70,12 +70,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-6 w-1 bg-brand rounded-full"></div>
-          <h2 className="font-display font-bold text-xl tracking-wide text-primary">Universe Screening</h2>
-          <span className="font-mono text-[10px] text-muted">({filteredData.length}/{data.length})</span>
-        </div>
+      <div className="flex items-center justify-end">
         <button 
           onClick={() => setShowFilters(!showFilters)}
           className={`flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest border transition-all ${showFilters ? 'border-brand bg-brand text-white' : 'border-border text-muted hover:text-primary hover:border-primary'}`}

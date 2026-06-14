@@ -200,14 +200,46 @@ The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 +-------------------------------------------------------------------------+
 ```
 
+## Dashboard Features
+
+The React frontend is a five-tab analytical dashboard:
+
+| Tab | Description |
+|-----|-------------|
+| **Signals** | Top 3 high-conviction picks for Short-Term (momentum) or Long-Term (value) horizon. Each card shows a composite score, a radar chart across Tech / Fund / Research / Momentum / Piotroski axes, and six key metrics. |
+| **Screen** | Full universe screener with sortable columns (Ticker, Sector, LTP, 1D%, Composite, Tech, Fund, Research, F-Score, 12M Momentum, P/E, D/E, Conviction). Dynamic filters for composite score, Piotroski F-Score, sector, conviction, market cap, and D/E ratio. Expandable row shows all 14 technical signals and 12 research factors. |
+| **Charts** | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14) with 30/50/70 reference lines, MACD (12,26,9) with color-coded histogram. Left panel shows company profile, technicals, research factors, momentum, fundamentals, and risk metrics. Sector peer comparison table below. Supports 7 periods (1W–5Y) and daily/weekly interval. |
+| **Heatmap** | Color-coded sector heatmap where each tile represents a stock, colored from red (low composite) to green (high composite). Sectors sorted alphabetically. Color legend shown. |
+| **Factor Lab** | Conviction accuracy tracker that shows historical win rates and average forward returns (21D and 63D) by conviction level, with a bar chart and summary cards. Data accumulates as scans age. |
+
+### Market Regime Strip
+
+A compact status strip below the header shows the current market regime (Bullish / Neutral / Bearish) with a color-coded left border, alongside live NIFTY change %, India VIX, and market breadth.
+
 ## Tech Stack
 
-- **Frontend**: React 19, Vite 8, Tailwind CSS, Recharts
+- **Frontend**: React 19, Vite 6, Tailwind CSS v4, Recharts 2.x, Lucide Icons
 - **Data Engine**: Python 3.12, pandas, numpy, yfinance, BeautifulSoup, vaderSentiment
-- **Serverless API**: Vercel Functions (live pricing, charting)
-- **Database**: SQLite (market_scans.db)
-- **CI/CD**: GitHub Actions (twice-daily scans)
-- **Deployment**: Vercel (frontend), GitHub (data + backend)
+- **Serverless API**: Vercel Functions (`api/chart.ts`, `api/live_data.ts`) — live pricing + chart indicator computation
+- **Database**: SQLite (`market_scans.db`)
+- **CI/CD**: GitHub Actions (twice-daily scans at 4:15 PM and 12:30 PM IST)
+- **Deployment**: Vercel (frontend + serverless), GitHub (data + backend)
+
+### Frontend Component Map
+
+```text
+frontend/src/
+├── App.tsx               # Global state, routing, data fetch, tab orchestration
+├── types.ts              # TypeScript interfaces (DashboardData, MarketData, etc.)
+├── index.css             # Design tokens, dark mode, glassmorphism utilities
+└── components/
+    ├── shared.tsx         # num(), colorCode(), scoreBar(), SortHeader()
+    ├── SignalsTab.tsx      # High conviction signal cards with radar chart
+    ├── ScreenerTab.tsx     # Full universe screener with filters + expandable rows
+    ├── ChartingTab.tsx     # Price/RSI/MACD charts + company profile panel
+    ├── HeatmapTab.tsx      # Sector heatmap with color legend
+    └── FactorLabTab.tsx    # Conviction accuracy tracker with forward return charts
+```
 
 ## Local Setup
 

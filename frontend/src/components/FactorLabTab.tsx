@@ -19,14 +19,8 @@ export default function FactorLabTab({ outcomeAccuracy, isDark }: Props) {
   
   if (entries.length === 0) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="h-6 w-1 bg-brand rounded-full"></div>
-          <h2 className="font-display font-bold text-xl tracking-wide text-primary">Factor Lab</h2>
-        </div>
-        <div className="border border-border bg-card p-12 text-center">
-          <p className="font-mono text-sm text-muted">No outcome data available yet. Outcomes are computed as past scans age and forward returns become available.</p>
-        </div>
+      <div className="border border-border bg-card p-12 text-center">
+        <p className="font-mono text-sm text-muted">No outcome data available yet. Outcomes are computed as past scans age and forward returns become available.</p>
       </div>
     )
   }
@@ -43,12 +37,6 @@ export default function FactorLabTab({ outcomeAccuracy, isDark }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="h-6 w-1 bg-brand rounded-full"></div>
-        <h2 className="font-display font-bold text-xl tracking-wide text-primary">Factor Lab</h2>
-        <span className="font-mono text-[10px] text-muted">Conviction Accuracy Tracker</span>
-      </div>
-
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {sorted.map(([conviction, data]) => (

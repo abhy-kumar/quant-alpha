@@ -277,46 +277,48 @@ export default function ChartingTab({
         {/* Chart Container */}
         <div className="flex flex-col gap-6">
           {/* Main Price & Volume Chart with Supertrend Overlay */}
-          <div className="border border-border bg-card p-6 h-[450px] flex flex-col relative shadow-sm">
-            <div className="absolute top-4 left-[66px] font-mono text-xs text-primary/80 z-10 font-semibold bg-card/80 px-2 rounded backdrop-blur-sm">
-              {selectedTicker.replace('.NS', '')} — Price, SMAs & Supertrend
+          <div className="border border-border bg-card shadow-sm" style={{height: 466}}>
+            <div className="px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
+              {selectedTicker.replace('.NS', '')} &mdash; Price · SMA 50 · SMA 200 · Supertrend
             </div>
+            <div style={{ width: '100%', height: 'calc(100% - 32px)' }}>
             {chartLoading ? (
-              <div className="m-auto font-mono text-muted text-xs uppercase animate-pulse">Loading execution logic...</div>
+              <div className="flex items-center justify-center h-full font-mono text-muted text-xs uppercase animate-pulse">Loading...</div>
             ) : chartData.length > 0 ? (
-              <div style={{ width: '100%', height: '100%', minHeight: '350px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={chartData}>
-                    <defs>
-                      <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#C8102E" stopOpacity={isDark ? 0.3 : 0.1}/>
-                        <stop offset="95%" stopColor="#C8102E" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} vertical={false} />
-                    <XAxis dataKey="time" stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} tickMargin={10} minTickGap={30} />
-                    <YAxis yAxisId="price" domain={['auto', 'auto']} stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} width={50} />
-                    <YAxis yAxisId="volume" orientation="right" domain={[0, dataMax => dataMax * 4]} hide={true} />
-                    <Tooltip contentStyle={tooltipStyle(isDark)} itemStyle={{color: isDark ? '#FFFFFF' : '#0f172a'}} labelStyle={{color: isDark ? '#A1A1AA' : '#64748b', marginBottom: '5px'}} />
-                    <Legend verticalAlign="top" height={36} align="right" wrapperStyle={{fontFamily: 'Space Mono', fontSize: '10px', color: isDark ? '#71717A' : '#64748b'}}/>
-                    <Bar yAxisId="volume" name="Volume" dataKey="volume" fill={isDark ? "#3F3F46" : "#cbd5e1"} maxBarSize={6} />
-                    <Area yAxisId="price" type="monotone" name="Close" dataKey="close" stroke="#C8102E" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
-                    <Line yAxisId="price" type="monotone" name="SMA 50" dataKey="sma50" stroke="#3B82F6" strokeWidth={1} dot={false} />
-                    <Line yAxisId="price" type="monotone" name="SMA 200" dataKey="sma200" stroke="#F59E0B" strokeWidth={1} dot={false} strokeDasharray="5 5" />
-                    <Line yAxisId="price" type="monotone" name="Supertrend" dataKey="supertrend" stroke="#06B6D4" strokeWidth={1.5} dot={false} strokeDasharray="2 2" />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#C8102E" stopOpacity={isDark ? 0.3 : 0.1}/>
+                      <stop offset="95%" stopColor="#C8102E" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} vertical={false} />
+                  <XAxis dataKey="time" stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} tickMargin={10} minTickGap={30} />
+                  <YAxis yAxisId="price" domain={['auto', 'auto']} stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} width={50} />
+                  <YAxis yAxisId="volume" orientation="right" domain={[0, dataMax => dataMax * 4]} hide={true} />
+                  <Tooltip contentStyle={tooltipStyle(isDark)} itemStyle={{color: isDark ? '#FFFFFF' : '#0f172a'}} labelStyle={{color: isDark ? '#A1A1AA' : '#64748b', marginBottom: '5px'}} />
+                  <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{fontFamily: 'Space Mono', fontSize: '10px', color: isDark ? '#71717A' : '#64748b'}}/>
+                  <Bar yAxisId="volume" name="Volume" dataKey="volume" fill={isDark ? "#3F3F46" : "#cbd5e1"} maxBarSize={6} />
+                  <Area yAxisId="price" type="monotone" name="Close" dataKey="close" stroke="#C8102E" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
+                  <Line yAxisId="price" type="monotone" name="SMA 50" dataKey="sma50" stroke="#3B82F6" strokeWidth={1} dot={false} />
+                  <Line yAxisId="price" type="monotone" name="SMA 200" dataKey="sma200" stroke="#F59E0B" strokeWidth={1} dot={false} strokeDasharray="5 5" />
+                  <Line yAxisId="price" type="monotone" name="Supertrend" dataKey="supertrend" stroke="#06B6D4" strokeWidth={1.5} dot={false} strokeDasharray="2 2" />
+                </ComposedChart>
+              </ResponsiveContainer>
             ) : (
-              <div className="m-auto font-mono text-muted text-xs uppercase">No chart data for {selectedTicker}</div>
+              <div className="flex items-center justify-center h-full font-mono text-muted text-xs uppercase">No chart data for {selectedTicker}</div>
             )}
+            </div>
           </div>
 
           {/* Subchart: RSI */}
-          <div className="border border-border bg-card p-6 h-[200px] flex flex-col relative shadow-sm">
-            <div className="absolute top-4 left-[60px] font-mono text-xs text-primary/80 z-10 font-semibold bg-card/80 px-2 rounded backdrop-blur-sm">RSI (14)</div>
+          <div className="border border-border bg-card shadow-sm" style={{height: 200}}>
+            <div className="px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
+              RSI (14) &nbsp;<span className="text-[8px]">— 30 oversold · 70 overbought</span>
+            </div>
             {chartData.length > 0 && !chartLoading && (
-              <div style={{ width: '100%', height: '100%', minHeight: '120px' }}>
+              <div style={{ width: '100%', height: 'calc(100% - 32px)' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} vertical={false} />
@@ -334,10 +336,12 @@ export default function ChartingTab({
           </div>
 
           {/* Subchart: MACD */}
-          <div className="border border-border bg-card p-6 h-[200px] flex flex-col relative shadow-sm">
-            <div className="absolute top-4 left-[60px] font-mono text-xs text-primary/80 z-10 font-semibold bg-card/80 px-2 rounded backdrop-blur-sm">MACD (12, 26, 9)</div>
+          <div className="border border-border bg-card shadow-sm" style={{height: 200}}>
+            <div className="px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
+              MACD (12, 26, 9) &nbsp;<span className="text-[8px]">— histogram · signal line</span>
+            </div>
             {chartData.length > 0 && !chartLoading && (
-              <div style={{ width: '100%', height: '100%', minHeight: '120px' }}>
+              <div style={{ width: '100%', height: 'calc(100% - 32px)' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} vertical={false} />
