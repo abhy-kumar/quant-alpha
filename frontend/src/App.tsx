@@ -371,33 +371,33 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-border mt-12 bg-card">
-        <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+        <div className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           <div className="flex flex-col gap-2">
-            <h4 className="font-mono text-brand text-[10px] uppercase tracking-widest font-bold">System Status</h4>
+            <h4 className="font-mono text-brand text-[10px] uppercase tracking-widest font-bold mb-1">System Status</h4>
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted">
-              <Database size={10} /> <span>Database</span>
-              <span className="text-primary">Static JSON</span>
+              <Database size={10} /><span>Database</span><span className="text-primary">Static JSON</span>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted">
-              <Activity size={10} /> <span>Last Updated</span>
+              <Activity size={10} /><span>Last Updated</span>
               <span className="text-primary">{lastUpdated}</span>
               {isDynamic && <span className="text-brand">Live</span>}
             </div>
           </div>
-          <div>
-            <h4 className="font-display font-semibold text-sm mb-2 uppercase text-primary">Disclaimer</h4>
-            <p className="font-mono text-[10px] text-sub leading-relaxed">
-              This platform is for educational purposes only and does not constitute financial advice. 
-              The models and signals provided are experimental. Always consult a certified financial advisor before making investment decisions. 
-              Alpha Research and Investment Club, FMS Delhi is not responsible for any trading losses incurred.
+          <div className="flex flex-col gap-2">
+            <h4 className="font-mono text-brand text-[10px] uppercase tracking-widest font-bold mb-1">Disclaimer</h4>
+            <p className="font-mono text-[10px] text-muted leading-relaxed">
+              For educational purposes only. Not financial advice. Models and signals are experimental — always consult a certified advisor before investing.
             </p>
           </div>
-          <div className="md:text-right">
-            <p className="font-mono text-[10px] text-muted">Alpha Research and Investment Club<br/>FMS Delhi</p>
-            <p className="font-mono text-[10px] text-sub mt-2 tracking-widest uppercase">Made with &#9829; by Abhishek Kumar</p>
+          <div className="flex flex-col gap-2 md:items-end">
+            <h4 className="font-mono text-brand text-[10px] uppercase tracking-widest font-bold mb-1">Alpha Research</h4>
+            <p className="font-mono text-[10px] text-muted">Alpha Research and Investment Club</p>
+            <p className="font-mono text-[10px] text-muted">FMS Delhi</p>
+            <p className="font-mono text-[10px] text-sub tracking-widest uppercase mt-1">Made with &#9829; by Abhishek Kumar</p>
           </div>
         </div>
       </footer>
+
     </div>
   )
 }
