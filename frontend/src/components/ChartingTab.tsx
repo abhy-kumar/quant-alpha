@@ -278,7 +278,7 @@ export default function ChartingTab({
         <div className="flex flex-col gap-6">
           {/* Main Price & Volume Chart with Supertrend Overlay */}
           <div className="border border-border bg-card p-6 h-[450px] flex flex-col relative shadow-sm">
-            <div className="absolute top-4 left-6 font-mono text-xs text-primary/80 z-10 font-semibold bg-card/80 px-2 rounded backdrop-blur-sm">
+            <div className="absolute top-4 left-[66px] font-mono text-xs text-primary/80 z-10 font-semibold bg-card/80 px-2 rounded backdrop-blur-sm">
               {selectedTicker.replace('.NS', '')} — Price, SMAs & Supertrend
             </div>
             {chartLoading ? (
@@ -314,7 +314,7 @@ export default function ChartingTab({
 
           {/* Subchart: RSI */}
           <div className="border border-border bg-card p-6 h-[200px] flex flex-col relative shadow-sm">
-            <div className="absolute top-4 left-6 font-mono text-xs text-primary/80 z-10 font-semibold bg-card/80 px-2 rounded backdrop-blur-sm">RSI (14)</div>
+            <div className="absolute top-4 left-[60px] font-mono text-xs text-primary/80 z-10 font-semibold bg-card/80 px-2 rounded backdrop-blur-sm">RSI (14)</div>
             {chartData.length > 0 && !chartLoading && (
               <div style={{ width: '100%', height: '100%', minHeight: '120px' }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -335,7 +335,7 @@ export default function ChartingTab({
 
           {/* Subchart: MACD */}
           <div className="border border-border bg-card p-6 h-[200px] flex flex-col relative shadow-sm">
-            <div className="absolute top-4 left-6 font-mono text-xs text-primary/80 z-10 font-semibold bg-card/80 px-2 rounded backdrop-blur-sm">MACD (12, 26, 9)</div>
+            <div className="absolute top-4 left-[60px] font-mono text-xs text-primary/80 z-10 font-semibold bg-card/80 px-2 rounded backdrop-blur-sm">MACD (12, 26, 9)</div>
             {chartData.length > 0 && !chartLoading && (
               <div style={{ width: '100%', height: '100%', minHeight: '120px' }}>
                 <ResponsiveContainer width="100%" height="100%">
