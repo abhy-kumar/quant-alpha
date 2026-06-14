@@ -20,14 +20,33 @@ function getHeatmapColor(score: number, isDark: boolean) {
 }
 
 export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
+  const sortedSectors = Object.keys(sectorMap).sort()
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="h-6 w-1 bg-brand rounded-full"></div>
-        <h2 className="font-display font-bold text-xl tracking-wide text-primary">Sector Heatmap</h2>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <div className="h-6 w-1 bg-brand rounded-full"></div>
+          <h2 className="font-display font-bold text-xl tracking-wide text-primary">Sector Heatmap</h2>
+        </div>
+        {/* Color Legend */}
+        <div className="flex items-center gap-3 font-mono text-[9px] uppercase tracking-wider text-muted">
+          <span>Score:</span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded-sm inline-block" style={{backgroundColor: isDark ? 'rgba(220,50,50,0.3)' : 'rgba(220,50,50,0.2)'}}></span>
+            Low (&lt;4)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded-sm inline-block" style={{backgroundColor: isDark ? 'rgba(200,130,50,0.3)' : 'rgba(200,130,50,0.2)'}}></span>
+            Mid (4–7)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded-sm inline-block" style={{backgroundColor: isDark ? 'rgba(50,180,90,0.3)' : 'rgba(50,180,90,0.2)'}}></span>
+            High (&gt;7)
+          </span>
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Object.keys(sectorMap).map(sector => (
+        {sortedSectors.map(sector => (
           <div key={sector} className="border border-border bg-card p-6 shadow-sm hover:border-brand/50 transition-colors">
             <h3 className="font-mono text-sm text-primary uppercase tracking-widest mb-4 border-b border-border pb-2 font-semibold">
               {sector}

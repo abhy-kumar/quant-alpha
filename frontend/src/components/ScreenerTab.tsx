@@ -10,8 +10,7 @@ interface Props {
   setExpandedRow: (ticker: string | null) => void
 }
 
-const CONVICTION_OPTIONS = ['Strong Buy', 'Buy', 'Hold', 'Avoid']
-const SECTORS = ['Technology', 'Financial Services', 'Energy', 'Healthcare', 'Consumer Cyclical', 'Industrials', 'Basic Materials', 'Communication Services', 'Consumer Defensive', 'Utilities', 'Real Estate']
+const CONVICTION_OPTIONS = ['Strong Buy', 'Buy', 'Hold', 'Caution', 'Avoid']
 
 export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRow }: Props) {
   const [sortKey, setSortKey] = useState<string>('Composite_Score')
@@ -24,6 +23,13 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
   const [selectedConvictions, setSelectedConvictions] = useState<string[]>([])
   const [minMarketCap, setMinMarketCap] = useState(0)
   const [maxDE, setMaxDE] = useState(999)
+
+  // Derive unique sectors from data dynamically
+  const availableSectors = useMemo(() => {
+    const set = new Set<string>()
+    data.forEach(d => { if (d.Sector && d.Sector !== 'Unknown' && d.Sector !== 'ETF') set.add(d.Sector) })
+    return Array.from(set).sort()
+  }, [data])
 
   const handleSort = (key: string) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -108,7 +114,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
             <div>
               <label className="font-mono text-[10px] text-muted uppercase mb-2 block">Sectors</label>
               <div className="flex flex-wrap gap-1">
-                {SECTORS.map(s => (
+                {availableSectors.map(s => (
                   <button key={s} onClick={() => toggleSector(s)} className={`px-2 py-0.5 font-mono text-[9px] border transition-all ${selectedSectors.includes(s) ? 'border-brand bg-brand text-white' : 'border-border text-muted hover:text-primary'}`}>
                     {s}
                   </button>
@@ -136,6 +142,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <SortHeader field="Ticker" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Ticker</SortHeader>
               <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Sector</SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>LTP</SortHeader>
+              <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>1D %</SortHeader>
               <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Composite</SortHeader>
               <SortHeader field="Tech_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Tech</SortHeader>
               <SortHeader field="Fund_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Fund</SortHeader>
@@ -157,6 +164,9 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className="p-3 text-primary font-medium cursor-pointer" onClick={() => onSelect(row.Ticker)}>{row.Ticker.replace('.NS', '')}</td>
                   <td className="p-3 text-muted">{row.Sector || '-'}</td>
                   <td className="p-3 text-right text-muted">{num(row.Price)}</td>
+                  <td className={`p-3 text-right font-medium ${colorCode(row['1d_Chg_%'])}`}>
+                    {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
+                  </td>
                   <td className={`p-3 text-right font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
                   <td className={`p-3 text-right font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
                   <td className={`p-3 text-right font-medium ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
@@ -165,7 +175,15 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className={`p-3 text-right font-medium ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</td>
                   <td className="p-3 text-right text-muted">{num(row['P/E'])}</td>
                   <td className="p-3 text-right text-muted">{num(row['Debt_to_Equity'])}</td>
-                  <td className="p-3 text-primary font-medium">{row.Conviction || 'N/A'}</td>
+                  <td className="p-3 font-medium">
+                    <span className={`px-1.5 py-0.5 text-[9px] font-mono border rounded-sm ${
+                      row.Conviction === 'Strong Buy' ? 'border-green-500/50 text-green-600 dark:text-green-400 bg-green-500/10' :
+                      row.Conviction === 'Buy' ? 'border-blue-500/50 text-blue-600 dark:text-blue-400 bg-blue-500/10' :
+                      row.Conviction === 'Caution' ? 'border-orange-500/50 text-orange-600 dark:text-orange-400 bg-orange-500/10' :
+                      row.Conviction === 'Avoid' ? 'border-red-500/50 text-red-600 dark:text-red-400 bg-red-500/10' :
+                      'border-border text-muted'
+                    }`}>{row.Conviction || 'N/A'}</span>
+                  </td>
                   <td className="p-3 text-center">
                     <button 
                       onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
@@ -178,7 +196,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 </tr>
                 {expandedRow === row.Ticker && (
                   <tr className="bg-black/5 dark:bg-black/20 border-b border-border">
-                    <td colSpan={13} className="p-6">
+                    <td colSpan={14} className="p-6">
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
                           <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-3">Technical Signals</h4>

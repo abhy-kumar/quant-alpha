@@ -10,6 +10,7 @@ const COLORS = {
   'Strong Buy': '#22c55e',
   'Buy': '#3b82f6',
   'Hold': '#f59e0b',
+  'Caution': '#f97316',
   'Avoid': '#ef4444',
 }
 

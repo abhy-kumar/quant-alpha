@@ -3,8 +3,9 @@ import type { DashboardData } from '../types'
 import { num, colorCode, scoreBar } from './shared'
 import { TrendingUp, Search } from 'lucide-react'
 import {
-  ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+  ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell
 } from 'recharts'
+
 
 interface Props {
   data: DashboardData[]
@@ -320,11 +321,12 @@ export default function ChartingTab({
                   <ComposedChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} vertical={false} />
                     <XAxis dataKey="time" hide={true} />
-                    <YAxis domain={[0, 100]} ticks={[30, 70]} stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} width={50} />
+                    <YAxis domain={[0, 100]} ticks={[30, 50, 70]} stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} width={50} />
                     <Tooltip contentStyle={tooltipStyle(isDark)} />
-                    <Line type="monotone" dataKey="rsi" stroke="#A855F7" strokeWidth={1.5} dot={false} />
-                    <Line type="step" dataKey={() => 70} stroke={isDark ? "#52525B" : "#94a3b8"} strokeDasharray="3 3" dot={false} activeDot={false} />
-                    <Line type="step" dataKey={() => 30} stroke={isDark ? "#52525B" : "#94a3b8"} strokeDasharray="3 3" dot={false} activeDot={false} />
+                    <Line type="monotone" dataKey="rsi" name="RSI" stroke="#A855F7" strokeWidth={1.5} dot={false} />
+                    <Line type="step" dataKey={() => 70} stroke={isDark ? '#ef4444' : '#dc2626'} strokeDasharray="3 3" dot={false} activeDot={false} strokeOpacity={0.5} />
+                    <Line type="step" dataKey={() => 50} stroke={isDark ? "#52525B" : "#94a3b8"} strokeDasharray="2 4" dot={false} activeDot={false} strokeOpacity={0.4} />
+                    <Line type="step" dataKey={() => 30} stroke={isDark ? '#22c55e' : '#16a34a'} strokeDasharray="3 3" dot={false} activeDot={false} strokeOpacity={0.5} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -342,7 +344,18 @@ export default function ChartingTab({
                     <XAxis dataKey="time" hide={true} />
                     <YAxis stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} width={50} />
                     <Tooltip contentStyle={tooltipStyle(isDark)} />
-                    <Bar dataKey="macd_hist" name="Histogram" fill={isDark ? "#3F3F46" : "#cbd5e1"} maxBarSize={4} />
+                    <Bar dataKey="macd_hist" name="Histogram" maxBarSize={4}>
+                      {chartData.map((entry, index) => (
+                        <Cell
+                          key={`macd-${index}`}
+                          fill={(entry.macd_hist ?? 0) >= 0
+                            ? (isDark ? '#22c55e' : '#16a34a')
+                            : (isDark ? '#ef4444' : '#dc2626')
+                          }
+                          fillOpacity={0.7}
+                        />
+                      ))}
+                    </Bar>
                     <Line type="monotone" dataKey="macd" name="MACD" stroke="#3B82F6" strokeWidth={1.5} dot={false} />
                     <Line type="monotone" dataKey="macd_signal" name="Signal" stroke="#F59E0B" strokeWidth={1} dot={false} strokeDasharray="3 3" />
                   </ComposedChart>
@@ -350,6 +363,7 @@ export default function ChartingTab({
               </div>
             )}
           </div>
+
         </div>
 
         {/* Score Breakdown */}

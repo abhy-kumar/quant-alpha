@@ -157,16 +157,24 @@ export default function App() {
       .sort((a, b) => Number(b.Market_Cap_B || 0) - Number(a.Market_Cap_B || 0)).slice(0, 5)]
   }, [data, selectedAsset])
 
+  // Momentum sparkline: encode recent price performance as a simple 2-point line
+  // (actual historical sparklines require per-ticker chart API calls; using momentum approximation)
   const sparklineData = useMemo(() => {
     const map: Record<string, { time: string; close: number }[]> = {}
     topPicks.forEach(stock => {
-      const peer = data.filter(d => d.Ticker === stock.Ticker)
-      if (peer.length > 0) {
-        map[stock.Ticker] = [{ time: 'now', close: Number(stock.Price) || 0 }]
+      const price = Number(stock.Price) || 0
+      const mom1m = Number(stock.Momentum_1M) || 0
+      // Back-calculate approximate 1M-ago price from current momentum
+      const prevPrice = price / (1 + mom1m)
+      if (price > 0 && prevPrice > 0) {
+        map[stock.Ticker] = [
+          { time: '1M ago', close: prevPrice },
+          { time: 'now', close: price },
+        ]
       }
     })
     return map
-  }, [topPicks, data])
+  }, [topPicks])
 
   const handleSelect = (ticker: string) => {
     setSelectedTicker(ticker)
@@ -208,11 +216,7 @@ export default function App() {
                 Coverage: {coveragePct}%
               </span>
             )}
-            {marketRegimeScore !== null && (
-              <span className={`px-2 py-1 font-mono text-[10px] border border-border ${regimeTextColor}`}>
-                Regime: {regimeLabel} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
-              </span>
-            )}
+
             {watchlist.length > 0 && (
               <span className="px-2 py-1 font-mono text-[10px] border border-brand/30 text-brand hidden sm:block">
                 {watchlist.length} Watchlist
