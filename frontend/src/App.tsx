@@ -182,11 +182,7 @@ export default function App() {
   }
 
   const regimeLabel = marketRegimeScore !== null ? (marketRegimeScore > 0 ? 'Bullish' : marketRegimeScore < 0 ? 'Bearish' : 'Neutral') : 'Unknown'
-  const regimeGradient = marketRegimeScore !== null
-    ? marketRegimeScore > 0 ? 'from-green-500/20 via-green-500/5 to-transparent dark:from-green-500/10'
-    : marketRegimeScore < 0 ? 'from-red-500/20 via-red-500/5 to-transparent dark:from-red-500/10'
-    : 'from-amber-500/20 via-amber-500/5 to-transparent dark:from-amber-500/10'
-  : ''
+
 
   const regimeTextColor = marketRegimeScore !== null
     ? marketRegimeScore > 0 ? 'text-green-600 dark:text-green-400'
