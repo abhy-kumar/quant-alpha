@@ -1,5 +1,7 @@
 // @ts-nocheck
-import yahooFinance from 'yahoo-finance2'
+import YahooFinance from 'yahoo-finance2'
+
+const yahooFinance = new YahooFinance()
 
 function periodToStart(period, end) {
   const start = new Date(end)
