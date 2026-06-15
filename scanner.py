@@ -653,9 +653,23 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         vix_level = _safe_float(vix_df["Close"].iloc[-1]) if vix_df is not None and not vix_df.empty else None
         breadth_pct_val = breadth_pct if 'breadth_pct' in dir() else None
 
+        first_scan_date = None
+        try:
+            from data_pipeline import _get_conn
+            _conn = _get_conn()
+            _c = _conn.cursor()
+            _c.execute("SELECT MIN(Scan_Date) FROM factor_history")
+            _row = _c.fetchone()
+            if _row and _row[0]:
+                first_scan_date = _row[0]
+            _conn.close()
+        except Exception:
+            pass
+
         output_data = {
             "status": "ok",
             "last_updated": scan_time.strftime("%Y-%m-%d %I:%M %p IST"),
+            "first_scan_date": first_scan_date,
             "coverage_pct": coverage_pct,
             "market_regime_score": regime_score,
             "nifty_close": nifty_close,

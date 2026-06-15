@@ -77,6 +77,7 @@ export interface DashboardData {
 export interface MarketData {
   status: string
   last_updated: string
+  first_scan_date?: string
   coverage_pct: number
   market_regime_score: number
   nifty_close?: number

@@ -30,6 +30,7 @@ export default function App() {
   const [chartLoading, setChartLoading] = useState(false)
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
   const [outcomeAccuracy, setOutcomeAccuracy] = useState<Record<string, any>>({})
+  const [firstScanDate, setFirstScanDate] = useState<string>('')
   const [watchlist, setWatchlist] = useState<string[]>([])
 
   useEffect(() => {
@@ -80,6 +81,7 @@ export default function App() {
         setCoveragePct(res.data.coverage_pct ?? null)
         setMarketRegimeScore(res.data.market_regime_score ?? null)
         setOutcomeAccuracy(res.data.outcome_accuracy || {})
+        setFirstScanDate(res.data.first_scan_date || '')
         setIsDynamic(res.data.is_dynamic || false)
         if (!selectedTicker) setSelectedTicker(sortedData[0].Ticker)
         setLoading(false)
@@ -335,6 +337,7 @@ export default function App() {
             {activeTab === 'factorlab' && (
               <FactorLabTab
                 outcomeAccuracy={outcomeAccuracy}
+                firstScanDate={firstScanDate}
                 isDark={isDark}
               />
             )}
