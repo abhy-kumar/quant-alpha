@@ -18,7 +18,6 @@ export default function App() {
   const [coveragePct, setCoveragePct] = useState<number | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [marketRegimeScore, setMarketRegimeScore] = useState<number | null>(null)
-  const [regimeMeta, setRegimeMeta] = useState<{ nifty_change_pct?: number; vix_level?: number; breadth_pct?: number }>({})
   const [isDynamic, setIsDynamic] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<'picks' | 'fundamentals' | 'charting' | 'heatmap' | 'factorlab'>('picks')
   const [isDark, setIsDark] = useState(false)
@@ -79,11 +78,6 @@ export default function App() {
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
         setCoveragePct(res.data.coverage_pct ?? null)
         setMarketRegimeScore(res.data.market_regime_score ?? null)
-        setRegimeMeta({
-          nifty_change_pct: res.data.nifty_change_pct,
-          vix_level: res.data.vix_level,
-          breadth_pct: res.data.breadth_pct,
-        })
         setOutcomeAccuracy(res.data.outcome_accuracy || {})
         setIsDynamic(res.data.is_dynamic || false)
         if (!selectedTicker) setSelectedTicker(sortedData[0].Ticker)
@@ -183,13 +177,6 @@ export default function App() {
 
   const regimeLabel = marketRegimeScore !== null ? (marketRegimeScore > 0 ? 'Bullish' : marketRegimeScore < 0 ? 'Bearish' : 'Neutral') : 'Unknown'
 
-
-  const regimeTextColor = marketRegimeScore !== null
-    ? marketRegimeScore > 0 ? 'text-green-600 dark:text-green-400'
-    : marketRegimeScore < 0 ? 'text-red-600 dark:text-red-400'
-    : 'text-amber-600 dark:text-amber-400'
-  : 'text-muted'
-
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-300">
       {/* Header */}
@@ -212,7 +199,16 @@ export default function App() {
                 Coverage: {coveragePct}%
               </span>
             )}
-
+            {marketRegimeScore !== null && (
+              <span className={`px-2 py-1 font-mono text-[10px] border hidden sm:flex items-center gap-1 ${
+                marketRegimeScore >= 1 ? 'border-green-500/40 text-green-600 dark:text-green-400'
+                : marketRegimeScore <= -1 ? 'border-red-500/40 text-red-600 dark:text-red-400'
+                : 'border-amber-400/40 text-amber-600 dark:text-amber-400'
+              }`}>
+                <Zap size={9} />
+                {regimeLabel} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
+              </span>
+            )}
             {watchlist.length > 0 && (
               <span className="px-2 py-1 font-mono text-[10px] border border-brand/30 text-brand hidden sm:block">
                 {watchlist.length} Watchlist
@@ -228,31 +224,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Market Regime — compact status strip */}
-        {marketRegimeScore !== null && (
-          <div className="max-w-7xl mx-auto px-6 pb-3">
-            <div className={`border-l-2 ${marketRegimeScore >= 1 ? 'border-green-500' : marketRegimeScore <= -1 ? 'border-red-500' : 'border-amber-400'} border border-border bg-card px-4 py-1.5 flex items-center gap-4 flex-wrap`}>
-              <div className="flex items-center gap-2">
-                <Zap size={11} className={regimeTextColor} />
-                <span className={`font-mono text-[10px] font-semibold uppercase tracking-widest ${regimeTextColor}`}>
-                  Market Regime: {regimeLabel} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
-                </span>
-              </div>
-              <span className="h-3 w-px bg-border"></span>
-              {regimeMeta.nifty_change_pct !== undefined && regimeMeta.nifty_change_pct !== null && (
-                <span className={`font-mono text-[10px] ${regimeMeta.nifty_change_pct >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  NIFTY {regimeMeta.nifty_change_pct >= 0 ? '+' : ''}{regimeMeta.nifty_change_pct}%
-                </span>
-              )}
-              {regimeMeta.vix_level !== undefined && regimeMeta.vix_level !== null && (
-                <span className="font-mono text-[10px] text-muted">VIX {regimeMeta.vix_level.toFixed(1)}</span>
-              )}
-              {regimeMeta.breadth_pct !== undefined && regimeMeta.breadth_pct !== null && (
-                <span className="font-mono text-[10px] text-muted">Breadth {(regimeMeta.breadth_pct * 100).toFixed(0)}%</span>
-              )}
-            </div>
-          </div>
-        )}
+
 
         <div className="max-w-7xl mx-auto px-6 pb-3 flex items-center gap-1">
           {[
