@@ -253,8 +253,8 @@ def _fetch_info(ticker: str) -> dict:
             if sentiments:
                 news_sentiment = sum(sentiments) / len(sentiments)
             cache_manager.set("news", sym, news_sentiment)
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning(f"Google News RSS failed for {sym}: {type(e).__name__}: {e}")
             
     info['news_sentiment'] = news_sentiment
     return info

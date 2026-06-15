@@ -17,87 +17,97 @@
 
 Quantitative Alpha is a fully automated stock screening and recommendation platform that evaluates the top 150 liquid equities on the National Stock Exchange of India (NSE) using a multi-factor model grounded in published academic research. The system eliminates emotional bias from equity research by applying systematic, rules-based scoring across three dimensions: technical momentum, fundamental quality, and research-backed quantitative factors.
 
-The platform generates daily recommendations with conviction ratings (Strong Buy, Buy, Hold, Caution, Avoid) and stores all data in a growing SQLite database that accumulates daily feature vectors and forward return outcomes -- forming the foundation for future machine learning model training.
+The platform generates daily recommendations with conviction ratings (Strong Buy, Buy, Hold, Caution, Avoid) and stores all data in a growing SQLite database that accumulates daily feature vectors and forward return outcomes — forming the foundation for future machine learning model training.
 
 ## How It Works
 
-The system operates as a dual-mode pipeline: a heavy batch scan runs three times daily via GitHub Actions, while a lightweight live updater polls prices every 3 minutes during market hours via Vercel serverless functions.
+The system operates as a dual-mode pipeline: a heavy batch scan runs three times daily via GitHub Actions (recomputing all scores and signals), while a lightweight live price overlay polls current prices every 3 minutes during market hours via Vercel serverless functions.
+
+### Update Architecture
+
+| Layer | Frequency | What Updates | Trigger |
+|-------|-----------|--------------|---------|
+| **Full Scan** | 3× daily (Mon–Fri) | All scores, signals, fundamentals, recommendations, market regime | GitHub Actions cron |
+| **Live Prices** | Every 3 min (market hours) | LTP and 1D% change only | Browser polling `/api/live_data` |
+
+The footer displays both timestamps independently: **Signals** (last scanner run) and **Prices** (last live overlay), so the freshness of each data layer is always visible.
 
 ### Batch Scan Pipeline (scanner.py)
 
-1. **Universe Selection**: Downloads the NSE Bhav Copy (official end-of-day data) and selects the top 150 stocks by turnover.
+1. **Universe Selection**: Downloads the NSE Bhav Copy (official end-of-day data from NSE directly) and selects the top 150 stocks by turnover.
 2. **OHLCV Fetching**: Downloads 2 years of daily OHLCV data per stock via yfinance with retry logic and concurrency control (4 workers).
 3. **Technical Indicator Computation**: Computes 18+ indicators per stock using Wilder's smoothing method for RSI, ATR, and ADX.
-4. **Fundamental Data Collection**: Fetches P/E, ROE, Debt-to-Equity, market cap, and other fundamentals from yfinance and screener.in. Computes sector-relative medians for peer comparison.
+4. **Fundamental Data Collection**: Fetches P/E, ROE, Debt-to-Equity, market cap, and other fundamentals from yfinance (primary) and screener.in (fallback and enrichment). Computes sector-relative medians for peer comparison. All financial figures are in INR.
 5. **Research Factor Computation**: Calculates six academic research factors: Piotroski F-Score, Gross Profitability, Multi-Horizon Momentum, Low Volatility, Mean Reversion, and Earnings Quality.
-6. **News Sentiment**: Fetches headlines from Google News RSS (India-aware, no API key required) and runs VADER sentiment analysis on each headline. Average compound score is used as the news sentiment signal.
+6. **News Sentiment**: Fetches headlines from Google News RSS (India-locale: `hl=en-IN&gl=IN&ceid=IN:en`, no API key required) and runs VADER sentiment analysis on up to 10 headlines per ticker. The average compound score is the news sentiment signal. Scores are cached for 24 hours.
 7. **Scoring and Conviction**: Combines all factors into a composite score, ranks stocks by percentile, and assigns conviction labels adjusted for market regime.
 8. **Data Storage**: Writes results to `market_data.json` (frontend), `market_scans.db` (ML pipeline), and archives to SQLite.
 9. **Outcome Tracking**: Backfills forward returns (5d, 10d, 21d, 63d, 126d, 252d) for all past scans using stored OHLCV data.
 
-### Live Update Pipeline (live_updater.py)
+### Live Update Pipeline (/api/live_data)
 
-- Polls yfinance every 3 minutes during market hours (9:15 AM -- 3:30 PM IST).
-- Updates only Price and 1d Change % in the existing `market_data.json`.
-- Writes live price snapshots to the `live_prices` SQLite table.
+- A Vercel serverless function called by the browser every 3 minutes during market hours (9:15 AM – 3:30 PM IST).
+- Detects market hours using IST offset from UTC (UTC+5:30, no DST). Caches aggressively (6 hours) when market is closed.
+- Updates only Price and 1D Change % in the React state. Does not write to disk or commit to the repository.
+- Also fetches live NIFTY 50 for the header indicator.
 
 ## Scoring System
 
-### Technical Score (range: -1.0 to +1.0)
+### Technical Score (range: −1.0 to +1.0)
 
-A weighted ensemble of 14 binary signals. Each signal outputs +1 (bullish), -1 (bearish), or 0 (neutral). The weighted sum is normalized to produce a single score.
+A weighted ensemble of 14 binary signals. Each signal outputs +1 (bullish), −1 (bearish), or 0 (neutral). The weighted sum is normalized to produce a single score.
 
 | Signal | Weight | Bullish Condition | Bearish Condition |
 |--------|--------|-------------------|-------------------|
 | Supertrend | 2.0 | Close above Supertrend line | Close below Supertrend line |
 | Price vs SMA 200 | 2.0 | Close > SMA 200 | Close < SMA 200 |
 | SMA 50 vs 200 | 2.0 | SMA 50 > SMA 200 (Golden Cross) | SMA 50 < SMA 200 (Death Cross) |
-| ADX Trend Strength | 2.0 | ADX > 25 and +DI > -DI | ADX > 25 and -DI > +DI |
+| ADX Trend Strength | 2.0 | ADX > 25 and +DI > −DI | ADX > 25 and −DI > +DI |
 | Ichimoku Cloud | 1.5 | Close above both Span A and Span B | Close below both Span A and Span B |
 | MACD Crossover | 1.0 | MACD > Signal Line | MACD < Signal Line |
-| RSI (14-period) | 1.0 | RSI between 40-80 in bullish regime, or RSI < 30 in bearish | RSI > 70 |
+| RSI (14-period) | 1.0 | RSI between 40–80 (bullish regime) or RSI < 30 | RSI > 70 |
 | Volume Price Trend | 1.0 | VPT > 20-EMA of VPT | VPT < 20-EMA of VPT |
 | Price vs SMA 50 | 1.0 | Close > SMA 50 | Close < SMA 50 |
 | MACD Histogram | 0.5 | Current histogram > Previous histogram | Current histogram < Previous histogram |
 | Stochastic Oscillator | 0.25 | %K < 20 and %K > %D | %K > 80 and %K < %D |
-| Commodity Channel Index | 0.25 | CCI < -100 | CCI > 100 |
+| Commodity Channel Index | 0.25 | CCI < −100 | CCI > 100 |
 | Bollinger Bands %B | 0.25 | %B < 0.05 | %B > 0.95 |
 
-Relative Strength percentiles provide an additional +/-0.2 adjustment for stocks in the top or bottom quartile.
+Relative Strength percentiles provide an additional ±0.2 adjustment for stocks in the top or bottom quartile.
 
-News sentiment provides an additional +/-1.0 adjustment to the normalized technical score when the average VADER compound score exceeds +/-0.15.
+News sentiment provides an additional **±1.0 adjustment** to the normalized technical score when the average VADER compound score exceeds ±0.15 (lowered from ±0.5 to ensure the signal actually fires in practice).
 
 ### Fundamental Score (range: 0 to 10)
 
-Evaluates financial quality using sector-relative comparisons. The system dynamically computes sector medians for P/E, ROE, and Debt-to-Equity from the current universe plus screener.in peer data.
+Evaluates financial quality using sector-relative comparisons. The system dynamically computes sector medians for P/E, ROE, and Debt-to-Equity from the current universe plus screener.in peer data. All market cap and financial figures are in **INR Crores**.
 
 | Metric | Max Points | Logic |
 |--------|------------|-------|
-| ROE | 1.5 | >= 1.5x sector median: 1.5 pts, >= sector median: 0.5 pts |
-| ROCE | 1.5 | >= 20%: 1.5 pts, >= 12%: 0.5 pts |
+| ROE | 1.5 | ≥ 1.5× sector median: 1.5 pts, ≥ sector median: 0.5 pts |
+| ROCE | 1.5 | ≥ 20%: 1.5 pts, ≥ 12%: 0.5 pts |
 | PEG Ratio | 2.0 | PEG < 1.0: 2.0 pts, PEG < 1.5: 1.0 pts (requires positive EPS growth) |
-| Debt-to-Equity | 1.5 | < 0.8x sector median: 1.5 pts, < sector median: 0.5 pts |
+| Debt-to-Equity | 1.5 | < 0.8× sector median: 1.5 pts, < sector median: 0.5 pts |
 | EPS Growth | 1.5 | > 15% YoY |
 | Revenue Growth | 1.0 | > 10% YoY |
 | Dividend Yield | 0.5 | > 1.0% |
-| Market Cap | 1.0 | > INR 10 billion |
-| Sharpe Ratio | 1.0 | > 1.0 |
+| Market Cap | 1.0 | > ₹1,000 Crores |
+| Sharpe Ratio | 1.0 | > 1.0 (computed using India 10Y G-Sec rate of 6.5% as risk-free rate) |
 | Promoter Holding | 1.0 | > 50% holding and < 10% pledging |
 
-Maximum score is capped at 10.0. A penalty of -1.5 is applied for promoter pledging above 30%.
+Maximum score is capped at 10.0. A penalty of −1.5 is applied for promoter pledging above 30%.
 
 ### Research Factor Score (range: 0 to 10)
 
-Six academic factors, each normalized to 0-10 and combined with research-derived weights:
+Six academic factors, each normalized to 0–10 and combined with research-derived weights:
 
 | Factor | Weight | Paper | Range |
 |--------|--------|-------|-------|
-| Piotroski F-Score | 0.15 | Piotroski (2000) | 0-9 mapped to 0-10 |
-| Gross Profitability | 0.15 | Novy-Marx (2013) | 0-10 |
-| Momentum Composite | 0.25 | Jegadeesh & Titman (1993) | -0.5 to +1.0 mapped to 0-10 |
-| Low Volatility | 0.15 | Baker, Bradley & Wurgler (2011) | 0-10 (lower vol = higher score) |
-| Mean Reversion | 0.10 | De Bondt & Thaler (1985) | 0-10 (oversold = higher score) |
-| Earnings Quality | 0.10 | Sloan (1996) | 0-10 |
+| Piotroski F-Score | 0.15 | Piotroski (2000) | 0–9 mapped to 0–10 |
+| Gross Profitability | 0.15 | Novy-Marx (2013) | 0–10 |
+| Momentum Composite | 0.25 | Jegadeesh & Titman (1993) | −0.5 to +1.0 mapped to 0–10 |
+| Low Volatility | 0.15 | Baker, Bradley & Wurgler (2011) | 0–10 (lower vol = higher score) |
+| Mean Reversion | 0.10 | De Bondt & Thaler (1985) | 0–10 (oversold = higher score) |
+| Earnings Quality | 0.10 | Sloan (1996) | 0–10 |
 
 ### Composite Score and Conviction
 
@@ -112,38 +122,60 @@ The composite score blends all three dimensions with configurable weights:
 
 Stocks are ranked by composite percentile across the universe. Conviction labels are assigned and adjusted for market regime:
 
-- Strong Buy: >= 90th percentile (or >= 85th in bullish regime)
-- Buy: >= 70th percentile
-- Hold: >= 40th percentile
-- Caution: >= 20th percentile
+- Strong Buy: ≥ 90th percentile (or ≥ 85th in bullish regime)
+- Buy: ≥ 70th percentile
+- Hold: ≥ 40th percentile
+- Caution: ≥ 20th percentile
 - Avoid: < 20th percentile
 
-Market regime adjustments downgrade conviction levels when the regime score is <= -2 (deep bear) or mildly bearish (-1).
+Market regime adjustments downgrade conviction levels when the regime score is ≤ −2 (deep bear) or mildly bearish (−1).
 
 ## Market Regime Detection
 
-A composite regime score ranging from -3 to +3 is computed from:
+A composite regime score ranging from −3 to +3 is computed from three India-specific signals:
 
-1. Nifty 50 position relative to its 200-day SMA (+1 or -1)
-2. India VIX level: < 15 (+1), > 25 (-1)
-3. Market breadth (advances / total): > 0.55 (+1), < 0.45 (-1)
+1. Nifty 50 (`^NSEI`) position relative to its 200-day SMA (+1 or −1)
+2. India VIX (`^INDIAVIX`) level: < 15 (+1), > 25 (−1)
+3. Market breadth (advances / total NSE stocks): > 0.55 (+1), < 0.45 (−1)
+
+The regime score is displayed as a compact chip in the header bar alongside the NIFTY price indicator and universe coverage percentage.
 
 ## Technical Indicators
 
-All indicators are computed using Wilder's exponential smoothing method (not standard pandas EWM) for accuracy:
+All indicators are computed using Wilder's exponential smoothing method for accuracy. The weekly Supertrend resamples daily data to `W-FRI` (NSE closes on Fridays).
 
 - **RSI (14)**: Wilder-smoothed relative strength index
-- **MACD**: EMA(12) - EMA(26), with 9-period signal line
-- **Bollinger Bands**: 20-period SMA +/- 2 standard deviations
+- **MACD**: EMA(12) − EMA(26), with 9-period signal line
+- **Bollinger Bands**: 20-period SMA ±2 standard deviations
 - **Stochastic Oscillator**: 14-period %K and 3-period %D
 - **ATR (14)**: Average True Range with Wilder's smoothing
-- **ADX (14)**: Average Directional Index with +DI/-DI lines
-- **Supertrend**: 10-period, 3x multiplier
-- **Weekly Supertrend**: Resampled weekly Supertrend direction mapped to daily data
+- **ADX (14)**: Average Directional Index with +DI/−DI lines
+- **Supertrend**: 10-period, 3× multiplier
+- **Weekly Supertrend**: Resampled to weekly (W-FRI), direction mapped back to daily
 - **VPT**: Volume Price Trend with 20-period EMA
 - **Ichimoku Cloud**: Tenkan (9), Kijun (26), Span A, Span B (52)
 - **CCI (20)**: Commodity Channel Index
 - **VOL_MA20**: 20-day volume moving average
+
+## Data Sources and India-Specific Handling
+
+All data sources are evaluated for India-market correctness:
+
+| Data | Source | Notes |
+|------|---------|-------|
+| Universe selection | NSE Bhav Copy (official) | Direct NSE download — authoritative |
+| OHLCV prices | yfinance (`.NS` tickers) | INR-denominated, correct for NSE |
+| Market cap | yfinance → screener.in fallback | Stored as **INR Crores** (`÷1e7`). Screener.in returns Crores directly; yfinance returns INR |
+| P/E, ROE, D/E | yfinance → screener.in fallback | Screener.in preferred — more reliable for Indian companies |
+| Sector / Industry | screener.in → yfinance fallback | screener.in uses Indian sector taxonomy |
+| Promoter holding / pledging | screener.in only | Not available in yfinance for Indian stocks |
+| NIFTY 50 | `^NSEI` via yfinance | Correct |
+| India VIX | `^INDIAVIX` via yfinance | Correct |
+| Market breadth | NSE Bhav Copy advance/decline | Correct |
+| Risk-free rate | 6.5% (India 10Y G-Sec yield) | Correct for INR Sharpe calculation |
+| News sentiment | Google News RSS (`gl=IN&hl=en-IN`) | India-locale, returns Moneycontrol/ET/BS headlines |
+
+> **Note on screener.in**: The system gracefully degrades if screener.in is unavailable (rate limiting, timeouts). A 10-second timeout is used to account for GitHub Actions runner latency from US/EU datacenters to Indian servers. Each failure is logged with the HTTP status code or exception type so degradation is visible in scan logs.
 
 ## Data Storage
 
@@ -165,10 +197,10 @@ Outcome tracking automatically backfills forward returns for all past scans on e
 
 The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 
-- `get_ml_dataset(min_date, max_date)` -- Full feature+label DataFrame for model training
-- `get_stock_timeseries(ticker)` -- Per-stock factor history over time
-- `get_regime_timeseries()` -- Market regime evolution
-- `get_outcome_accuracy(min_date)` -- Win rate and average return by conviction level
+- `get_ml_dataset(min_date, max_date)` — Full feature+label DataFrame for model training
+- `get_stock_timeseries(ticker)` — Per-stock factor history over time
+- `get_regime_timeseries()` — Market regime evolution
+- `get_outcome_accuracy(min_date)` — Win rate and average return by conviction level
 
 ## Architecture
 
@@ -177,33 +209,42 @@ The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 |                              DATA PIPELINE                              |
 +-------------------------------------------------------------------------+
 |  [nse_fetcher.py]                                                       |
-|  1. Fetches top 150 NSE liquid stocks by turnover                      |
+|  1. Fetches top 150 NSE liquid stocks by turnover (Bhav Copy)          |
 |         |                                                               |
 |         v                                                               |
 |  [scanner.py] (Main Orchestrator)                                       |
 |  2. Downloads 2y OHLCV via yfinance (4 workers, retry logic)           |
-|  3. Fetches fundamentals from yfinance + screener.in                    |
+|  3. Fetches fundamentals from yfinance + screener.in (INR)             |
+|  4. Google News RSS (India-locale) → VADER sentiment                   |
 |         |                                                               |
-|         +--> [indicators.py]                                            |
+|         +-> [indicators.py]                                             |
 |         |    18+ indicators using Wilder's smoothing                    |
+|         |    Weekly Supertrend resampled to W-FRI (NSE calendar)        |
 |         |                                                               |
-|         +--> [recommendation.py]                                        |
+|         +-> [recommendation.py]                                         |
 |         |    Tech Score (-1 to +1), Fund Score (0-10), Conviction       |
 |         |                                                               |
-|         +--> [research_factors.py]                                      |
+|         +-> [research_factors.py]                                       |
 |         |    Piotroski, Gross Profit, Momentum, Volatility,             |
 |         |    Mean Reversion, Earnings Quality                           |
 |         |                                                               |
-|         +--> [data_pipeline.py]                                         |
+|         +-> [data_pipeline.py]                                          |
 |              ML-ready storage: OHLCV, factors, outcomes, regime         |
 |                                                                         |
-|  4. News Sentiment:                                                     |
-|     - Google News RSS (India-aware, no API key)                         |
-|     - VADER sentiment analysis on headlines                             |
-|                                                                         |
 |  5. Outputs to:                                                         |
-|     - market_data.json (frontend)                                       |
+|     - market_data.json (frontend static file)                           |
 |     - market_scans.db (ML pipeline)                                     |
++-------------------------------------------------------------------------+
+                   |
+                   v (commit → Vercel redeploy)
++-------------------------------------------------------------------------+
+|                            FRONTEND (Vercel)                            |
++-------------------------------------------------------------------------+
+|  React 19 + Vite + Recharts                                             |
+|  - Loads market_data.json on page load (cache-busted)                  |
+|  - Polls /api/live_data every 3 min during market hours (9:15-15:30)   |
+|  - On-demand chart data via /api/chart (yahoo-finance2 v3)             |
+|  - Footer shows: Signals updated (scan time) | Prices updated (live)   |
 +-------------------------------------------------------------------------+
 ```
 
@@ -215,20 +256,27 @@ The React frontend is a five-tab analytical dashboard:
 |-----|-------------|
 | **Signals** | Top 3 high-conviction picks for Short-Term (momentum) or Long-Term (value) horizon. Each card shows a composite score, a radar chart across Tech / Fund / Research / Momentum / Piotroski axes, and six key metrics. |
 | **Screen** | Full universe screener with sortable columns (Ticker, Sector, LTP, 1D%, Composite, Tech, Fund, Research, F-Score, 12M Momentum, P/E, D/E, Conviction). Dynamic filters for composite score, Piotroski F-Score, sector, conviction, market cap, and D/E ratio. Expandable row shows all 14 technical signals and 12 research factors. |
-| **Charts** | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14) with 30/50/70 reference lines, MACD (12,26,9) with color-coded histogram. Left panel shows company profile, technicals, research factors, momentum, fundamentals, and risk metrics. Sector peer comparison table below. Supports 7 periods (1W-5Y) and daily/weekly interval. |
-| **Heatmap** | Color-coded sector heatmap where each tile represents a stock, colored from red (low composite) to green (high composite). Sectors sorted alphabetically. Color legend shown. |
-| **Factor Lab** | Conviction accuracy tracker that shows historical win rates and average forward returns (21D and 63D) by conviction level, with a bar chart and summary cards. Data accumulates as scans age. |
+| **Charts** | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14) with 30/50/70 reference lines, MACD (12,26,9) with color-coded histogram. Left panel shows company profile, technicals, research factors, momentum, fundamentals, and risk metrics. Sector peer comparison table below. Supports 7 periods (1W–5Y) and daily/weekly interval. |
+| **Heatmap** | Color-coded sector heatmap where each tile represents a stock, colored from red (low composite) to green (high composite). Sectors sorted alphabetically. |
+| **Factor Lab** | Conviction accuracy tracker showing historical win rates and average forward returns (21D and 63D) by conviction level, with a bar chart and summary cards. Data accumulates as scans age. |
 
-### Market Regime Strip
+### Header Bar
 
-A compact status strip below the header shows the current market regime (Bullish / Neutral / Bearish) with a color-coded left border, alongside live NIFTY change %, India VIX, and market breadth.
+The header contains five persistent indicators:
+
+| Element | Description |
+|---------|-------------|
+| NIFTY chip | Live NIFTY 50 price and 1D% change, green/red coded |
+| Coverage chip | % of the 150-stock universe successfully scanned |
+| Regime chip | Market regime (Bullish/Neutral/Bearish) with score, color-coded |
+| Dark mode toggle | Switches between light and dark themes |
 
 ## Tech Stack
 
 - **Frontend**: React 19, Vite 8, Tailwind CSS 3, Recharts 3, Lucide Icons
-- **Data Engine**: Python 3.12, pandas, numpy, yfinance, BeautifulSoup, vaderSentiment, feedparser
-- **News Source**: Google News RSS (India-aware, no API key required)
-- **Serverless API**: Vercel Functions (`api/chart.ts`, `api/live_data.ts`) -- live pricing + chart indicator computation
+- **Data Engine**: Python 3.12, pandas, numpy, yfinance, BeautifulSoup4, vaderSentiment, feedparser
+- **News Source**: Google News RSS (`gl=IN&hl=en-IN&ceid=IN:en`) — India-locale, no API key required
+- **Serverless API**: Vercel Functions (`api/chart.ts`, `api/live_data.ts`) — yahoo-finance2 v3 (class instantiation)
 - **Database**: SQLite (`market_scans.db`)
 - **CI/CD**: GitHub Actions (three times daily: pre-open, mid-day, post-market scans)
 - **Deployment**: Vercel (frontend + serverless), GitHub (data + backend)
@@ -238,6 +286,7 @@ A compact status strip below the header shows the current market regime (Bullish
 ```text
 frontend/src/
 ├── App.tsx               # Global state, routing, data fetch, tab orchestration
+│                         # Two separate timestamps: scanUpdated + pricesUpdated
 ├── types.ts              # TypeScript interfaces (DashboardData, MarketData, etc.)
 ├── index.css             # Design tokens, dark mode, glassmorphism utilities
 └── components/
@@ -284,7 +333,7 @@ cd ..
 python scanner.py
 ```
 
-This downloads data for ~150 stocks (takes 2-3 minutes), computes all indicators and scores, and generates `frontend/public/market_data.json`.
+This downloads data for ~150 stocks (takes 2–3 minutes), computes all indicators and scores, and generates `frontend/public/market_data.json`.
 
 ### 3. Launch the Frontend
 
@@ -314,6 +363,9 @@ All tunable parameters are in `config.py`:
 | MAX_WORKERS_FUNDAMENTALS | 2 | Concurrent fundamental fetch threads |
 | CACHE_TTL_FUNDAMENTALS | 30 days | Fundamental data cache duration |
 | CACHE_TTL_NEWS | 24 hours | News sentiment cache duration |
+| CACHE_TTL_SECTOR | 90 days | Sector/industry mapping cache duration |
+| CACHE_TTL_ATH | 90 days | All-time high cache duration |
+| SCREENER_MAX_FAILURES | 10 | Max screener.in failures before disabling for the run |
 | RISK_FREE_RATE | 0.065 | Risk-free rate for Sharpe ratio (India 10Y G-Sec) |
 
 ## Project Structure
@@ -327,25 +379,25 @@ stock-dashboard/
 ├── research_factors.py         # Academic research factor implementations
 ├── data_pipeline.py            # ML-ready data storage layer
 ├── nse_fetcher.py              # NSE data sources (Bhav Copy, live quotes)
-├── live_updater.py             # Intraday price updater
-├── scheduler.py                # APScheduler background jobs
+├── live_updater.py             # Intraday price updater (local use)
+├── scheduler.py                # APScheduler background jobs (local use)
 ├── utils.py                    # Shared utilities and caching
 ├── populate_cache.py           # Cache pre-population script
 ├── populate_ath.py             # All-time high pre-population
 ├── requirements.txt            # Python dependencies
 ├── data/
 │   ├── market_scans.db         # SQLite database (ML training data)
-│   ├── sector_cache.json       # Sector/industry mappings
-│   ├── fundamentals_cache.json # yfinance fundamental data cache
-│   ├── news_cache.json         # VADER sentiment cache
-│   ├── ath_cache.json          # All-time high cache
+│   ├── sector_cache.json       # Sector/industry mappings (90-day TTL)
+│   ├── fundamentals_cache.json # yfinance fundamental data cache (30-day TTL)
+│   ├── news_cache.json         # Google News RSS sentiment cache (24-hour TTL)
+│   ├── ath_cache.json          # All-time high cache (90-day TTL)
 │   └── etf_list.json           # ETF exclusion list
 ├── frontend/
 │   ├── api/
-│   │   ├── chart.ts            # Vercel serverless: charting endpoint
-│   │   └── live_data.ts        # Vercel serverless: live pricing
+│   │   ├── chart.ts            # Vercel serverless: charting endpoint (yahoo-finance2 v3)
+│   │   └── live_data.ts        # Vercel serverless: live pricing (yahoo-finance2 v3)
 │   ├── public/
-│   │   └── market_data.json    # Generated scan output
+│   │   └── market_data.json    # Generated scan output (committed by GitHub Actions)
 │   ├── src/
 │   │   ├── App.tsx             # Main dashboard application
 │   │   ├── main.tsx            # React entry point
@@ -365,15 +417,15 @@ stock-dashboard/
 
 ## GitHub Actions
 
-The scanner runs automatically three times daily via GitHub Actions:
+The scanner runs automatically three times daily via GitHub Actions. All times are fixed-offset UTC+5:30 (IST has no DST).
 
-| Schedule | IST Time | Purpose |
-|----------|----------|---------|
-| 03:30 UTC Mon-Fri | 9:00 AM IST | Pre-open scan (fresh data before market opens) |
-| 07:00 UTC Mon-Fri | 12:30 PM IST | Mid-day snapshot |
-| 10:45 UTC Mon-Fri | 4:15 PM IST | Post-market scan (end-of-day signals, primary run) |
+| Cron | IST Time | Purpose |
+|------|----------|---------|
+| `30 3 * * 1-5` | 9:00 AM IST | Pre-open scan — fresh data before market opens |
+| `0 7 * * 1-5` | 12:30 PM IST | Mid-day snapshot — intraday scoring |
+| `45 10 * * 1-5` | 4:15 PM IST | Post-market scan — end-of-day signals (primary run) |
 
-Each run pulls the latest database, runs the scanner, and commits the updated `market_data.json` and `market_scans.db` back to the repository.
+Each run pulls the latest database, runs the scanner, and commits the updated `market_data.json` and `market_scans.db` back to the repository with `[skip ci]` to avoid recursive triggers.
 
 ## Disclaimer
 
@@ -421,6 +473,6 @@ This project is proprietary software developed for the Alpha Research and Invest
 
 ## Copyright
 
-Copyright (c) 2024-2025 Abhishek Kumar. All rights reserved.
+Copyright (c) 2024–2026 Abhishek Kumar. All rights reserved.
 
 Developed by Abhishek Kumar
