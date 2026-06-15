@@ -21,7 +21,7 @@ The platform generates daily recommendations with conviction ratings (Strong Buy
 
 ## How It Works
 
-The system operates as a dual-mode pipeline: a heavy batch scan runs twice daily via GitHub Actions, while a lightweight live updater polls prices every 3 minutes during market hours via Vercel serverless functions.
+The system operates as a dual-mode pipeline: a heavy batch scan runs three times daily via GitHub Actions, while a lightweight live updater polls prices every 3 minutes during market hours via Vercel serverless functions.
 
 ### Batch Scan Pipeline (scanner.py)
 
@@ -30,9 +30,10 @@ The system operates as a dual-mode pipeline: a heavy batch scan runs twice daily
 3. **Technical Indicator Computation**: Computes 18+ indicators per stock using Wilder's smoothing method for RSI, ATR, and ADX.
 4. **Fundamental Data Collection**: Fetches P/E, ROE, Debt-to-Equity, market cap, and other fundamentals from yfinance and screener.in. Computes sector-relative medians for peer comparison.
 5. **Research Factor Computation**: Calculates six academic research factors: Piotroski F-Score, Gross Profitability, Multi-Horizon Momentum, Low Volatility, Mean Reversion, and Earnings Quality.
-6. **Scoring and Conviction**: Combines all factors into a composite score, ranks stocks by percentile, and assigns conviction labels adjusted for market regime.
-7. **Data Storage**: Writes results to `market_data.json` (frontend), `market_scans.db` (ML pipeline), and archives to SQLite.
-8. **Outcome Tracking**: Backfills forward returns (5d, 10d, 21d, 63d, 126d, 252d) for all past scans using stored OHLCV data.
+6. **News Sentiment**: Fetches headlines from Google News RSS (India-aware, no API key required) and runs VADER sentiment analysis on each headline. Average compound score is used as the news sentiment signal.
+7. **Scoring and Conviction**: Combines all factors into a composite score, ranks stocks by percentile, and assigns conviction labels adjusted for market regime.
+8. **Data Storage**: Writes results to `market_data.json` (frontend), `market_scans.db` (ML pipeline), and archives to SQLite.
+9. **Outcome Tracking**: Backfills forward returns (5d, 10d, 21d, 63d, 126d, 252d) for all past scans using stored OHLCV data.
 
 ### Live Update Pipeline (live_updater.py)
 
@@ -63,6 +64,8 @@ A weighted ensemble of 14 binary signals. Each signal outputs +1 (bullish), -1 (
 | Bollinger Bands %B | 0.25 | %B < 0.05 | %B > 0.95 |
 
 Relative Strength percentiles provide an additional +/-0.2 adjustment for stocks in the top or bottom quartile.
+
+News sentiment provides an additional +/-1.0 adjustment to the normalized technical score when the average VADER compound score exceeds +/-0.15.
 
 ### Fundamental Score (range: 0 to 10)
 
@@ -194,7 +197,11 @@ The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 |         +--> [data_pipeline.py]                                         |
 |              ML-ready storage: OHLCV, factors, outcomes, regime         |
 |                                                                         |
-|  4. Outputs to:                                                         |
+|  4. News Sentiment:                                                     |
+|     - Google News RSS (India-aware, no API key)                         |
+|     - VADER sentiment analysis on headlines                             |
+|                                                                         |
+|  5. Outputs to:                                                         |
 |     - market_data.json (frontend)                                       |
 |     - market_scans.db (ML pipeline)                                     |
 +-------------------------------------------------------------------------+
@@ -208,7 +215,7 @@ The React frontend is a five-tab analytical dashboard:
 |-----|-------------|
 | **Signals** | Top 3 high-conviction picks for Short-Term (momentum) or Long-Term (value) horizon. Each card shows a composite score, a radar chart across Tech / Fund / Research / Momentum / Piotroski axes, and six key metrics. |
 | **Screen** | Full universe screener with sortable columns (Ticker, Sector, LTP, 1D%, Composite, Tech, Fund, Research, F-Score, 12M Momentum, P/E, D/E, Conviction). Dynamic filters for composite score, Piotroski F-Score, sector, conviction, market cap, and D/E ratio. Expandable row shows all 14 technical signals and 12 research factors. |
-| **Charts** | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14) with 30/50/70 reference lines, MACD (12,26,9) with color-coded histogram. Left panel shows company profile, technicals, research factors, momentum, fundamentals, and risk metrics. Sector peer comparison table below. Supports 7 periods (1W–5Y) and daily/weekly interval. |
+| **Charts** | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14) with 30/50/70 reference lines, MACD (12,26,9) with color-coded histogram. Left panel shows company profile, technicals, research factors, momentum, fundamentals, and risk metrics. Sector peer comparison table below. Supports 7 periods (1W-5Y) and daily/weekly interval. |
 | **Heatmap** | Color-coded sector heatmap where each tile represents a stock, colored from red (low composite) to green (high composite). Sectors sorted alphabetically. Color legend shown. |
 | **Factor Lab** | Conviction accuracy tracker that shows historical win rates and average forward returns (21D and 63D) by conviction level, with a bar chart and summary cards. Data accumulates as scans age. |
 
@@ -218,11 +225,12 @@ A compact status strip below the header shows the current market regime (Bullish
 
 ## Tech Stack
 
-- **Frontend**: React 19, Vite 6, Tailwind CSS v4, Recharts 2.x, Lucide Icons
-- **Data Engine**: Python 3.12, pandas, numpy, yfinance, BeautifulSoup, vaderSentiment
-- **Serverless API**: Vercel Functions (`api/chart.ts`, `api/live_data.ts`) — live pricing + chart indicator computation
+- **Frontend**: React 19, Vite 8, Tailwind CSS 3, Recharts 3, Lucide Icons
+- **Data Engine**: Python 3.12, pandas, numpy, yfinance, BeautifulSoup, vaderSentiment, feedparser
+- **News Source**: Google News RSS (India-aware, no API key required)
+- **Serverless API**: Vercel Functions (`api/chart.ts`, `api/live_data.ts`) -- live pricing + chart indicator computation
 - **Database**: SQLite (`market_scans.db`)
-- **CI/CD**: GitHub Actions (twice-daily scans at 4:15 PM and 12:30 PM IST)
+- **CI/CD**: GitHub Actions (three times daily: pre-open, mid-day, post-market scans)
 - **Deployment**: Vercel (frontend + serverless), GitHub (data + backend)
 
 ### Frontend Component Map
@@ -256,11 +264,11 @@ git clone https://github.com/abhy-kumar/quant-alpha.git
 cd quant-alpha
 
 # Python environment
-python -m venv venv
+python -m venv .venv
 # Windows
-.\venv\Scripts\activate
+.\.venv\Scripts\activate
 # Unix/MacOS
-source venv/bin/activate
+source .venv/bin/activate
 
 pip install -r requirements.txt
 
@@ -312,56 +320,58 @@ All tunable parameters are in `config.py`:
 
 ```text
 stock-dashboard/
-|-- config.py                   # Configuration constants
-|-- scanner.py                  # Main orchestrator (batch scan)
-|-- indicators.py               # Technical indicator computations
-|-- recommendation.py           # Scoring models and conviction logic
-|-- research_factors.py         # Academic research factor implementations
-|-- data_pipeline.py            # ML-ready data storage layer
-|-- nse_fetcher.py              # NSE data sources (Bhav Copy, live quotes)
-|-- live_updater.py             # Intraday price updater
-|-- scheduler.py                # APScheduler background jobs
-|-- utils.py                    # Shared utilities and caching
-|-- populate_cache.py           # Cache pre-population script
-|-- populate_ath.py             # All-time high pre-population
-|-- requirements.txt            # Python dependencies
-|-- data/
-|   |-- market_scans.db         # SQLite database (ML training data)
-|   |-- sector_cache.json       # Sector/industry mappings
-|   |-- fundamentals_cache.json # yfinance fundamental data cache
-|   |-- news_cache.json         # VADER sentiment cache
-|   |-- ath_cache.json          # All-time high cache
-|   |-- etf_list.json           # ETF exclusion list
-|-- frontend/
-|   |-- api/
-|   |   |-- chart.ts            # Vercel serverless: charting endpoint
-|   |   |-- live_data.ts        # Vercel serverless: live pricing
-|   |-- public/
-|   |   |-- market_data.json    # Generated scan output
-|   |-- src/
-|   |   |-- App.tsx             # Main dashboard application
-|   |   |-- main.tsx            # React entry point
-|   |-- package.json
-|   |-- vite.config.ts
-|   |-- tailwind.config.js
-|-- .github/
-|   |-- workflows/
-|       |-- daily_scan.yml      # GitHub Actions: twice-daily scan
-|-- tests/
-|   |-- test_indicators.py      # Indicator unit tests
-|   |-- test_scoring.py         # Scoring function tests
-|   |-- test_research_factors.py # Research factor tests
-|-- assets/                     # Logos and preview images
+├── config.py                   # Configuration constants
+├── scanner.py                  # Main orchestrator (batch scan)
+├── indicators.py               # Technical indicator computations
+├── recommendation.py           # Scoring models and conviction logic
+├── research_factors.py         # Academic research factor implementations
+├── data_pipeline.py            # ML-ready data storage layer
+├── nse_fetcher.py              # NSE data sources (Bhav Copy, live quotes)
+├── live_updater.py             # Intraday price updater
+├── scheduler.py                # APScheduler background jobs
+├── utils.py                    # Shared utilities and caching
+├── populate_cache.py           # Cache pre-population script
+├── populate_ath.py             # All-time high pre-population
+├── requirements.txt            # Python dependencies
+├── data/
+│   ├── market_scans.db         # SQLite database (ML training data)
+│   ├── sector_cache.json       # Sector/industry mappings
+│   ├── fundamentals_cache.json # yfinance fundamental data cache
+│   ├── news_cache.json         # VADER sentiment cache
+│   ├── ath_cache.json          # All-time high cache
+│   └── etf_list.json           # ETF exclusion list
+├── frontend/
+│   ├── api/
+│   │   ├── chart.ts            # Vercel serverless: charting endpoint
+│   │   └── live_data.ts        # Vercel serverless: live pricing
+│   ├── public/
+│   │   └── market_data.json    # Generated scan output
+│   ├── src/
+│   │   ├── App.tsx             # Main dashboard application
+│   │   ├── main.tsx            # React entry point
+│   │   ├── types.ts            # TypeScript interfaces
+│   │   └── components/         # Dashboard tab components
+│   ├── package.json
+│   └── vite.config.ts
+├── .github/
+│   └── workflows/
+│       └── daily_scan.yml      # GitHub Actions: three-times-daily scan
+├── tests/
+│   ├── test_indicators.py      # Indicator unit tests
+│   ├── test_scoring.py         # Scoring function tests
+│   └── test_research_factors.py # Research factor tests
+└── assets/                     # Logos and preview images
 ```
 
 ## GitHub Actions
 
-The scanner runs automatically twice daily via GitHub Actions:
+The scanner runs automatically three times daily via GitHub Actions:
 
 | Schedule | IST Time | Purpose |
 |----------|----------|---------|
-| 10:45 UTC Mon-Fri | 4:15 PM IST | Post-market scan (primary) |
+| 03:30 UTC Mon-Fri | 9:00 AM IST | Pre-open scan (fresh data before market opens) |
 | 07:00 UTC Mon-Fri | 12:30 PM IST | Mid-day snapshot |
+| 10:45 UTC Mon-Fri | 4:15 PM IST | Post-market scan (end-of-day signals, primary run) |
 
 Each run pulls the latest database, runs the scanner, and commits the updated `market_data.json` and `market_scans.db` back to the repository.
 

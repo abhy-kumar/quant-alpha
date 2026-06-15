@@ -5,3 +5,4 @@ requests>=2.31.0
 beautifulsoup4>=4.12.3
 lxml>=5.0.0
 vaderSentiment>=3.3.2
+feedparser>=6.0.10

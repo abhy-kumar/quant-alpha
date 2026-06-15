@@ -10,6 +10,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 import requests
 import os
+import feedparser
 import sqlite3
 import pandas as pd
 import numpy as np
@@ -240,18 +241,18 @@ def _fetch_info(ticker: str) -> dict:
         news_sentiment = cached_news
     else:
         try:
-            t_obj = yf.Ticker(ticker, session=_YF_SESSION)
-            news_items = t_obj.news
-            if news_items:
-                sentiments = []
-                for item in news_items:
-                    title = item.get('title', '')
-                    if title:
-                        score = vader.polarity_scores(title)
-                        sentiments.append(score['compound'])
-                if sentiments:
-                    news_sentiment = sum(sentiments) / len(sentiments)
-                cache_manager.set("news", sym, news_sentiment)
+            query = f"{sym}+NSE+stock"
+            feed_url = f"https://news.google.com/rss/search?q={query}&hl=en-IN&gl=IN&ceid=IN:en"
+            feed = feedparser.parse(feed_url)
+            sentiments = []
+            for entry in feed.entries[:10]:
+                title = entry.get('title', '')
+                if title:
+                    score = vader.polarity_scores(title)
+                    sentiments.append(score['compound'])
+            if sentiments:
+                news_sentiment = sum(sentiments) / len(sentiments)
+            cache_manager.set("news", sym, news_sentiment)
         except Exception:
             pass
             
@@ -447,7 +448,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             
         fwd_pe = _safe_float(info.get("forwardPE"), item["pe"])
         div_yield_pct = round(_safe_float(info.get("dividendYield"), 0), 2)
-        mkt_cap_b = round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2)
+        mkt_cap_b = round((_safe_float(info.get("marketCap"), 0)) / 1e7, 2)
         eps_growth = _safe_float(info.get("earningsGrowth"))
         rev_growth = _safe_float(info.get("revenueGrowth"))
         
@@ -475,8 +476,8 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             
         norm_tech = (score + 1) * 5
         sentiment = _safe_float(info.get("news_sentiment"))
-        if sentiment > 0.5: norm_tech = min(10.0, norm_tech + 0.5)
-        elif sentiment < -0.5: norm_tech = max(0.0, norm_tech - 0.5)
+        if sentiment > 0.15: norm_tech = min(10.0, norm_tech + 1.0)
+        elif sentiment < -0.15: norm_tech = max(0.0, norm_tech - 1.0)
 
         research_composite = research["research_composite"]
 
@@ -513,7 +514,10 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         is_etf = item["is_etf"]
         
         ceo_name = "Unknown"
-        for officer in info.get("companyOfficers", []):
+        officers = info.get("companyOfficers") or []
+        if not officers:
+            log.debug(f"No company officers data for {sym} (expected for NSE tickers)")
+        for officer in officers:
             if 'title' in officer and 'CEO' in officer['title'].upper():
                 ceo_name = officer.get('name', 'Unknown')
                 break
@@ -529,9 +533,9 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             "Industry":         item["industry"],
             "Long_Name":        item["long_name"],
             "CEO":              ceo_name,
-            "Total_Revenue":    np.nan if is_etf else _safe_float(info.get("totalRevenue")),
-            "Net_Income":       np.nan if is_etf else _safe_float(info.get("netIncomeToCommon")),
-            "EBITDA":           np.nan if is_etf else _safe_float(info.get("ebitda")),
+            "Total_Revenue":    np.nan if is_etf else round(_safe_float(info.get("totalRevenue"), 0) / 1e7, 2),
+            "Net_Income":       np.nan if is_etf else round(_safe_float(info.get("netIncomeToCommon"), 0) / 1e7, 2),
+            "EBITDA":           np.nan if is_etf else round(_safe_float(info.get("ebitda"), 0) / 1e7, 2),
             "News_Sentiment":   round(info.get("news_sentiment", 0.0), 3),
             "Price":            round(close, 2),
             "1d_Chg_%":         round(chg, 2),
@@ -540,7 +544,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             "ROE_%":            np.nan if is_etf else item["roe"],
             "Debt_to_Equity":   np.nan if is_etf else round(item["debt_eq"], 2),
             "Div_Yield_%":      np.nan if is_etf else round(_safe_float(info.get("dividendYield"), 0), 2),
-            "Market_Cap_B":     np.nan if is_etf else round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2),
+            "Market_Cap_B":     np.nan if is_etf else round((_safe_float(info.get("marketCap"), 0)) / 1e7, 2),
             "52W_High":         _safe_float(info.get("fiftyTwoWeekHigh")),
             "52W_Low":          _safe_float(info.get("fiftyTwoWeekLow")),
             "All_Time_High":    item["ath"],
