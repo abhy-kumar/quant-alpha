@@ -360,7 +360,7 @@ export default function App() {
           <div className="flex flex-col gap-2">
             <h4 className="font-mono text-brand text-[10px] uppercase tracking-widest font-bold mb-1">Disclaimer</h4>
             <p className="font-mono text-[10px] text-muted leading-relaxed">
-              For educational purposes only. Not financial advice. Models and signals are experimental — always consult a certified advisor before investing.
+              For educational and academic research purposes only. Does not constitute investment advice. Models are experimental; past performance is not indicative of future results. Consult a SEBI-registered advisor before investing. Alpha Research and Investment Club, FMS Delhi assumes no liability for losses.
             </p>
           </div>
           <div className="flex flex-col gap-2 md:items-end">
