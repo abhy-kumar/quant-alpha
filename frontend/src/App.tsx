@@ -12,7 +12,8 @@ const STATIC_URL = '/market_data.json'
 
 export default function App() {
   const [data, setData] = useState<DashboardData[]>([])
-  const [lastUpdated, setLastUpdated] = useState<string>('')
+  const [scanUpdated, setScanUpdated] = useState<string>('')
+  const [pricesUpdated, setPricesUpdated] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [niftyData, setNiftyData] = useState<{price: number, change_pct: number, is_up: boolean} | null>(null)
   const [coveragePct, setCoveragePct] = useState<number | null>(null)
@@ -61,7 +62,7 @@ export default function App() {
         })
         setData(updatedData)
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
-        setLastUpdated(new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) + ' IST')
+        setPricesUpdated(new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) + ' IST')
         setIsDynamic(true)
         return res.data.is_market_closed ? 'market_closed' : 'ok'
       }
@@ -74,7 +75,7 @@ export default function App() {
       if (res.data.status === 'ok' && res.data.data.length > 0) {
         const sortedData = res.data.data.sort((a: any, b: any) => a.Ticker.localeCompare(b.Ticker))
         setData(sortedData)
-        setLastUpdated(res.data.last_updated || 'Unknown')
+        setScanUpdated(res.data.last_updated || 'Unknown')
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
         setCoveragePct(res.data.coverage_pct ?? null)
         setMarketRegimeScore(res.data.market_regime_score ?? null)
@@ -347,11 +348,12 @@ export default function App() {
           <div className="flex flex-col gap-2">
             <h4 className="font-mono text-brand text-[10px] uppercase tracking-widest font-bold mb-1">System Status</h4>
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted">
-              <Database size={10} /><span>Database</span><span className="text-primary">Static JSON</span>
+              <Database size={10} /><span>Signals</span>
+              <span className="text-primary">{scanUpdated || '—'}</span>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted">
-              <Activity size={10} /><span>Last Updated</span>
-              <span className="text-primary">{lastUpdated}</span>
+              <Activity size={10} /><span>Prices</span>
+              <span className="text-primary">{pricesUpdated || scanUpdated || '—'}</span>
               {isDynamic && <span className="text-brand">Live</span>}
             </div>
           </div>
