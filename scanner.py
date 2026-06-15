@@ -133,10 +133,10 @@ def _fetch_info(ticker: str) -> dict:
     if (needs_fundamentals or needs_sector) and _screener_state["failures"] < SCREENER_MAX_FAILURES:
         try:
             url = f"https://www.screener.in/company/{sym}/consolidated/"
-            resp = _YF_SESSION.get(url, timeout=5)
+            resp = _YF_SESSION.get(url, timeout=10)
             if resp.status_code != 200:
                 url = f"https://www.screener.in/company/{sym}/"
-                resp = _YF_SESSION.get(url, timeout=5)
+                resp = _YF_SESSION.get(url, timeout=10)
                 
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, 'html.parser')
@@ -209,11 +209,17 @@ def _fetch_info(ticker: str) -> dict:
                                     except: pass
                                 peers.append(peer_data)
                     info['screener_peers'] = peers
+            else:
+                # Non-200 response (403 rate-limit, login wall, etc.) — count as failure
+                _screener_state["failures"] += 1
+                log.warning(f"Screener.in HTTP {resp.status_code} for {sym} (failure {_screener_state['failures']}/{SCREENER_MAX_FAILURES})")
+                if _screener_state["failures"] >= SCREENER_MAX_FAILURES:
+                    log.warning(f"Screener.in disabled after {_screener_state['failures']} non-200 responses")
         except Exception as e:
             _screener_state["failures"] += 1
+            log.warning(f"Screener.in error for {sym}: {type(e).__name__}: {e} (failure {_screener_state['failures']}/{SCREENER_MAX_FAILURES})")
             if _screener_state["failures"] >= SCREENER_MAX_FAILURES:
                 log.warning(f"Screener.in disabled after {_screener_state['failures']} failures")
-            
     if cached_sector:
         info['sector'] = cached_sector.get('sector', info.get('sector'))
         info['industry'] = cached_sector.get('industry', info.get('industry'))
