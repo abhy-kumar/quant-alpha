@@ -1,7 +1,5 @@
 // @ts-nocheck
-import YahooFinance from 'yahoo-finance2'
-
-const yahooFinance = new YahooFinance()
+import yahooFinance from 'yahoo-finance2'
 
 export default async function handler(req, res) {
   // CORS Headers
