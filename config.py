@@ -8,6 +8,7 @@ Configuration constants and magic numbers for the stock scanner.
 PERIOD = "2y"
 INTERVAL = "1d"
 MIN_ROWS = 50
+UNIVERSE_SIZE = 200
 
 # Concurrency limits
 MAX_WORKERS_OHLCV = 4

@@ -193,23 +193,18 @@ def get_market_breadth(bhav_df: pd.DataFrame) -> dict:
     }
 
 
-def get_liquid_universe(top_n: int = 150) -> list[str]:
+def get_liquid_universe(top_n: int = 200) -> list[str]:
     """
-    Return top `top_n` NSE equity symbols (by turnover) as 'SYMBOL.NS' strings.
-    Falls back to a hardcoded Nifty 50 list if the bhav copy cannot be fetched.
+    Return Nifty 200 constituents as 'SYMBOL.NS' strings.
+    Uses the canonical Nifty 200 list — stable, predictable, and aligned with
+    the index constituents tracked by NSE.
     """
-    bhav_df, _ = download_bhav_copy()
-
-    if not bhav_df.empty and "TURNOVER_LACS" in bhav_df.columns:
-        bhav_df = bhav_df.dropna(subset=["SYMBOL", "TURNOVER_LACS"])
-        top     = bhav_df.nlargest(top_n, "TURNOVER_LACS")
-        return (top["SYMBOL"].str.strip() + ".NS").tolist()
-
-    # ── Hardcoded fallback: Nifty 50 + a selection of liquid midcaps ─────────
-    return [s + ".NS" for s in _FALLBACK_SYMBOLS]
+    symbols = _NIFTY_200_SYMBOLS[:top_n]
+    return [s + ".NS" for s in symbols]
 
 
-_FALLBACK_SYMBOLS = [
+_NIFTY_200_SYMBOLS = [
+    # ── Nifty 50 ────────────────────────────────────────────────────────────
     "RELIANCE","TCS","HDFCBANK","INFY","ICICIBANK","ITC","LT","SBIN",
     "BHARTIARTL","BAJFINANCE","ASIANPAINT","HINDUNILVR","KOTAKBANK",
     "MARUTI","SUNPHARMA","ADANIENT","ADANIPORTS","AXISBANK","BAJAJFINSV",
@@ -218,6 +213,35 @@ _FALLBACK_SYMBOLS = [
     "INDUSINDBK","JSWSTEEL","M&M","NESTLEIND","NTPC","ONGC","POWERGRID",
     "SBILIFE","TATACONSUM","TATAMOTORS","TATASTEEL","TECHM","TITAN",
     "ULTRACEMCO","UPL","WIPRO","ZOMATO","BAJAJ-AUTO","SHRIRAMFIN",
+    # ── Nifty Next 50 ──────────────────────────────────────────────────────
+    "ABB","ABCAPITAL","ABFRL","ACC","ALKEM","AMBUJACEM","ASHOKLEY",
+    "ASTRAL","AUROPHARMA","BALKRISIND","BANDHANBNK","BATAINDIA",
+    "BERGEPAINT","BHARATFORG","BIOCON","CANBK","CHOLAFIN","COLPAL",
+    "CONCOR","COROMANEL","CROMPTON","DALBHARAT","DEEPAKNTR","DIXON",
+    "EMAMILTD","ESCORTS","FEDERALBNK","GAIL","GLENMARK","GODREJCP",
+    "GODREJPROP","GRINDWELL","GSPL","HAL","HONAUT","IDFCFIRSTB",
+    "INDIGO","IRCTC","JUBLFOOD","KANSAINER","KPITTECH","LALPATHLAB",
+    "LICHSGFIN","LTIM","LTTS","MANAPPURAM","MFSL","MGL","MPHASIS",
+    "MUTHOOTFIN","NAM-INDIA","OBEROIRLTY","OFSS","POLYCAB","PVRINOX",
+    "RAJESHEXPO","RAMCOCEM","RBLBANK","RECLTD","SAIL","SONACOMS",
+    "SRF","SUNTV","TATACOMM","TATAELXSI","TORNTPHARM","TRENT",
+    "TVSMOTOR","UBL","UNIONBANK","VOLTAS","ZEEL",
+    # ── Nifty 101–200 ──────────────────────────────────────────────────────
+    "AARTIIND","AVALON","BASF","BAYERCROP","BEL","BHEL","BIOCONPHARMA",
+    "CANFINHOME","CHAMBLFERT","CUMMINSIND","EMAMIREAL","EQUITASBNK",
+    "GMRP&INFRA","GNFC","GPPL","GSFC","HALONIX","HEG","HEMIPROP",
+    "HINDCOPPER","HINDPETRO","HUDCO","IBULHSGFIN","IEX","INDHOTEL",
+    "INDIAMART","INGERRAND","IRCON","JBCHEPHARM","JINDALSAW","JSLHISAR",
+    "KAJARIACER","KESORAMIND","KOLTEPATIL","KPCL","KRBL","LaurusLabs",
+    "LXCHEM","MAHABANK","MAHLOGISTICS","MASTEK","MAXHEALTH","METROPOLIS",
+    "NATIONALUM","NAVNETEDUL","NBCC","NMDC","NTPCGREEN","OLECTRA",
+    "PAGEIND","PEL","PERSISTENT","PETRONET","PFIZER","PHOENIXLTD",
+    "PIIND","PLASTICBANK","PNCINFRATECH","RADICO","RAJRATAN","RATNAMANI",
+    "REDINGTON","RITES","RVNL","SJVN","SONATSOFTW","SPARC",
+    "STARHEALTH","SUNDARMFIN","SUNDRMFAST","SUPREMEIND","SWSOLAR",
+    "SYNGENE","TATACHEM","TATAINVEST","THERMAX","TIMKEN","TRIDENT",
+    "TTKPRESTIG","TV18BRDCST","UCOBANK","UNHEMCO","VAIBHAVGBL",
+    "VSTIND","WHIRLPOOL","YESBANK","ZENSARTECH",
 ]
 
 
