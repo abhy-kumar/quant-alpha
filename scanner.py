@@ -25,6 +25,7 @@ from config import (
 )
 from indicators import add_indicators, compute_metrics
 from nse_fetcher import get_liquid_universe, download_bhav_copy, get_market_breadth, get_fii_dii_activity, get_put_call_ratio
+from bse_fetcher import get_promoter_holding as bse_get_promoter, get_company_info as bse_get_company
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from recommendation import compute_fund_score, compute_tech_score, get_conviction_rating
 from research_factors import compute_research_composite
@@ -232,6 +233,30 @@ def _fetch_info(ticker: str) -> dict:
     if cached_sector:
         info['sector'] = cached_sector.get('sector', info.get('sector'))
         info['industry'] = cached_sector.get('industry', info.get('industry'))
+
+    # BSE India fallback: fill missing promoter holding + sector when Screener.in failed
+    needs_promoter = pd.isna(_safe_float(info.get('promoter_holding')))
+    if needs_promoter or needs_sector:
+        try:
+            bse_promoter = bse_get_promoter(sym)
+            if needs_promoter and bse_promoter.get("promoter_holding") is not None:
+                info['promoter_holding'] = bse_promoter['promoter_holding']
+            if bse_promoter.get("promoter_pledging") is not None:
+                info['promoter_pledging'] = bse_promoter['promoter_pledging']
+
+            if needs_sector:
+                bse_info = bse_get_company(sym)
+                if bse_info.get("sector"):
+                    sec_data = {
+                        'sector': bse_info['sector'],
+                        'industry': bse_info.get('industry') or bse_info.get('group') or bse_info['sector']
+                    }
+                    cache_manager.set("sector", sym, sec_data)
+                    cached_sector = sec_data
+                    info['sector'] = sec_data['sector']
+                    info['industry'] = sec_data['industry']
+        except Exception as e:
+            log.debug(f"BSE fallback failed for {sym}: {e}")
 
     if _safe_float(info.get('totalAssets')) is None or np.isnan(_safe_float(info.get('totalAssets'), default=np.nan)):
         bv = _safe_float(info.get('bookValue'), default=0)
