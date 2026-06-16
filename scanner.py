@@ -24,7 +24,7 @@ from config import (
     CACHE_TTL_FUNDAMENTALS, CACHE_TTL_ATH, CACHE_TTL_SECTOR, CACHE_TTL_NEWS
 )
 from indicators import add_indicators, compute_metrics
-from nse_fetcher import get_liquid_universe, download_bhav_copy, get_market_breadth
+from nse_fetcher import get_liquid_universe, download_bhav_copy, get_market_breadth, get_fii_dii_activity, get_put_call_ratio
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from recommendation import compute_fund_score, compute_tech_score, get_conviction_rating
 from research_factors import compute_research_composite
@@ -32,6 +32,7 @@ from data_pipeline import (
     store_daily_ohlcv, store_factor_history, create_outcome_entries,
     update_outcome_tracking, store_regime_history, store_scan_summary,
 )
+from generate_score_history import generate as generate_score_history
 
 IST = timezone(timedelta(hours=5, minutes=30))
 _YF_SESSION = requests.Session()
@@ -285,6 +286,22 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             vix_latest = _safe_float(vix_df["Close"].iloc[-1])
             if vix_latest > 25: regime_score -= 1
             elif vix_latest < 15: regime_score += 1
+    except Exception: pass
+
+    fii_dii = {"fii_net": 0, "dii_net": 0}
+    try:
+        fii_dii = get_fii_dii_activity()
+        fii_net = fii_dii.get("fii_net", 0)
+        if fii_net > 500: regime_score += 1
+        elif fii_net < -500: regime_score -= 1
+    except Exception: pass
+
+    pcr_data = {"pcr": 1.0}
+    try:
+        pcr_data = get_put_call_ratio()
+        pcr = pcr_data.get("pcr", 1.0)
+        if pcr > 1.2: regime_score += 1
+        elif pcr < 0.7: regime_score -= 1
     except Exception: pass
 
     raw_data = {}
@@ -676,6 +693,9 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             "nifty_change_pct": nifty_change,
             "vix_level": vix_level,
             "breadth_pct": breadth_pct_val,
+            "fii_net": fii_dii.get("fii_net", 0),
+            "dii_net": fii_dii.get("dii_net", 0),
+            "pcr": pcr_data.get("pcr", 1.0),
             "scan_version": "2.0",
             "factors": ["tech", "fund", "research", "momentum"],
             "sector_summary": sector_summary,
@@ -691,6 +711,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         log.info(f"Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
         
         _archive_scan(result_df, scan_time)
+        generate_score_history()
         _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pct,
                        len(tickers), len(ohlcv_results), len(info_results), len(final_rows),
                        regime_score, scan_time, time.time() - scan_start)

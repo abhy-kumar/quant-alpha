@@ -1,18 +1,21 @@
 import React, { useState, useMemo } from 'react'
 import type { DashboardData } from '../types'
-import { num, colorCode, getSignalLabel, SortHeader } from './shared'
-import { Info, Filter, X } from 'lucide-react'
+import { num, colorCode, getSignalLabel, SortHeader, MiniSparkline } from './shared'
+import { Info, Filter, X, Star } from 'lucide-react'
 
 interface Props {
   data: DashboardData[]
   onSelect: (ticker: string) => void
   expandedRow: string | null
   setExpandedRow: (ticker: string | null) => void
+  watchlist: string[]
+  toggleWatchlist: (ticker: string) => void
+  scoreHistory: Record<string, {date: string; composite: number}[]>
 }
 
 const CONVICTION_OPTIONS = ['Strong Buy', 'Buy', 'Hold', 'Caution', 'Avoid']
 
-export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRow }: Props) {
+export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRow, watchlist, toggleWatchlist, scoreHistory }: Props) {
   const [sortKey, setSortKey] = useState<string>('Composite_Score')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [showFilters, setShowFilters] = useState(false)
@@ -135,18 +138,19 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           <thead>
             <tr className="border-b border-border text-sub uppercase tracking-widest bg-black/5 dark:bg-black/50">
               <SortHeader field="Ticker" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Ticker</SortHeader>
-              <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Sector</SortHeader>
+              <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden sm:inline">Sector</span></SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>LTP</SortHeader>
               <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>1D %</SortHeader>
-              <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Composite</SortHeader>
-              <SortHeader field="Tech_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Tech</SortHeader>
-              <SortHeader field="Fund_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Fund</SortHeader>
-              <SortHeader field="Research_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Research</SortHeader>
-              <SortHeader field="Piotroski_F" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>F-Score</SortHeader>
-              <SortHeader field="Momentum_12M" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>12M Mom</SortHeader>
-              <SortHeader field="P/E" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>P/E</SortHeader>
-              <SortHeader field="Debt_to_Equity" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>D/E</SortHeader>
-              <SortHeader field="Conviction" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Conviction</SortHeader>
+              <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Comp</SortHeader>
+              <th className="p-3 font-semibold text-center">Trend</th>
+              <SortHeader field="Tech_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline">Tech</span></SortHeader>
+              <SortHeader field="Fund_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">Fund</span></SortHeader>
+              <SortHeader field="Research_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">Research</span></SortHeader>
+              <SortHeader field="Piotroski_F" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">F-Score</span></SortHeader>
+              <SortHeader field="Momentum_12M" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">12M Mom</span></SortHeader>
+              <SortHeader field="P/E" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">P/E</span></SortHeader>
+              <SortHeader field="Debt_to_Equity" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">D/E</span></SortHeader>
+              <SortHeader field="Conviction" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Conv</SortHeader>
               <th className="p-4"></th>
             </tr>
           </thead>
@@ -157,19 +161,22 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   className={`border-b border-border hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-200 ${expandedRow === row.Ticker ? 'bg-black/5 dark:bg-white/5' : ''}`}
                 >
                   <td className="p-3 text-primary font-medium cursor-pointer" onClick={() => onSelect(row.Ticker)}>{row.Ticker.replace('.NS', '')}</td>
-                  <td className="p-3 text-muted">{row.Sector || '-'}</td>
+                  <td className="p-3 text-muted hidden sm:table-cell">{row.Sector || '-'}</td>
                   <td className="p-3 text-right text-muted">{num(row.Price)}</td>
                   <td className={`p-3 text-right font-medium ${colorCode(row['1d_Chg_%'])}`}>
                     {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
                   </td>
                   <td className={`p-3 text-right font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
-                  <td className={`p-3 text-right font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
-                  <td className={`p-3 text-right font-medium ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
-                  <td className={`p-3 text-right font-medium ${Number(row.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Research_Score) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(row.Research_Score)}</td>
-                  <td className={`p-3 text-right font-medium ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}<span className="text-muted">/9</span></td>
-                  <td className={`p-3 text-right font-medium ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</td>
-                  <td className="p-3 text-right text-muted">{num(row['P/E'])}</td>
-                  <td className="p-3 text-right text-muted">{num(row['Debt_to_Equity'])}</td>
+                  <td className="p-3 text-center">
+                    <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} />
+                  </td>
+                  <td className={`p-3 text-right font-medium hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
+                  <td className={`p-3 text-right font-medium hidden lg:table-cell ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
+                  <td className={`p-3 text-right font-medium hidden lg:table-cell ${Number(row.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Research_Score) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(row.Research_Score)}</td>
+                  <td className={`p-3 text-right font-medium hidden lg:table-cell ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(row.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}<span className="text-muted">/9</span></td>
+                  <td className={`p-3 text-right font-medium hidden xl:table-cell ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</td>
+                  <td className="p-3 text-right text-muted hidden xl:table-cell">{num(row['P/E'])}</td>
+                  <td className="p-3 text-right text-muted hidden xl:table-cell">{num(row['Debt_to_Equity'])}</td>
                   <td className="p-3 font-medium">
                     <span className={`px-1.5 py-0.5 text-[9px] font-mono border rounded-sm ${
                       row.Conviction === 'Strong Buy' ? 'border-green-500/50 text-green-600 dark:text-green-400 bg-green-500/10' :
@@ -180,18 +187,27 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                     }`}>{row.Conviction || 'N/A'}</span>
                   </td>
                   <td className="p-3 text-center">
-                    <button 
-                      onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
-                      className="text-sub hover:text-brand transition-colors"
-                      title="View Score Breakdown"
-                    >
-                      <Info size={16} />
-                    </button>
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleWatchlist(row.Ticker) }}
+                        className={`transition-colors ${watchlist.includes(row.Ticker) ? 'text-brand' : 'text-sub hover:text-brand'}`}
+                        title={watchlist.includes(row.Ticker) ? 'Remove from Watchlist' : 'Add to Watchlist'}
+                      >
+                        <Star size={14} fill={watchlist.includes(row.Ticker) ? 'currentColor' : 'none'} />
+                      </button>
+                      <button 
+                        onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
+                        className="text-sub hover:text-brand transition-colors"
+                        title="View Score Breakdown"
+                      >
+                        <Info size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
                 {expandedRow === row.Ticker && (
                   <tr className="bg-black/5 dark:bg-black/20 border-b border-border">
-                    <td colSpan={14} className="p-6">
+                    <td colSpan={15} className="p-6">
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
                           <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-3">Technical Signals</h4>

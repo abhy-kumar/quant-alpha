@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import axios from 'axios'
-import { Activity, Database, TrendingUp, BarChart2, Layers, Moon, Sun, Zap } from 'lucide-react'
+import { Activity, Database, TrendingUp, BarChart2, Layers, Moon, Sun, Zap, Star, X, Plus } from 'lucide-react'
 import type { DashboardData } from './types'
 import SignalsTab from './components/SignalsTab'
 import ScreenerTab from './components/ScreenerTab'
@@ -21,6 +21,9 @@ export default function App() {
   const [marketRegimeScore, setMarketRegimeScore] = useState<number | null>(null)
   const [isDynamic, setIsDynamic] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<'picks' | 'fundamentals' | 'charting' | 'heatmap' | 'factorlab'>('picks')
+  const [fiiNet, setFiiNet] = useState<number | null>(null)
+  const [diiNet, setDiiNet] = useState<number | null>(null)
+  const [pcr, setPcr] = useState<number | null>(null)
   const [isDark, setIsDark] = useState(false)
   const [horizon, setHorizon] = useState<'short' | 'long'>('short')
   const [selectedTicker, setSelectedTicker] = useState<string>('')
@@ -31,18 +34,56 @@ export default function App() {
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
   const [outcomeAccuracy, setOutcomeAccuracy] = useState<Record<string, any>>({})
   const [firstScanDate, setFirstScanDate] = useState<string>('')
-  const [watchlist, setWatchlist] = useState<string[]>([])
-
-  useEffect(() => {
+  const [watchlist, setWatchlist] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('qa_watchlist')
+      if (saved) return JSON.parse(saved)
+    } catch {}
     const params = new URLSearchParams(window.location.search)
     const wl = params.get('watchlist')
-    if (wl) setWatchlist(wl.split(',').map(t => t.toUpperCase().trim()))
+    if (wl) return wl.split(',').map(t => t.toUpperCase().trim())
+    return []
+  })
+  const [watchlistOpen, setWatchlistOpen] = useState(false)
+  const [watchlistInput, setWatchlistInput] = useState('')
+  const watchlistRef = useRef<HTMLDivElement>(null)
+  const [scoreHistory, setScoreHistory] = useState<Record<string, {date: string; composite: number}[]>>({})
+
+  useEffect(() => {
+    localStorage.setItem('qa_watchlist', JSON.stringify(watchlist))
+  }, [watchlist])
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (watchlistRef.current && !watchlistRef.current.contains(e.target as Node)) setWatchlistOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const addToWatchlist = useCallback(() => {
+    const ticker = watchlistInput.trim().toUpperCase().replace('.NS', '')
+    if (ticker && !watchlist.includes(ticker)) {
+      setWatchlist(prev => [...prev, ticker])
+    }
+    setWatchlistInput('')
+  }, [watchlistInput, watchlist])
+
+  const removeFromWatchlist = useCallback((ticker: string) => {
+    setWatchlist(prev => prev.filter(t => t !== ticker))
   }, [])
 
   useEffect(() => {
     if (isDark) document.documentElement.classList.add('dark')
     else document.documentElement.classList.remove('dark')
   }, [isDark])
+
+  useEffect(() => {
+    fetch('/score_history.json?t=' + Date.now())
+      .then(r => r.json())
+      .then(d => setScoreHistory(d))
+      .catch(() => {})
+  }, [])
 
   const dataRef = React.useRef<DashboardData[]>([])
   useEffect(() => { dataRef.current = data }, [data])
@@ -80,6 +121,9 @@ export default function App() {
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
         setCoveragePct(res.data.coverage_pct ?? null)
         setMarketRegimeScore(res.data.market_regime_score ?? null)
+        setFiiNet(res.data.fii_net ?? null)
+        setDiiNet(res.data.dii_net ?? null)
+        setPcr(res.data.pcr ?? null)
         setOutcomeAccuracy(res.data.outcome_accuracy || {})
         setFirstScanDate(res.data.first_scan_date || '')
         setIsDynamic(res.data.is_dynamic || false)
@@ -184,7 +228,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col transition-colors duration-300">
       {/* Header */}
       <header className="border-b border-border bg-card">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 flex items-center gap-4">
           <h1 className="font-display font-semibold text-xl uppercase tracking-wider text-primary whitespace-nowrap">
             Quantitative <span className="text-brand">Alpha</span>
           </h1>
@@ -212,10 +256,73 @@ export default function App() {
                 {regimeLabel} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
               </span>
             )}
-            {watchlist.length > 0 && (
-              <span className="px-2 py-1 font-mono text-[10px] border border-brand/30 text-brand hidden sm:block">
-                {watchlist.length} Watchlist
+            {fiiNet !== null && (
+              <span className={`px-2 py-1 font-mono text-[10px] border hidden md:flex items-center gap-1 ${
+                fiiNet > 0 ? 'border-green-500/40 text-green-600 dark:text-green-400' : 'border-red-500/40 text-red-600 dark:text-red-400'
+              }`}>
+                FII {fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)} Cr
               </span>
+            )}
+            {diiNet !== null && (
+              <span className={`px-2 py-1 font-mono text-[10px] border hidden md:flex items-center gap-1 ${
+                diiNet > 0 ? 'border-green-500/40 text-green-600 dark:text-green-400' : 'border-red-500/40 text-red-600 dark:text-red-400'
+              }`}>
+                DII {diiNet > 0 ? '+' : ''}{Math.round(diiNet)} Cr
+              </span>
+            )}
+            {pcr !== null && (
+              <span className={`px-2 py-1 font-mono text-[10px] border hidden lg:flex items-center gap-1 ${
+                pcr > 1.2 ? 'border-green-500/40 text-green-600 dark:text-green-400' : pcr < 0.7 ? 'border-red-500/40 text-red-600 dark:text-red-400' : 'border-amber-400/40 text-amber-600 dark:text-amber-400'
+              }`}>
+                PCR {pcr.toFixed(2)}
+              </span>
+            )}
+            {watchlist.length > 0 && (
+              <div className="relative" ref={watchlistRef}>
+                <button
+                  onClick={() => setWatchlistOpen(!watchlistOpen)}
+                  className="px-2 py-1 font-mono text-[10px] border border-brand/30 text-brand hover:bg-brand/10 transition-colors flex items-center gap-1"
+                >
+                  <Star size={10} /> {watchlist.length} Watchlist
+                </button>
+                {watchlistOpen && (
+                  <div className="absolute z-50 right-0 top-full mt-1 w-56 border border-border bg-card shadow-lg">
+                    <div className="p-2 border-b border-border">
+                      <div className="flex gap-1">
+                        <input
+                          type="text"
+                          value={watchlistInput}
+                          onChange={e => setWatchlistInput(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && addToWatchlist()}
+                          placeholder="Add ticker..."
+                          className="flex-1 bg-transparent text-primary font-mono text-[10px] uppercase outline-none px-2 py-1 border border-border focus:border-brand transition-colors"
+                        />
+                        <button onClick={addToWatchlist} className="px-2 py-1 bg-brand text-white font-mono text-[10px] hover:bg-brand-hover transition-colors">
+                          <Plus size={10} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                      {watchlist.map(t => (
+                        <div key={t} className="flex items-center justify-between px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 group">
+                          <button
+                            onClick={() => { setSelectedTicker(t); setActiveTab('charting'); setWatchlistOpen(false) }}
+                            className="font-mono text-[10px] text-primary uppercase hover:text-brand transition-colors"
+                          >
+                            {t}
+                          </button>
+                          <button
+                            onClick={() => removeFromWatchlist(t)}
+                            className="text-sub hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
             <button 
               onClick={() => setIsDark(!isDark)}
@@ -229,7 +336,7 @@ export default function App() {
 
 
 
-        <div className="max-w-7xl mx-auto px-6 pb-3 flex items-center gap-1">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-3 flex items-center gap-1 overflow-x-auto scrollbar-none">
           {[
             { id: 'picks', label: 'Signals', icon: TrendingUp },
             { id: 'fundamentals', label: 'Screen', icon: Database },
@@ -249,7 +356,7 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow px-6 py-8 max-w-7xl mx-auto w-full">
+      <main className="flex-grow px-3 sm:px-6 py-6 sm:py-8 max-w-7xl mx-auto w-full">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-64 gap-6 max-w-md mx-auto">
             <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
@@ -309,6 +416,11 @@ export default function App() {
                 onSelect={handleSelect}
                 expandedRow={expandedRow}
                 setExpandedRow={setExpandedRow}
+                watchlist={watchlist}
+                toggleWatchlist={(ticker: string) => {
+                  setWatchlist(prev => prev.includes(ticker) ? prev.filter(t => t !== ticker) : [...prev, ticker])
+                }}
+                scoreHistory={scoreHistory}
               />
             )}
             {activeTab === 'charting' && (
@@ -347,7 +459,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-border mt-12 bg-card">
-        <div className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           <div className="flex flex-col gap-2">
             <h4 className="font-mono text-brand text-[10px] uppercase tracking-widest font-bold mb-1">System Status</h4>
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted">

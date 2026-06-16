@@ -102,6 +102,16 @@ export default function ChartingTab({
   chartPeriod, setChartPeriod, chartInterval, setChartInterval,
   isDark, peerGroup, selectedAsset
 }: Props) {
+  const [scoreHistory, setScoreHistory] = useState<Record<string, {date: string; composite: number; tech: number; fund: number; research: number}[]>>({})
+
+  useEffect(() => {
+    fetch('/score_history.json?t=' + Date.now())
+      .then(r => r.json())
+      .then(d => setScoreHistory(d))
+      .catch(() => {})
+  }, [])
+
+  const tickerScores = scoreHistory[selectedTicker] || []
   return (
     <div className="flex flex-col xl:flex-row gap-8">
       {/* Left Column: Controls & Snapshots */}
@@ -367,6 +377,30 @@ export default function ChartingTab({
               </div>
             )}
           </div>
+
+          {/* Score History Chart */}
+          {tickerScores.length > 1 && (
+            <div className="border border-border bg-card shadow-sm" style={{height: 240}}>
+              <div className="px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
+                Composite Score History &nbsp;<span className="text-[8px]">— {tickerScores.length} scans</span>
+              </div>
+              <div style={{ width: '100%', height: 'calc(100% - 32px)' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={tickerScores}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} vertical={false} />
+                    <XAxis dataKey="date" stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 9, fontFamily: 'Space Mono'}} tickMargin={8} minTickGap={20} />
+                    <YAxis domain={[0, 10]} stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} width={35} />
+                    <Tooltip contentStyle={tooltipStyle(isDark)} />
+                    <Legend verticalAlign="top" height={24} align="right" wrapperStyle={{fontFamily: 'Space Mono', fontSize: '9px', color: isDark ? '#71717A' : '#64748b'}}/>
+                    <Line type="monotone" name="Composite" dataKey="composite" stroke="#C8102E" strokeWidth={2} dot={{r: 2, fill: '#C8102E'}} />
+                    <Line type="monotone" name="Tech" dataKey="tech" stroke="#3B82F6" strokeWidth={1} dot={false} strokeDasharray="4 2" />
+                    <Line type="monotone" name="Fund" dataKey="fund" stroke="#22c55e" strokeWidth={1} dot={false} strokeDasharray="4 2" />
+                    <Line type="monotone" name="Research" dataKey="research" stroke="#F59E0B" strokeWidth={1} dot={false} strokeDasharray="4 2" />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
 
         </div>
 

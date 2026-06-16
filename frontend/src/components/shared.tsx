@@ -40,3 +40,30 @@ export const SortHeader = ({ field, children, align = 'left', sortKey, sortDir, 
     </span>
   </th>
 )
+
+export function MiniSparkline({ values, width = 48, height = 16 }: { values: number[]; width?: number; height?: number }) {
+  if (!values || values.length < 2) return <span className="text-muted text-[9px]">—</span>
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = max - min || 1
+  const points = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * width
+    const y = height - ((v - min) / range) * (height - 2) - 1
+    return `${x},${y}`
+  }).join(' ')
+  const last = values[values.length - 1]
+  const first = values[0]
+  const isUp = last >= first
+  return (
+    <svg width={width} height={height} className="inline-block">
+      <polyline
+        points={points}
+        fill="none"
+        stroke={isUp ? '#22c55e' : '#ef4444'}
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}

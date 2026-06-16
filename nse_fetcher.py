@@ -286,3 +286,82 @@ def get_bulk_live_quotes(symbols_ns: list[str], max_symbols: int = 40) -> pd.Dat
     
     logger.info(f"Bulk quote fetch: {success_count} succeeded, {fail_count} failed out of {min(len(symbols_ns), max_symbols)}")
     return pd.DataFrame(results)
+
+
+# ---------------------------------------------------------------------------
+# FII / DII Activity  (Institutional Flow)
+# ---------------------------------------------------------------------------
+
+def get_fii_dii_activity() -> dict:
+    """
+    Fetch FII and DII buy/sell data from NSE.
+    Returns net buy/sell figures in Rs. Crores.
+    """
+    session = _create_nse_session()
+    url = "https://www.nseindia.com/api/fiidiiTradeReact"
+    retries = [0, 2, 4]
+    for wait in retries:
+        try:
+            if wait > 0:
+                time.sleep(wait)
+            resp = session.get(url, timeout=12)
+            if resp.status_code == 200:
+                data = resp.json()
+                result = {"fii_buy": 0, "fii_sell": 0, "fii_net": 0,
+                          "dii_buy": 0, "dii_sell": 0, "dii_net": 0}
+                for item in data:
+                    category = item.get("category", "").upper()
+                    buy = float(item.get("buyValue", 0) or 0)
+                    sell = float(item.get("sellValue", 0) or 0)
+                    if "FII" in category or "FPI" in category:
+                        result["fii_buy"] = buy
+                        result["fii_sell"] = sell
+                        result["fii_net"] = buy - sell
+                    elif "DII" in category:
+                        result["dii_buy"] = buy
+                        result["dii_sell"] = sell
+                        result["dii_net"] = buy - sell
+                logger.info(f"FII/DII data: FII net={result['fii_net']:.0f} Cr, DII net={result['dii_net']:.0f} Cr")
+                return result
+        except Exception as e:
+            logger.debug(f"FII/DII fetch attempt failed: {e}")
+    logger.warning("Failed to fetch FII/DII data")
+    return {"fii_buy": 0, "fii_sell": 0, "fii_net": 0,
+            "dii_buy": 0, "dii_sell": 0, "dii_net": 0}
+
+
+# ---------------------------------------------------------------------------
+# F&O Put/Call Ratio (PCR)
+# ---------------------------------------------------------------------------
+
+def get_put_call_ratio() -> dict:
+    """
+    Fetch NIFTY option chain data from NSE and compute Put/Call Ratio
+    based on total put vs call OUV (Open Underlying Value).
+    PCR > 1.2 → bullish (contrarian), PCR < 0.7 → bearish.
+    """
+    session = _create_nse_session()
+    url = "https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY"
+    retries = [0, 2, 4]
+    for wait in retries:
+        try:
+            if wait > 0:
+                time.sleep(wait)
+            resp = session.get(url, timeout=12)
+            if resp.status_code == 200:
+                data = resp.json()
+                records = data.get("records", {})
+                calls_oi = 0
+                puts_oi = 0
+                for item in records.get("data", []):
+                    if "CE" in item:
+                        calls_oi += item["CE"].get("openInterest", 0) or 0
+                    if "PE" in item:
+                        puts_oi += item["PE"].get("openInterest", 0) or 0
+                pcr = round(puts_oi / calls_oi, 3) if calls_oi > 0 else 1.0
+                logger.info(f"NIFTY PCR: {pcr} (puts_oi={puts_oi}, calls_oi={calls_oi})")
+                return {"pcr": pcr, "puts_oi": puts_oi, "calls_oi": calls_oi}
+        except Exception as e:
+            logger.debug(f"PCR fetch attempt failed: {e}")
+    logger.warning("Failed to fetch PCR data")
+    return {"pcr": 1.0, "puts_oi": 0, "calls_oi": 0}

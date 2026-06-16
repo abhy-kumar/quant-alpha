@@ -99,7 +99,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect, is
               </div>
 
               {/* Composite score + Radar */}
-              <div className="flex items-center gap-4 mb-4 py-3 border-y border-border">
+              <div className="flex flex-col sm:flex-row items-center gap-4 mb-4 py-3 border-y border-border">
                 {/* Composite score block */}
                 <div className="flex flex-col items-center justify-center w-20 shrink-0">
                   <span className="font-mono text-[9px] text-muted uppercase tracking-wider">Composite</span>
@@ -116,7 +116,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect, is
                 </div>
 
                 {/* Radar chart */}
-                <div className="flex-1 h-[140px]">
+                <div className="flex-1 h-[140px] w-full">
                   <ScoreRadar stock={stock} isDark={isDark} />
                 </div>
               </div>

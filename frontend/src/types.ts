@@ -84,6 +84,9 @@ export interface MarketData {
   nifty_change_pct?: number
   vix_level?: number
   breadth_pct?: number
+  fii_net?: number
+  dii_net?: number
+  pcr?: number
   scan_version: string
   factors: string[]
   sector_summary?: Record<string, SectorSummary>
