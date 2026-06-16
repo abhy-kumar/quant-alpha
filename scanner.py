@@ -41,8 +41,9 @@ _YF_SESSION.headers.update({
 })
 
 cache_manager = CacheManager()
-_screener_state = {"failures": 0}
+_screener_state = {"failures": 0, "disabled_until": 0}
 SCREENER_MAX_FAILURES = 10
+SCREENER_COOLDOWN = 300  # 5 minutes before retrying after circuit breaker trips
 vader = SentimentIntensityAnalyzer()
 
 def _fetch_ohlcv_with_retry(ticker: str, period: str = PERIOD) -> pd.DataFrame:
@@ -132,7 +133,10 @@ def _fetch_info(ticker: str) -> dict:
 
     needs_fundamentals = pd.isna(_safe_float(info.get('trailingPE'))) or pd.isna(_safe_float(info.get('returnOnEquity')))
     
-    if (needs_fundamentals or needs_sector) and _screener_state["failures"] < SCREENER_MAX_FAILURES:
+    now_ts = time.time()
+    screener_available = now_ts > _screener_state.get("disabled_until", 0)
+    if (needs_fundamentals or needs_sector) and screener_available and _screener_state["failures"] < SCREENER_MAX_FAILURES:
+        time.sleep(1.0)  # Rate-limit: 1 request per second to Screener.in
         try:
             url = f"https://www.screener.in/company/{sym}/consolidated/"
             resp = _YF_SESSION.get(url, timeout=10)
@@ -141,6 +145,7 @@ def _fetch_info(ticker: str) -> dict:
                 resp = _YF_SESSION.get(url, timeout=10)
                 
             if resp.status_code == 200:
+                _screener_state["failures"] = max(0, _screener_state["failures"] - 1)
                 soup = BeautifulSoup(resp.text, 'html.parser')
                 
                 if needs_sector:
@@ -216,12 +221,14 @@ def _fetch_info(ticker: str) -> dict:
                 _screener_state["failures"] += 1
                 log.warning(f"Screener.in HTTP {resp.status_code} for {sym} (failure {_screener_state['failures']}/{SCREENER_MAX_FAILURES})")
                 if _screener_state["failures"] >= SCREENER_MAX_FAILURES:
-                    log.warning(f"Screener.in disabled after {_screener_state['failures']} non-200 responses")
+                    _screener_state["disabled_until"] = time.time() + SCREENER_COOLDOWN
+                    log.warning(f"Screener.in disabled for {SCREENER_COOLDOWN}s after {_screener_state['failures']} non-200 responses")
         except Exception as e:
             _screener_state["failures"] += 1
             log.warning(f"Screener.in error for {sym}: {type(e).__name__}: {e} (failure {_screener_state['failures']}/{SCREENER_MAX_FAILURES})")
             if _screener_state["failures"] >= SCREENER_MAX_FAILURES:
-                log.warning(f"Screener.in disabled after {_screener_state['failures']} failures")
+                _screener_state["disabled_until"] = time.time() + SCREENER_COOLDOWN
+                log.warning(f"Screener.in disabled for {SCREENER_COOLDOWN}s after {_screener_state['failures']} failures")
     if cached_sector:
         info['sector'] = cached_sector.get('sector', info.get('sector'))
         info['industry'] = cached_sector.get('industry', info.get('industry'))

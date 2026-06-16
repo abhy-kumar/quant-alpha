@@ -95,6 +95,13 @@ def _create_nse_session() -> requests.Session:
     return session
 
 
+def _invalidate_nse_session():
+    """Clear cached NSE session so next call creates a fresh one."""
+    global _cached_nse_session, _nse_session_expiry
+    _cached_nse_session = None
+    _nse_session_expiry = None
+
+
 # ---------------------------------------------------------------------------
 # NSE Bhav Copy  (Official end-of-day data)
 # ---------------------------------------------------------------------------
@@ -297,14 +304,12 @@ def get_fii_dii_activity() -> dict:
     Fetch FII and DII buy/sell data from NSE.
     Returns net buy/sell figures in Rs. Crores.
     """
-    session = _create_nse_session()
-    url = "https://www.nseindia.com/api/fiidiiTradeReact"
-    retries = [0, 2, 4]
-    for wait in retries:
+    for attempt in range(3):
+        session = _create_nse_session()
+        url = "https://www.nseindia.com/api/fiidiiTradeReact"
         try:
-            if wait > 0:
-                time.sleep(wait)
-            resp = session.get(url, timeout=12)
+            time.sleep(1.5 if attempt > 0 else 0)
+            resp = session.get(url, timeout=15)
             if resp.status_code == 200:
                 data = resp.json()
                 result = {"fii_buy": 0, "fii_sell": 0, "fii_net": 0,
@@ -323,9 +328,13 @@ def get_fii_dii_activity() -> dict:
                         result["dii_net"] = buy - sell
                 logger.info(f"FII/DII data: FII net={result['fii_net']:.0f} Cr, DII net={result['dii_net']:.0f} Cr")
                 return result
+            else:
+                logger.warning(f"FII/DII HTTP {resp.status_code} (attempt {attempt+1}/3)")
+                _invalidate_nse_session()
         except Exception as e:
-            logger.debug(f"FII/DII fetch attempt failed: {e}")
-    logger.warning("Failed to fetch FII/DII data")
+            logger.warning(f"FII/DII fetch attempt {attempt+1} failed: {type(e).__name__}: {e}")
+            _invalidate_nse_session()
+    logger.warning("Failed to fetch FII/DII data after all retries")
     return {"fii_buy": 0, "fii_sell": 0, "fii_net": 0,
             "dii_buy": 0, "dii_sell": 0, "dii_net": 0}
 
@@ -340,14 +349,12 @@ def get_put_call_ratio() -> dict:
     based on total put vs call OUV (Open Underlying Value).
     PCR > 1.2 → bullish (contrarian), PCR < 0.7 → bearish.
     """
-    session = _create_nse_session()
-    url = "https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY"
-    retries = [0, 2, 4]
-    for wait in retries:
+    for attempt in range(3):
+        session = _create_nse_session()
+        url = "https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY"
         try:
-            if wait > 0:
-                time.sleep(wait)
-            resp = session.get(url, timeout=12)
+            time.sleep(1.5 if attempt > 0 else 0)
+            resp = session.get(url, timeout=15)
             if resp.status_code == 200:
                 data = resp.json()
                 records = data.get("records", {})
@@ -361,7 +368,11 @@ def get_put_call_ratio() -> dict:
                 pcr = round(puts_oi / calls_oi, 3) if calls_oi > 0 else 1.0
                 logger.info(f"NIFTY PCR: {pcr} (puts_oi={puts_oi}, calls_oi={calls_oi})")
                 return {"pcr": pcr, "puts_oi": puts_oi, "calls_oi": calls_oi}
+            else:
+                logger.warning(f"PCR HTTP {resp.status_code} (attempt {attempt+1}/3)")
+                _invalidate_nse_session()
         except Exception as e:
-            logger.debug(f"PCR fetch attempt failed: {e}")
-    logger.warning("Failed to fetch PCR data")
+            logger.warning(f"PCR fetch attempt {attempt+1} failed: {type(e).__name__}: {e}")
+            _invalidate_nse_session()
+    logger.warning("Failed to fetch PCR data after all retries")
     return {"pcr": 1.0, "puts_oi": 0, "calls_oi": 0}
