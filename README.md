@@ -15,7 +15,7 @@
 
 ## Goal and Impact
 
-Quantitative Alpha is a fully automated stock screening and recommendation platform that evaluates the Nifty 200 constituents on the National Stock Exchange of India (NSE) using a multi-factor model grounded in published academic research. The system eliminates emotional bias from equity research by applying systematic, rules-based scoring across three dimensions: technical momentum, fundamental quality, and research-backed quantitative factors.
+Quantitative Alpha is a fully automated stock screening and recommendation platform that evaluates the top 150 liquid equities on the National Stock Exchange of India (NSE) using a multi-factor model grounded in published academic research. The system eliminates emotional bias from equity research by applying systematic, rules-based scoring across three dimensions: technical momentum, fundamental quality, and research-backed quantitative factors.
 
 The platform generates daily recommendations with conviction ratings (Strong Buy, Buy, Hold, Caution, Avoid) and stores all data in a growing SQLite database that accumulates daily feature vectors and forward return outcomes — forming the foundation for future machine learning model training.
 
@@ -34,7 +34,7 @@ The footer displays both timestamps independently: **Signals** (last scanner run
 
 ### Batch Scan Pipeline (scanner.py)
 
-1. **Universe Selection**: Uses the canonical Nifty 200 constituent list (NSE index constituents) — stable, predictable, and aligned with the index stocks tracked by NSE.
+1. **Universe Selection**: Downloads the NSE Bhav Copy (official end-of-day data from NSE directly) and selects the top 150 stocks by turnover.
 2. **OHLCV Fetching**: Downloads 2 years of daily OHLCV data per stock via yfinance with retry logic and concurrency control (4 workers).
 3. **Technical Indicator Computation**: Computes 18+ indicators per stock using Wilder's smoothing method for RSI, ATR, and ADX.
 4. **Fundamental Data Collection**: Fetches P/E, ROE, Debt-to-Equity, market cap, and other fundamentals from yfinance (primary) and screener.in (fallback and enrichment). Computes sector-relative medians for peer comparison. All financial figures are in INR.
@@ -209,7 +209,7 @@ The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 |                              DATA PIPELINE                              |
 +-------------------------------------------------------------------------+
 |  [nse_fetcher.py]                                                       |
-|  1. Uses Nifty 200 constituent list (index-aligned universe)           |
+|  1. Fetches top 150 NSE liquid stocks by turnover (Bhav Copy)          |
 |         |                                                               |
 |         v                                                               |
 |  [scanner.py] (Main Orchestrator)                                       |
@@ -267,7 +267,7 @@ The header contains five persistent indicators:
 | Element | Description |
 |---------|-------------|
 | NIFTY chip | Live NIFTY 50 price and 1D% change, green/red coded |
-| Coverage chip | % of the 200-stock universe successfully scanned |
+| Coverage chip | % of the 150-stock universe successfully scanned |
 | Regime chip | Market regime (Bullish/Neutral/Bearish) with score, color-coded |
 | Dark mode toggle | Switches between light and dark themes |
 
@@ -333,7 +333,7 @@ cd ..
 python scanner.py
 ```
 
-This downloads data for 200 stocks (takes 3–5 minutes), computes all indicators and scores, and generates `frontend/public/market_data.json`.
+This downloads data for ~150 stocks (takes 2–3 minutes), computes all indicators and scores, and generates `frontend/public/market_data.json`.
 
 ### 3. Launch the Frontend
 

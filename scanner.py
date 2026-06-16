@@ -19,7 +19,7 @@ from bs4 import BeautifulSoup
 
 from utils import log, _safe_float, CacheManager
 from config import (
-    PERIOD, INTERVAL, MIN_ROWS, UNIVERSE_SIZE,
+    PERIOD, INTERVAL, MIN_ROWS, 
     MAX_WORKERS_OHLCV, MAX_WORKERS_FUNDAMENTALS,
     CACHE_TTL_FUNDAMENTALS, CACHE_TTL_ATH, CACHE_TTL_SECTOR, CACHE_TTL_NEWS
 )
@@ -295,7 +295,7 @@ def _fetch_info(ticker: str) -> dict:
 def run_scanner(progress_callback=None) -> pd.DataFrame:
     scan_time = datetime.now(IST)
     scan_start = time.time()
-    tickers = get_liquid_universe(top_n=UNIVERSE_SIZE)
+    tickers = get_liquid_universe(top_n=150)
     total = len(tickers)
     
     nifty_df = None
