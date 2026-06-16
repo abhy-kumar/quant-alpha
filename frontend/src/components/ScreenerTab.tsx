@@ -178,7 +178,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className="p-3 text-right text-muted hidden xl:table-cell">{num(row['P/E'])}</td>
                   <td className="p-3 text-right text-muted hidden xl:table-cell">{num(row['Debt_to_Equity'])}</td>
                   <td className="p-3 font-medium">
-                    <span className={`px-1.5 py-0.5 text-[9px] font-mono border rounded-sm ${
+                    <span className={`whitespace-nowrap px-1.5 py-0.5 text-[9px] font-mono border rounded-sm ${
                       row.Conviction === 'Strong Buy' ? 'border-green-500/50 text-green-600 dark:text-green-400 bg-green-500/10' :
                       row.Conviction === 'Buy' ? 'border-blue-500/50 text-blue-600 dark:text-blue-400 bg-blue-500/10' :
                       row.Conviction === 'Caution' ? 'border-orange-500/50 text-orange-600 dark:text-orange-400 bg-orange-500/10' :
@@ -209,9 +209,9 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <tr className="bg-black/5 dark:bg-black/20 border-b border-border">
                     <td colSpan={15} className="p-6">
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div>
+                        <div className="flex flex-col">
                           <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-3">Technical Signals</h4>
-                          <div className="space-y-2 font-mono text-[11px]">
+                          <div className="space-y-2 font-mono text-[11px] flex-1">
                             {[
                               ['Price vs SMA50', row.Sig_Price_vs_SMA50], ['Price vs SMA200', row.Sig_Price_vs_SMA200],
                               ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200], ['RSI', row.Sig_RSI],
@@ -227,15 +227,15 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                               </div>
                             ))}
                           </div>
-                          <div className="mt-3 pt-3 border-t border-border grid grid-cols-3 gap-3 font-mono text-[10px]">
+                          <div className="mt-4 pt-3 border-t border-border grid grid-cols-3 gap-3 font-mono text-[10px]">
                             <div><span className="text-muted block">Bull Signals</span><span className="text-green-600 dark:text-green-500 font-semibold">{row.Bull_Count ?? '-'}</span></div>
                             <div><span className="text-muted block">Bear Signals</span><span className="text-red-600 dark:text-red-500 font-semibold">{row.Bear_Count ?? '-'}</span></div>
                             <div><span className="text-muted block">RS Percentile</span><span className="text-primary font-semibold">{num(row.RS_Percentile)}%</span></div>
                           </div>
                         </div>
-                        <div>
+                        <div className="flex flex-col">
                           <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-3">Research Factors</h4>
-                          <div className="space-y-2 font-mono text-[11px]">
+                          <div className="space-y-2 font-mono text-[11px] flex-1">
                             {[
                               ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`],
                               ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`],
