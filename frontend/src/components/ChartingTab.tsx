@@ -113,17 +113,17 @@ export default function ChartingTab({
 
   const tickerScores = scoreHistory[selectedTicker] || []
   return (
-    <div className="flex flex-col xl:flex-row gap-8">
+    <div className="flex flex-col xl:flex-row gap-6 xl:gap-8">
       {/* Left Column: Controls & Snapshots */}
-      <div className="w-full xl:w-1/4 flex flex-col gap-6">
+      <div className="w-full xl:w-1/4 flex flex-col gap-4 xl:gap-6 order-2 xl:order-1">
         <div className="flex flex-col gap-2">
           <label className="font-mono text-xs uppercase tracking-widest text-sub">Security</label>
           <StockSearch data={data} selectedTicker={selectedTicker} onSelect={setSelectedTicker} />
         </div>
 
         {/* Company Profile */}
-        <div className="border border-border bg-card p-6 shadow-sm">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-4 border-b border-border pb-2 font-semibold flex justify-between">
+        <div className="border border-border bg-card p-4 sm:p-6 shadow-sm">
+          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-3 sm:mb-4 border-b border-border pb-2 font-semibold flex justify-between">
             Company Profile
             <span className={Number(selectedAsset?.News_Sentiment) > 0.1 ? "text-green-600 dark:text-green-500" : Number(selectedAsset?.News_Sentiment) < -0.1 ? "text-red-600 dark:text-red-500" : "text-muted"}>
               {selectedAsset?.News_Sentiment !== undefined && selectedAsset.News_Sentiment !== null ? `Sentiment: ${selectedAsset.News_Sentiment}` : ''}
@@ -195,8 +195,8 @@ export default function ChartingTab({
         </div>
 
         {/* Technical Snapshot */}
-        <div className="border border-border bg-card p-6 shadow-sm">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-4 border-b border-border pb-2 font-semibold">Technical Snapshot</h3>
+        <div className="border border-border bg-card p-4 sm:p-6 shadow-sm">
+          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">Technical Snapshot</h3>
           <div className="grid grid-cols-2 gap-4">
             <div><div className="font-mono text-[10px] text-muted uppercase">Tech Score</div><div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Tech_Score)}`}>{num(selectedAsset?.Tech_Score)}</div></div>
             <div><div className="font-mono text-[10px] text-muted uppercase">Conviction</div><div className="font-mono text-sm mt-1 text-primary font-semibold">{selectedAsset?.Conviction || 'N/A'}</div></div>
@@ -210,8 +210,8 @@ export default function ChartingTab({
         </div>
 
         {/* Research Snapshot */}
-        <div className="border border-border bg-card p-6 shadow-sm">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-4 border-b border-border pb-2 font-semibold flex items-center justify-between">
+        <div className="border border-border bg-card p-4 sm:p-6 shadow-sm">
+          <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-3 sm:mb-4 border-b border-border pb-2 font-semibold flex items-center justify-between">
             Research Factors
             <span className={`font-mono text-sm ${Number(selectedAsset?.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : Number(selectedAsset?.Research_Score) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>
               {num(selectedAsset?.Research_Score)}/10
@@ -226,8 +226,8 @@ export default function ChartingTab({
         </div>
 
         {/* Momentum Snapshot */}
-        <div className="border border-border bg-card p-6 shadow-sm">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-4 border-b border-border pb-2 font-semibold">Momentum</h3>
+        <div className="border border-border bg-card p-4 sm:p-6 shadow-sm">
+          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">Momentum</h3>
           <div className="grid grid-cols-2 gap-4">
             <div><div className="font-mono text-[10px] text-muted uppercase">1 Month</div><div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Momentum_1M)}`}>{selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : 'N/A'}</div></div>
             <div><div className="font-mono text-[10px] text-muted uppercase">3 Month</div><div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Momentum_3M)}`}>{selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : 'N/A'}</div></div>
@@ -238,8 +238,8 @@ export default function ChartingTab({
         </div>
 
         {/* Fundamental Snapshot */}
-        <div className="border border-border bg-card p-6 shadow-sm">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-4 border-b border-border pb-2 font-semibold">Fundamentals</h3>
+        <div className="border border-border bg-card p-4 sm:p-6 shadow-sm">
+          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">Fundamentals</h3>
           <div className="grid grid-cols-2 gap-4">
             <div><div className="font-mono text-[10px] text-muted uppercase">Fund Score</div><div className={`font-mono text-sm mt-1 font-semibold ${Number(selectedAsset?.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(selectedAsset?.Fund_Score)}</div></div>
             <div><div className="font-mono text-[10px] text-muted uppercase">Forward P/E</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.['Forward_P/E'])}</div></div>
@@ -251,8 +251,8 @@ export default function ChartingTab({
         </div>
 
         {/* Risk Metrics */}
-        <div className="border border-border bg-card p-6 shadow-sm">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-4 border-b border-border pb-2 font-semibold">Risk Metrics</h3>
+        <div className="border border-border bg-card p-4 sm:p-6 shadow-sm">
+          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">Risk Metrics</h3>
           <div className="grid grid-cols-2 gap-4">
             <div><div className="font-mono text-[10px] text-muted uppercase">Volatility (60D)</div><div className={`font-mono text-sm mt-1 font-semibold ${Number(selectedAsset?.Vol_60D) < 25 ? 'text-green-600 dark:text-green-500' : Number(selectedAsset?.Vol_60D) > 40 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(selectedAsset?.Vol_60D)}%</div></div>
             <div><div className="font-mono text-[10px] text-muted uppercase">Downside Dev</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.Downside_Dev)}%</div></div>
@@ -265,30 +265,30 @@ export default function ChartingTab({
       </div>
 
       {/* Right Column: Charts & Peers */}
-      <div className="w-full xl:w-3/4 flex flex-col gap-6">
+      <div className="w-full xl:w-3/4 flex flex-col gap-4 xl:gap-6 order-1 xl:order-2">
         {/* Period & Interval Toggles */}
         <div className="flex flex-col gap-2">
           <label className="font-mono text-xs uppercase tracking-widest text-sub hidden sm:block">Timeframe</label>
-          <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4">
-            <div className="flex bg-card border border-border p-1 rounded-sm shadow-sm w-fit">
+          <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-3 sm:gap-4">
+            <div className="flex bg-card border border-border p-0.5 rounded-sm shadow-sm w-full sm:w-fit overflow-x-auto scrollbar-none">
               {['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => (
-                <button key={p} onClick={() => setChartPeriod(p)} className={`px-3 py-1.5 font-mono text-xs uppercase tracking-widest transition-all ${chartPeriod === p ? 'bg-brand text-white shadow-sm' : 'text-muted hover:text-primary'}`}>
+                <button key={p} onClick={() => setChartPeriod(p)} className={`px-2 sm:px-3 py-1.5 font-mono text-[10px] sm:text-xs uppercase tracking-widest transition-all whitespace-nowrap ${chartPeriod === p ? 'bg-brand text-white shadow-sm' : 'text-muted hover:text-primary'}`}>
                   {p.replace('mo', 'M').replace('y', 'Y').replace('w', 'W')}
                 </button>
               ))}
             </div>
-            <div className="flex bg-card border border-border p-1 rounded-sm shadow-sm w-fit">
-              <button onClick={() => setChartInterval('1d')} className={`px-3 py-1.5 font-mono text-xs uppercase tracking-widest transition-all ${chartInterval === '1d' ? 'bg-primary text-background shadow-sm' : 'text-muted hover:text-primary'}`}>Daily</button>
-              <button onClick={() => setChartInterval('1wk')} className={`px-3 py-1.5 font-mono text-xs uppercase tracking-widest transition-all ${chartInterval === '1wk' ? 'bg-primary text-background shadow-sm' : 'text-muted hover:text-primary'}`}>Weekly</button>
+            <div className="flex bg-card border border-border p-0.5 rounded-sm shadow-sm w-fit">
+              <button onClick={() => setChartInterval('1d')} className={`px-3 py-1.5 font-mono text-[10px] sm:text-xs uppercase tracking-widest transition-all ${chartInterval === '1d' ? 'bg-primary text-background shadow-sm' : 'text-muted hover:text-primary'}`}>Daily</button>
+              <button onClick={() => setChartInterval('1wk')} className={`px-3 py-1.5 font-mono text-[10px] sm:text-xs uppercase tracking-widest transition-all ${chartInterval === '1wk' ? 'bg-primary text-background shadow-sm' : 'text-muted hover:text-primary'}`}>Weekly</button>
             </div>
           </div>
         </div>
 
         {/* Chart Container */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 xl:gap-6">
           {/* Main Price & Volume Chart with Supertrend Overlay */}
-          <div className="border border-border bg-card shadow-sm" style={{height: 466}}>
-            <div className="px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
+          <div className="border border-border bg-card shadow-sm chart-main">
+            <div className="px-3 sm:px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
               {selectedTicker.replace('.NS', '')} &mdash; Price · SMA 50 · SMA 200 · Supertrend
             </div>
             <div style={{ width: '100%', height: 'calc(100% - 32px)' }}>
@@ -323,8 +323,8 @@ export default function ChartingTab({
           </div>
 
           {/* Subchart: RSI */}
-          <div className="border border-border bg-card shadow-sm" style={{height: 200}}>
-            <div className="px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
+          <div className="border border-border bg-card shadow-sm chart-sub">
+            <div className="px-3 sm:px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
               RSI (14) &nbsp;<span className="text-[8px]">— 30 oversold · 70 overbought</span>
             </div>
             {chartData.length > 0 && !chartLoading && (
@@ -346,8 +346,8 @@ export default function ChartingTab({
           </div>
 
           {/* Subchart: MACD */}
-          <div className="border border-border bg-card shadow-sm" style={{height: 200}}>
-            <div className="px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
+          <div className="border border-border bg-card shadow-sm chart-sub">
+            <div className="px-3 sm:px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
               MACD (12, 26, 9) &nbsp;<span className="text-[8px]">— histogram · signal line</span>
             </div>
             {chartData.length > 0 && !chartLoading && (
@@ -380,8 +380,8 @@ export default function ChartingTab({
 
           {/* Score History Chart */}
           {tickerScores.length > 1 && (
-            <div className="border border-border bg-card shadow-sm" style={{height: 240}}>
-              <div className="px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
+            <div className="border border-border bg-card shadow-sm chart-score">
+              <div className="px-3 sm:px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
                 Composite Score History &nbsp;<span className="text-[8px]">— {tickerScores.length} scans</span>
               </div>
               <div style={{ width: '100%', height: 'calc(100% - 32px)' }}>
@@ -406,8 +406,8 @@ export default function ChartingTab({
 
         {/* Score Breakdown */}
         {selectedAsset && (
-          <div className="border border-border bg-card p-6 shadow-sm">
-            <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-4 border-b border-border pb-2 font-semibold">Score Breakdown</h3>
+          <div className="border border-border bg-card p-4 sm:p-6 shadow-sm">
+            <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">Score Breakdown</h3>
             <div className="space-y-2">
               {scoreBar('Composite', Number(selectedAsset.Composite_Score) || 0, 0, 10)}
               {scoreBar('Tech', Number(selectedAsset.Tech_Score) || 0, -1, 1)}
@@ -425,41 +425,41 @@ export default function ChartingTab({
 
         {/* Peer Comparison */}
         <div className="border border-border bg-card mt-4 shadow-sm rounded-sm">
-          <div className="p-6 border-b border-border bg-black/5 dark:bg-black/20">
-            <h3 className="font-display font-semibold text-xl tracking-wide text-primary">Sector Peer Comparison</h3>
+          <div className="p-4 sm:p-6 border-b border-border bg-black/5 dark:bg-black/20">
+            <h3 className="font-display font-semibold text-lg sm:text-xl tracking-wide text-primary">Sector Peer Comparison</h3>
             <p className="font-mono text-xs text-sub mt-1">Comparing {selectedAsset?.Sector} by Market Cap</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left font-mono text-xs">
               <thead>
                 <tr className="border-b border-border text-sub uppercase tracking-widest">
-                  <th className="p-4 font-semibold">Ticker</th>
-                  <th className="p-4 font-semibold text-right">Mkt Cap</th>
-                  <th className="p-4 font-semibold text-right">Composite</th>
-                  <th className="p-4 font-semibold text-right">Tech</th>
-                  <th className="p-4 font-semibold text-right">Fund</th>
-                  <th className="p-4 font-semibold text-right">Research</th>
-                  <th className="p-4 font-semibold text-right">P/E</th>
-                  <th className="p-4 font-semibold text-right">F-Score</th>
-                  <th className="p-4 font-semibold text-right">Conviction</th>
+                  <th className="p-3 sm:p-4 font-semibold">Ticker</th>
+                  <th className="p-3 sm:p-4 font-semibold text-right hidden sm:table-cell">Mkt Cap</th>
+                  <th className="p-3 sm:p-4 font-semibold text-right">Composite</th>
+                  <th className="p-3 sm:p-4 font-semibold text-right hidden md:table-cell">Tech</th>
+                  <th className="p-3 sm:p-4 font-semibold text-right hidden lg:table-cell">Fund</th>
+                  <th className="p-3 sm:p-4 font-semibold text-right hidden lg:table-cell">Research</th>
+                  <th className="p-3 sm:p-4 font-semibold text-right hidden xl:table-cell">P/E</th>
+                  <th className="p-3 sm:p-4 font-semibold text-right hidden xl:table-cell">F-Score</th>
+                  <th className="p-3 sm:p-4 font-semibold text-right">Conv</th>
                 </tr>
               </thead>
               <tbody>
                 {peerGroup.length > 0 ? peerGroup.map((row, i) => (
-                  <tr 
-                    key={i} 
+                  <tr
+                    key={i}
                     onClick={() => setSelectedTicker(row.Ticker)}
                     className={`border-b border-border cursor-pointer transition-colors duration-200 ${row.Ticker === selectedTicker ? 'bg-brand/10 dark:bg-brand/20 border-l-2 border-l-brand' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
                   >
-                    <td className="p-4 text-primary font-medium">{row.Ticker.replace('.NS', '')}</td>
-                    <td className="p-4 text-right text-muted">{num(row.Market_Cap_B)}B</td>
-                    <td className={`p-4 text-right font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
-                    <td className={`p-4 text-right font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
-                    <td className={`p-4 text-right font-medium ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
-                    <td className={`p-4 text-right font-medium ${Number(row.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Research_Score)}</td>
-                    <td className="p-4 text-right text-muted">{num(row['P/E'])}</td>
-                    <td className={`p-4 text-right font-medium ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}</td>
-                    <td className="p-4 text-right text-primary font-medium">{row.Conviction || 'N/A'}</td>
+                    <td className="p-3 sm:p-4 text-primary font-medium">{row.Ticker.replace('.NS', '')}</td>
+                    <td className="p-3 sm:p-4 text-right text-muted hidden sm:table-cell">{num(row.Market_Cap_B)}B</td>
+                    <td className={`p-3 sm:p-4 text-right font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
+                    <td className={`p-3 sm:p-4 text-right font-medium hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
+                    <td className={`p-3 sm:p-4 text-right font-medium hidden lg:table-cell ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
+                    <td className={`p-3 sm:p-4 text-right font-medium hidden lg:table-cell ${Number(row.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Research_Score)}</td>
+                    <td className="p-3 sm:p-4 text-right text-muted hidden xl:table-cell">{num(row['P/E'])}</td>
+                    <td className={`p-3 sm:p-4 text-right font-medium hidden xl:table-cell ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}</td>
+                    <td className="p-3 sm:p-4 text-right text-primary font-medium">{row.Conviction || 'N/A'}</td>
                   </tr>
                 )) : (
                   <tr><td colSpan={9} className="p-4 text-center text-muted">No peers found in {selectedAsset?.Sector}</td></tr>

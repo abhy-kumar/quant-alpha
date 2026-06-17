@@ -48,6 +48,7 @@ export default function App() {
   const [watchlistInput, setWatchlistInput] = useState('')
   const watchlistRef = useRef<HTMLDivElement>(null)
   const [scoreHistory, setScoreHistory] = useState<Record<string, {date: string; composite: number}[]>>({})
+  const [showIndicators, setShowIndicators] = useState(false)
 
   useEffect(() => {
     localStorage.setItem('qa_watchlist', JSON.stringify(watchlist))
@@ -227,63 +228,83 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-300">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 flex items-center gap-4">
-          <h1 className="font-display font-semibold text-xl uppercase tracking-wider text-primary whitespace-nowrap">
-            Quantitative <span className="text-brand">Alpha</span>
-          </h1>
-          <div className="h-4 w-px bg-border hidden sm:block"></div>
-          <span className="font-mono text-[10px] text-sub tracking-widest uppercase hidden lg:block whitespace-nowrap">Alpha Research & Investment Club | FMS Delhi</span>
-          <div className="flex-1"></div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {niftyData && (
-              <span className={`px-2 py-1 font-mono text-[10px] border border-border ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
-                NIFTY: {niftyData.price} ({niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%)
-              </span>
-            )}
-            {coveragePct !== null && (
-              <span className="px-2 py-1 font-mono text-[10px] border border-border text-muted hidden sm:block">
-                Coverage: {coveragePct}%
-              </span>
-            )}
-            {marketRegimeScore !== null && (
-              <span className={`px-2 py-1 font-mono text-[10px] border hidden sm:flex items-center gap-1 ${
-                marketRegimeScore >= 1 ? 'border-green-500/40 text-green-600 dark:text-green-400'
-                : marketRegimeScore <= -1 ? 'border-red-500/40 text-red-600 dark:text-red-400'
-                : 'border-amber-400/40 text-amber-600 dark:text-amber-400'
-              }`}>
-                <Zap size={9} />
-                {regimeLabel} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
-              </span>
-            )}
-            {fiiNet !== null && (
-              <span className={`px-2 py-1 font-mono text-[10px] border hidden md:flex items-center gap-1 ${
-                fiiNet > 0 ? 'border-green-500/40 text-green-600 dark:text-green-400' : 'border-red-500/40 text-red-600 dark:text-red-400'
-              }`}>
-                FII {fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)} Cr
-              </span>
-            )}
-            {diiNet !== null && (
-              <span className={`px-2 py-1 font-mono text-[10px] border hidden md:flex items-center gap-1 ${
-                diiNet > 0 ? 'border-green-500/40 text-green-600 dark:text-green-400' : 'border-red-500/40 text-red-600 dark:text-red-400'
-              }`}>
-                DII {diiNet > 0 ? '+' : ''}{Math.round(diiNet)} Cr
-              </span>
-            )}
-            {pcr !== null && (
-              <span className={`px-2 py-1 font-mono text-[10px] border hidden lg:flex items-center gap-1 ${
-                pcr > 1.2 ? 'border-green-500/40 text-green-600 dark:text-green-400' : pcr < 0.7 ? 'border-red-500/40 text-red-600 dark:text-red-400' : 'border-amber-400/40 text-amber-600 dark:text-amber-400'
-              }`}>
-                PCR {pcr.toFixed(2)}
-              </span>
-            )}
+      <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
+          {/* Top row: Brand + primary indicator + controls */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            <h1 className="font-display font-semibold text-base sm:text-xl uppercase tracking-wider text-primary whitespace-nowrap">
+              Quantitative <span className="text-brand">Alpha</span>
+            </h1>
+            <div className="h-4 w-px bg-border hidden sm:block"></div>
+            <span className="font-mono text-[10px] text-sub tracking-widest uppercase hidden lg:block whitespace-nowrap">Alpha Research & Investment Club | FMS Delhi</span>
+            <div className="flex-1"></div>
+
+            {/* Mobile: NIFTY + expandable indicators toggle */}
+            <div className="flex items-center gap-2">
+              {niftyData && (
+                <span className={`px-2 py-1 font-mono text-[10px] border border-border ${niftyData.is_up ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
+                  NIFTY: {niftyData.price} ({niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%)
+                </span>
+              )}
+
+              {/* Mobile indicator toggle */}
+              <button
+                onClick={() => setShowIndicators(!showIndicators)}
+                className="sm:hidden px-2 py-1 font-mono text-[10px] border border-border text-muted hover:text-primary transition-colors"
+                title="Market Indicators"
+              >
+                <Layers size={12} />
+              </button>
+
+              {/* Desktop: inline indicators */}
+              <div className="hidden sm:flex items-center gap-2 flex-wrap">
+                {coveragePct !== null && (
+                  <span className="px-2 py-1 font-mono text-[10px] border border-border text-muted">
+                    Coverage: {coveragePct}%
+                  </span>
+                )}
+                {marketRegimeScore !== null && (
+                  <span className={`px-2 py-1 font-mono text-[10px] border flex items-center gap-1 ${
+                    marketRegimeScore >= 1 ? 'border-green-500/40 text-green-600 dark:text-green-400'
+                    : marketRegimeScore <= -1 ? 'border-red-500/40 text-red-600 dark:text-red-400'
+                    : 'border-amber-400/40 text-amber-600 dark:text-amber-400'
+                  }`}>
+                    <Zap size={9} />
+                    {regimeLabel} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
+                  </span>
+                )}
+                {fiiNet !== null && (
+                  <span className={`px-2 py-1 font-mono text-[10px] border flex items-center gap-1 ${
+                    fiiNet > 0 ? 'border-green-500/40 text-green-600 dark:text-green-400' : 'border-red-500/40 text-red-600 dark:text-red-400'
+                  }`}>
+                    FII {fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)} Cr
+                  </span>
+                )}
+                {diiNet !== null && (
+                  <span className={`px-2 py-1 font-mono text-[10px] border flex items-center gap-1 ${
+                    diiNet > 0 ? 'border-green-500/40 text-green-600 dark:text-green-400' : 'border-red-500/40 text-red-600 dark:text-red-400'
+                  }`}>
+                    DII {diiNet > 0 ? '+' : ''}{Math.round(diiNet)} Cr
+                  </span>
+                )}
+                {pcr !== null && (
+                  <span className={`px-2 py-1 font-mono text-[10px] border flex items-center gap-1 ${
+                    pcr > 1.2 ? 'border-green-500/40 text-green-600 dark:text-green-400' : pcr < 0.7 ? 'border-red-500/40 text-red-600 dark:text-red-400' : 'border-amber-400/40 text-amber-600 dark:text-amber-400'
+                  }`}>
+                    PCR {pcr.toFixed(2)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Watchlist + Theme toggle */}
             {watchlist.length > 0 && (
               <div className="relative" ref={watchlistRef}>
                 <button
                   onClick={() => setWatchlistOpen(!watchlistOpen)}
                   className="px-2 py-1 font-mono text-[10px] border border-brand/30 text-brand hover:bg-brand/10 transition-colors flex items-center gap-1"
                 >
-                  <Star size={10} /> {watchlist.length} Watchlist
+                  <Star size={10} /> <span className="hidden sm:inline">{watchlist.length} Watchlist</span><span className="sm:hidden">{watchlist.length}</span>
                 </button>
                 {watchlistOpen && (
                   <div className="absolute z-50 right-0 top-full mt-1 w-56 border border-border bg-card shadow-lg">
@@ -324,7 +345,7 @@ export default function App() {
                 )}
               </div>
             )}
-            <button 
+            <button
               onClick={() => setIsDark(!isDark)}
               className="p-1.5 border border-border text-muted hover:text-primary hover:border-primary transition-colors"
               title="Toggle Theme"
@@ -332,26 +353,67 @@ export default function App() {
               {isDark ? <Sun size={14} /> : <Moon size={14} />}
             </button>
           </div>
-        </div>
 
+          {/* Mobile: collapsible indicator chips */}
+          {showIndicators && (
+            <div className="sm:hidden flex flex-wrap items-center gap-2 mt-3 pb-2 border-t border-border pt-3">
+              {coveragePct !== null && (
+                <span className="px-2 py-1 font-mono text-[10px] border border-border text-muted">
+                  Coverage: {coveragePct}%
+                </span>
+              )}
+              {marketRegimeScore !== null && (
+                <span className={`px-2 py-1 font-mono text-[10px] border flex items-center gap-1 ${
+                  marketRegimeScore >= 1 ? 'border-green-500/40 text-green-600 dark:text-green-400'
+                  : marketRegimeScore <= -1 ? 'border-red-500/40 text-red-600 dark:text-red-400'
+                  : 'border-amber-400/40 text-amber-600 dark:text-amber-400'
+                }`}>
+                  <Zap size={9} />
+                  {regimeLabel} ({marketRegimeScore > 0 ? `+${marketRegimeScore}` : marketRegimeScore})
+                </span>
+              )}
+              {fiiNet !== null && (
+                <span className={`px-2 py-1 font-mono text-[10px] border flex items-center gap-1 ${
+                  fiiNet > 0 ? 'border-green-500/40 text-green-600 dark:text-green-400' : 'border-red-500/40 text-red-600 dark:text-red-400'
+                }`}>
+                  FII {fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)} Cr
+                </span>
+              )}
+              {diiNet !== null && (
+                <span className={`px-2 py-1 font-mono text-[10px] border flex items-center gap-1 ${
+                  diiNet > 0 ? 'border-green-500/40 text-green-600 dark:text-green-400' : 'border-red-500/40 text-red-600 dark:text-red-400'
+                }`}>
+                  DII {diiNet > 0 ? '+' : ''}{Math.round(diiNet)} Cr
+                </span>
+              )}
+              {pcr !== null && (
+                <span className={`px-2 py-1 font-mono text-[10px] border flex items-center gap-1 ${
+                  pcr > 1.2 ? 'border-green-500/40 text-green-600 dark:text-green-400' : pcr < 0.7 ? 'border-red-500/40 text-red-600 dark:text-red-400' : 'border-amber-400/40 text-amber-600 dark:text-amber-400'
+                }`}>
+                  PCR {pcr.toFixed(2)}
+                </span>
+              )}
+            </div>
+          )}
 
-
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-3 flex items-center gap-1 overflow-x-auto scrollbar-none">
-          {[
-            { id: 'picks', label: 'Signals', icon: TrendingUp },
-            { id: 'fundamentals', label: 'Screen', icon: Database },
-            { id: 'charting', label: 'Charts', icon: BarChart2 },
-            { id: 'heatmap', label: 'Heatmap', icon: Layers },
-            { id: 'factorlab', label: 'Factor Lab', icon: Activity },
-          ].map(tab => (
-            <button 
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest transition-all border ${activeTab === tab.id ? 'border-primary bg-primary text-background' : 'border-border text-muted hover:text-primary hover:border-primary'}`}
-            >
-              <tab.icon size={12} /> {tab.label}
-            </button>
-          ))}
+          {/* Tab bar */}
+          <div className="mt-3 flex items-center gap-1 overflow-x-auto scrollbar-none pb-1">
+            {[
+              { id: 'picks', label: 'Signals', icon: TrendingUp },
+              { id: 'fundamentals', label: 'Screen', icon: Database },
+              { id: 'charting', label: 'Charts', icon: BarChart2 },
+              { id: 'heatmap', label: 'Heatmap', icon: Layers },
+              { id: 'factorlab', label: 'Factor Lab', icon: Activity },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-1.5 px-3 py-2 sm:py-1.5 font-mono text-[10px] uppercase tracking-widest transition-all border whitespace-nowrap ${activeTab === tab.id ? 'border-primary bg-primary text-background' : 'border-border text-muted hover:text-primary hover:border-primary'}`}
+              >
+                <tab.icon size={12} /> {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -377,9 +439,9 @@ export default function App() {
         ) : (
           <div className="animate-in fade-in duration-500">
             {/* Uniform tab section header */}
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
               <div className="h-6 w-1 bg-brand rounded-full"></div>
-              <h2 className="font-display font-bold text-xl tracking-wide text-primary">
+              <h2 className="font-display font-bold text-lg sm:text-xl tracking-wide text-primary">
                 {activeTab === 'picks' && 'High Conviction Signals'}
                 {activeTab === 'fundamentals' && 'Universe Screening'}
                 {activeTab === 'charting' && 'Technical Analysis'}
@@ -459,7 +521,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-border mt-12 bg-card">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 items-start">
           <div className="flex flex-col gap-2">
             <h4 className="font-mono text-brand text-[10px] uppercase tracking-widest font-bold mb-1">System Status</h4>
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted">
@@ -478,7 +540,7 @@ export default function App() {
               Educational and academic research purposes only. Not investment advice. Not registered with SEBI. Models are experimental; past performance is not indicative of future results. Data from third-party sources may contain errors. Consult a SEBI-registered advisor before investing. Alpha Research and Investment Club, FMS Delhi assumes no liability for losses.
             </p>
           </div>
-          <div className="flex flex-col gap-2 md:items-end">
+          <div className="flex flex-col gap-2 sm:items-end">
             <h4 className="font-mono text-brand text-[10px] uppercase tracking-widest font-bold mb-1">Alpha Research</h4>
             <p className="font-mono text-[10px] text-muted">Alpha Research and Investment Club</p>
             <p className="font-mono text-[10px] text-muted">FMS Delhi</p>

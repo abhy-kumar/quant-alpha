@@ -73,8 +73,11 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
-        <button 
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[10px] text-muted uppercase tracking-widest sm:hidden">
+          {filteredData.length} results
+        </span>
+        <button
           onClick={() => setShowFilters(!showFilters)}
           className={`flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest border transition-all ${showFilters ? 'border-brand bg-brand text-white' : 'border-border text-muted hover:text-primary hover:border-primary'}`}
         >
@@ -133,12 +136,138 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
         </div>
       )}
 
-      <div className="overflow-x-auto border border-border bg-card shadow-sm rounded-sm">
+      {/* Mobile: Card view */}
+      <div className="sm:hidden space-y-3">
+        {filteredData.map((row, i) => (
+          <div
+            key={i}
+            className={`border border-border bg-card p-4 shadow-sm transition-all duration-200 ${expandedRow === row.Ticker ? 'border-brand/50' : ''}`}
+          >
+            {/* Card header: Ticker + Conviction */}
+            <div className="flex items-center justify-between mb-3">
+              <button
+                onClick={() => onSelect(row.Ticker)}
+                className="font-display font-semibold text-lg text-primary"
+              >
+                {row.Ticker.replace('.NS', '')}<span className="text-brand">.</span>
+              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => toggleWatchlist(row.Ticker)}
+                  className={`transition-colors ${watchlist.includes(row.Ticker) ? 'text-brand' : 'text-sub'}`}
+                >
+                  <Star size={14} fill={watchlist.includes(row.Ticker) ? 'currentColor' : 'none'} />
+                </button>
+                <span className={`whitespace-nowrap px-1.5 py-0.5 text-[9px] font-mono border rounded-sm ${
+                  row.Conviction === 'Strong Buy' ? 'border-green-500/50 text-green-600 dark:text-green-400 bg-green-500/10' :
+                  row.Conviction === 'Buy' ? 'border-blue-500/50 text-blue-600 dark:text-blue-400 bg-blue-500/10' :
+                  row.Conviction === 'Caution' ? 'border-orange-500/50 text-orange-600 dark:text-orange-400 bg-orange-500/10' :
+                  row.Conviction === 'Avoid' ? 'border-red-500/50 text-red-600 dark:text-red-400 bg-red-500/10' :
+                  'border-border text-muted'
+                }`}>{row.Conviction || 'N/A'}</span>
+              </div>
+            </div>
+
+            {/* Card metrics grid */}
+            <div className="grid grid-cols-3 gap-3 font-mono text-[10px] mb-3">
+              <div>
+                <span className="text-muted block uppercase">LTP</span>
+                <span className="text-primary font-medium">{num(row.Price)}</span>
+              </div>
+              <div>
+                <span className="text-muted block uppercase">1D %</span>
+                <span className={`font-medium ${colorCode(row['1d_Chg_%'])}`}>
+                  {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted block uppercase">Comp</span>
+                <span className={`font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</span>
+              </div>
+              <div>
+                <span className="text-muted block uppercase">Sector</span>
+                <span className="text-primary truncate block">{row.Sector || '-'}</span>
+              </div>
+              <div>
+                <span className="text-muted block uppercase">Trend</span>
+                <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} />
+              </div>
+              <div>
+                <span className="text-muted block uppercase">Tech</span>
+                <span className={`font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</span>
+              </div>
+            </div>
+
+            {/* Expand toggle */}
+            <button
+              onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
+              className="w-full flex items-center justify-center gap-1 py-1.5 font-mono text-[9px] text-muted border border-border hover:border-brand/50 hover:text-brand transition-all"
+            >
+              <Info size={10} />
+              {expandedRow === row.Ticker ? 'Less' : 'More'}
+            </button>
+
+            {/* Expanded details */}
+            {expandedRow === row.Ticker && (
+              <div className="mt-3 pt-3 border-t border-border space-y-4">
+                <div>
+                  <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-2">Technical Signals</h4>
+                  <div className="space-y-1.5 font-mono text-[10px]">
+                    {[
+                      ['Price vs SMA50', row.Sig_Price_vs_SMA50], ['Price vs SMA200', row.Sig_Price_vs_SMA200],
+                      ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200], ['RSI', row.Sig_RSI],
+                      ['MACD Cross', row.Sig_MACD_Cross], ['MACD Hist', row.Sig_MACD_Hist],
+                      ['Stochastic', row.Sig_Stoch], ['Bollinger Bands', row.Sig_BB],
+                      ['CCI', row.Sig_CCI], ['Volume Spike', row.Sig_Volume],
+                      ['ADX Trend', row.Sig_ADX], ['Supertrend', row.Sig_Supertrend],
+                      ['Vol Price Trend', row.Sig_VPT], ['Ichimoku Cloud', row.Sig_Ichimoku],
+                    ].map(([label, val]) => (
+                      <div key={label as string} className="flex items-center justify-between">
+                        <span className="text-muted">{label}</span>
+                        {getSignalLabel(val)}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-border grid grid-cols-3 gap-2 font-mono text-[9px]">
+                    <div><span className="text-muted block">Bull</span><span className="text-green-600 dark:text-green-500 font-semibold">{row.Bull_Count ?? '-'}</span></div>
+                    <div><span className="text-muted block">Bear</span><span className="text-red-600 dark:text-red-500 font-semibold">{row.Bear_Count ?? '-'}</span></div>
+                    <div><span className="text-muted block">RS %ile</span><span className="text-primary font-semibold">{num(row.RS_Percentile)}%</span></div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-2">Research Factors</h4>
+                  <div className="space-y-1.5 font-mono text-[10px]">
+                    {[
+                      ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`],
+                      ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`],
+                      ['Earnings Quality', `${num(row.Earnings_Quality)}/10`],
+                      ['Volatility (60D)', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : 'N/A'],
+                      ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'],
+                      ['Risk-Adj Mom', num(row.Risk_Adj_Mom)],
+                      ['Z-Score (60D)', num(row.Z_Score_60)],
+                      ['Sharpe', num(row.Sharpe)],
+                      ['Max DD', num(row['Max_Drawdown_%'])],
+                    ].map(([label, val]) => (
+                      <div key={label as string} className="flex items-center justify-between">
+                        <span className="text-muted">{label}</span>
+                        <span className="text-primary">{val}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table view */}
+      <div className="overflow-x-auto border border-border bg-card shadow-sm rounded-sm hidden sm:block">
         <table className="w-full text-left font-mono text-xs">
           <thead>
             <tr className="border-b border-border text-sub uppercase tracking-widest bg-black/5 dark:bg-black/50">
               <SortHeader field="Ticker" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Ticker</SortHeader>
-              <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden sm:inline">Sector</span></SortHeader>
+              <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline">Sector</span></SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>LTP</SortHeader>
               <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>1D %</SortHeader>
               <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Comp</SortHeader>
@@ -157,11 +286,11 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           <tbody>
             {filteredData.map((row, i) => (
               <React.Fragment key={i}>
-                <tr 
+                <tr
                   className={`border-b border-border hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-200 ${expandedRow === row.Ticker ? 'bg-black/5 dark:bg-white/5' : ''}`}
                 >
                   <td className="p-3 text-primary font-medium cursor-pointer" onClick={() => onSelect(row.Ticker)}>{row.Ticker.replace('.NS', '')}</td>
-                  <td className="p-3 text-muted hidden sm:table-cell">{row.Sector || '-'}</td>
+                  <td className="p-3 text-muted hidden md:table-cell">{row.Sector || '-'}</td>
                   <td className="p-3 text-right text-muted">{num(row.Price)}</td>
                   <td className={`p-3 text-right font-medium ${colorCode(row['1d_Chg_%'])}`}>
                     {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
@@ -195,7 +324,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                       >
                         <Star size={14} fill={watchlist.includes(row.Ticker) ? 'currentColor' : 'none'} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
                         className="text-sub hover:text-brand transition-colors"
                         title="View Score Breakdown"

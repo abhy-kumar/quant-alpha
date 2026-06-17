@@ -61,7 +61,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect, is
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         {topPicks.map((stock, i) => {
           const convictionColor =
             stock.Conviction === 'Strong Buy'
@@ -76,7 +76,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect, is
             <div
               key={stock.Ticker}
               onClick={() => onSelect(stock.Ticker)}
-              className="p-6 border border-border bg-card shadow-sm hover:shadow-lg hover:border-brand/50 transition-all duration-300 cursor-pointer group"
+              className="p-4 sm:p-6 border border-border bg-card shadow-sm hover:shadow-lg hover:border-brand/50 transition-all duration-300 cursor-pointer group active:scale-[0.98]"
             >
               {/* Header row */}
               <div className="flex items-center justify-between mb-3">
@@ -99,10 +99,10 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect, is
               </div>
 
               {/* Composite score + Radar */}
-              <div className="flex flex-col sm:flex-row items-center gap-4 mb-4 py-3 border-y border-border">
+              <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-4 py-3 border-y border-border">
                 {/* Composite score block */}
-                <div className="flex flex-col items-center justify-center w-20 shrink-0">
-                  <span className="font-mono text-[9px] text-muted uppercase tracking-wider">Composite</span>
+                <div className="flex flex-col items-center justify-center w-16 sm:w-20 shrink-0">
+                  <span className="font-mono text-[8px] sm:text-[9px] text-muted uppercase tracking-wider">Composite</span>
                   <span
                     className={`font-display text-3xl font-bold leading-none mt-1 ${
                       composite >= 7 ? 'text-green-600 dark:text-green-400' :
@@ -122,7 +122,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect, is
               </div>
 
               {/* Metrics grid */}
-              <div className="grid grid-cols-3 gap-x-2 gap-y-3 font-mono text-[10px]">
+              <div className="grid grid-cols-3 gap-x-2 gap-y-2 sm:gap-y-3 font-mono text-[9px] sm:text-[10px]">
                 <div className="flex flex-col">
                   <span className="text-muted">Piotroski</span>
                   <span className={`font-semibold ${Number(stock.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(stock.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>

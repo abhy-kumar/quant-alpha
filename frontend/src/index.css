@@ -91,3 +91,20 @@ input[type="range"]::-moz-range-thumb {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* Responsive chart heights */
+.chart-main { height: 300px; }
+.chart-sub { height: 160px; }
+.chart-score { height: 200px; }
+
+@media (min-width: 640px) {
+  .chart-main { height: 380px; }
+  .chart-sub { height: 180px; }
+  .chart-score { height: 220px; }
+}
+
+@media (min-width: 1024px) {
+  .chart-main { height: 466px; }
+  .chart-sub { height: 200px; }
+  .chart-score { height: 240px; }
+}

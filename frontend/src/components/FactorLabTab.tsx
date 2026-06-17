@@ -80,18 +80,18 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
       <div className="space-y-6">
         {/* Progress strip */}
         {countdown && (
-          <div className="border border-border bg-card px-5 py-3 flex items-center gap-6 text-[10px] font-mono uppercase tracking-widest text-muted">
+          <div className="border border-border bg-card px-4 sm:px-5 py-3 flex flex-wrap items-center gap-3 sm:gap-6 text-[10px] font-mono uppercase tracking-widest text-muted">
             <span className="text-brand font-semibold">Factor Lab Active</span>
             <span>{countdown.elapsed} trading days of data</span>
             {countdown.remaining63 > 0 && (
               <span>{countdown.remaining63} trading days to full 63D coverage</span>
             )}
-            <span className="ml-auto">First scan: {formatDate(countdown.start)}</span>
+            <span className="sm:ml-auto">First scan: {formatDate(countdown.start)}</span>
           </div>
         )}
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
           {sorted.map(([conviction, data]) => (
             <div key={conviction} className="border border-border bg-card p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
@@ -124,11 +124,11 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
         </div>
 
         {/* Bar Chart */}
-        <div className="border border-border bg-card p-6 shadow-sm">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-4 border-b border-border pb-2 font-semibold">
+        <div className="border border-border bg-card p-4 sm:p-6 shadow-sm">
+          <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">
             Average Forward Returns by Conviction
           </h3>
-          <div style={{ width: '100%', height: 300 }}>
+          <div className="w-full" style={{ height: 'min(300px, 50vw)' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1A1A1A' : '#e2e8f0'} vertical={false} />
@@ -161,14 +161,14 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
   return (
     <div className="space-y-6">
       {/* Header card */}
-      <div className="border border-border bg-card p-8">
-        <div className="flex items-start gap-4 mb-6">
-          <div className="p-3 rounded border border-border bg-brand/5">
+      <div className="border border-border bg-card p-4 sm:p-8">
+        <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="p-2 sm:p-3 rounded border border-border bg-brand/5">
             <FlaskConical size={20} className="text-brand" />
           </div>
           <div>
             <h2 className="font-mono text-sm font-semibold text-primary uppercase tracking-widest mb-1">Factor Lab</h2>
-            <p className="font-mono text-[11px] text-muted leading-relaxed max-w-xl">
+            <p className="font-mono text-[10px] sm:text-[11px] text-muted leading-relaxed max-w-xl">
               Tracks whether the model's conviction ratings actually predict returns. Each scan records
               which stocks were rated Strong Buy / Buy / Hold / Caution / Avoid. Once enough time has
               passed, the system backfills actual forward returns and shows win rates and average returns
@@ -251,9 +251,9 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
         </div>
 
         {/* What will be shown */}
-        <div className="border border-border p-4 bg-surface">
+        <div className="border border-border p-3 sm:p-4 bg-surface">
           <div className="font-mono text-[9px] uppercase tracking-widest text-muted mb-3">What this tab will show</div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
             {CONVICTION_ORDER.map(c => (
               <div key={c} className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[c as keyof typeof COLORS] }} />
@@ -271,10 +271,10 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
 
       {/* Pipeline status */}
       {countdown && (
-        <div className="border border-border bg-card px-5 py-3 flex items-center gap-2 text-[10px] font-mono text-muted">
+        <div className="border border-border bg-card px-4 sm:px-5 py-3 flex flex-wrap items-center gap-2 text-[10px] font-mono text-muted">
           <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
-          <span>Outcome tracking pipeline active — data accumulating since <span className="text-primary">{formatDate(countdown.start)}</span></span>
-          <span className="ml-auto text-sub">{countdown.elapsed} trading days recorded</span>
+          <span>Outcome tracking active — since <span className="text-primary">{formatDate(countdown.start)}</span></span>
+          <span className="sm:ml-auto text-sub">{countdown.elapsed} trading days recorded</span>
         </div>
       )}
     </div>
