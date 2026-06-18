@@ -2,6 +2,7 @@ venv/
 .venv/
 __pycache__/
 *.pyc
+*.pyo
 data/sector_cache.json
 data/fundamentals_cache.json
 data/news_cache.json
@@ -13,8 +14,11 @@ data/screener.db
 .DS_Store
 node_modules/
 frontend/dist/
+frontend/.vite/
 debug_chart.json
 scanner_output.log
 test_yf.py
 frontend/test_yf2.cjs
 documentation.md
+*.sqlite
+*.sqlite3

@@ -1,9 +1,40 @@
-// @ts-nocheck
 import YahooFinance from 'yahoo-finance2'
+import type { IncomingMessage, ServerResponse } from 'http'
 
 const yahooFinance = new YahooFinance()
 
-function periodToStart(period, end) {
+interface ChartQuote {
+  date: Date
+  open: number | null
+  high: number | null
+  low: number | null
+  close: number | null
+  volume: number | null
+}
+
+interface ChartDataPoint {
+  time: string
+  open: number | null
+  high: number | null
+  low: number | null
+  close: number | null
+  volume: number | null
+  value: number | null
+  sma50: number | null
+  sma200: number | null
+  rsi: number | null
+  macd: number | null
+  macd_signal: number | null
+  macd_hist: number | null
+  bb_upper: number | null
+  bb_lower: number | null
+  bb_mid: number | null
+  bb_pctb: number | null
+  supertrend: number | null
+  supertrend_dir: number | null
+}
+
+function periodToStart(period: string, end: Date): Date {
   const start = new Date(end)
   if (period === '1w') start.setDate(end.getDate() - 7)
   else if (period === '1mo') start.setMonth(end.getMonth() - 1)
@@ -16,25 +47,25 @@ function periodToStart(period, end) {
   return start
 }
 
-function rollingMean(values, window) {
+function rollingMean(values: (number | null)[], window: number): (number | null)[] {
   return values.map((_, i) => {
     if (i < window - 1) return null
     const slice = values.slice(i - window + 1, i + 1)
-    return slice.reduce((sum, value) => sum + value, 0) / window
+    return slice.reduce((sum, value) => sum + (value ?? 0), 0) / window
   })
 }
 
-function rollingStd(values, window) {
+function rollingStd(values: (number | null)[], window: number): (number | null)[] {
   return values.map((_, i) => {
     if (i < window - 1) return null
     const slice = values.slice(i - window + 1, i + 1)
-    const mean = slice.reduce((sum, v) => sum + v, 0) / window
-    const variance = slice.reduce((sum, v) => sum + (v - mean) ** 2, 0) / (window - 1)
+    const mean = slice.reduce((sum, v) => sum + (v ?? 0), 0) / window
+    const variance = slice.reduce((sum, v) => sum + ((v ?? 0) - mean) ** 2, 0) / (window - 1)
     return Math.sqrt(variance)
   })
 }
 
-function ema(values, span) {
+function ema(values: number[], span: number): number[] {
   const k = 2 / (span + 1)
   const result = [values[0]]
   for (let i = 1; i < values.length; i++) {
@@ -43,7 +74,7 @@ function ema(values, span) {
   return result
 }
 
-function computeMacd(closes) {
+function computeMacd(closes: number[]): { macd: number[]; signal: number[]; hist: number[] } {
   const ema12 = ema(closes, 12)
   const ema26 = ema(closes, 26)
   const macdLine = ema12.map((v, i) => v - ema26[i])
@@ -52,67 +83,67 @@ function computeMacd(closes) {
   return { macd: macdLine, signal: signalLine, hist: histogram }
 }
 
-function computeBollingerBands(closes, period = 20, multiplier = 2) {
+function computeBollingerBands(closes: number[], period = 20, multiplier = 2) {
   const mid = rollingMean(closes, period)
   const std = rollingStd(closes, period)
   const upper = closes.map((_, i) => {
     if (mid[i] === null || std[i] === null) return null
-    return mid[i] + multiplier * std[i]
+    return mid[i]! + multiplier * std[i]!
   })
   const lower = closes.map((_, i) => {
     if (mid[i] === null || std[i] === null) return null
-    return mid[i] - multiplier * std[i]
+    return mid[i]! - multiplier * std[i]!
   })
   const pctB = closes.map((c, i) => {
     if (upper[i] === null || lower[i] === null || upper[i] === lower[i]) return null
-    return (c - lower[i]) / (upper[i] - lower[i])
+    return (c - lower[i]!) / (upper[i]! - lower[i]!)
   })
   return { mid, upper, lower, pctB }
 }
 
-function computeAtr(highs, lows, closes, period = 14) {
+function computeAtr(highs: number[], lows: number[], closes: number[], period = 14): (number | null)[] {
   const tr = closes.map((c, i) => {
     if (i === 0) return highs[i] - lows[i]
     return Math.max(highs[i] - lows[i], Math.abs(highs[i] - closes[i - 1]), Math.abs(lows[i] - closes[i - 1]))
   })
-  const atr = Array(tr.length).fill(null)
+  const atr: (number | null)[] = Array(tr.length).fill(null)
   let sum = 0
   for (let i = 0; i < tr.length; i++) {
     if (i < period - 1) { sum += tr[i]; continue }
     if (i === period - 1) { sum += tr[i]; atr[i] = sum / period; continue }
-    atr[i] = (atr[i - 1] * (period - 1) + tr[i]) / period
+    atr[i] = ((atr[i - 1] as number) * (period - 1) + tr[i]) / period
   }
   return atr
 }
 
-function computeSupertrend(highs, lows, closes, period = 10, multiplier = 3) {
+function computeSupertrend(highs: number[], lows: number[], closes: number[], period = 10, multiplier = 3) {
   const atr = computeAtr(highs, lows, closes, period)
   const hl2 = closes.map((_, i) => (highs[i] + lows[i]) / 2)
   const n = closes.length
-  const basicUpper = hl2.map((v, i) => atr[i] !== null ? v + multiplier * atr[i] : null)
-  const basicLower = hl2.map((v, i) => atr[i] !== null ? v - multiplier * atr[i] : null)
-  const finalUpper = Array(n).fill(null)
-  const finalLower = Array(n).fill(null)
-  const supertrend = Array(n).fill(null)
-  const direction = Array(n).fill(1)
+  const basicUpper = hl2.map((v, i) => atr[i] !== null ? v + multiplier * atr[i]! : null)
+  const basicLower = hl2.map((v, i) => atr[i] !== null ? v - multiplier * atr[i]! : null)
+  const finalUpper: (number | null)[] = Array(n).fill(null)
+  const finalLower: (number | null)[] = Array(n).fill(null)
+  const supertrend: (number | null)[] = Array(n).fill(null)
+  const direction: number[] = Array(n).fill(1)
 
   for (let i = 0; i < n; i++) {
     if (basicUpper[i] === null) continue
     if (i === 0) { finalUpper[i] = basicUpper[i]; finalLower[i] = basicLower[i]; continue }
-    finalUpper[i] = (basicUpper[i] < finalUpper[i - 1] || closes[i - 1] > finalUpper[i - 1]) ? basicUpper[i] : finalUpper[i - 1]
-    finalLower[i] = (basicLower[i] > finalLower[i - 1] || closes[i - 1] < finalLower[i - 1]) ? basicLower[i] : finalLower[i - 1]
+    finalUpper[i] = (basicUpper[i]! < finalUpper[i - 1]! || closes[i - 1] > finalUpper[i - 1]!) ? basicUpper[i] : finalUpper[i - 1]
+    finalLower[i] = (basicLower[i]! > finalLower[i - 1]! || closes[i - 1] < finalLower[i - 1]!) ? basicLower[i] : finalLower[i - 1]
     if (direction[i - 1] === 1) {
-      direction[i] = closes[i] > finalUpper[i] ? -1 : 1
+      direction[i] = closes[i] > finalUpper[i]! ? -1 : 1
     } else {
-      direction[i] = closes[i] < finalLower[i] ? 1 : -1
+      direction[i] = closes[i] < finalLower[i]! ? 1 : -1
     }
     supertrend[i] = direction[i] === -1 ? finalLower[i] : finalUpper[i]
   }
   return { supertrend, direction }
 }
 
-function computeRsi(closes, period = 14) {
-  const rsi = Array(closes.length).fill(null)
+function computeRsi(closes: number[], period = 14): (number | null)[] {
+  const rsi: (number | null)[] = Array(closes.length).fill(null)
   if (closes.length <= period) return rsi
 
   let avgGain = 0
@@ -138,13 +169,11 @@ function computeRsi(closes, period = 14) {
   return rsi
 }
 
-export async function fetchChartData(ticker, period = '1mo', interval = '1d') {
+export async function fetchChartData(ticker: string, period = '1mo', interval = '1d'): Promise<ChartDataPoint[]> {
   const end = new Date()
   const start = periodToStart(period, end)
 
-  // Fetch extra data to prime the SMAs (200 periods)
-  // 1wk interval requires ~4 extra years, 1d interval requires ~1 extra year
-  const paddingDays = interval === '1wk' ? 200 * 7 : 200 * 1.5;
+  const paddingDays = interval === '1wk' ? 200 * 7 : 200 * 1.5
   const extendedStart = new Date(start.getTime() - paddingDays * 24 * 60 * 60 * 1000)
 
   const result = await yahooFinance.chart(ticker, {
@@ -153,10 +182,10 @@ export async function fetchChartData(ticker, period = '1mo', interval = '1d') {
     interval,
   })
 
-  const quotes = result.quotes.filter((quote) => quote.close !== null)
-  const closes = quotes.map((quote) => quote.close)
-  const highs = quotes.map((quote) => quote.high ?? quote.close)
-  const lows = quotes.map((quote) => quote.low ?? quote.close)
+  const quotes = result.quotes.filter((quote: ChartQuote) => quote.close !== null)
+  const closes = quotes.map((quote: ChartQuote) => quote.close as number)
+  const highs = quotes.map((quote: ChartQuote) => quote.high ?? quote.close as number)
+  const lows = quotes.map((quote: ChartQuote) => quote.low ?? quote.close as number)
   const sma50 = rollingMean(closes, 50)
   const sma200 = rollingMean(closes, 200)
   const rsi = computeRsi(closes, 14)
@@ -164,7 +193,7 @@ export async function fetchChartData(ticker, period = '1mo', interval = '1d') {
   const bb = computeBollingerBands(closes)
   const st = computeSupertrend(highs, lows, closes)
 
-  const fullData = quotes.map((quote, index) => ({
+  const fullData: ChartDataPoint[] = quotes.map((quote: ChartQuote, index: number) => ({
     time: quote.date.toISOString().split('T')[0],
     open: quote.open ?? null,
     high: quote.high ?? null,
@@ -190,8 +219,8 @@ export async function fetchChartData(ticker, period = '1mo', interval = '1d') {
   return fullData.filter(d => d.time >= startTimeStr)
 }
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Credentials', true)
+export default async function handler(req: IncomingMessage, res: ServerResponse) {
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
   res.setHeader(
@@ -200,27 +229,36 @@ export default async function handler(req, res) {
   )
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end()
+    res.statusCode = 200
+    res.end()
     return
   }
 
   try {
-    const ticker = req.query.ticker
-    const period = req.query.period || '1mo'
-    const interval = req.query.interval || '1d'
+    const url = new URL(req.url ?? '/', `http://${req.headers.host}`)
+    const ticker = url.searchParams.get('ticker')
+    const period = url.searchParams.get('period') || '1mo'
+    const interval = url.searchParams.get('interval') || '1d'
 
     if (!ticker) {
-      return res.status(400).json({ error: 'Ticker is required' })
+      res.statusCode = 400
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: 'Ticker is required' }))
+      return
     }
 
     const data = await fetchChartData(ticker, period, interval)
 
-    return res.status(200).json({
+    res.statusCode = 200
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({
       status: 'ok',
       data,
-    })
+    }))
   } catch (error) {
     console.error('Yahoo Finance Error:', error)
-    return res.status(500).json({ error: 'Failed to fetch chart data' })
+    res.statusCode = 500
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Failed to fetch chart data' }))
   }
 }

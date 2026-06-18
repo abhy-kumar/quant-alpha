@@ -1,34 +1,28 @@
 """
 scanner.py
+----------
+Main orchestrator for the stock scanning pipeline.
+Delegates data acquisition to data_fetcher.py and scoring to scoring.py.
 """
+
 import time
 import json
-import threading
 import concurrent.futures
-import queue
-from datetime import datetime, timezone, timedelta
-from typing import Optional
-import requests
-import os
-import feedparser
 import sqlite3
-import pandas as pd
-import numpy as np
-import yfinance as yf
-from bs4 import BeautifulSoup
+import os
+from datetime import datetime, timezone, timedelta
 
-from utils import log, _safe_float, CacheManager
-from config import (
-    PERIOD, INTERVAL, MIN_ROWS, 
-    MAX_WORKERS_OHLCV, MAX_WORKERS_FUNDAMENTALS,
-    CACHE_TTL_FUNDAMENTALS, CACHE_TTL_ATH, CACHE_TTL_SECTOR, CACHE_TTL_NEWS
-)
+import numpy as np
+import pandas as pd
+
+from utils import log, _safe_float
+from config import MAX_WORKERS_OHLCV, MAX_WORKERS_FUNDAMENTALS
 from indicators import add_indicators, compute_metrics
 from nse_fetcher import get_liquid_universe, download_bhav_copy, get_market_breadth, get_fii_dii_activity, get_put_call_ratio
-from bse_fetcher import get_promoter_holding as bse_get_promoter, get_company_info as bse_get_company
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-from recommendation import compute_fund_score, compute_tech_score, get_conviction_rating
-from research_factors import compute_research_composite
+from data_fetcher import (
+    fetch_ohlcv_with_retry, fetch_fundamentals, get_ath, get_atl, cache_manager
+)
+from scoring import compute_rs_score, compute_sector_medians, compute_all_scores, build_output_row
 from data_pipeline import (
     store_daily_ohlcv, store_factor_history, create_outcome_entries,
     update_outcome_tracking, store_regime_history, store_scan_summary,
@@ -36,348 +30,135 @@ from data_pipeline import (
 from generate_score_history import generate as generate_score_history
 
 IST = timezone(timedelta(hours=5, minutes=30))
-_YF_SESSION = requests.Session()
-_YF_SESSION.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-})
 
-cache_manager = CacheManager()
-_screener_state = {"failures": 0, "disabled_until": 0}
-SCREENER_MAX_FAILURES = 10
-SCREENER_COOLDOWN = 300  # 5 minutes before retrying after circuit breaker trips
-vader = SentimentIntensityAnalyzer()
 
-def _fetch_ohlcv_with_retry(ticker: str, period: str = PERIOD) -> pd.DataFrame:
-    retries = [1, 2, 4]
-    for attempt, wait in enumerate(retries + [0]):
-        try:
-            df = yf.download(
-                ticker, period=period, interval=INTERVAL,
-                auto_adjust=True, progress=False, session=_YF_SESSION
-            )
-            if df.empty:
-                raise ValueError("Empty OHLCV response")
-            if isinstance(df.columns, pd.MultiIndex):
-                df.columns = df.columns.get_level_values(0)
-            df.dropna(subset=['Close'], inplace=True)
-            
-            required_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
-            missing = [c for c in required_cols if c not in df.columns]
-            if missing:
-                raise ValueError(f"Missing OHLCV columns: {missing}")
-            
-            if (df['Close'] <= 0).any():
-                df = df[df['Close'] > 0]
-            
-            if (df['High'] < df['Low']).any():
-                df.loc[df['High'] < df['Low'], ['High', 'Low']] = df.loc[df['High'] < df['Low'], ['Low', 'High']].values
-            
-            if len(df) < MIN_ROWS and period == PERIOD:
-                raise ValueError(f"Only {len(df)} rows")
-            return df
-        except Exception as e:
-            if attempt < len(retries):
-                time.sleep(wait)
-            else:
-                raise e
+def _compute_regime_score(nifty_df, vix_df, fii_dii, pcr_data, breadth_pct):
+    """Compute market regime score from multiple indicators."""
+    regime_score = 0
 
-def _get_ath(ticker: str, default_52w: float) -> tuple[float, str]:
-    sym = ticker.replace('.NS', '').replace('.BO', '')
-    cached_ath = cache_manager.get("ath", sym, ttl=CACHE_TTL_ATH)
-    if cached_ath is not None:
-        return cached_ath, "Historical"
-    return default_52w, "52W"
+    if nifty_df is not None and not nifty_df.empty:
+        nifty_df = add_indicators(nifty_df)
+        nifty_latest = nifty_df.iloc[-1]
+        if _safe_float(nifty_latest["Close"]) > _safe_float(nifty_latest["SMA_200"]):
+            regime_score += 1
+        else:
+            regime_score -= 1
 
-def _get_atl(ticker: str, default_52w_low: float) -> tuple[float, str]:
-    sym = ticker.replace('.NS', '').replace('.BO', '')
-    cached_atl = cache_manager.get("atl", sym, ttl=CACHE_TTL_ATH)
-    if cached_atl is not None:
-        return cached_atl, "Historical"
-    return default_52w_low, "52W"
+    if vix_df is not None and not vix_df.empty:
+        vix_latest = _safe_float(vix_df["Close"].iloc[-1])
+        if vix_latest > 25:
+            regime_score -= 1
+        elif vix_latest < 15:
+            regime_score += 1
 
-def _background_fetch_ath(tickers_to_fetch: list[str]):
-    for ticker in tickers_to_fetch:
-        sym = ticker.replace('.NS', '').replace('.BO', '')
-        try:
-            df = _fetch_ohlcv_with_retry(ticker, period="max")
-            actual_ath = _safe_float(df["High"].max())
-            actual_atl = _safe_float(df["Low"].min())
-            if not np.isnan(actual_ath):
-                cache_manager.set("ath", sym, round(actual_ath, 2))
-            if not np.isnan(actual_atl):
-                cache_manager.set("atl", sym, round(actual_atl, 2))
-            cache_manager.save_all()
-        except Exception:
-            pass
-        time.sleep(0.5)
+    fii_net = fii_dii.get("fii_net", 0)
+    if fii_net > 500:
+        regime_score += 1
+    elif fii_net < -500:
+        regime_score -= 1
 
-def _fetch_info(ticker: str) -> dict:
-    sym = ticker.replace('.NS', '').replace('.BO', '')
-    cached_info = cache_manager.get("fundamentals", sym, ttl=CACHE_TTL_FUNDAMENTALS)
-    cached_sector = cache_manager.get("sector", sym, ttl=CACHE_TTL_SECTOR)
-    
-    info = cached_info if cached_info else {}
-    
-    needs_fundamentals = not cached_info or pd.isna(_safe_float(info.get('trailingPE'))) or pd.isna(_safe_float(info.get('returnOnEquity')))
-    needs_sector = not cached_sector
-    
-    if needs_fundamentals or needs_sector:
-        try:
-            t = yf.Ticker(ticker, session=_YF_SESSION)
-            new_info = t.info or {}
-            info.update(new_info)
-        except Exception:
-            pass
+    pcr = pcr_data.get("pcr", 1.0)
+    if pcr > 1.2:
+        regime_score += 1
+    elif pcr < 0.7:
+        regime_score -= 1
 
-        if info.get('quoteType') == 'ETF':
-            cache_manager.add_to_etf_list(sym)
+    if breadth_pct is not None:
+        if breadth_pct > 0.55:
+            regime_score += 1
+        elif breadth_pct < 0.45:
+            regime_score -= 1
 
-    needs_fundamentals = pd.isna(_safe_float(info.get('trailingPE'))) or pd.isna(_safe_float(info.get('returnOnEquity')))
-    
-    now_ts = time.time()
-    screener_available = now_ts > _screener_state.get("disabled_until", 0)
-    if (needs_fundamentals or needs_sector) and screener_available and _screener_state["failures"] < SCREENER_MAX_FAILURES:
-        time.sleep(1.0)  # Rate-limit: 1 request per second to Screener.in
-        try:
-            url = f"https://www.screener.in/company/{sym}/consolidated/"
-            resp = _YF_SESSION.get(url, timeout=10)
-            if resp.status_code != 200:
-                url = f"https://www.screener.in/company/{sym}/"
-                resp = _YF_SESSION.get(url, timeout=10)
-                
-            if resp.status_code == 200:
-                _screener_state["failures"] = max(0, _screener_state["failures"] - 1)
-                soup = BeautifulSoup(resp.text, 'html.parser')
-                
-                if needs_sector:
-                    market_links = [a.text.strip() for a in soup.find_all('a') if a.get('href', '').startswith('/market/')]
-                    if market_links:
-                        sec_data = {
-                            'sector': market_links[0],
-                            'industry': market_links[-1] if len(market_links) > 1 else market_links[0]
-                        }
-                        cache_manager.set("sector", sym, sec_data)
-                        cached_sector = sec_data
-                
-                ratios = soup.select('ul#top-ratios li')
-                for r in ratios:
-                    name_elem = r.find('span', class_='name')
-                    val_elem = r.find('span', class_='number')
-                    if name_elem and val_elem:
-                        name = name_elem.text.strip().lower()
-                        val_str = val_elem.text.strip().replace(',', '')
-                        try:
-                            val = float(val_str)
-                        except ValueError:
-                            continue
-                            
-                        if 'market cap' in name and pd.isna(_safe_float(info.get('marketCap'))):
-                            info['marketCap'] = val * 10000000
-                        elif 'stock p/e' in name and pd.isna(_safe_float(info.get('trailingPE'))):
-                            info['trailingPE'] = val
-                        elif 'roce' in name:
-                            info['roce'] = val
-                            if pd.isna(_safe_float(info.get('returnOnEquity'))):
-                                info['returnOnEquity'] = val / 100.0
-                        elif 'roe' in name and pd.isna(_safe_float(info.get('returnOnEquity'))):
-                            info['returnOnEquity'] = val / 100.0
-                        elif 'promoter holding' in name:
-                            info['promoter_holding'] = val
-                        elif 'pledged percentage' in name:
-                            info['promoter_pledging'] = val
-                        elif 'dividend yield' in name and pd.isna(_safe_float(info.get('dividendYield'))):
-                            info['dividendYield'] = val
+    return regime_score
 
-                peers_table = soup.find('table', class_='data-table')
-                if peers_table:
-                    headers = [th.text.strip().lower() for th in peers_table.find_all('th')]
-                    debt_idx = next((i for i, h in enumerate(headers) if 'debt to eq' in h), -1)
-                    pe_idx = next((i for i, h in enumerate(headers) if 'p/e' in h), -1)
-                    roe_idx = next((i for i, h in enumerate(headers) if 'roe' in h), -1)
-                    
-                    peers = []
-                    rows = peers_table.find('tbody').find_all('tr')
-                    for row in rows:
-                        cells = row.find_all('td')
-                        if len(cells) > 1:
-                            if sym.lower() in cells[1].text.strip().lower():
-                                if debt_idx != -1 and pd.isna(_safe_float(info.get('debtToEquity'))):
-                                    try: info['debtToEquity'] = float(cells[debt_idx].text.strip().replace(',', '')) * 100.0
-                                    except: pass
-                            else:
-                                peer_data = {}
-                                if pe_idx != -1:
-                                    try: peer_data['pe'] = float(cells[pe_idx].text.strip().replace(',', ''))
-                                    except: pass
-                                if roe_idx != -1:
-                                    try: peer_data['roe'] = float(cells[roe_idx].text.strip().replace(',', ''))
-                                    except: pass
-                                if debt_idx != -1:
-                                    try: peer_data['debt_eq'] = float(cells[debt_idx].text.strip().replace(',', '')) * 100.0
-                                    except: pass
-                                peers.append(peer_data)
-                    info['screener_peers'] = peers
-            else:
-                # Non-200 response (403 rate-limit, login wall, etc.) — count as failure
-                _screener_state["failures"] += 1
-                log.warning(f"Screener.in HTTP {resp.status_code} for {sym} (failure {_screener_state['failures']}/{SCREENER_MAX_FAILURES})")
-                if _screener_state["failures"] >= SCREENER_MAX_FAILURES:
-                    _screener_state["disabled_until"] = time.time() + SCREENER_COOLDOWN
-                    log.warning(f"Screener.in disabled for {SCREENER_COOLDOWN}s after {_screener_state['failures']} non-200 responses")
-        except Exception as e:
-            _screener_state["failures"] += 1
-            log.warning(f"Screener.in error for {sym}: {type(e).__name__}: {e} (failure {_screener_state['failures']}/{SCREENER_MAX_FAILURES})")
-            if _screener_state["failures"] >= SCREENER_MAX_FAILURES:
-                _screener_state["disabled_until"] = time.time() + SCREENER_COOLDOWN
-                log.warning(f"Screener.in disabled for {SCREENER_COOLDOWN}s after {_screener_state['failures']} failures")
-    if cached_sector:
-        info['sector'] = cached_sector.get('sector', info.get('sector'))
-        info['industry'] = cached_sector.get('industry', info.get('industry'))
 
-    # BSE India fallback: fill missing promoter holding + sector when Screener.in failed
-    needs_promoter = pd.isna(_safe_float(info.get('promoter_holding')))
-    if needs_promoter or needs_sector:
-        try:
-            bse_promoter = bse_get_promoter(sym)
-            if needs_promoter and bse_promoter.get("promoter_holding") is not None:
-                info['promoter_holding'] = bse_promoter['promoter_holding']
-            if bse_promoter.get("promoter_pledging") is not None:
-                info['promoter_pledging'] = bse_promoter['promoter_pledging']
-
-            if needs_sector:
-                bse_info = bse_get_company(sym)
-                if bse_info.get("sector"):
-                    sec_data = {
-                        'sector': bse_info['sector'],
-                        'industry': bse_info.get('industry') or bse_info.get('group') or bse_info['sector']
-                    }
-                    cache_manager.set("sector", sym, sec_data)
-                    cached_sector = sec_data
-                    info['sector'] = sec_data['sector']
-                    info['industry'] = sec_data['industry']
-        except Exception as e:
-            log.debug(f"BSE fallback failed for {sym}: {e}")
-
-    if _safe_float(info.get('totalAssets')) is None or np.isnan(_safe_float(info.get('totalAssets'), default=np.nan)):
-        bv = _safe_float(info.get('bookValue'), default=0)
-        shares = _safe_float(info.get('sharesOutstanding'), default=0)
-        total_debt = _safe_float(info.get('totalDebt'), default=0)
-        total_cash = _safe_float(info.get('totalCash'), default=0)
-        if bv > 0 and shares > 0:
-            info['totalAssets'] = bv * shares + total_debt - total_cash
-
-    cache_manager.set("fundamentals", sym, info)
-    
-    news_sentiment = 0.0
-    cached_news = cache_manager.get("news", sym, ttl=CACHE_TTL_NEWS)
-    if cached_news is not None:
-        news_sentiment = cached_news
-    else:
-        try:
-            query = f"{sym}+NSE+stock"
-            feed_url = f"https://news.google.com/rss/search?q={query}&hl=en-IN&gl=IN&ceid=IN:en"
-            feed = feedparser.parse(feed_url)
-            sentiments = []
-            for entry in feed.entries[:10]:
-                title = entry.get('title', '')
-                if title:
-                    score = vader.polarity_scores(title)
-                    sentiments.append(score['compound'])
-            if sentiments:
-                news_sentiment = sum(sentiments) / len(sentiments)
-            cache_manager.set("news", sym, news_sentiment)
-        except Exception as e:
-            log.warning(f"Google News RSS failed for {sym}: {type(e).__name__}: {e}")
-            
-    info['news_sentiment'] = news_sentiment
-    return info
-
-def run_scanner(progress_callback=None) -> pd.DataFrame:
-    scan_time = datetime.now(IST)
-    scan_start = time.time()
-    tickers = get_liquid_universe(top_n=150)
-    total = len(tickers)
-    
+def _fetch_market_indicators():
+    """Fetch market-wide indicators (NIFTY, VIX, FII/DII, PCR, breadth)."""
     nifty_df = None
     vix_df = None
-    regime_score = 0
-    try:
-        nifty_df = _fetch_ohlcv_with_retry("^NSEI")
-        if not nifty_df.empty:
-            nifty_df = add_indicators(nifty_df)
-            nifty_latest = nifty_df.iloc[-1]
-            if _safe_float(nifty_latest["Close"]) > _safe_float(nifty_latest["SMA_200"]):
-                regime_score += 1
-            else:
-                regime_score -= 1
-    except Exception: pass
-    
-    try:
-        vix_df = _fetch_ohlcv_with_retry("^INDIAVIX")
-        if not vix_df.empty:
-            vix_latest = _safe_float(vix_df["Close"].iloc[-1])
-            if vix_latest > 25: regime_score -= 1
-            elif vix_latest < 15: regime_score += 1
-    except Exception: pass
-
     fii_dii = {"fii_net": 0, "dii_net": 0}
+    pcr_data = {"pcr": 1.0}
+    breadth_pct = None
+
+    try:
+        nifty_df = fetch_ohlcv_with_retry("^NSEI")
+    except Exception as e:
+        log.warning(f"Failed to fetch NIFTY: {e}")
+
+    try:
+        vix_df = fetch_ohlcv_with_retry("^INDIAVIX")
+    except Exception as e:
+        log.warning(f"Failed to fetch VIX: {e}")
+
     try:
         fii_dii = get_fii_dii_activity()
-        fii_net = fii_dii.get("fii_net", 0)
-        if fii_net > 500: regime_score += 1
-        elif fii_net < -500: regime_score -= 1
-    except Exception: pass
+    except Exception as e:
+        log.warning(f"Failed to fetch FII/DII: {e}")
 
-    pcr_data = {"pcr": 1.0}
     try:
         pcr_data = get_put_call_ratio()
-        pcr = pcr_data.get("pcr", 1.0)
-        if pcr > 1.2: regime_score += 1
-        elif pcr < 0.7: regime_score -= 1
-    except Exception: pass
+    except Exception as e:
+        log.warning(f"Failed to fetch PCR: {e}")
 
-    raw_data = {}
-    
-    def fetch_ohlcv_job(ticker):
+    bhav_df, _ = download_bhav_copy()
+    if not bhav_df.empty:
+        breadth = get_market_breadth(bhav_df)
+        breadth_pct = breadth.get("breadth_pct", 0.5)
+
+    return nifty_df, vix_df, fii_dii, pcr_data, breadth_pct
+
+
+def _fetch_ohlcv_batch(tickers: list, progress_callback=None) -> tuple[dict, int]:
+    """Fetch OHLCV data for all tickers in parallel."""
+    total = len(tickers)
+    ohlcv_results = {}
+
+    def fetch_job(ticker):
         try:
-            df = _fetch_ohlcv_with_retry(ticker)
+            df = fetch_ohlcv_with_retry(ticker)
             df = add_indicators(df)
             return ticker, df, None
         except Exception as e:
             log.warning(f"OHLCV failed for {ticker}: {type(e).__name__}: {e}")
             return ticker, None, e
-            
-    def fetch_info_job(ticker, df):
-        try:
-            info = _fetch_info(ticker)
-            fifty_two_high = _safe_float(info.get("fiftyTwoWeekHigh"))
-            fifty_two_low = _safe_float(info.get("fiftyTwoWeekLow"))
-            df_high = _safe_float(df["High"].max()) if df is not None and not df.empty else np.nan
-            df_low = _safe_float(df["Low"].min()) if df is not None and not df.empty else np.nan
-            base_high = np.nanmax([df_high, fifty_two_high]) if not np.isnan(np.nanmax([df_high, fifty_two_high])) else np.nan
-            base_low = np.nanmin([df_low, fifty_two_low]) if not np.isnan(np.nanmin([df_low, fifty_two_low])) else np.nan
-            ath, ath_source = _get_ath(ticker, base_high)
-            atl, atl_source = _get_atl(ticker, base_low)
-            return ticker, info, ath, ath_source, atl, atl_source, None
-        except Exception as e:
-            return ticker, None, None, None, None, None, e
 
-    ohlcv_results = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS_OHLCV) as executor:
-        futures = {executor.submit(fetch_ohlcv_job, t): t for t in tickers}
+        futures = {executor.submit(fetch_job, t): t for t in tickers}
         completed = 0
         for future in concurrent.futures.as_completed(futures):
             t, df, err = future.result()
             if df is not None:
                 ohlcv_results[t] = df
             completed += 1
-            if progress_callback: progress_callback(completed, total * 2, f"Fetching OHLCV {t}")
-            
-    info_results = {}
+            if progress_callback:
+                progress_callback(completed, total * 2, f"Fetching OHLCV {t}")
+
+    return ohlcv_results
+
+
+def _fetch_info_batch(ohlcv_results: dict, progress_callback=None) -> tuple[dict, int]:
+    """Fetch fundamental info for all valid tickers in parallel."""
     valid_tickers = list(ohlcv_results.keys())
-    log.info(f"OHLCV succeeded for {len(valid_tickers)} tickers, fetching info...")
+    total = len(valid_tickers)
+    info_results = {}
+
+    def fetch_job(ticker, df):
+        try:
+            info = fetch_fundamentals(ticker)
+            fifty_two_high = _safe_float(info.get("fiftyTwoWeekHigh"))
+            fifty_two_low = _safe_float(info.get("fiftyTwoWeekLow"))
+            df_high = _safe_float(df["High"].max()) if df is not None and not df.empty else np.nan
+            df_low = _safe_float(df["Low"].min()) if df is not None and not df.empty else np.nan
+            base_high = np.nanmax([df_high, fifty_two_high]) if not np.isnan(np.nanmax([df_high, fifty_two_high])) else np.nan
+            base_low = np.nanmin([df_low, fifty_two_low]) if not np.isnan(np.nanmin([df_low, fifty_two_low])) else np.nan
+            ath, ath_source = get_ath(ticker, base_high)
+            atl, atl_source = get_atl(ticker, base_low)
+            return ticker, info, ath, ath_source, atl, atl_source, None
+        except Exception as e:
+            return ticker, None, None, None, None, None, e
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS_FUNDAMENTALS) as executor:
-        futures = {executor.submit(fetch_info_job, t, ohlcv_results[t]): t for t in valid_tickers}
+        futures = {executor.submit(fetch_job, t, ohlcv_results[t]): t for t in valid_tickers}
         completed = 0
         for future in concurrent.futures.as_completed(futures):
             t, info, ath, ath_source, atl, atl_source, err = future.result()
@@ -386,369 +167,112 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             else:
                 log.warning(f"Info failed for {t}: {err}")
             completed += 1
-            if progress_callback: progress_callback(total + completed, total * 2, f"Fetching Info {t}")
-    
-    log.info(f"Info succeeded for {len(info_results)} tickers")
+            if progress_callback:
+                progress_callback(total + completed, total * 2, f"Fetching Info {t}")
 
-    for t in valid_tickers:
-        if t in info_results:
-            raw_data[t] = {"df": ohlcv_results[t], **info_results[t]}
+    return info_results
 
-    coverage_pct = round((len(raw_data) / total) * 100, 1) if total else 0
 
-    bhav_df, _ = download_bhav_copy()
-    if not bhav_df.empty:
-        breadth = get_market_breadth(bhav_df)
-        breadth_pct = breadth.get("breadth_pct", 0.5)
-        if breadth_pct > 0.55: regime_score += 1
-        elif breadth_pct < 0.45: regime_score -= 1
-
+def _build_intermediate_rows(raw_data: dict, nifty_df, etf_list: list) -> tuple[list, dict, list]:
+    """Build intermediate rows with tech scores and sector data."""
+    rows_intermediate = []
     sector_data = {}
     rs_composites = []
-    
-    rows_intermediate = []
-    etf_list = cache_manager.get_etf_list()
-    
+
     for ticker, data in raw_data.items():
         df = data["df"]
         info = data["info"]
         latest = df.iloc[-1]
         prev = df.iloc[-2]
         met = compute_metrics(df)
-        
+
         tech = compute_tech_score(latest, prev, df, nifty_df, fifty_two_high=_safe_float(info.get("fiftyTwoWeekHigh")))
-        
-        rs_score = 0.0
-        rs_components = []
-        if not np.isnan(tech["rs_6m"]): rs_components.append((tech["rs_6m"], 0.5))
-        if not np.isnan(tech["rs_3m"]): rs_components.append((tech["rs_3m"], 0.3))
-        if not np.isnan(tech["rs_1m"]): rs_components.append((tech["rs_1m"], 0.2))
-        if rs_components:
-            total_weight = sum(w for val, w in rs_components)
-            rs_score = sum(val * (w / total_weight) for val, w in rs_components)
-            rs_composites.append(rs_score)
-            
+
+        rs_score, _ = compute_rs_score(tech)
+        rs_composites.append(rs_score)
+
         sym = ticker.replace('.NS', '').replace('.BO', '')
         long_name = info.get("longName") or info.get("shortName") or sym
-        
+
         is_etf = sym in etf_list or "BEES" in ticker.upper() or "ETF" in ticker.upper() or "ETF" in long_name.upper()
-        
+
         sector = "ETF" if is_etf else (info.get("sector", "Unknown") or "Unknown")
         industry = "Exchange Traded Fund" if is_etf else (info.get("industry", "Unknown") or "Unknown")
-        
+
         pe = _safe_float(info.get("trailingPE"))
         close = _safe_float(latest["Close"])
         if pd.isna(pe):
             eps = _safe_float(info.get("trailingEps"))
             if not pd.isna(eps) and eps != 0 and close > 0:
                 pe = close / eps
-                
+
         roe_pct = round((_safe_float(info.get("returnOnEquity"), 0)) * 100, 2)
         debt_eq = _safe_float(info.get("debtToEquity"))
-        
+
         if not is_etf and sector != "Unknown":
-            if sector not in sector_data: sector_data[sector] = {'pe': [], 'roe': [], 'debt_eq': []}
-            if not np.isnan(pe): sector_data[sector]['pe'].append(pe)
-            if not np.isnan(roe_pct): sector_data[sector]['roe'].append(roe_pct)
-            if not np.isnan(debt_eq): sector_data[sector]['debt_eq'].append(debt_eq)
-            
+            if sector not in sector_data:
+                sector_data[sector] = {'pe': [], 'roe': [], 'debt_eq': []}
+            if not np.isnan(pe):
+                sector_data[sector]['pe'].append(pe)
+            if not np.isnan(roe_pct):
+                sector_data[sector]['roe'].append(roe_pct)
+            if not np.isnan(debt_eq):
+                sector_data[sector]['debt_eq'].append(debt_eq)
+
             for p in info.get("screener_peers", []):
-                if 'pe' in p: sector_data[sector]['pe'].append(p['pe'])
-                if 'roe' in p: sector_data[sector]['roe'].append(p['roe'])
-                if 'debt_eq' in p: sector_data[sector]['debt_eq'].append(p['debt_eq'])
-            
+                if 'pe' in p:
+                    sector_data[sector]['pe'].append(p['pe'])
+                if 'roe' in p:
+                    sector_data[sector]['roe'].append(p['roe'])
+                if 'debt_eq' in p:
+                    sector_data[sector]['debt_eq'].append(p['debt_eq'])
+
         rows_intermediate.append({
             "ticker": ticker, "is_etf": is_etf, "sector": sector, "industry": industry,
             "info": info, "tech": tech, "met": met, "latest": latest, "prev": prev,
             "df": df, "rs_composite": rs_score, "pe": pe, "roe": roe_pct, "debt_eq": debt_eq,
-            "ath": data["ath"], "ath_source": data["ath_source"], 
+            "ath": data["ath"], "ath_source": data["ath_source"],
             "atl": data["atl"], "atl_source": data["atl_source"],
             "long_name": long_name
         })
 
-    sector_medians = {}
-    for sec, metrics in sector_data.items():
-        sector_medians[sec] = {
-            'pe': np.median(metrics['pe']) if metrics['pe'] else np.nan,
-            'roe': np.median(metrics['roe']) if metrics['roe'] else np.nan,
-            'debt_eq': np.median(metrics['debt_eq']) if metrics['debt_eq'] else np.nan
-        }
-        
-    rs_series = pd.Series(rs_composites)
-    
-    final_rows = []
-    for item in rows_intermediate:
-        info = item["info"]
-        tech = item["tech"]
-        met = item["met"]
-        latest = item["latest"]
-        df = item.get("df")
-        
-        score = tech["score"]
-        
-        if len(rs_series) > 0:
-            rs_pctile = sum(rs_series <= item["rs_composite"]) / len(rs_series) * 100
-            if rs_pctile >= 75:
-                score = min(score + 0.2, 1.0)
-            elif rs_pctile <= 25:
-                score = max(score - 0.2, -1.0)
-        else:
-            rs_pctile = np.nan
-            
-        fwd_pe = _safe_float(info.get("forwardPE"), item["pe"])
-        div_yield_pct = round(_safe_float(info.get("dividendYield"), 0), 2)
-        mkt_cap_b = round((_safe_float(info.get("marketCap"), 0)) / 1e7, 2)
-        eps_growth = _safe_float(info.get("earningsGrowth"))
-        rev_growth = _safe_float(info.get("revenueGrowth"))
-        
-        if item["is_etf"]:
-            fund_score = 5.0
-            research = {"research_composite": 5.0, "piotroski_f_score": 0, "gross_profit_score": np.nan,
-                        "momentum_composite": np.nan, "momentum_score": 5.0, "risk_adj_mom": np.nan,
-                        "vol_60d": np.nan, "vol_120d": np.nan, "downside_dev": np.nan, "vol_score": 5.0,
-                        "reversion_signal": 0, "reversion_score": 5.0, "z_score_60": 0,
-                        "earnings_quality_score": 5.0, "f_score_norm": 0,
-                        "mom_1m": np.nan, "mom_3m": np.nan, "mom_6m": np.nan,
-                        "mom_12m": np.nan, "mom_12m_skip1": np.nan}
-        else:
-            medians = sector_medians.get(item["sector"], {})
-            fund_score = compute_fund_score(
-                item["roe"], item["pe"], fwd_pe, item["debt_eq"],
-                div_yield_pct, mkt_cap_b, met["Sharpe"],
-                eps_growth, rev_growth,
-                roce_pct=_safe_float(info.get("roce")),
-                promoter_holding=_safe_float(info.get("promoter_holding")),
-                promoter_pledging=_safe_float(info.get("promoter_pledging")),
-                sector_medians=medians
-            )
-            research = compute_research_composite(info, df, nifty_df, sector_medians.get(item["sector"]))
-            
-        norm_tech = (score + 1) * 5
-        sentiment = _safe_float(info.get("news_sentiment"))
-        if sentiment > 0.15: norm_tech = min(10.0, norm_tech + 1.0)
-        elif sentiment < -0.15: norm_tech = max(0.0, norm_tech - 1.0)
+    return rows_intermediate, sector_data, rs_composites
 
-        research_composite = research["research_composite"]
 
-        composite_score = (norm_tech * 0.35) + (fund_score * 0.30) + (research_composite * 0.35)
-        composite_score_tech = (norm_tech * 0.50) + (fund_score * 0.15) + (research_composite * 0.35)
-        composite_score_fund = (norm_tech * 0.15) + (fund_score * 0.55) + (research_composite * 0.30)
-        composite_score_mom = (research_composite * 0.50) + (norm_tech * 0.30) + (fund_score * 0.20)
+def _get_outcome_accuracy() -> dict:
+    """Compute outcome accuracy from ML pipeline."""
+    outcome_accuracy = {}
+    try:
+        from data_pipeline import get_outcome_accuracy
+        acc_df = get_outcome_accuracy()
+        if not acc_df.empty:
+            for _, row in acc_df.iterrows():
+                outcome_accuracy[row["Conviction_At_Scan"]] = {
+                    "n": int(row["n"]),
+                    "win_rate_21d": round(float(row["win_rate_21d"]) * 100, 1) if row["win_rate_21d"] is not None else None,
+                    "avg_return_21d": round(float(row["avg_return_21d"]), 2) if row["avg_return_21d"] is not None else None,
+                    "win_rate_63d": round(float(row["win_rate_63d"]) * 100, 1) if row["win_rate_63d"] is not None else None,
+                    "avg_return_63d": round(float(row["avg_return_63d"]), 2) if row["avg_return_63d"] is not None else None,
+                }
+    except Exception as e:
+        log.warning(f"Could not compute outcome accuracy: {e}")
+    return outcome_accuracy
 
-        item["composite_score"] = composite_score
-        item["composite_score_tech"] = composite_score_tech
-        item["composite_score_fund"] = composite_score_fund
-        item["composite_score_mom"] = composite_score_mom
-        item["fund_score"] = fund_score
-        item["final_tech"] = score
-        item["rs_pctile"] = rs_pctile
-        item["research"] = research
 
-    comp_scores = pd.Series([x["composite_score"] for x in rows_intermediate])
-    for item in rows_intermediate:
-        if len(comp_scores) > 0:
-            comp_pctile = sum(comp_scores <= item["composite_score"]) / len(comp_scores) * 100
-        else:
-            comp_pctile = 50.0
-            
-        weekly_st_dir = _safe_float(item["latest"].get("Weekly_ST_Direction", np.nan))
-        weekly_bullish = weekly_st_dir == -1
-        
-        conviction = get_conviction_rating(comp_pctile, regime_score, weekly_bullish)
-        
-        info = item["info"]
-        latest = item["latest"]
-        tech = item["tech"]
-        met = item["met"]
-        is_etf = item["is_etf"]
-        
-        ceo_name = "Unknown"
-        officers = info.get("companyOfficers") or []
-        if not officers:
-            log.debug(f"No company officers data for {sym} (expected for NSE tickers)")
-        for officer in officers:
-            if 'title' in officer and 'CEO' in officer['title'].upper():
-                ceo_name = officer.get('name', 'Unknown')
-                break
-                
-        close = _safe_float(latest["Close"])
-        chg = (close / _safe_float(item["prev"]["Close"]) - 1) * 100
-        
-        research = item.get("research", {})
-        
-        final_rows.append({
-            "Ticker":           item["ticker"].upper(),
-            "Sector":           item["sector"],
-            "Industry":         item["industry"],
-            "Long_Name":        item["long_name"],
-            "CEO":              ceo_name,
-            "Total_Revenue":    np.nan if is_etf else round(_safe_float(info.get("totalRevenue"), 0) / 1e7, 2),
-            "Net_Income":       np.nan if is_etf else round(_safe_float(info.get("netIncomeToCommon"), 0) / 1e7, 2),
-            "EBITDA":           np.nan if is_etf else round(_safe_float(info.get("ebitda"), 0) / 1e7, 2),
-            "News_Sentiment":   round(info.get("news_sentiment", 0.0), 3),
-            "Price":            round(close, 2),
-            "1d_Chg_%":         round(chg, 2),
-            "P/E":              np.nan if is_etf else round(item["pe"], 2),
-            "Forward_P/E":      np.nan if is_etf else round(_safe_float(info.get("forwardPE"), item["pe"]), 2),
-            "ROE_%":            np.nan if is_etf else item["roe"],
-            "Debt_to_Equity":   np.nan if is_etf else round(item["debt_eq"], 2),
-            "Div_Yield_%":      np.nan if is_etf else round(_safe_float(info.get("dividendYield"), 0), 2),
-            "Market_Cap_B":     np.nan if is_etf else round((_safe_float(info.get("marketCap"), 0)) / 1e7, 2),
-            "52W_High":         _safe_float(info.get("fiftyTwoWeekHigh")),
-            "52W_Low":          _safe_float(info.get("fiftyTwoWeekLow")),
-            "All_Time_High":    item["ath"],
-            "ATH_Source":       item["ath_source"],
-            "All_Time_Low":     item["atl"],
-            "ATL_Source":       item["atl_source"],
-            "Fund_Score":       round(item["fund_score"], 2),
-            "Research_Score":   round(research.get("research_composite", 5.0), 2),
-            "Composite_Score":  round(item["composite_score"], 2),
-            "Composite_Score_Tech": round(item["composite_score_tech"], 2),
-            "Composite_Score_Fund": round(item["composite_score_fund"], 2),
-            "Composite_Score_Mom":  round(item.get("composite_score_mom", 5.0), 2),
-            "Piotroski_F":      research.get("piotroski_f_score", 0),
-            "Gross_Profit_Score": round(research.get("gross_profit_score", 5.0), 2) if not np.isnan(research.get("gross_profit_score", np.nan)) else None,
-            "Momentum_1M":      round(research.get("mom_1m", np.nan), 4) if not np.isnan(research.get("mom_1m", np.nan)) else None,
-            "Momentum_3M":      round(research.get("mom_3m", np.nan), 4) if not np.isnan(research.get("mom_3m", np.nan)) else None,
-            "Momentum_6M":      round(research.get("mom_6m", np.nan), 4) if not np.isnan(research.get("mom_6m", np.nan)) else None,
-            "Momentum_12M":     round(research.get("mom_12m", np.nan), 4) if not np.isnan(research.get("mom_12m", np.nan)) else None,
-            "Risk_Adj_Mom":     round(research.get("risk_adj_mom", np.nan), 3) if not np.isnan(research.get("risk_adj_mom", np.nan)) else None,
-            "Vol_60D":          round(research.get("vol_60d", np.nan) * 100, 2) if not np.isnan(research.get("vol_60d", np.nan)) else None,
-            "Downside_Dev":     round(research.get("downside_dev", np.nan) * 100, 2) if not np.isnan(research.get("downside_dev", np.nan)) else None,
-            "Reversion_Signal": research.get("reversion_signal", 0),
-            "Z_Score_60":       round(research.get("z_score_60", 0), 2),
-            "Earnings_Quality": round(research.get("earnings_quality_score", 5.0), 2),
-            "ROCE_%":           np.nan if is_etf else _safe_float(info.get("roce")),
-            "Promoter_Holding_%": np.nan if is_etf else _safe_float(info.get("promoter_holding")),
-            "Promoter_Pledging_%": np.nan if is_etf else _safe_float(info.get("promoter_pledging")),
-            "Conviction":       conviction,
-            "RS_Percentile":    round(item["rs_pctile"], 1),
-            "RSI_Value":        round(_safe_float(latest.get("RSI", np.nan)), 2),
-            "MACD_Value":       round(_safe_float(latest.get("MACD", np.nan)), 4),
-            "CCI_Value":        round(_safe_float(latest.get("CCI", np.nan)), 2),
-            "ATR_Value":        round(_safe_float(latest.get("ATR", np.nan)), 2),
-            "ADX_Value":        round(_safe_float(latest.get("ADX", np.nan)), 2),
-            "Plus_DI":          round(_safe_float(latest.get("Plus_DI", np.nan)), 2),
-            "Minus_DI":         round(_safe_float(latest.get("Minus_DI", np.nan)), 2),
-            "BB_%B_Value":      round(_safe_float(latest.get("BB_%B", np.nan)), 3),
-            "ST_Signal":        "Bullish" if tech["sig_supertrend"] == 1 else "Bearish",
-            "Volume":           int(_safe_float(latest.get("Volume", 0), 0)),
-            "Vol_vs_Avg_%":     round((_safe_float(latest.get("Volume", 0)) / max(_safe_float(latest.get("VOL_MA20", 1)), 1) - 1) * 100, 1),
-            "Sig_Price_vs_SMA50":   tech["sig_price_sma50"],
-            "Sig_Price_vs_SMA200":  tech["sig_price_sma200"],
-            "Sig_SMA50_vs_SMA200":  tech["sig_sma50_sma200"],
-            "Sig_RSI":              tech["sig_rsi"],
-            "Sig_MACD_Cross":       tech["sig_macd"],
-            "Sig_MACD_Hist":        tech["sig_macd_hist"],
-            "Sig_Stoch":            tech["sig_stoch"],
-            "Sig_BB":               tech["sig_bb"],
-            "Sig_CCI":              tech["sig_cci"],
-            "Sig_Volume":           tech["sig_vol"],
-            "Sig_ADX":              tech["sig_adx"],
-            "Sig_Supertrend":       tech["sig_supertrend"],
-            "Sig_VPT":              tech["sig_vpt"],
-            "Sig_Ichimoku":         tech["sig_ichimoku"],
-            "Tech_Score":       round(item["final_tech"], 3),
-            "Bull_Count":       tech["bull"],
-            "Bear_Count":       tech["bear"],
-            "Total_Return_%":   met["Total_Return_%"],
-            "Ann_Vol_%":        met["Ann_Vol_%"],
-            "Sharpe":           met["Sharpe"],
-            "Max_Drawdown_%":   met["Max_Drawdown_%"],
-        })
-
-    result_df = pd.DataFrame(final_rows)
-    if not result_df.empty:
-        result_df.sort_values("Composite_Score", ascending=False, inplace=True, ignore_index=True)
-        result_df = result_df.replace({np.nan: None})
-        
-        sector_summary = {}
-        for sector, group in result_df.groupby("Sector"):
-            scores = group["Composite_Score"].dropna()
-            sector_summary[sector] = {
-                "avg_composite": round(float(scores.mean()), 2) if len(scores) > 0 else 0,
-                "avg_tech": round(float(group["Tech_Score"].dropna().mean()), 2) if len(group["Tech_Score"].dropna()) > 0 else 0,
-                "avg_fund": round(float(group["Fund_Score"].dropna().mean()), 2) if len(group["Fund_Score"].dropna()) > 0 else 0,
-                "avg_research": round(float(group["Research_Score"].dropna().mean()), 2) if len(group["Research_Score"].dropna()) > 0 else 0,
-                "strong_buys": int((group["Conviction"] == "Strong Buy").sum()),
-                "buys": int((group["Conviction"] == "Buy").sum()),
-                "holds": int((group["Conviction"] == "Hold").sum()),
-                "avoids": int((group["Conviction"] == "Avoid").sum()),
-                "count": len(group),
-            }
-
-        outcome_accuracy = {}
-        try:
-            from data_pipeline import get_outcome_accuracy
-            acc_df = get_outcome_accuracy()
-            if not acc_df.empty:
-                for _, row in acc_df.iterrows():
-                    outcome_accuracy[row["Conviction_At_Scan"]] = {
-                        "n": int(row["n"]),
-                        "win_rate_21d": round(float(row["win_rate_21d"]) * 100, 1) if row["win_rate_21d"] is not None else None,
-                        "avg_return_21d": round(float(row["avg_return_21d"]), 2) if row["avg_return_21d"] is not None else None,
-                        "win_rate_63d": round(float(row["win_rate_63d"]) * 100, 1) if row["win_rate_63d"] is not None else None,
-                        "avg_return_63d": round(float(row["avg_return_63d"]), 2) if row["avg_return_63d"] is not None else None,
-                    }
-        except Exception as e:
-            log.warning(f"Could not compute outcome accuracy: {e}")
-
-        nifty_close = _safe_float(nifty_df["Close"].iloc[-1]) if nifty_df is not None and not nifty_df.empty else None
-        nifty_change = None
-        if nifty_df is not None and len(nifty_df) > 1:
-            prev_close = _safe_float(nifty_df["Close"].iloc[-2])
-            if prev_close and prev_close > 0:
-                nifty_change = round((nifty_close / prev_close - 1) * 100, 2)
-        vix_level = _safe_float(vix_df["Close"].iloc[-1]) if vix_df is not None and not vix_df.empty else None
-        breadth_pct_val = breadth_pct if 'breadth_pct' in dir() else None
-
-        first_scan_date = None
-        try:
-            from data_pipeline import _get_conn
-            _conn = _get_conn()
-            _c = _conn.cursor()
-            _c.execute("SELECT MIN(Scan_Date) FROM factor_history")
-            _row = _c.fetchone()
-            if _row and _row[0]:
-                first_scan_date = _row[0]
-            _conn.close()
-        except Exception:
-            pass
-
-        output_data = {
-            "status": "ok",
-            "last_updated": scan_time.strftime("%Y-%m-%d %I:%M %p IST"),
-            "first_scan_date": first_scan_date,
-            "coverage_pct": coverage_pct,
-            "market_regime_score": regime_score,
-            "nifty_close": nifty_close,
-            "nifty_change_pct": nifty_change,
-            "vix_level": vix_level,
-            "breadth_pct": breadth_pct_val,
-            "fii_net": fii_dii.get("fii_net", 0),
-            "dii_net": fii_dii.get("dii_net", 0),
-            "pcr": pcr_data.get("pcr", 1.0),
-            "scan_version": "2.0",
-            "factors": ["tech", "fund", "research", "momentum"],
-            "sector_summary": sector_summary,
-            "outcome_accuracy": outcome_accuracy,
-            "data": result_df.to_dict(orient="records")
-        }
-        
-        os.makedirs("frontend/public", exist_ok=True)
-        with open("frontend/public/market_data.json", "w") as f:
-            json.dump(output_data, f, indent=2)
-
-        cache_manager.save_all()
-        log.info(f"Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
-        
-        _archive_scan(result_df, scan_time)
-        generate_score_history()
-        _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pct,
-                       len(tickers), len(ohlcv_results), len(info_results), len(final_rows),
-                       regime_score, scan_time, time.time() - scan_start)
-
-    return result_df
+def _get_first_scan_date() -> str | None:
+    """Get the first scan date from the database."""
+    try:
+        from data_pipeline import _get_conn
+        conn = _get_conn()
+        cursor = conn.cursor()
+        cursor.execute("SELECT MIN(Scan_Date) FROM factor_history")
+        row = cursor.fetchone()
+        conn.close()
+        if row and row[0]:
+            return row[0]
+    except Exception:
+        pass
+    return None
 
 
 def _archive_scan(result_df: pd.DataFrame, scan_time: datetime) -> None:
@@ -760,11 +284,11 @@ def _archive_scan(result_df: pd.DataFrame, scan_time: datetime) -> None:
         sql_df["Scan_Date"] = scan_time.strftime("%Y-%m-%d %H:%M:%S")
         sql_df["Scan_Date_UTC"] = scan_time.astimezone(timezone.utc).isoformat()
         cursor = conn.cursor()
-        
+
         table_exists = cursor.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='historical_scans'"
         ).fetchone() is not None
-        
+
         if table_exists:
             cursor.execute("PRAGMA table_info(historical_scans)")
             existing_cols = {col[1] for col in cursor.fetchall()}
@@ -795,7 +319,7 @@ def _archive_scan(result_df: pd.DataFrame, scan_time: datetime) -> None:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_scan_date ON historical_scans(Scan_Date)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_ticker ON historical_scans(Ticker)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_composite ON historical_scans(Composite_Score)")
-        
+
         sql_df.to_sql("historical_scans", conn, if_exists="append", index=False)
         conn.close()
         log.info(f"Successfully archived {len(sql_df)} records to historical_scans database.")
@@ -821,6 +345,114 @@ def _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pc
         log.info(f"ML data pipeline: stored OHLCV, factors, outcomes, regime for {scan_date}")
     except Exception as e:
         log.error(f"ML data pipeline failed: {e}")
+
+
+def run_scanner(progress_callback=None) -> pd.DataFrame:
+    """Main scanner entry point. Orchestrates the full scan pipeline."""
+    scan_time = datetime.now(IST)
+    scan_start = time.time()
+
+    log.info("Fetching market indicators...")
+    nifty_df, vix_df, fii_dii, pcr_data, breadth_pct = _fetch_market_indicators()
+
+    log.info("Fetching universe tickers...")
+    tickers = get_liquid_universe(top_n=150)
+    total = len(tickers)
+
+    log.info(f"Fetching OHLCV for {total} tickers...")
+    ohlcv_results = _fetch_ohlcv_batch(tickers, progress_callback)
+    log.info(f"OHLCV succeeded for {len(ohlcv_results)} tickers")
+
+    log.info("Fetching fundamental data...")
+    info_results = _fetch_info_batch(ohlcv_results, progress_callback)
+    log.info(f"Info succeeded for {len(info_results)} tickers")
+
+    raw_data = {}
+    for t in ohlcv_results:
+        if t in info_results:
+            raw_data[t] = {"df": ohlcv_results[t], **info_results[t]}
+
+    coverage_pct = round((len(raw_data) / total) * 100, 1) if total else 0
+
+    regime_score = _compute_regime_score(nifty_df, vix_df, fii_dii, pcr_data, breadth_pct)
+
+    log.info("Building intermediate rows and computing scores...")
+    etf_list = cache_manager.get_etf_list()
+    rows_intermediate, sector_data, rs_composites = _build_intermediate_rows(raw_data, nifty_df, etf_list)
+
+    sector_medians = compute_sector_medians(raw_data, sector_data)
+
+    final_items = compute_all_scores(rows_intermediate, rs_composites, nifty_df, sector_medians, regime_score)
+
+    log.info("Building output rows...")
+    final_rows = [build_output_row(item) for item in final_items]
+
+    result_df = pd.DataFrame(final_rows)
+    if not result_df.empty:
+        result_df.sort_values("Composite_Score", ascending=False, inplace=True, ignore_index=True)
+        result_df = result_df.replace({np.nan: None})
+
+        sector_summary = {}
+        for sector, group in result_df.groupby("Sector"):
+            scores = group["Composite_Score"].dropna()
+            sector_summary[sector] = {
+                "avg_composite": round(float(scores.mean()), 2) if len(scores) > 0 else 0,
+                "avg_tech": round(float(group["Tech_Score"].dropna().mean()), 2) if len(group["Tech_Score"].dropna()) > 0 else 0,
+                "avg_fund": round(float(group["Fund_Score"].dropna().mean()), 2) if len(group["Fund_Score"].dropna()) > 0 else 0,
+                "avg_research": round(float(group["Research_Score"].dropna().mean()), 2) if len(group["Research_Score"].dropna()) > 0 else 0,
+                "strong_buys": int((group["Conviction"] == "Strong Buy").sum()),
+                "buys": int((group["Conviction"] == "Buy").sum()),
+                "holds": int((group["Conviction"] == "Hold").sum()),
+                "avoids": int((group["Conviction"] == "Avoid").sum()),
+                "count": len(group),
+            }
+
+        outcome_accuracy = _get_outcome_accuracy()
+
+        nifty_close = _safe_float(nifty_df["Close"].iloc[-1]) if nifty_df is not None and not nifty_df.empty else None
+        nifty_change = None
+        if nifty_df is not None and len(nifty_df) > 1:
+            prev_close = _safe_float(nifty_df["Close"].iloc[-2])
+            if prev_close and prev_close > 0:
+                nifty_change = round((nifty_close / prev_close - 1) * 100, 2)
+        vix_level = _safe_float(vix_df["Close"].iloc[-1]) if vix_df is not None and not vix_df.empty else None
+
+        first_scan_date = _get_first_scan_date()
+
+        output_data = {
+            "status": "ok",
+            "last_updated": scan_time.strftime("%Y-%m-%d %I:%M %p IST"),
+            "first_scan_date": first_scan_date,
+            "coverage_pct": coverage_pct,
+            "market_regime_score": regime_score,
+            "nifty_close": nifty_close,
+            "nifty_change_pct": nifty_change,
+            "vix_level": vix_level,
+            "breadth_pct": breadth_pct,
+            "fii_net": fii_dii.get("fii_net", 0),
+            "dii_net": fii_dii.get("dii_net", 0),
+            "pcr": pcr_data.get("pcr", 1.0),
+            "scan_version": "2.0",
+            "factors": ["tech", "fund", "research", "momentum"],
+            "sector_summary": sector_summary,
+            "outcome_accuracy": outcome_accuracy,
+            "data": result_df.to_dict(orient="records")
+        }
+
+        os.makedirs("frontend/public", exist_ok=True)
+        with open("frontend/public/market_data.json", "w") as f:
+            json.dump(output_data, f, indent=2)
+
+        cache_manager.save_all()
+        log.info(f"Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
+
+        _archive_scan(result_df, scan_time)
+        generate_score_history()
+        _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pct,
+                       len(tickers), len(ohlcv_results), len(info_results), len(final_rows),
+                       regime_score, scan_time, time.time() - scan_start)
+
+    return result_df
 
 
 if __name__ == "__main__":

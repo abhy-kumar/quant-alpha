@@ -14,8 +14,7 @@ Tables:
 import sqlite3
 import os
 import logging
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -183,6 +182,7 @@ def store_daily_ohlcv(ohlcv_results: dict, scan_date: str):
     Store raw OHLCV data for all stocks.
     ohlcv_results: {ticker: DataFrame} from scanner.
     """
+    ensure_schema()
     conn = _get_conn()
     rows = []
     for ticker, df in ohlcv_results.items():
@@ -211,6 +211,7 @@ def store_daily_ohlcv(ohlcv_results: dict, scan_date: str):
 
 def store_factor_history(rows_data: list[dict], scan_date: str):
     """Store factor scores for all stocks in this scan."""
+    ensure_schema()
     conn = _get_conn()
     cols = [
         "Ticker", "Scan_Date", "Sector", "Industry", "Price",
@@ -304,6 +305,7 @@ def update_outcome_tracking(scan_date: str, ohlcv_results: dict):
     For historical scans, compute actual forward returns and store them.
     Called during each new scan to backfill outcomes for past scans.
     """
+    ensure_schema()
     conn = _get_conn()
     c = conn.cursor()
 
@@ -386,6 +388,7 @@ def update_outcome_tracking(scan_date: str, ohlcv_results: dict):
 
 def create_outcome_entries(rows_data: list[dict], scan_date: str):
     """Create outcome tracking entries for today's scan (to be backfilled later)."""
+    ensure_schema()
     conn = _get_conn()
     rows = []
     for r in rows_data:
@@ -407,6 +410,7 @@ def create_outcome_entries(rows_data: list[dict], scan_date: str):
 def store_regime_history(scan_date: str, regime_score: int, nifty_df=None, breadth_pct: float = None,
                          coverage_pct: float = 0, stocks_scanned: int = 0):
     """Store market regime snapshot."""
+    ensure_schema()
     conn = _get_conn()
     nifty_close = None
     nifty_sma200 = None
@@ -428,6 +432,7 @@ def store_scan_summary(scan_date: str, duration: float, requested: int, ohlcv_ok
                        info_ok: int, final: int, coverage: float, regime: int,
                        top_5: list, bottom_5: list):
     """Store scan run metadata."""
+    ensure_schema()
     conn = _get_conn()
     conn.execute("""
         INSERT OR REPLACE INTO scan_summary
@@ -449,6 +454,7 @@ def get_ml_dataset(min_date: str = None, max_date: str = None) -> pd.DataFrame:
     Load the factor_history joined with outcomes for ML training.
     Returns a DataFrame with features + forward returns as labels.
     """
+    ensure_schema()
     conn = _get_conn()
     query = """
         SELECT f.*, o.Return_5d, o.Return_10d, o.Return_21d, o.Return_63d,
@@ -475,6 +481,7 @@ def get_ml_dataset(min_date: str = None, max_date: str = None) -> pd.DataFrame:
 
 def get_stock_timeseries(ticker: str, min_date: str = None) -> pd.DataFrame:
     """Get factor history time series for a single stock."""
+    ensure_schema()
     conn = _get_conn()
     query = "SELECT * FROM factor_history WHERE Ticker = ?"
     params = [ticker]
@@ -489,6 +496,7 @@ def get_stock_timeseries(ticker: str, min_date: str = None) -> pd.DataFrame:
 
 def get_regime_timeseries(min_date: str = None) -> pd.DataFrame:
     """Get regime history time series."""
+    ensure_schema()
     conn = _get_conn()
     query = "SELECT * FROM regime_history"
     params = []
@@ -506,6 +514,7 @@ def get_outcome_accuracy(min_date: str = None) -> pd.DataFrame:
     Compute recommendation accuracy: how often each conviction level
     led to positive forward returns.
     """
+    ensure_schema()
     conn = _get_conn()
     query = """
         SELECT Conviction_At_Scan,
@@ -527,4 +536,12 @@ def get_outcome_accuracy(min_date: str = None) -> pd.DataFrame:
     return df
 
 
-init_schema()
+_schema_initialized = False
+
+
+def ensure_schema():
+    """Initialize schema on first use (lazy initialization)."""
+    global _schema_initialized
+    if not _schema_initialized:
+        init_schema()
+        _schema_initialized = True

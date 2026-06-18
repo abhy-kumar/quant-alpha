@@ -31,11 +31,8 @@ def _post_market_scan() -> None:
     """Callback executed by the scheduler after market close."""
     logger.info("Scheduled post-market scan triggered.")
     try:
-        # Guard against Streamlit hot-reload window where 'scanner' may
-        # temporarily be absent from sys.modules.
-        import importlib
-        scanner = importlib.import_module("scanner")
-        df = scanner.run_scanner()
+        from scanner import run_scanner
+        df = run_scanner()
         logger.info(f"Scan complete — {len(df)} stocks processed.")
     except Exception as exc:
         logger.error(f"Scan failed: {exc}")
@@ -45,9 +42,8 @@ def _live_price_update() -> None:
     """Callback executed to update live prices."""
     logger.info("Live price update triggered.")
     try:
-        import importlib
-        live_updater = importlib.import_module("live_updater")
-        live_updater.update_live_prices()
+        from live_updater import update_live_prices
+        update_live_prices()
     except Exception as exc:
         logger.error(f"Live update failed: {exc}")
 

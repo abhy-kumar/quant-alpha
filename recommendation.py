@@ -195,21 +195,24 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
             stock_1m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-21])) - 1
             nifty_1m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-21])) - 1
             rs_1m = stock_1m - nifty_1m
-        except Exception: pass
-        
+        except (ZeroDivisionError, IndexError, TypeError):
+            pass
+
     if nifty_df is not None and len(df) >= 63 and len(nifty_df) >= 63:
         try:
             stock_3m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-63])) - 1
             nifty_3m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-63])) - 1
             rs_3m = stock_3m - nifty_3m
-        except Exception: pass
-        
+        except (ZeroDivisionError, IndexError, TypeError):
+            pass
+
     if nifty_df is not None and len(df) >= 126 and len(nifty_df) >= 126:
         try:
             stock_6m = (_safe_float(df["Close"].iloc[-1]) / _safe_float(df["Close"].iloc[-126])) - 1
             nifty_6m = (_safe_float(nifty_df["Close"].iloc[-1]) / _safe_float(nifty_df["Close"].iloc[-126])) - 1
             rs_6m = stock_6m - nifty_6m
-        except Exception: pass
+        except (ZeroDivisionError, IndexError, TypeError):
+            pass
 
     return {
         "score": score,

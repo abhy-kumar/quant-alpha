@@ -1,11 +1,16 @@
-// @ts-nocheck
 import YahooFinance from 'yahoo-finance2'
+import type { IncomingMessage, ServerResponse } from 'http'
 
 const yahooFinance = new YahooFinance()
 
-export default async function handler(req, res) {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Credentials', true)
+interface QuoteResult {
+  symbol: string
+  regularMarketPrice: number
+  regularMarketChangePercent: number
+}
+
+export default async function handler(req: IncomingMessage, res: ServerResponse) {
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
   res.setHeader(
@@ -14,12 +19,12 @@ export default async function handler(req, res) {
   )
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end()
+    res.statusCode = 200
+    res.end()
     return
   }
 
   try {
-    // Calculate current IST time
     const currentUTC = new Date()
     const istOffset = 5.5 * 60 * 60 * 1000
     const istTime = new Date(currentUTC.getTime() + istOffset)
@@ -33,20 +38,34 @@ export default async function handler(req, res) {
     const isMarketClosed = isWeekend || isOutsideMarketHours
 
     if (isMarketClosed) {
-      // Cache heavily on Vercel Edge for 6 hours when market is closed to save execution limits
       res.setHeader('Cache-Control', 's-maxage=21600, stale-while-revalidate=86400')
     } else {
-      // Cache for 60 seconds during market hours
       res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120')
     }
 
-    let tickers = req.body?.tickers || req.query.tickers
-    
-    if (!tickers) {
-      return res.status(400).json({ error: 'Tickers parameter is required' })
+    let tickers: string | string[] | undefined
+    if (req.method === 'POST') {
+      const body = await new Promise<string>((resolve, reject) => {
+        let data = ''
+        req.on('data', chunk => data += chunk)
+        req.on('end', () => resolve(data))
+        req.on('error', reject)
+      })
+      const parsed = JSON.parse(body)
+      tickers = parsed?.tickers
+    } else {
+      const url = new URL(req.url ?? '/', `http://${req.headers.host}`)
+      tickers = url.searchParams.get('tickers') ?? undefined
     }
 
-    let tickerList = []
+    if (!tickers) {
+      res.statusCode = 400
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: 'Tickers parameter is required' }))
+      return
+    }
+
+    let tickerList: string[] = []
     if (typeof tickers === 'string') {
       tickerList = tickers.split(',')
     } else if (Array.isArray(tickers)) {
@@ -54,19 +73,20 @@ export default async function handler(req, res) {
     }
 
     if (tickerList.length === 0) {
-      return res.status(400).json({ error: 'Tickers list cannot be empty' })
+      res.statusCode = 400
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: 'Tickers list cannot be empty' }))
+      return
     }
 
-    // Always ensure Nifty 50 is included for the frontend indicator
     if (!tickerList.includes('^NSEI')) {
       tickerList.push('^NSEI')
     }
 
-    // Fetch batch quotes
-    const quotes = await yahooFinance.quote(tickerList)
+    const quotes: QuoteResult[] = await yahooFinance.quote(tickerList)
 
-    const results = {}
-    let niftyData = null
+    const results: Record<string, { price: number; change_pct: number }> = {}
+    let niftyData: { price: number; change_pct: number; is_up: boolean } | null = null
 
     for (const q of quotes) {
       if (q.symbol === '^NSEI') {
@@ -83,15 +103,19 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(200).json({
+    res.statusCode = 200
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({
       status: 'ok',
       is_market_closed: isMarketClosed,
       data: results,
       nifty_50: niftyData,
       timestamp: new Date().toISOString()
-    })
+    }))
   } catch (error) {
     console.error('Yahoo Finance Live Data Error:', error)
-    return res.status(500).json({ error: 'Failed to fetch live data' })
+    res.statusCode = 500
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Failed to fetch live data' }))
   }
 }
