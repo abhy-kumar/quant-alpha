@@ -19,6 +19,12 @@ debug_chart.json
 scanner_output.log
 test_yf.py
 frontend/test_yf2.cjs
+frontend/test_*.js
+frontend/src/App.css
+frontend/src/assets/hero.png
+frontend/src/assets/react.svg
+frontend/src/assets/vite.svg
+frontend/README.md
 documentation.md
 *.sqlite
 *.sqlite3
