@@ -111,9 +111,12 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         item["rs_pctile"] = rs_pctile
         item["research"] = research
 
-        comp_scores = pd.Series([x["composite_score"] for x in rows_intermediate])
-        if len(comp_scores) > 0:
-            comp_pctile = sum(comp_scores <= item["composite_score"]) / len(comp_scores) * 100
+        final_rows.append(item)
+
+    all_comp_scores = pd.Series([x["composite_score"] for x in final_rows])
+    for item in final_rows:
+        if len(all_comp_scores) > 0:
+            comp_pctile = sum(all_comp_scores <= item["composite_score"]) / len(all_comp_scores) * 100
         else:
             comp_pctile = 50.0
 
@@ -121,9 +124,7 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         weekly_bullish = weekly_st_dir == -1
 
         conviction = get_conviction_rating(comp_pctile, regime_score, weekly_bullish)
-
         item["conviction"] = conviction
-        final_rows.append(item)
 
     return final_rows
 
