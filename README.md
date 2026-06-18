@@ -32,17 +32,17 @@ The system operates as a dual-mode pipeline: a heavy batch scan runs three times
 
 The footer displays both timestamps independently: **Signals** (last scanner run) and **Prices** (last live overlay), so the freshness of each data layer is always visible.
 
-### Batch Scan Pipeline (scanner.py)
+### Batch Scan Pipeline
 
-1. **Universe Selection**: Downloads the NSE Bhav Copy (official end-of-day data from NSE directly) and selects the top 150 stocks by turnover.
-2. **OHLCV Fetching**: Downloads 2 years of daily OHLCV data per stock via yfinance with retry logic and concurrency control (4 workers).
-3. **Technical Indicator Computation**: Computes 18+ indicators per stock using Wilder's smoothing method for RSI, ATR, and ADX.
-4. **Fundamental Data Collection**: Fetches P/E, ROE, Debt-to-Equity, market cap, and other fundamentals from yfinance (primary) and screener.in (fallback and enrichment). Computes sector-relative medians for peer comparison. All financial figures are in INR.
-5. **Research Factor Computation**: Calculates six academic research factors: Piotroski F-Score, Gross Profitability, Multi-Horizon Momentum, Low Volatility, Mean Reversion, and Earnings Quality.
-6. **News Sentiment**: Fetches headlines from Google News RSS (India-locale: `hl=en-IN&gl=IN&ceid=IN:en`, no API key required) and runs VADER sentiment analysis on up to 10 headlines per ticker. The average compound score is the news sentiment signal. Scores are cached for 24 hours.
-7. **Scoring and Conviction**: Combines all factors into a composite score, ranks stocks by percentile, and assigns conviction labels adjusted for market regime.
-8. **Data Storage**: Writes results to `market_data.json` (frontend), `market_scans.db` (ML pipeline), and archives to SQLite.
-9. **Outcome Tracking**: Backfills forward returns (5d, 10d, 21d, 63d, 126d, 252d) for all past scans using stored OHLCV data.
+1. **Universe Selection** (`nse_fetcher.py`): Downloads the NSE Bhav Copy (official end-of-day data from NSE directly) and selects the top 150 stocks by turnover.
+2. **OHLCV Fetching** (`data_fetcher.py`): Downloads 2 years of daily OHLCV data per stock via yfinance with retry logic and concurrency control (4 workers).
+3. **Technical Indicator Computation** (`indicators.py`): Computes 18+ indicators per stock using Wilder's smoothing method for RSI, ATR, and ADX.
+4. **Fundamental Data Collection** (`data_fetcher.py`): Fetches P/E, ROE, Debt-to-Equity, market cap, and other fundamentals from yfinance (primary) and screener.in (fallback and enrichment). Computes sector-relative medians for peer comparison. All financial figures are in INR.
+5. **Research Factor Computation** (`research_factors.py`): Calculates six academic research factors: Piotroski F-Score, Gross Profitability, Multi-Horizon Momentum, Low Volatility, Mean Reversion, and Earnings Quality.
+6. **News Sentiment** (`data_fetcher.py`): Fetches headlines from Google News RSS (India-locale: `hl=en-IN&gl=IN&ceid=IN:en`, no API key required) and runs VADER sentiment analysis on up to 10 headlines per ticker. The average compound score is the news sentiment signal. Scores are cached for 24 hours.
+7. **Scoring and Conviction** (`scoring.py`): Combines all factors into a composite score, ranks stocks by percentile, and assigns conviction labels adjusted for market regime.
+8. **Data Storage** (`data_pipeline.py`): Writes results to `market_data.json` (frontend), `market_scans.db` (ML pipeline), and archives to SQLite.
+9. **Outcome Tracking** (`data_pipeline.py`): Backfills forward returns (5d, 10d, 21d, 63d, 126d, 252d) for all past scans using stored OHLCV data.
 
 ### Live Update Pipeline (/api/live_data)
 
@@ -212,17 +212,24 @@ The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 |  1. Fetches top 150 NSE liquid stocks by turnover (Bhav Copy)          |
 |         |                                                               |
 |         v                                                               |
-|  [scanner.py] (Main Orchestrator)                                       |
-|  2. Downloads 2y OHLCV via yfinance (4 workers, retry logic)           |
-|  3. Fetches fundamentals from yfinance + screener.in (INR)             |
-|  4. Google News RSS (India-locale) → VADER sentiment                   |
+|  [scanner.py] (Orchestrator)                                            |
+|  2. Delegates to data_fetcher.py for data acquisition                   |
+|  3. Delegates to scoring.py for scoring logic                           |
+|  4. Writes output to JSON and SQLite                                    |
+|         |                                                               |
+|         +-> [data_fetcher.py]                                           |
+|         |    OHLCV fetching, fundamentals, screener.in scraping         |
+|         |    News sentiment (VADER), ATH/ATL caching                    |
 |         |                                                               |
 |         +-> [indicators.py]                                             |
 |         |    18+ indicators using Wilder's smoothing                    |
 |         |    Weekly Supertrend resampled to W-FRI (NSE calendar)        |
 |         |                                                               |
+|         +-> [scoring.py]                                                |
+|         |    Composite scoring, sector medians, conviction rating       |
+|         |                                                               |
 |         +-> [recommendation.py]                                         |
-|         |    Tech Score (-1 to +1), Fund Score (0-10), Conviction       |
+|         |    Tech Score (-1 to +1), Fund Score (0-10)                   |
 |         |                                                               |
 |         +-> [research_factors.py]                                       |
 |         |    Piotroski, Gross Profit, Momentum, Volatility,             |
@@ -365,8 +372,14 @@ All tunable parameters are in `config.py`:
 | CACHE_TTL_NEWS | 24 hours | News sentiment cache duration |
 | CACHE_TTL_SECTOR | 90 days | Sector/industry mapping cache duration |
 | CACHE_TTL_ATH | 90 days | All-time high cache duration |
-| SCREENER_MAX_FAILURES | 10 | Max screener.in failures before disabling for the run |
 | RISK_FREE_RATE | 0.065 | Risk-free rate for Sharpe ratio (India 10Y G-Sec) |
+
+Screener.in circuit breaker settings are in `data_fetcher.py`:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| SCREENER_MAX_FAILURES | 10 | Max failures before disabling for 5 minutes |
+| SCREENER_COOLDOWN | 300s | Cooldown period after circuit breaker trips |
 
 ## Project Structure
 
@@ -374,16 +387,21 @@ All tunable parameters are in `config.py`:
 stock-dashboard/
 ├── config.py                   # Configuration constants
 ├── scanner.py                  # Main orchestrator (batch scan)
+├── data_fetcher.py             # Data acquisition layer (OHLCV, fundamentals, news)
+├── scoring.py                  # Scoring logic (composite scores, conviction)
 ├── indicators.py               # Technical indicator computations
-├── recommendation.py           # Scoring models and conviction logic
+├── recommendation.py           # Scoring models (tech score, fund score)
 ├── research_factors.py         # Academic research factor implementations
 ├── data_pipeline.py            # ML-ready data storage layer
 ├── nse_fetcher.py              # NSE data sources (Bhav Copy, live quotes)
+├── bse_fetcher.py              # BSE India fallback data
 ├── live_updater.py             # Intraday price updater (local use)
 ├── scheduler.py                # APScheduler background jobs (local use)
 ├── utils.py                    # Shared utilities and caching
+├── generate_score_history.py   # Score history JSON for charting
 ├── populate_cache.py           # Cache pre-population script
 ├── populate_ath.py             # All-time high pre-population
+├── check_db.py                 # Database inspection utility
 ├── requirements.txt            # Python dependencies
 ├── data/
 │   ├── market_scans.db         # SQLite database (ML training data)
@@ -397,11 +415,13 @@ stock-dashboard/
 │   │   ├── chart.ts            # Vercel serverless: charting endpoint (yahoo-finance2 v3)
 │   │   └── live_data.ts        # Vercel serverless: live pricing (yahoo-finance2 v3)
 │   ├── public/
-│   │   └── market_data.json    # Generated scan output (committed by GitHub Actions)
+│   │   ├── market_data.json    # Generated scan output (committed by GitHub Actions)
+│   │   └── score_history.json  # Historical score data for charting
 │   ├── src/
 │   │   ├── App.tsx             # Main dashboard application
 │   │   ├── main.tsx            # React entry point
 │   │   ├── types.ts            # TypeScript interfaces
+│   │   ├── index.css           # Design tokens, dark mode, glassmorphism
 │   │   └── components/         # Dashboard tab components
 │   ├── package.json
 │   └── vite.config.ts
