@@ -44,7 +44,6 @@ def compute_sector_medians(raw_data: dict, sector_data: dict) -> dict:
 def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, sector_medians: dict, regime_score: int) -> list:
     """Compute tech, fundamental, research, and composite scores for all stocks."""
     rs_series = pd.Series(rs_composites) if rs_composites else pd.Series(dtype=float)
-    comp_scores = pd.Series([x.get("composite_score", 0) for x in rows_intermediate])
 
     final_rows = []
     for item in rows_intermediate:
