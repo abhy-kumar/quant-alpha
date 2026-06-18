@@ -4,9 +4,9 @@ import type { IncomingMessage, ServerResponse } from 'http'
 const yahooFinance = new YahooFinance()
 
 interface QuoteResult {
-  symbol: string
-  regularMarketPrice: number
-  regularMarketChangePercent: number
+  symbol?: string
+  regularMarketPrice?: number
+  regularMarketChangePercent?: number
 }
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
@@ -83,21 +83,22 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       tickerList.push('^NSEI')
     }
 
-    const quotes: QuoteResult[] = await yahooFinance.quote(tickerList)
+    const quotes = await yahooFinance.quote(tickerList) as QuoteResult[]
 
     const results: Record<string, { price: number; change_pct: number }> = {}
     let niftyData: { price: number; change_pct: number; is_up: boolean } | null = null
 
     for (const q of quotes) {
+      if (!q.symbol) continue
       if (q.symbol === '^NSEI') {
         niftyData = {
-          price: q.regularMarketPrice,
+          price: q.regularMarketPrice ?? 0,
           change_pct: Number((q.regularMarketChangePercent || 0).toFixed(2)),
           is_up: (q.regularMarketChangePercent || 0) >= 0
         }
       } else {
         results[q.symbol] = {
-          price: q.regularMarketPrice,
+          price: q.regularMarketPrice ?? 0,
           change_pct: Number((q.regularMarketChangePercent || 0).toFixed(2))
         }
       }
