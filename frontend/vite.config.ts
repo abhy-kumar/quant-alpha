@@ -1,6 +1,6 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
-import { fetchChartData } from './api/chart'
+import { fetchChartData, type YahooInterval } from './api/chart'
 
 function chartApiDevPlugin(): Plugin {
   return {
@@ -27,7 +27,7 @@ function chartApiDevPlugin(): Plugin {
           const url = new URL(req.url, 'http://localhost')
           const ticker = url.searchParams.get('ticker')
           const period = url.searchParams.get('period') || '1mo'
-          const interval = url.searchParams.get('interval') || '1d'
+          const interval = (url.searchParams.get('interval') || '1d') as YahooInterval
 
           if (!ticker) {
             res.statusCode = 400

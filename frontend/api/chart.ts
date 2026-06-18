@@ -51,7 +51,7 @@ function rollingMean(values: (number | null)[], window: number): (number | null)
   return values.map((_, i) => {
     if (i < window - 1) return null
     const slice = values.slice(i - window + 1, i + 1)
-    return slice.reduce((sum, value) => sum + (value ?? 0), 0) / window
+    return slice.reduce<number>((sum, value) => sum + (value ?? 0), 0) / window
   })
 }
 
@@ -59,8 +59,8 @@ function rollingStd(values: (number | null)[], window: number): (number | null)[
   return values.map((_, i) => {
     if (i < window - 1) return null
     const slice = values.slice(i - window + 1, i + 1)
-    const mean = slice.reduce((sum, v) => sum + (v ?? 0), 0) / window
-    const variance = slice.reduce((sum, v) => sum + ((v ?? 0) - mean) ** 2, 0) / (window - 1)
+    const mean = slice.reduce<number>((sum, v) => sum + (v ?? 0), 0) / window
+    const variance = slice.reduce<number>((sum, v) => sum + ((v ?? 0) - mean) ** 2, 0) / (window - 1)
     return Math.sqrt(variance)
   })
 }
@@ -102,7 +102,7 @@ function computeBollingerBands(closes: number[], period = 20, multiplier = 2) {
 }
 
 function computeAtr(highs: number[], lows: number[], closes: number[], period = 14): (number | null)[] {
-  const tr = closes.map((c, i) => {
+  const tr = closes.map((_, i) => {
     if (i === 0) return highs[i] - lows[i]
     return Math.max(highs[i] - lows[i], Math.abs(highs[i] - closes[i - 1]), Math.abs(lows[i] - closes[i - 1]))
   })
@@ -169,7 +169,9 @@ function computeRsi(closes: number[], period = 14): (number | null)[] {
   return rsi
 }
 
-export async function fetchChartData(ticker: string, period = '1mo', interval = '1d'): Promise<ChartDataPoint[]> {
+export type YahooInterval = '1d' | '1wk' | '1mo' | '1m' | '2m' | '5m' | '15m' | '30m' | '60m' | '90m' | '1h' | '5d'
+
+export async function fetchChartData(ticker: string, period = '1mo', interval: YahooInterval = '1d'): Promise<ChartDataPoint[]> {
   const end = new Date()
   const start = periodToStart(period, end)
 
@@ -238,7 +240,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const url = new URL(req.url ?? '/', `http://${req.headers.host}`)
     const ticker = url.searchParams.get('ticker')
     const period = url.searchParams.get('period') || '1mo'
-    const interval = url.searchParams.get('interval') || '1d'
+    const interval = (url.searchParams.get('interval') || '1d') as YahooInterval
 
     if (!ticker) {
       res.statusCode = 400
