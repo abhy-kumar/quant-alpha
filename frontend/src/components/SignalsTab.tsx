@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import type { DashboardData } from '../types'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 interface Props {
   topPicks: DashboardData[]
@@ -67,17 +66,6 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
     return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
   }, [topPicks])
 
-  const comparisonData = useMemo(() => {
-    const convColors: Record<string, string> = { 'Strong Buy': 'var(--green)', 'Buy': 'var(--blue)', 'Hold': 'var(--amber)', 'Caution': '#E07C00', 'Avoid': 'var(--red)' }
-    return topPicks.map(p => ({
-      name: p.Ticker.replace('.NS', ''),
-      Score: Number(p.Composite_Score) || 0,
-      Tech: Number(p.Tech_Score) || 0,
-      Fund: Number(p.Fund_Score) || 0,
-      fill: convColors[p.Conviction] || 'var(--text-3)',
-    }))
-  }, [topPicks])
-
   return (
     <div className="space-y-4">
       {/* Controls + Summary row */}
@@ -99,31 +87,6 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
           <span className="w-px h-3 hidden sm:block" style={{background:'var(--border)'}}/>
           <span className="hidden sm:inline">Avg Mom <span className="font-mono font-medium" style={{color: avgMomentum >= 0 ? 'var(--green)' : 'var(--red)'}}>{avgMomentum >= 0 ? '+' : ''}{avgMomentum.toFixed(1)}%</span></span>
           <span className="hidden sm:inline">Avg Vol <span className="font-mono font-medium" style={{color:'var(--text)'}}>{avgVol.toFixed(1)}%</span></span>
-        </div>
-      </div>
-
-      {/* Score comparison chart */}
-      <div className="p-4" style={{background:'var(--surface)',border:'1px solid var(--border)'}}>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider" style={{color:'var(--text-2)'}}>Score Comparison</h3>
-          <div className="flex items-center gap-3 text-[10px]" style={{color:'var(--text-3)'}}>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm" style={{background:'var(--green)'}}/> Strong Buy</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm" style={{background:'var(--blue)'}}/> Buy</span>
-          </div>
-        </div>
-        <div className="h-[120px] sm:h-[140px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={comparisonData} layout="vertical" barCategoryGap="20%">
-              <XAxis type="number" domain={[0, 10]} tick={{fill:'var(--text-3)', fontSize:10}} tickLine={false} axisLine={false} />
-              <YAxis type="category" dataKey="name" tick={{fill:'var(--text)', fontSize:11, fontWeight:500}} tickLine={false} axisLine={false} width={80} />
-              <Tooltip cursor={false} contentStyle={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:0,fontSize:11}} />
-              <Bar dataKey="Score" radius={[0, 4, 4, 0]} barSize={16}>
-                {comparisonData.map((entry, idx) => (
-                  <Cell key={idx} fill={entry.fill} fillOpacity={0.85} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
         </div>
       </div>
 
@@ -207,7 +170,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
               {/* Key metrics grid */}
               <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-2.5">
                 <Metric label="P/E" value={pe!==null?pe.toFixed(1):'\u2014'} />
-                <Metric label="Mkt Cap" value={mcap!==null?`\u20B9${mcap.toFixed(0)}B`:'\u2014'} />
+                <Metric label="Mkt Cap" value={mcap!==null?`\u20B9${mcap.toFixed(0)}Cr`:'\u2014'} />
                 <Metric label="ROE" value={roe!==null?`${roe.toFixed(1)}%`:'\u2014'} />
                 <Metric label="D/E" value={debtEq!==null?debtEq.toFixed(2):'\u2014'} />
                 <Metric label="Sharpe" value={sharpe!==null?sharpe.toFixed(2):'\u2014'} color={sharpe!==null?(sharpe>1?'var(--green)':sharpe<0?'var(--red)':'var(--text)'):'var(--text)'} />
