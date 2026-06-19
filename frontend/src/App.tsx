@@ -154,7 +154,7 @@ export default function App() {
 
       {/* Header */}
       <header className="sticky top-0 z-40" style={{ background:'#0D1117', borderBottom:'1px solid #21262D' }}>
-        <div className="max-w-[1400px] mx-auto px-5 h-16 flex items-center">
+        <div className="max-w-[1400px] mx-auto px-5 h-20 flex items-center">
           {/* Left: nav */}
           <nav className="hidden md:flex items-center gap-0.5">
             {TABS.map(tab => (
@@ -170,7 +170,7 @@ export default function App() {
 
           {/* Center: logo */}
           <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-            <img src="/logo-dark.svg" alt="Alpha" className="h-10 w-auto" />
+            <img src="/logo-dark.svg" alt="Alpha" className="h-14 w-auto" />
           </button>
 
           <div className="flex-1" />
