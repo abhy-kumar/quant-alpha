@@ -24,7 +24,7 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
   return (
     <div className="space-y-4">
       {/* Legend */}
-      <div className="flex flex-wrap justify-end items-center gap-4 text-xs" style={{ color: 'var(--text-sub)' }}>
+      <div className="flex flex-wrap justify-end items-center gap-4 text-xs" style={{ color: 'var(--text-3)' }}>
         <span className="font-medium">Score:</span>
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded" style={{ backgroundColor: isDark ? 'rgba(220,50,50,0.3)' : 'rgba(220,50,50,0.2)' }} />
@@ -42,8 +42,8 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {sortedSectors.map(sector => (
-          <div key={sector} className="rounded-2xl p-5 transition-colors" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
-            <h3 className="text-sm font-semibold mb-4 pb-3" style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-main)' }}>
+          <div key={sector} className="rounded-2xl p-5 transition-colors" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+            <h3 className="text-sm font-semibold mb-4 pb-3" style={{ borderBottom: '1px solid var(--border)', color: 'var(--text)' }}>
               {sector}
             </h3>
             <div className="grid grid-cols-3 gap-2">
