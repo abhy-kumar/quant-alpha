@@ -9,20 +9,27 @@ import HeatmapTab from './components/HeatmapTab'
 import FactorLabTab from './components/FactorLabTab'
 
 function TapeInner({ data }: { data: DashboardData[] }) {
-  const items = useMemo(() => data.slice(0, 30).map(d => ({
+  const items = useMemo(() => data.map(d => ({
     t: d.Ticker.replace('.NS', ''),
     p: Number(d.Price) || 0,
     c: Number(d['1d_Chg_%']) || 0,
   })), [data])
   if (!items.length) return null
+
+  // Original speed: 30 items in 20s = 1.5 items/sec
+  // 40% increase = 1.5 * 1.4 = 2.1 items/sec
+  const duration = items.length / 2.1;
+
   return (
     <div className="overflow-hidden" style={{ background: '#010409' }}>
-      <div className="tape flex whitespace-nowrap">
+      <div className="tape flex whitespace-nowrap" style={{ animationDuration: `${duration}s` }}>
         {[...items, ...items].map((x, i) => (
-          <span key={i} className="inline-flex items-center gap-2 px-4 py-1.5 text-[11px]">
-            <span className="font-medium" style={{ color: '#E6EDF3' }}>{x.t}</span>
-            <span className="font-mono" style={{ color: '#8B949E' }}>{x.p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            <span className="font-mono" style={{ color: x.c >= 0 ? '#3FB950' : '#F85149' }}>{x.c >= 0 ? '\u25B2' : '\u25BC'} {Math.abs(x.c).toFixed(2)}%</span>
+          <span key={i} className="inline-flex items-center justify-between gap-2 px-4 py-1.5 text-[11px] w-[180px] shrink-0">
+            <span className="font-medium truncate" style={{ color: '#E6EDF3' }}>{x.t}</span>
+            <span className="flex items-center gap-2">
+              <span className="font-mono" style={{ color: '#8B949E' }}>{x.p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="font-mono" style={{ color: x.c >= 0 ? '#3FB950' : '#F85149' }}>{x.c >= 0 ? '\u25B2' : '\u25BC'} {Math.abs(x.c).toFixed(2)}%</span>
+            </span>
           </span>
         ))}
       </div>
