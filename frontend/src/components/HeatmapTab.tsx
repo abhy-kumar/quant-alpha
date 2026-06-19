@@ -41,7 +41,7 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {sortedSectors.map(sector => (
-          <div key={sector} className="border border-border bg-card p-4 sm:p-6 shadow-sm hover:border-brand/50 transition-colors">
+          <div key={sector} className="card-base p-4 sm:p-6 rounded-card hover:border-brand/30 transition-colors">
             <h3 className="font-mono text-xs sm:text-sm text-primary uppercase tracking-widest mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">
               {sector}
             </h3>
@@ -53,7 +53,7 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
                   <div
                     key={stock.Ticker}
                     onClick={() => onSelect(stock.Ticker)}
-                    className="flex flex-col items-center justify-center px-1.5 sm:px-2 py-2 sm:py-2.5 border transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-md rounded-sm active:scale-95"
+                    className="flex flex-col items-center justify-center px-1.5 sm:px-2 py-2 sm:py-2.5 border transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-md rounded-lg active:scale-95"
                     style={colors}
                     title={`${stock.Ticker.replace('.NS', '')} — Score: ${s.toFixed(2)} | Sector: ${sector}`}
                   >

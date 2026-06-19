@@ -4,27 +4,35 @@
 
 @layer base {
   :root {
-    --bg-app: #f8fafc;
-    --bg-card: #ffffff;
-    --border-color: #e2e8f0;
-    --text-main: #0f172a;
-    --text-muted: #475569;
-    --text-sub: #64748b;
-    --brand-red: #C8102E;
-    --brand-red-hover: #E53030;
-    --btn-border: #cbd5e1;
+    --bg-app: #F3F5F9;
+    --bg-card: #FFFFFF;
+    --border-color: #D6DCE5;
+    --text-main: #1E3F68;
+    --text-muted: #5A7190;
+    --text-sub: #7B8FA6;
+    --brand: #1E3F68;
+    --brand-hover: #2A5580;
+    --brand-soft: rgba(30, 63, 104, 0.08);
+    --btn-border: #C0CDD8;
+    --surface: #E8ECF2;
+    --shadow: rgba(30, 63, 104, 0.06);
+    --shadow-lg: rgba(30, 63, 104, 0.10);
   }
 
   .dark {
-    --bg-app: #000000;
-    --bg-card: #0A0A0A;
-    --border-color: #1A1A1A;
-    --text-main: #FFFFFF;
-    --text-muted: #A1A1AA;
-    --text-sub: #71717A;
-    --brand-red: #C8102E;
-    --brand-red-hover: #E53030;
-    --btn-border: #27272A;
+    --bg-app: #04080F;
+    --bg-card: #0B1018;
+    --border-color: #162030;
+    --text-main: #E8F0FA;
+    --text-muted: #7A90A8;
+    --text-sub: #4E6478;
+    --brand: #CCE9FF;
+    --brand-hover: #E0F2FF;
+    --brand-soft: rgba(204, 233, 255, 0.07);
+    --btn-border: #1A2A3A;
+    --surface: #0F1720;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --shadow-lg: rgba(0, 0, 0, 0.5);
   }
 
   html, body {
@@ -32,67 +40,84 @@
   }
 }
 
-/* Custom scrollbar for brutalist theme */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  @apply bg-background;
-}
-::-webkit-scrollbar-thumb {
-  @apply bg-border;
-}
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-btn-border;
-}
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-btn-border; }
 
-/* Glassmorphism utility */
+/* ── Glassmorphism ─────────────────────────────────────────── */
 .glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.5);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(214, 220, 229, 0.5);
 }
 
 .dark .glass {
-  background: rgba(10, 10, 10, 0.6);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(26, 26, 26, 0.5);
+  background: rgba(11, 16, 24, 0.65);
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  border: 1px solid rgba(22, 32, 48, 0.5);
 }
 
-/* Conviction glow animations */
-@keyframes glow-green {
-  0%, 100% { box-shadow: 0 0 8px rgba(34, 197, 94, 0.15); }
-  50% { box-shadow: 0 0 16px rgba(34, 197, 94, 0.25); }
+/* ── Card system ───────────────────────────────────────────── */
+.card-base {
+  @apply bg-card border border-border;
+  box-shadow: 0 1px 3px var(--shadow), 0 0 0 0.5px var(--shadow);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
 }
-@keyframes glow-blue {
-  0%, 100% { box-shadow: 0 0 8px rgba(59, 130, 246, 0.15); }
-  50% { box-shadow: 0 0 16px rgba(59, 130, 246, 0.25); }
+.card-base:hover {
+  box-shadow: 0 4px 16px var(--shadow-lg), 0 0 0 0.5px var(--shadow);
+  border-color: color-mix(in srgb, var(--brand) 25%, var(--border-color));
 }
 
-.glow-strong-buy { animation: glow-green 3s ease-in-out infinite; }
-.glow-buy { animation: glow-blue 3s ease-in-out infinite; }
+/* ── Conviction glows ──────────────────────────────────────── */
+@keyframes glow-strong-buy {
+  0%, 100% { box-shadow: 0 0 12px rgba(34, 197, 94, 0.12), inset 0 0 12px rgba(34, 197, 94, 0.03); }
+  50% { box-shadow: 0 0 24px rgba(34, 197, 94, 0.2), inset 0 0 16px rgba(34, 197, 94, 0.05); }
+}
+@keyframes glow-buy {
+  0%, 100% { box-shadow: 0 0 12px rgba(59, 130, 246, 0.12), inset 0 0 12px rgba(59, 130, 246, 0.03); }
+  50% { box-shadow: 0 0 24px rgba(59, 130, 246, 0.2), inset 0 0 16px rgba(59, 130, 246, 0.05); }
+}
 
-/* Range input styling */
+.glow-strong-buy {
+  animation: glow-strong-buy 4s ease-in-out infinite;
+  border-color: rgba(34, 197, 94, 0.25) !important;
+}
+.glow-buy {
+  animation: glow-buy 4s ease-in-out infinite;
+  border-color: rgba(59, 130, 246, 0.25) !important;
+}
+
+/* ── Accent bar animation ──────────────────────────────────── */
+@keyframes accent-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ── Range inputs ──────────────────────────────────────────── */
 input[type="range"] {
   @apply h-1 bg-border rounded-full appearance-none cursor-pointer;
 }
 input[type="range"]::-webkit-slider-thumb {
-  @apply appearance-none w-3 h-3 rounded-full bg-brand border border-brand cursor-pointer;
+  @apply appearance-none w-3.5 h-3.5 rounded-full bg-brand border-2 border-card cursor-pointer;
+  box-shadow: 0 1px 4px var(--shadow);
 }
 input[type="range"]::-moz-range-thumb {
-  @apply w-3 h-3 rounded-full bg-brand border border-brand cursor-pointer;
+  @apply w-3.5 h-3.5 rounded-full bg-brand border-2 border-card cursor-pointer;
+  box-shadow: 0 1px 4px var(--shadow);
 }
 
+/* ── Scrollbar hide ────────────────────────────────────────── */
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
+.scrollbar-none::-webkit-scrollbar { display: none; }
 
-/* Responsive chart heights */
+/* ── Responsive chart heights ──────────────────────────────── */
 .chart-main { height: 300px; }
 .chart-sub { height: 160px; }
 .chart-score { height: 200px; }
@@ -107,4 +132,16 @@ input[type="range"]::-moz-range-thumb {
   .chart-main { height: 466px; }
   .chart-sub { height: 200px; }
   .chart-score { height: 240px; }
+}
+
+/* ── Subtle background texture ─────────────────────────────── */
+.bg-app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, color-mix(in srgb, var(--brand) 3%, transparent) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%, color-mix(in srgb, var(--brand) 2%, transparent) 0%, transparent 60%);
 }

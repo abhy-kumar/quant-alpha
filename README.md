@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="assets/fmsLogo.svg" alt="FMS Logo" width="100" height="100" />
-  <h1>Quantitative Alpha</h1>
+  <img src="assets/Alpha_v2_Final-Light.svg" alt="Alpha Research" width="280" />
+  <br /><br />
   <p><strong>A research-backed quantitative stock recommendation system for the National Stock Exchange of India.</strong></p>
   <p>Engineered for the Alpha Research and Investment Club, FMS Delhi.</p>
 </div>
@@ -8,14 +8,14 @@
 <br />
 
 <div align="center">
-  <img src="assets/dashboard-preview.png" alt="Quantitative Alpha Dashboard" width="800" />
+  <img src="assets/dashboard-preview.png" alt="Alpha Dashboard" width="800" />
 </div>
 
 <br />
 
 ## Goal and Impact
 
-Quantitative Alpha is a fully automated stock screening and recommendation platform that evaluates the top 150 liquid equities on the National Stock Exchange of India (NSE) using a multi-factor model grounded in published academic research. The system eliminates emotional bias from equity research by applying systematic, rules-based scoring across three dimensions: technical momentum, fundamental quality, and research-backed quantitative factors.
+Alpha is a fully automated stock screening and recommendation platform that evaluates the top 150 liquid equities on the National Stock Exchange of India (NSE) using a multi-factor model grounded in published academic research. The system eliminates emotional bias from equity research by applying systematic, rules-based scoring across three dimensions: technical momentum, fundamental quality, and research-backed quantitative factors.
 
 The platform generates daily recommendations with conviction ratings (Strong Buy, Buy, Hold, Caution, Avoid) and stores all data in a growing SQLite database that accumulates daily feature vectors and forward return outcomes — forming the foundation for future machine learning model training.
 
@@ -247,11 +247,11 @@ The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 |     - market_scans.db (ML pipeline)                                     |
 +-------------------------------------------------------------------------+
                    |
-                   v (commit → Vercel redeploy)
+                   v (commit -> Vercel redeploy)
 +-------------------------------------------------------------------------+
 |                            FRONTEND (Vercel)                            |
 +-------------------------------------------------------------------------+
-|  React 19 + Vite + Recharts                                             |
+|  React 19 + Vite + Tailwind + Recharts                                  |
 |  - Loads market_data.json on page load (cache-busted)                  |
 |  - Polls /api/live_data every 3 min during market hours (9:15-15:30)   |
 |  - On-demand chart data via /api/chart (yahoo-finance2 v3)             |
@@ -267,7 +267,7 @@ The React frontend is a five-tab analytical dashboard:
 |-----|-------------|
 | **Signals** | Top 3 high-conviction picks for Short-Term (momentum) or Long-Term (value) horizon. Each card shows a composite score, a radar chart across Tech / Fund / Research / Momentum / Piotroski axes, and six key metrics. |
 | **Screen** | Full universe screener with sortable columns (Ticker, Sector, LTP, 1D%, Composite, Tech, Fund, Research, F-Score, 12M Momentum, P/E, D/E, Conviction). Dynamic filters for composite score, Piotroski F-Score, sector, conviction, market cap, and D/E ratio. Expandable row shows all 14 technical signals and 12 research factors. |
-| **Charts** | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14) with 30/50/70 reference lines, MACD (12,26,9) with color-coded histogram. Left panel shows company profile, technicals, research factors, momentum, fundamentals, and risk metrics. Sector peer comparison table below. Supports 7 periods (1W–5Y) and daily/weekly interval. |
+| **Charts** | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14) with 30/50/70 reference lines, MACD (12,26,9) with color-coded histogram. Left panel shows company profile, technicals, research factors, momentum, fundamentals, and risk metrics. Sector peer comparison table below. Supports 7 periods (1W-5Y) and daily/weekly interval. |
 | **Heatmap** | Color-coded sector heatmap where each tile represents a stock, colored from red (low composite) to green (high composite). Sectors sorted alphabetically. |
 | **Factor Lab** | Conviction accuracy tracker showing historical win rates and average forward returns (21D and 63D) by conviction level, with a bar chart and summary cards. Data accumulates as scans age. |
 
@@ -277,6 +277,7 @@ The header contains eight persistent indicators:
 
 | Element | Description |
 |---------|-------------|
+| Logo | Alpha Research & Investment Club — theme-aware SVG |
 | NIFTY chip | Live NIFTY 50 price and 1D% change, green/red coded |
 | FII chip | FII/FPI net flow in INR Crores, green/red coded |
 | DII chip | DII net flow in INR Crores, green/red coded |
@@ -302,7 +303,7 @@ frontend/src/
 ├── App.tsx               # Global state, routing, data fetch, tab orchestration
 │                         # Two separate timestamps: scanUpdated + pricesUpdated
 ├── types.ts              # TypeScript interfaces (DashboardData, MarketData, etc.)
-├── index.css             # Design tokens, dark mode, glassmorphism utilities
+├── index.css             # Design tokens, dark mode, glassmorphism, card system
 └── components/
     ├── shared.tsx         # num(), colorCode(), scoreBar(), SortHeader()
     ├── SignalsTab.tsx      # High conviction signal cards with radar chart
@@ -347,7 +348,7 @@ cd ..
 python scanner.py
 ```
 
-This downloads data for ~150 stocks (takes 2–3 minutes), computes all indicators and scores, and generates `frontend/public/market_data.json`.
+This downloads data for ~150 stocks (takes 2-3 minutes), computes all indicators and scores, and generates `frontend/public/market_data.json`.
 
 ### 3. Launch the Frontend
 
@@ -423,7 +424,9 @@ stock-dashboard/
 │   │   └── live_data.ts        # Vercel serverless: live pricing (yahoo-finance2 v3)
 │   ├── public/
 │   │   ├── market_data.json    # Generated scan output (committed by GitHub Actions)
-│   │   └── score_history.json  # Historical score data for charting
+│   │   ├── score_history.json  # Historical score data for charting
+│   │   ├── logo-dark.svg       # Alpha logo for dark theme
+│   │   └── logo-light.svg      # Alpha logo for light theme
 │   ├── src/
 │   │   ├── App.tsx             # Main dashboard application
 │   │   ├── main.tsx            # React entry point
@@ -500,6 +503,6 @@ This project is proprietary software developed for the Alpha Research and Invest
 
 ## Copyright
 
-Copyright (c) 2024–2026 Abhishek Kumar. All rights reserved.
+Copyright (c) 2024-2026 Abhishek Kumar. All rights reserved.
 
 Developed by Abhishek Kumar

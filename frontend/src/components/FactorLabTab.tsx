@@ -80,7 +80,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
       <div className="space-y-6">
         {/* Progress strip */}
         {countdown && (
-          <div className="border border-border bg-card px-4 sm:px-5 py-3 flex flex-wrap items-center gap-3 sm:gap-6 text-[10px] font-mono uppercase tracking-widest text-muted">
+          <div className="border border-border bg-card px-4 sm:px-5 py-3 flex flex-wrap items-center gap-3 sm:gap-6 text-[10px] font-mono uppercase tracking-widest text-muted rounded-card shadow-card">
             <span className="text-brand font-semibold">Factor Lab Active</span>
             <span>{countdown.elapsed} trading days of data</span>
             {countdown.remaining63 > 0 && (
@@ -93,7 +93,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
         {/* Summary Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
           {sorted.map(([conviction, data]) => (
-            <div key={conviction} className="border border-border bg-card p-4 shadow-sm">
+            <div key={conviction} className="card-base p-4 rounded-card">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[conviction as keyof typeof COLORS] || '#71717a' }} />
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted">{conviction}</span>
@@ -124,8 +124,8 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
         </div>
 
         {/* Bar Chart */}
-        <div className="border border-border bg-card p-4 sm:p-6 shadow-sm">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">
+          <div className="card-base p-4 sm:p-6 rounded-card">
+            <h3 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">
             Average Forward Returns by Conviction
           </h3>
           <div className="w-full" style={{ height: 'min(300px, 50vw)' }}>
@@ -161,7 +161,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
   return (
     <div className="space-y-6">
       {/* Header card */}
-      <div className="border border-border bg-card p-4 sm:p-8">
+      <div className="card-base p-4 sm:p-8 rounded-card">
         <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="p-2 sm:p-3 rounded border border-border bg-brand/5">
             <FlaskConical size={20} className="text-brand" />
@@ -251,7 +251,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
         </div>
 
         {/* What will be shown */}
-        <div className="border border-border p-3 sm:p-4 bg-surface">
+          <div className="border border-border p-3 sm:p-4 bg-surface rounded-card">
           <div className="font-mono text-[9px] uppercase tracking-widest text-muted mb-3">What this tab will show</div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
             {CONVICTION_ORDER.map(c => (
