@@ -55,6 +55,9 @@
 .scrollbar-none { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
+/* Prevent pixel shift by reserving scrollbar space */
+html { overflow-y: scroll; }
+
 /* Charts */
 .chart-main { height: 300px; }
 .chart-sub { height: 160px; }

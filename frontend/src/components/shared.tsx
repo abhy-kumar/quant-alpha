@@ -40,7 +40,13 @@ export const SortHeader = ({ field, children, align='left', sortKey, sortDir, on
 )
 
 export function MiniSparkline({ values, width=48, height=16 }: { values: number[]; width?:number; height?:number }) {
-  if (!values||values.length<2) return <span className="text-[var(--text-3)] text-[10px]">\u2014</span>
+  if (!values||values.length===0) return <span className="text-[var(--text-3)] text-[10px]">\u2014</span>
+  if (values.length===1) {
+    const v = values[0]
+    const pct = Math.max(0, Math.min(100, (v / 10) * 100))
+    const color = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--brand)' : 'var(--red)'
+    return <svg width={width} height={height}><circle cx={width/2} cy={height/2} r={3} fill={color}/></svg>
+  }
   const min=Math.min(...values), max=Math.max(...values), range=max-min||1
   const pts = values.map((v,i)=>`${(i/(values.length-1))*width},${height-((v-min)/range)*(height-2)-1}`).join(' ')
   const up = values[values.length-1]>=values[0]

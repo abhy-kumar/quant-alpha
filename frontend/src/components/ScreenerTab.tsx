@@ -280,50 +280,55 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
       </div>
 
       {/* Mobile card view */}
-      <div className="sm:hidden space-y-3">
+      <div className="sm:hidden space-y-2">
         {filteredData.map((row, i) => (
-          <div key={i} className="p-4" style={{ background: 'var(--surface)', border: `1px solid ${expandedRow === row.Ticker ? 'color-mix(in srgb, var(--brand) 30%, var(--border))' : 'var(--border)'}`, boxShadow: 'none' }}>
-            <div className="flex items-center justify-between mb-3">
-              <button onClick={() => onSelect(row.Ticker)} className="text-lg font-bold" style={{ color: 'var(--text)' }}>
-                {row.Ticker.replace('.NS', '')}
-              </button>
+          <div key={i} className="px-3 py-2.5" style={{ background: 'var(--surface)', border: `1px solid ${expandedRow === row.Ticker ? 'color-mix(in srgb, var(--brand) 30%, var(--border))' : 'var(--border)'}` }}>
+            {/* Row 1: Ticker, Score, Conviction, Watch */}
+            <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">
-                <button onClick={() => toggleWatchlist(row.Ticker)} style={{ color: watchlist.includes(row.Ticker) ? 'var(--brand)' : 'var(--text-3)' }}>
-                  <Star size={14} fill={watchlist.includes(row.Ticker) ? 'currentColor' : 'none'} />
+                <button onClick={() => onSelect(row.Ticker)} className="text-sm font-bold" style={{ color: 'var(--text)' }}>
+                  {row.Ticker.replace('.NS', '')}
                 </button>
-                <span className="px-2 py-0.5 text-[11px] font-medium" style={convictionStyle(row.Conviction)}>
+                <span className="px-1.5 py-0.5 text-[10px] font-medium" style={convictionStyle(row.Conviction)}>
                   {row.Conviction || 'N/A'}
                 </span>
               </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3 text-sm mb-3">
-              <div>
-                <span className="text-[11px]" style={{ color: 'var(--text-3)' }}>Price</span>
-                <p className="font-data font-medium text-heading">{num(row.Price)}</p>
-              </div>
-              <div>
-                <span className="text-[11px]" style={{ color: 'var(--text-3)' }}>1D</span>
-                <p className={`font-data font-medium ${colorCode(row['1d_Chg_%'])}`}>
-                  {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
-                </p>
-              </div>
-              <div>
-                <span className="text-[11px]" style={{ color: 'var(--text-3)' }}>Score</span>
-                <p className={`font-data font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</p>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-mono font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</span>
+                <button onClick={() => toggleWatchlist(row.Ticker)} style={{ color: watchlist.includes(row.Ticker) ? 'var(--brand)' : 'var(--text-3)' }}>
+                  <Star size={13} fill={watchlist.includes(row.Ticker) ? 'currentColor' : 'none'} />
+                </button>
               </div>
             </div>
-            <button
-              onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
-              className="w-full py-2 text-xs font-medium transition-all"
-              style={{ background: 'var(--surface)', color: 'var(--text-2)' }}
-            >
-              {expandedRow === row.Ticker ? 'Show less' : 'Show more'}
-            </button>
+
+            {/* Row 2: Price, 1D, Sector */}
+            <div className="flex items-center gap-3 mb-1.5 text-[11px]">
+              <span className="font-mono font-medium" style={{ color: 'var(--text)' }}>{num(row.Price)}</span>
+              <span className={`font-mono font-medium ${colorCode(row['1d_Chg_%'])}`}>
+                {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
+              </span>
+              <span className="hidden xs:inline" style={{ color: 'var(--text-3)' }}>{row.Sector || '-'}</span>
+              <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} width={40} height={12} />
+            </div>
+
+            {/* Row 3: Tech, Fund, Research, F-Score */}
+            <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--text-3)' }}>
+              <span>T <span className={`font-mono font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</span></span>
+              <span>F <span className={`font-mono font-medium ${Number(row.Fund_Score) >= 5 ? 'text-green' : 'text-heading'}`}>{num(row.Fund_Score)}</span></span>
+              <span>R <span className={`font-mono font-medium ${Number(row.Research_Score) >= 7 ? 'text-green' : Number(row.Research_Score) < 4 ? 'text-red' : 'text-heading'}`}>{num(row.Research_Score)}</span></span>
+              <span>P <span className="font-mono font-medium">{row.Piotroski_F ?? '-'}/9</span></span>
+              <span className="ml-auto">
+                <button onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)} style={{ color: 'var(--text-3)' }}>
+                  <Info size={13} />
+                </button>
+              </span>
+            </div>
+
             {expandedRow === row.Ticker && (
-              <div className="mt-3 pt-3 space-y-4" style={{ borderTop: '1px solid var(--border)' }}>
+              <div className="mt-2.5 pt-2.5 space-y-3" style={{ borderTop: '1px solid var(--border)' }}>
                 <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--brand)' }}>Signals</h4>
-                  <div className="space-y-1.5 text-sm">
+                  <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--brand)' }}>Signals</h4>
+                  <div className="space-y-1 text-[11px]">
                     {[
                       ['Price vs SMA50', row.Sig_Price_vs_SMA50], ['Price vs SMA200', row.Sig_Price_vs_SMA200],
                       ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200], ['RSI', row.Sig_RSI],

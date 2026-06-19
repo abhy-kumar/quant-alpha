@@ -154,8 +154,8 @@ export default function App() {
 
       {/* Header */}
       <header className="sticky top-0 z-40" style={{ background:'var(--surface)', borderBottom:'1px solid var(--border)' }}>
-        <div className="max-w-[1400px] mx-auto px-5 h-16 flex items-center">
-          {/* Left: nav */}
+        <div className="max-w-[1400px] mx-auto px-3 md:px-5 h-14 md:h-16 flex items-center">
+          {/* Left: nav - hidden on mobile, shown below header */}
           <nav className="hidden md:flex items-center gap-0.5">
             {TABS.map(tab => (
               <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
@@ -170,15 +170,15 @@ export default function App() {
 
           {/* Center: logo */}
           <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-            <img src={isDark?'/logo-dark.svg':'/logo-light.svg'} alt="Alpha" className="h-10 w-auto" />
+            <img src={isDark?'/logo-dark.svg':'/logo-light.svg'} alt="Alpha" className="h-8 md:h-10 w-auto" />
           </button>
 
           <div className="flex-1" />
 
-          {/* Right: indicators */}
-          <div className="hidden lg:flex items-center gap-3 text-[12px]">
+          {/* Right: indicators - compact on mobile */}
+          <div className="hidden sm:flex items-center gap-2 md:gap-3 text-[11px] md:text-[12px]">
             {niftyData && <>
-              <span style={{color:'var(--text-3)'}}>NIFTY</span>
+              <span className="hidden md:inline" style={{color:'var(--text-3)'}}>NIFTY</span>
               <span className="font-mono font-medium whitespace-nowrap" style={{color:'var(--text)'}}>{niftyData.price.toLocaleString('en-IN')}</span>
               <span className="font-mono font-medium whitespace-nowrap" style={{color:niftyData.is_up?'var(--green)':'var(--red)'}}>
                 {niftyData.is_up?'+':''}{niftyData.change_pct}%
@@ -186,10 +186,10 @@ export default function App() {
             </>}
             <span className="w-px h-3.5" style={{background:'var(--border)'}}/>
             {marketRegimeScore!==null && <Pill className={marketRegimeScore>=1?'text-[var(--green)]':marketRegimeScore<=-1?'text-[var(--red)]':'text-[var(--amber)]'}><Zap size={11}/>{regimeLabel}</Pill>}
-            {fiiNet!==null && <span className="font-mono whitespace-nowrap" style={{color:fiiNet>0?'var(--green)':'var(--red)'}}>FII {fiiNet>0?'+':''}{Math.round(fiiNet)}</span>}
-            {diiNet!==null && <span className="font-mono whitespace-nowrap" style={{color:diiNet>0?'var(--green)':'var(--red)'}}>DII {diiNet>0?'+':''}{Math.round(diiNet)}</span>}
-            {pcr!==null && <span className="font-mono" style={{color:'var(--text-3)'}}>PCR {pcr.toFixed(2)}</span>}
-            {coveragePct!==null && <span style={{color:'var(--text-3)'}}>{coveragePct}%</span>}
+            {fiiNet!==null && <span className="font-mono whitespace-nowrap hidden md:inline" style={{color:fiiNet>0?'var(--green)':'var(--red)'}}>FII {fiiNet>0?'+':''}{Math.round(fiiNet)}</span>}
+            {diiNet!==null && <span className="font-mono whitespace-nowrap hidden md:inline" style={{color:diiNet>0?'var(--green)':'var(--red)'}}>DII {diiNet>0?'+':''}{Math.round(diiNet)}</span>}
+            {pcr!==null && <span className="font-mono hidden lg:inline" style={{color:'var(--text-3)'}}>PCR {pcr.toFixed(2)}</span>}
+            {coveragePct!==null && <span className="hidden lg:inline" style={{color:'var(--text-3)'}}>{coveragePct}%</span>}
           </div>
 
           <button onClick={()=>setIsDark(!isDark)} className="shrink-0 p-1.5" style={{color:'var(--text-3)'}} title="Toggle theme">
@@ -198,8 +198,21 @@ export default function App() {
         </div>
       </header>
 
+      {/* Mobile tab bar */}
+      <nav className="md:hidden overflow-x-auto border-b" style={{ borderColor:'var(--border)', background:'var(--surface)' }}>
+        <div className="flex items-center gap-0.5 px-3 py-1.5">
+          {TABS.map(tab => (
+            <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium transition-colors whitespace-nowrap shrink-0"
+              style={{ color: activeTab===tab.id?'var(--text)':'var(--text-3)', background: activeTab===tab.id?'var(--green-bg)':'transparent' }}>
+              <tab.icon size={13} />{tab.label}
+            </button>
+          ))}
+        </div>
+      </nav>
+
       {/* Content — consistent start position for all tabs */}
-      <main className="flex-1 max-w-[1400px] mx-auto w-full px-5 py-5">
+      <main className="flex-1 max-w-[1400px] mx-auto w-full px-3 md:px-5 py-3 md:py-5">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-64 gap-4">
             <div className="w-48 h-1 rounded-full overflow-hidden" style={{background:'var(--border)'}}>
@@ -225,30 +238,30 @@ export default function App() {
 
       {/* Footer */}
       <footer className="mt-auto" style={{borderTop:'1px solid var(--border)'}}>
-        <div className="max-w-[1400px] mx-auto px-5 py-5 grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="max-w-[1400px] mx-auto px-3 md:px-5 py-4 md:py-5 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">
           <div className="flex flex-col gap-1.5">
-            <h4 className="text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>System Status</h4>
-            <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider" style={{color:'var(--text-2)'}}>
+            <h4 className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>System Status</h4>
+            <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-mono uppercase tracking-wider" style={{color:'var(--text-2)'}}>
               <Database size={10} /><span>Signals</span>
               <span style={{color:'var(--text)'}}>{scanUpdated||'\u2014'}</span>
             </div>
-            <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider" style={{color:'var(--text-2)'}}>
+            <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-mono uppercase tracking-wider" style={{color:'var(--text-2)'}}>
               <Activity size={10} /><span>Prices</span>
               <span style={{color:'var(--text)'}}>{pricesUpdated||scanUpdated||'\u2014'}</span>
               {isDynamic && <span style={{color:'var(--green)'}}>Live</span>}
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <h4 className="text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>Disclaimer</h4>
-            <p className="text-[11px] leading-relaxed" style={{color:'var(--text-2)'}}>
+            <h4 className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>Disclaimer</h4>
+            <p className="text-[10px] md:text-[11px] leading-relaxed" style={{color:'var(--text-2)'}}>
               Educational and academic research purposes only. Not investment advice. Not registered with SEBI. Models are experimental; past performance is not indicative of future results. Data from third-party sources may contain errors. Consult a SEBI-registered advisor before investing.
             </p>
           </div>
           <div className="flex flex-col gap-1.5 sm:items-end">
-            <h4 className="text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>Alpha Research</h4>
-            <p className="text-[11px]" style={{color:'var(--text-2)'}}>Alpha Research and Investment Club</p>
-            <p className="text-[11px]" style={{color:'var(--text-2)'}}>Faculty of Management Studies, Delhi</p>
-            <p className="text-[11px] mt-1" style={{color:'var(--text-3)'}}>Made with &#9829; by Abhishek Kumar</p>
+            <h4 className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>Alpha Research</h4>
+            <p className="text-[10px] md:text-[11px]" style={{color:'var(--text-2)'}}>Alpha Research and Investment Club</p>
+            <p className="text-[10px] md:text-[11px]" style={{color:'var(--text-2)'}}>Faculty of Management Studies, Delhi</p>
+            <p className="text-[10px] md:text-[11px] mt-1" style={{color:'var(--text-3)'}}>Made with &#9829; by Abhishek Kumar</p>
           </div>
         </div>
       </footer>
