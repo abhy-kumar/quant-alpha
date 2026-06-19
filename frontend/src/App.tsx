@@ -181,7 +181,7 @@ export default function App() {
 
           {/* Center: logo */}
           <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-            <img src={isDark?'/logo-dark.svg':'/logo-light.svg'} alt="Alpha" className="h-8 md:h-10 w-auto" />
+            <img src={isDark?'/logo-dark.svg':'/logo-light.svg'} alt="Alpha" className="h-[48px] md:h-[60px] w-auto" />
           </button>
 
           <div className="flex-1" />
