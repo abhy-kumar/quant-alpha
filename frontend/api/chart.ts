@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import YahooFinance from 'yahoo-finance2'
 import type { IncomingMessage, ServerResponse } from 'http'
 
