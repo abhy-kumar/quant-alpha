@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, memo } from 'react'
 import axios from 'axios'
 import { Activity, Database, TrendingUp, BarChart2, Layers, Moon, Sun, Zap } from 'lucide-react'
 import type { DashboardData } from './types'
@@ -8,7 +8,7 @@ import ChartingTab from './components/ChartingTab'
 import HeatmapTab from './components/HeatmapTab'
 import FactorLabTab from './components/FactorLabTab'
 
-function Tape({ data }: { data: DashboardData[] }) {
+function TapeInner({ data }: { data: DashboardData[] }) {
   const items = useMemo(() => data.slice(0, 30).map(d => ({
     t: d.Ticker.replace('.NS', ''),
     p: Number(d.Price) || 0,
@@ -29,6 +29,8 @@ function Tape({ data }: { data: DashboardData[] }) {
     </div>
   )
 }
+
+const Tape = memo(TapeInner)
 
 const TABS = [
   { id: 'picks', label: 'Signals', icon: TrendingUp },
@@ -82,7 +84,16 @@ export default function App() {
       const res = await axios.post('/api/live_data', { tickers: dataRef.current.map(d=>d.Ticker) })
       if (res.data.status === 'ok') {
         const lp = res.data.data
-        setData(dataRef.current.map(d => lp[d.Ticker] ? { ...d, Price: lp[d.Ticker].price||d.Price, "1d_Chg_%": lp[d.Ticker].change_pct??d["1d_Chg_%"] } : d))
+        let changed = false
+        const newData = dataRef.current.map(d => {
+          const live = lp[d.Ticker]
+          if (!live) return d
+          const price = live.price || d.Price
+          const chg = live.change_pct ?? d["1d_Chg_%"]
+          if (price !== d.Price || chg !== d["1d_Chg_%"]) changed = true
+          return { ...d, Price: price, "1d_Chg_%": chg }
+        })
+        if (changed) setData(newData)
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
         setPricesUpdated(new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})+' IST')
         setIsDynamic(true)
