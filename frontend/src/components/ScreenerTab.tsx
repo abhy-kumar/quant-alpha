@@ -15,6 +15,14 @@ interface Props {
 
 const CONVICTION_OPTIONS = ['Strong Buy', 'Buy', 'Hold', 'Caution', 'Avoid']
 
+const convictionStyle = (c: string) => {
+  if (c === 'Strong Buy') return { background: 'var(--green-soft)', color: 'var(--green)' }
+  if (c === 'Buy') return { background: 'var(--blue-soft)', color: 'var(--blue)' }
+  if (c === 'Caution') return { background: 'var(--amber-soft)', color: 'var(--amber)' }
+  if (c === 'Avoid') return { background: 'var(--red-soft)', color: 'var(--red)' }
+  return { background: 'var(--surface)', color: 'var(--text-muted)' }
+}
+
 export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRow, watchlist, toggleWatchlist, scoreHistory }: Props) {
   const [sortKey, setSortKey] = useState<string>('Composite_Score')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
@@ -72,60 +80,68 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
 
   return (
     <div className="space-y-4">
+      {/* Filter bar */}
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[10px] text-sub uppercase tracking-widest sm:hidden">
+        <span className="text-sm" style={{ color: 'var(--text-sub)' }}>
           {filteredData.length} results
         </span>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest border transition-all rounded-md ${showFilters ? 'border-brand bg-brand text-background font-semibold' : 'border-border text-muted hover:text-primary hover:border-brand/30'}`}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all"
+          style={{
+            background: showFilters ? 'var(--brand)' : 'var(--bg-card)',
+            color: showFilters ? '#fff' : 'var(--text-muted)',
+            border: `1px solid ${showFilters ? 'var(--brand)' : 'var(--border-color)'}`,
+            boxShadow: showFilters ? 'none' : 'var(--shadow-sm)',
+          }}
         >
-          <Filter size={12} /> Filters {activeFilterCount > 0 && <span className="ml-1 px-1.5 py-0.5 bg-brand/20 rounded-md text-[9px]">{activeFilterCount}</span>}
+          <Filter size={14} /> Filters {activeFilterCount > 0 && <span className="px-1.5 py-0.5 text-[10px] rounded-full" style={{ background: showFilters ? 'rgba(255,255,255,0.2)' : 'var(--brand-soft)', color: showFilters ? '#fff' : 'var(--brand)' }}>{activeFilterCount}</span>}
         </button>
       </div>
 
+      {/* Filters panel */}
       {showFilters && (
-        <div className="border border-border bg-card p-4 rounded-card shadow-card space-y-4 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-brand font-semibold">Screener Filters</span>
+        <div className="rounded-2xl p-5 animate-fade-up" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--brand)' }}>Filters</span>
             {activeFilterCount > 0 && (
-              <button onClick={clearFilters} className="flex items-center gap-1 font-mono text-[10px] text-muted hover:text-brand transition-colors">
-                <X size={10} /> Clear All
+              <button onClick={clearFilters} className="flex items-center gap-1 text-xs transition-colors" style={{ color: 'var(--text-sub)' }}>
+                <X size={12} /> Clear all
               </button>
             )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div>
-              <label className="font-mono text-[10px] text-muted uppercase mb-1 block">Min Composite: {minComposite.toFixed(1)}</label>
-              <input type="range" min="0" max="10" step="0.5" value={minComposite} onChange={e => setMinComposite(Number(e.target.value))} className="w-full accent-brand" />
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-muted)' }}>Min composite: {minComposite.toFixed(1)}</label>
+              <input type="range" min="0" max="10" step="0.5" value={minComposite} onChange={e => setMinComposite(Number(e.target.value))} className="w-full" />
             </div>
             <div>
-              <label className="font-mono text-[10px] text-muted uppercase mb-1 block">Min Piotroski: {minPiotroski}</label>
-              <input type="range" min="0" max="9" step="1" value={minPiotroski} onChange={e => setMinPiotroski(Number(e.target.value))} className="w-full accent-brand" />
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-muted)' }}>Min Piotroski: {minPiotroski}</label>
+              <input type="range" min="0" max="9" step="1" value={minPiotroski} onChange={e => setMinPiotroski(Number(e.target.value))} className="w-full" />
             </div>
             <div>
-              <label className="font-mono text-[10px] text-muted uppercase mb-1 block">Min Market Cap: ₹{minMarketCap}B</label>
-              <input type="range" min="0" max="500" step="10" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full accent-brand" />
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-muted)' }}>Min market cap: ₹{minMarketCap}B</label>
+              <input type="range" min="0" max="500" step="10" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" />
             </div>
             <div>
-              <label className="font-mono text-[10px] text-muted uppercase mb-1 block">Max D/E: {maxDE >= 999 ? 'Any' : maxDE}</label>
-              <input type="range" min="0" max="10" step="0.5" value={maxDE >= 999 ? 10 : maxDE} onChange={e => setMaxDE(Number(e.target.value) >= 10 ? 999 : Number(e.target.value))} className="w-full accent-brand" />
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-muted)' }}>Max D/E: {maxDE >= 999 ? 'Any' : maxDE}</label>
+              <input type="range" min="0" max="10" step="0.5" value={maxDE >= 999 ? 10 : maxDE} onChange={e => setMaxDE(Number(e.target.value) >= 10 ? 999 : Number(e.target.value))} className="w-full" />
             </div>
             <div>
-              <label className="font-mono text-[10px] text-muted uppercase mb-2 block">Sectors</label>
+              <label className="text-xs mb-2 block" style={{ color: 'var(--text-muted)' }}>Sectors</label>
               <div className="flex flex-wrap gap-1.5">
                 {availableSectors.map(s => (
-                  <button key={s} onClick={() => toggleSector(s)} className={`px-2 py-0.5 font-mono text-[9px] border transition-all rounded-md ${selectedSectors.includes(s) ? 'border-brand bg-brand text-background font-semibold' : 'border-border text-muted hover:text-primary hover:border-brand/30'}`}>
+                  <button key={s} onClick={() => toggleSector(s)} className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all" style={selectedSectors.includes(s) ? { background: 'var(--brand)', color: '#fff' } : { background: 'var(--surface)', color: 'var(--text-muted)' }}>
                     {s}
                   </button>
                 ))}
               </div>
             </div>
             <div>
-              <label className="font-mono text-[10px] text-muted uppercase mb-2 block">Conviction</label>
+              <label className="text-xs mb-2 block" style={{ color: 'var(--text-muted)' }}>Conviction</label>
               <div className="flex flex-wrap gap-1.5">
                 {CONVICTION_OPTIONS.map(c => (
-                  <button key={c} onClick={() => toggleConviction(c)} className={`px-2 py-0.5 font-mono text-[9px] border transition-all rounded-md ${selectedConvictions.includes(c) ? 'border-brand bg-brand text-background font-semibold' : 'border-border text-muted hover:text-primary hover:border-brand/30'}`}>
+                  <button key={c} onClick={() => toggleConviction(c)} className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all" style={selectedConvictions.includes(c) ? { background: 'var(--brand)', color: '#fff' } : { background: 'var(--surface)', color: 'var(--text-muted)' }}>
                     {c}
                   </button>
                 ))}
@@ -135,207 +151,85 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
         </div>
       )}
 
-      {/* Mobile: Card view */}
-      <div className="sm:hidden space-y-3">
-        {filteredData.map((row, i) => (
-          <div
-            key={i}
-            className={`card-base p-4 rounded-card transition-all ${expandedRow === row.Ticker ? 'border-brand/40' : ''}`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <button
-                onClick={() => onSelect(row.Ticker)}
-                className="font-display font-bold text-lg text-primary tracking-tight"
-              >
-                {row.Ticker.replace('.NS', '')}<span className="text-brand">.</span>
-              </button>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => toggleWatchlist(row.Ticker)}
-                  className={`transition-colors ${watchlist.includes(row.Ticker) ? 'text-brand' : 'text-sub hover:text-brand'}`}
-                >
-                  <Star size={14} fill={watchlist.includes(row.Ticker) ? 'currentColor' : 'none'} />
-                </button>
-                <span className={`whitespace-nowrap px-1.5 py-0.5 text-[9px] font-mono border rounded-md ${
-                  row.Conviction === 'Strong Buy' ? 'border-green-500/40 text-green-600 dark:text-green-400 bg-green-500/10' :
-                  row.Conviction === 'Buy' ? 'border-blue-500/40 text-blue-600 dark:text-blue-400 bg-blue-500/10' :
-                  row.Conviction === 'Caution' ? 'border-orange-500/40 text-orange-600 dark:text-orange-400 bg-orange-500/10' :
-                  row.Conviction === 'Avoid' ? 'border-red-500/40 text-red-600 dark:text-red-400 bg-red-500/10' :
-                  'border-border text-muted'
-                }`}>{row.Conviction || 'N/A'}</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3 font-mono text-[10px] mb-3">
-              <div>
-                <span className="text-sub block uppercase">LTP</span>
-                <span className="text-primary font-medium">{num(row.Price)}</span>
-              </div>
-              <div>
-                <span className="text-sub block uppercase">1D %</span>
-                <span className={`font-medium ${colorCode(row['1d_Chg_%'])}`}>
-                  {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
-                </span>
-              </div>
-              <div>
-                <span className="text-sub block uppercase">Comp</span>
-                <span className={`font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</span>
-              </div>
-              <div>
-                <span className="text-sub block uppercase">Sector</span>
-                <span className="text-primary truncate block">{row.Sector || '-'}</span>
-              </div>
-              <div>
-                <span className="text-sub block uppercase">Trend</span>
-                <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} />
-              </div>
-              <div>
-                <span className="text-sub block uppercase">Tech</span>
-                <span className={`font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
-              className="w-full flex items-center justify-center gap-1 py-1.5 font-mono text-[9px] text-sub border border-border rounded-md hover:border-brand/30 hover:text-brand transition-all"
-            >
-              <Info size={10} />
-              {expandedRow === row.Ticker ? 'Less' : 'More'}
-            </button>
-
-            {expandedRow === row.Ticker && (
-              <div className="mt-3 pt-3 border-t border-border space-y-4 animate-fade-in">
-                <div>
-                  <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-2">Technical Signals</h4>
-                  <div className="space-y-1.5 font-mono text-[10px]">
-                    {[
-                      ['Price vs SMA50', row.Sig_Price_vs_SMA50], ['Price vs SMA200', row.Sig_Price_vs_SMA200],
-                      ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200], ['RSI', row.Sig_RSI],
-                      ['MACD Cross', row.Sig_MACD_Cross], ['MACD Hist', row.Sig_MACD_Hist],
-                      ['Stochastic', row.Sig_Stoch], ['Bollinger Bands', row.Sig_BB],
-                      ['CCI', row.Sig_CCI], ['Volume Spike', row.Sig_Volume],
-                      ['ADX Trend', row.Sig_ADX], ['Supertrend', row.Sig_Supertrend],
-                      ['Vol Price Trend', row.Sig_VPT], ['Ichimoku Cloud', row.Sig_Ichimoku],
-                    ].map(([label, val]) => (
-                      <div key={label as string} className="flex items-center justify-between">
-                        <span className="text-muted">{label}</span>
-                        {getSignalLabel(val)}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-border grid grid-cols-3 gap-2 font-mono text-[9px]">
-                    <div><span className="text-sub block">Bull</span><span className="text-green-600 dark:text-green-400 font-semibold">{row.Bull_Count ?? '-'}</span></div>
-                    <div><span className="text-sub block">Bear</span><span className="text-red-600 dark:text-red-400 font-semibold">{row.Bear_Count ?? '-'}</span></div>
-                    <div><span className="text-sub block">RS %ile</span><span className="text-primary font-semibold">{num(row.RS_Percentile)}%</span></div>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-2">Research Factors</h4>
-                  <div className="space-y-1.5 font-mono text-[10px]">
-                    {[
-                      ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`],
-                      ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`],
-                      ['Earnings Quality', `${num(row.Earnings_Quality)}/10`],
-                      ['Volatility (60D)', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : 'N/A'],
-                      ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'],
-                      ['Risk-Adj Mom', num(row.Risk_Adj_Mom)],
-                      ['Z-Score (60D)', num(row.Z_Score_60)],
-                      ['Sharpe', num(row.Sharpe)],
-                      ['Max DD', num(row['Max_Drawdown_%'])],
-                    ].map(([label, val]) => (
-                      <div key={label as string} className="flex items-center justify-between">
-                        <span className="text-muted">{label}</span>
-                        <span className="text-primary">{val}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Desktop: Table view */}
-      <div className="overflow-x-auto border border-border bg-card shadow-card rounded-card hidden sm:block">
-        <table className="w-full text-left font-mono text-xs">
+      {/* Desktop table */}
+      <div className="rounded-2xl overflow-hidden hidden sm:block" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+        <table className="w-full text-left">
           <thead>
-            <tr className="border-b border-border text-sub uppercase tracking-widest bg-brand-soft">
+            <tr style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--surface)' }}>
               <SortHeader field="Ticker" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Ticker</SortHeader>
               <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline">Sector</span></SortHeader>
-              <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>LTP</SortHeader>
-              <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>1D %</SortHeader>
-              <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Comp</SortHeader>
-              <th className="p-3 font-semibold text-center">Trend</th>
+              <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Price</SortHeader>
+              <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>1D</SortHeader>
+              <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Score</SortHeader>
+              <th className="py-3 px-3 font-medium text-xs text-center" style={{ color: 'var(--text-muted)' }}>Trend</th>
               <SortHeader field="Tech_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline">Tech</span></SortHeader>
               <SortHeader field="Fund_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">Fund</span></SortHeader>
               <SortHeader field="Research_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">Research</span></SortHeader>
               <SortHeader field="Piotroski_F" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">F-Score</span></SortHeader>
               <SortHeader field="Momentum_12M" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">12M Mom</span></SortHeader>
               <SortHeader field="P/E" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">P/E</span></SortHeader>
-              <SortHeader field="Debt_to_Equity" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">D/E</span></SortHeader>
               <SortHeader field="Conviction" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Conv</SortHeader>
-              <th className="p-4"></th>
+              <th className="py-3 px-3"></th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((row, i) => (
               <React.Fragment key={i}>
                 <tr
-                  className={`border-b border-border hover:bg-brand-soft transition-colors duration-200 ${expandedRow === row.Ticker ? 'bg-brand-soft' : ''}`}
+                  className="transition-colors"
+                  style={{
+                    borderBottom: '1px solid var(--border-color)',
+                    background: expandedRow === row.Ticker ? 'var(--brand-soft)' : 'transparent',
+                  }}
+                  onMouseEnter={e => { if (expandedRow !== row.Ticker) e.currentTarget.style.background = 'var(--surface)' }}
+                  onMouseLeave={e => { if (expandedRow !== row.Ticker) e.currentTarget.style.background = 'transparent' }}
                 >
-                  <td className="p-3 text-primary font-medium cursor-pointer hover:text-brand transition-colors" onClick={() => onSelect(row.Ticker)}>{row.Ticker.replace('.NS', '')}</td>
-                  <td className="p-3 text-muted hidden md:table-cell">{row.Sector || '-'}</td>
-                  <td className="p-3 text-right text-muted">{num(row.Price)}</td>
-                  <td className={`p-3 text-right font-medium ${colorCode(row['1d_Chg_%'])}`}>
+                  <td className="py-3 px-3 font-medium text-sm cursor-pointer transition-colors" style={{ color: 'var(--text-main)' }} onClick={() => onSelect(row.Ticker)}
+                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--brand)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-main)')}
+                  >
+                    {row.Ticker.replace('.NS', '')}
+                  </td>
+                  <td className="py-3 px-3 text-sm hidden md:table-cell" style={{ color: 'var(--text-muted)' }}>{row.Sector || '-'}</td>
+                  <td className="py-3 px-3 text-right font-data text-sm" style={{ color: 'var(--text-main)' }}>{num(row.Price)}</td>
+                  <td className={`py-3 px-3 text-right text-sm font-medium ${colorCode(row['1d_Chg_%'])}`}>
                     {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
                   </td>
-                  <td className={`p-3 text-right font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
-                  <td className="p-3 text-center">
+                  <td className={`py-3 px-3 text-right text-sm font-medium font-data ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
+                  <td className="py-3 px-3 text-center">
                     <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} />
                   </td>
-                  <td className={`p-3 text-right font-medium hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
-                  <td className={`p-3 text-right font-medium hidden lg:table-cell ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-400' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
-                  <td className={`p-3 text-right font-medium hidden lg:table-cell ${Number(row.Research_Score) >= 7 ? 'text-green-600 dark:text-green-400' : Number(row.Research_Score) < 4 ? 'text-red-600 dark:text-red-400' : 'text-primary'}`}>{num(row.Research_Score)}</td>
-                  <td className={`p-3 text-right font-medium hidden lg:table-cell ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-400' : Number(row.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-400' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}<span className="text-sub">/9</span></td>
-                  <td className={`p-3 text-right font-medium hidden xl:table-cell ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</td>
-                  <td className="p-3 text-right text-muted hidden xl:table-cell">{num(row['P/E'])}</td>
-                  <td className="p-3 text-right text-muted hidden xl:table-cell">{num(row['Debt_to_Equity'])}</td>
-                  <td className="p-3 font-medium">
-                    <span className={`whitespace-nowrap px-1.5 py-0.5 text-[9px] font-mono border rounded-md ${
-                      row.Conviction === 'Strong Buy' ? 'border-green-500/40 text-green-600 dark:text-green-400 bg-green-500/10' :
-                      row.Conviction === 'Buy' ? 'border-blue-500/40 text-blue-600 dark:text-blue-400 bg-blue-500/10' :
-                      row.Conviction === 'Caution' ? 'border-orange-500/40 text-orange-600 dark:text-orange-400 bg-orange-500/10' :
-                      row.Conviction === 'Avoid' ? 'border-red-500/40 text-red-600 dark:text-red-400 bg-red-500/10' :
-                      'border-border text-muted'
-                    }`}>{row.Conviction || 'N/A'}</span>
+                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
+                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden lg:table-cell ${Number(row.Fund_Score) >= 5 ? 'text-green' : 'text-heading'}`}>{num(row.Fund_Score)}</td>
+                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden lg:table-cell ${Number(row.Research_Score) >= 7 ? 'text-green' : Number(row.Research_Score) < 4 ? 'text-red' : 'text-heading'}`}>{num(row.Research_Score)}</td>
+                  <td className={`py-3 px-3 text-right text-sm font-medium hidden lg:table-cell ${Number(row.Piotroski_F) >= 7 ? 'text-green' : Number(row.Piotroski_F) <= 3 ? 'text-red' : 'text-heading'}`}>
+                    <span className="font-data">{row.Piotroski_F ?? '-'}</span><span className="text-sub">/9</span>
                   </td>
-                  <td className="p-3 text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleWatchlist(row.Ticker) }}
-                        className={`transition-colors ${watchlist.includes(row.Ticker) ? 'text-brand' : 'text-sub hover:text-brand'}`}
-                        title={watchlist.includes(row.Ticker) ? 'Remove from Watchlist' : 'Add to Watchlist'}
-                      >
+                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden xl:table-cell ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</td>
+                  <td className="py-3 px-3 text-right text-sm font-data hidden xl:table-cell" style={{ color: 'var(--text-muted)' }}>{num(row['P/E'])}</td>
+                  <td className="py-3 px-3 text-sm font-medium">
+                    <span className="inline-block px-2 py-0.5 text-[11px] font-medium rounded-full" style={convictionStyle(row.Conviction)}>
+                      {row.Conviction || 'N/A'}
+                    </span>
+                  </td>
+                  <td className="py-3 px-3">
+                    <div className="flex items-center gap-1">
+                      <button onClick={(e) => { e.stopPropagation(); toggleWatchlist(row.Ticker) }} className="transition-colors" style={{ color: watchlist.includes(row.Ticker) ? 'var(--brand)' : 'var(--text-sub)' }}>
                         <Star size={14} fill={watchlist.includes(row.Ticker) ? 'currentColor' : 'none'} />
                       </button>
-                      <button
-                        onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
-                        className="text-sub hover:text-brand transition-colors"
-                        title="View Score Breakdown"
-                      >
-                        <Info size={16} />
+                      <button onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)} className="transition-colors" style={{ color: 'var(--text-sub)' }}>
+                        <Info size={15} />
                       </button>
                     </div>
                   </td>
                 </tr>
                 {expandedRow === row.Ticker && (
-                  <tr className="bg-brand-soft border-b border-border">
-                    <td colSpan={15} className="p-6">
+                  <tr style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--brand-soft)' }}>
+                    <td colSpan={14} className="p-6">
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="flex flex-col">
-                          <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-3 font-semibold">Technical Signals</h4>
-                          <div className="space-y-2 font-mono text-[11px] flex-1">
+                        <div>
+                          <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--brand)' }}>Technical Signals</h4>
+                          <div className="space-y-2 text-sm">
                             {[
                               ['Price vs SMA50', row.Sig_Price_vs_SMA50], ['Price vs SMA200', row.Sig_Price_vs_SMA200],
                               ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200], ['RSI', row.Sig_RSI],
@@ -346,45 +240,36 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                               ['Vol Price Trend', row.Sig_VPT], ['Ichimoku Cloud', row.Sig_Ichimoku],
                             ].map(([label, val]) => (
                               <div key={label as string} className="flex items-center justify-between">
-                                <span className="text-muted">{label}</span>
+                                <span style={{ color: 'var(--text-muted)' }}>{label}</span>
                                 {getSignalLabel(val)}
                               </div>
                             ))}
                           </div>
-                          <div className="mt-4 pt-3 border-t border-border grid grid-cols-3 gap-3 font-mono text-[10px]">
-                            <div><span className="text-sub block">Bull Signals</span><span className="text-green-600 dark:text-green-400 font-semibold">{row.Bull_Count ?? '-'}</span></div>
-                            <div><span className="text-sub block">Bear Signals</span><span className="text-red-600 dark:text-red-400 font-semibold">{row.Bear_Count ?? '-'}</span></div>
-                            <div><span className="text-sub block">RS Percentile</span><span className="text-primary font-semibold">{num(row.RS_Percentile)}%</span></div>
+                          <div className="mt-4 pt-3 grid grid-cols-3 gap-3 text-xs" style={{ borderTop: '1px solid var(--border-color)' }}>
+                            <div><span style={{ color: 'var(--text-sub)' }}>Bull</span><br/><span className="font-medium font-data text-green">{row.Bull_Count ?? '-'}</span></div>
+                            <div><span style={{ color: 'var(--text-sub)' }}>Bear</span><br/><span className="font-medium font-data text-red">{row.Bear_Count ?? '-'}</span></div>
+                            <div><span style={{ color: 'var(--text-sub)' }}>RS %ile</span><br/><span className="font-medium font-data text-heading">{num(row.RS_Percentile)}%</span></div>
                           </div>
                         </div>
-                        <div className="flex flex-col">
-                          <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand mb-3 font-semibold">Research Factors</h4>
-                          <div className="space-y-2 font-mono text-[11px] flex-1">
+                        <div>
+                          <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--brand)' }}>Research Factors</h4>
+                          <div className="space-y-2 text-sm">
                             {[
                               ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`],
                               ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`],
                               ['Earnings Quality', `${num(row.Earnings_Quality)}/10`],
                               ['Volatility (60D)', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : 'N/A'],
-                              ['1M Momentum', row.Momentum_1M != null ? `${(row.Momentum_1M * 100).toFixed(2)}%` : 'N/A'],
-                              ['3M Momentum', row.Momentum_3M != null ? `${(row.Momentum_3M * 100).toFixed(2)}%` : 'N/A'],
-                              ['6M Momentum', row.Momentum_6M != null ? `${(row.Momentum_6M * 100).toFixed(2)}%` : 'N/A'],
-                              ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(2)}%` : 'N/A'],
+                              ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'],
                               ['Risk-Adj Mom', num(row.Risk_Adj_Mom)],
                               ['Z-Score (60D)', num(row.Z_Score_60)],
-                              ['Reversion Signal', Number(row.Reversion_Signal) === 1 ? 'Oversold' : Number(row.Reversion_Signal) === -1 ? 'Overbought' : 'Neutral'],
-                              ['Downside Dev', row.Downside_Dev != null ? `${row.Downside_Dev.toFixed(1)}%` : 'N/A'],
+                              ['Sharpe', num(row.Sharpe)],
+                              ['Max DD', num(row['Max_Drawdown_%'])],
                             ].map(([label, val]) => (
                               <div key={label as string} className="flex items-center justify-between">
-                                <span className="text-muted">{label}</span>
-                                <span className="text-primary">{val}</span>
+                                <span style={{ color: 'var(--text-muted)' }}>{label}</span>
+                                <span className="text-heading">{val}</span>
                               </div>
                             ))}
-                          </div>
-                          <div className="mt-4 pt-3 border-t border-border grid grid-cols-4 gap-3 font-mono text-[10px]">
-                            <div><span className="text-sub block">Total Return</span><span className={`font-semibold ${colorCode(row['Total_Return_%'])}`}>{num(row['Total_Return_%'])}%</span></div>
-                            <div><span className="text-sub block">Ann Vol</span><span className="text-primary">{num(row['Ann_Vol_%'])}%</span></div>
-                            <div><span className="text-sub block">Sharpe</span><span className={`font-semibold ${colorCode(row.Sharpe)}`}>{num(row.Sharpe)}</span></div>
-                            <div><span className="text-sub block">Max DD</span><span className="text-red-600 dark:text-red-400">{num(row['Max_Drawdown_%'])}%</span></div>
                           </div>
                         </div>
                       </div>
@@ -395,6 +280,70 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile card view */}
+      <div className="sm:hidden space-y-3">
+        {filteredData.map((row, i) => (
+          <div key={i} className="rounded-2xl p-4" style={{ background: 'var(--bg-card)', border: `1px solid ${expandedRow === row.Ticker ? 'color-mix(in srgb, var(--brand) 30%, var(--border-color))' : 'var(--border-color)'}`, boxShadow: 'var(--shadow-sm)' }}>
+            <div className="flex items-center justify-between mb-3">
+              <button onClick={() => onSelect(row.Ticker)} className="text-lg font-bold" style={{ color: 'var(--text-main)' }}>
+                {row.Ticker.replace('.NS', '')}
+              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => toggleWatchlist(row.Ticker)} style={{ color: watchlist.includes(row.Ticker) ? 'var(--brand)' : 'var(--text-sub)' }}>
+                  <Star size={14} fill={watchlist.includes(row.Ticker) ? 'currentColor' : 'none'} />
+                </button>
+                <span className="px-2 py-0.5 text-[11px] font-medium rounded-full" style={convictionStyle(row.Conviction)}>
+                  {row.Conviction || 'N/A'}
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-sm mb-3">
+              <div>
+                <span className="text-[11px]" style={{ color: 'var(--text-sub)' }}>Price</span>
+                <p className="font-data font-medium text-heading">{num(row.Price)}</p>
+              </div>
+              <div>
+                <span className="text-[11px]" style={{ color: 'var(--text-sub)' }}>1D</span>
+                <p className={`font-data font-medium ${colorCode(row['1d_Chg_%'])}`}>
+                  {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
+                </p>
+              </div>
+              <div>
+                <span className="text-[11px]" style={{ color: 'var(--text-sub)' }}>Score</span>
+                <p className={`font-data font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
+              className="w-full py-2 text-xs font-medium rounded-lg transition-all"
+              style={{ background: 'var(--surface)', color: 'var(--text-muted)' }}
+            >
+              {expandedRow === row.Ticker ? 'Show less' : 'Show more'}
+            </button>
+            {expandedRow === row.Ticker && (
+              <div className="mt-3 pt-3 space-y-4 animate-fade-up" style={{ borderTop: '1px solid var(--border-color)' }}>
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--brand)' }}>Signals</h4>
+                  <div className="space-y-1.5 text-sm">
+                    {[
+                      ['Price vs SMA50', row.Sig_Price_vs_SMA50], ['Price vs SMA200', row.Sig_Price_vs_SMA200],
+                      ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200], ['RSI', row.Sig_RSI],
+                      ['MACD Cross', row.Sig_MACD_Cross], ['Supertrend', row.Sig_Supertrend],
+                      ['Bollinger Bands', row.Sig_BB], ['ADX Trend', row.Sig_ADX],
+                    ].map(([label, val]) => (
+                      <div key={label as string} className="flex items-center justify-between">
+                        <span style={{ color: 'var(--text-muted)' }}>{label}</span>
+                        {getSignalLabel(val)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   )

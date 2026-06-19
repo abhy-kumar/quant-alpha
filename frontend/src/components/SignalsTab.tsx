@@ -1,5 +1,5 @@
 import type { DashboardData } from '../types'
-import { num, colorCode } from './shared'
+import { num } from './shared'
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from 'recharts'
 
 interface Props {
@@ -22,17 +22,17 @@ function ScoreRadar({ stock, isDark }: { stock: DashboardData; isDark: boolean }
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="65%">
-        <PolarGrid stroke={isDark ? '#1A2535' : '#D6DCE5'} />
+        <PolarGrid stroke={isDark ? '#1E2230' : '#E4E7EC'} />
         <PolarAngleAxis
           dataKey="axis"
-          tick={{ fill: isDark ? '#4E6478' : '#7B8FA6', fontSize: 9, fontFamily: 'Space Mono' }}
+          tick={{ fill: isDark ? '#4A5468' : '#8B95A5', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }}
         />
         <Radar
           name="Score"
           dataKey="value"
           stroke="var(--brand)"
           fill="var(--brand)"
-          fillOpacity={0.15}
+          fillOpacity={0.12}
           strokeWidth={1.5}
         />
       </RadarChart>
@@ -43,113 +43,122 @@ function ScoreRadar({ stock, isDark }: { stock: DashboardData; isDark: boolean }
 export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect, isDark }: Props) {
   return (
     <div className="space-y-6">
+      {/* Horizon toggle */}
       <div className="flex justify-end">
-        <div className="flex bg-card border border-border p-0.5 rounded-lg shadow-sm">
-          <button
-            onClick={() => setHorizon('short')}
-            className={`px-4 py-1.5 font-mono text-[10px] uppercase tracking-widest transition-all rounded-md ${horizon === 'short' ? 'bg-brand text-background shadow-sm font-semibold' : 'text-muted hover:text-primary'}`}
-          >
-            Short Term
-          </button>
-          <button
-            onClick={() => setHorizon('long')}
-            className={`px-4 py-1.5 font-mono text-[10px] uppercase tracking-widest transition-all rounded-md ${horizon === 'long' ? 'bg-brand text-background shadow-sm font-semibold' : 'text-muted hover:text-primary'}`}
-          >
-            Long Term
-          </button>
+        <div className="inline-flex rounded-xl p-0.5" style={{ background: 'var(--surface)' }}>
+          {(['short', 'long'] as const).map(h => (
+            <button
+              key={h}
+              onClick={() => setHorizon(h)}
+              className="px-5 py-2 text-sm font-medium rounded-lg transition-all"
+              style={{
+                background: horizon === h ? 'var(--bg-card)' : 'transparent',
+                color: horizon === h ? 'var(--text-main)' : 'var(--text-sub)',
+                boxShadow: horizon === h ? 'var(--shadow)' : 'none',
+              }}
+            >
+              {h === 'short' ? 'Short Term' : 'Long Term'}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+      {/* Picks grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {topPicks.map((stock, i) => {
-          const convictionColor =
-            stock.Conviction === 'Strong Buy'
-              ? 'border-green-500/50 text-green-600 dark:text-green-400 bg-green-500/10'
-              : stock.Conviction === 'Buy'
-              ? 'border-blue-500/50 text-blue-600 dark:text-blue-400 bg-blue-500/10'
-              : 'border-border text-muted'
-
           const composite = Number(stock.Composite_Score) || 0
 
           return (
             <div
               key={stock.Ticker}
               onClick={() => onSelect(stock.Ticker)}
-              className="card-base p-4 sm:p-6 rounded-card cursor-pointer group active:scale-[0.98] transition-all"
+              className="rounded-2xl p-6 cursor-pointer group transition-all duration-300"
+              style={{
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                boxShadow: 'var(--shadow)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.boxShadow = 'var(--shadow-md)'
+                e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--brand) 30%, var(--border-color))'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.boxShadow = 'var(--shadow)'
+                e.currentTarget.style.borderColor = 'var(--border-color)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
             >
-              {/* Header row */}
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-mono text-[9px] text-sub uppercase tracking-widest group-hover:text-brand transition-colors">
+              {/* Top: rank + conviction */}
+              <div className="flex items-center justify-between mb-5">
+                <span className="text-xs" style={{ color: 'var(--text-sub)' }}>
                   #{i + 1} &middot; {horizon === 'short' ? 'Momentum' : 'Value'}
                 </span>
-                <span className={`font-mono text-[9px] px-2 py-0.5 border rounded-md ${convictionColor}`}>
+                <span
+                  className="px-2.5 py-1 text-[11px] font-medium rounded-full"
+                  style={
+                    stock.Conviction === 'Strong Buy'
+                      ? { background: 'var(--green-soft)', color: 'var(--green)' }
+                      : stock.Conviction === 'Buy'
+                      ? { background: 'var(--blue-soft)', color: 'var(--blue)' }
+                      : { background: 'var(--surface)', color: 'var(--text-muted)' }
+                  }
+                >
                   {stock.Conviction || 'N/A'}
                 </span>
               </div>
 
-              {/* Ticker + Sector */}
-              <div className="mb-4">
-                <h3 className="font-display font-bold text-2xl text-primary leading-none tracking-tight">
-                  {stock.Ticker.replace('.NS', '')}<span className="text-brand">.</span>
-                </h3>
-                <div className="font-mono text-[10px] text-brand tracking-widest mt-1.5 uppercase opacity-80">
+              {/* Ticker */}
+              <div className="mb-6">
+                <h2 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text-main)' }}>
+                  {stock.Ticker.replace('.NS', '')}
+                </h2>
+                <p className="text-sm mt-1 font-medium" style={{ color: 'var(--brand)' }}>
                   {stock.Sector || 'Equities'}
-                </div>
+                </p>
               </div>
 
-              {/* Composite score + Radar */}
-              <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-4 py-3 border-y border-border/60">
-                <div className="flex flex-col items-center justify-center w-16 sm:w-20 shrink-0">
-                  <span className="font-mono text-[8px] sm:text-[9px] text-sub uppercase tracking-wider">Composite</span>
+              {/* Score + Radar */}
+              <div className="flex flex-col sm:flex-row items-center gap-4 mb-5 py-4" style={{ borderTop: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>
+                <div className="flex flex-col items-center shrink-0">
+                  <span className="text-[11px] font-medium" style={{ color: 'var(--text-sub)' }}>Composite</span>
                   <span
-                    className={`font-display text-3xl font-bold leading-none mt-1 ${
-                      composite >= 7 ? 'text-green-600 dark:text-green-400' :
-                      composite >= 4 ? 'text-primary' :
-                      'text-red-600 dark:text-red-400'
-                    }`}
+                    className="text-4xl font-bold mt-1 leading-none font-data"
+                    style={{
+                      color: composite >= 7 ? 'var(--green)' : composite >= 4 ? 'var(--text-main)' : 'var(--red)',
+                    }}
                   >
                     {composite.toFixed(1)}
                   </span>
-                  <span className="font-mono text-[8px] text-sub">/10</span>
+                  <span className="text-[11px] mt-1" style={{ color: 'var(--text-sub)' }}>/10</span>
                 </div>
-
-                <div className="flex-1 h-[140px] w-full">
+                <div className="flex-1 h-[150px] w-full">
                   <ScoreRadar stock={stock} isDark={isDark} />
                 </div>
               </div>
 
-              {/* Metrics grid */}
-              <div className="grid grid-cols-3 gap-x-2 gap-y-2.5 sm:gap-y-3 font-mono text-[9px] sm:text-[10px]">
-                <div className="flex flex-col">
-                  <span className="text-sub">Piotroski</span>
-                  <span className={`font-semibold ${Number(stock.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-400' : Number(stock.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-400' : 'text-primary'}`}>
-                    {stock.Piotroski_F ?? '-'}/9
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sub">12M Mom</span>
-                  <span className={`font-semibold ${colorCode(stock.Momentum_12M)}`}>
-                    {stock.Momentum_12M != null ? `${(stock.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sub">P/E</span>
-                  <span className="text-primary">{num(stock['P/E'])}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sub">ROE</span>
-                  <span className="text-primary">{num(stock['ROE_%'])}%</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sub">Mkt Cap</span>
-                  <span className="text-primary">{num(stock.Market_Cap_B)}B</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sub">Vol 60D</span>
-                  <span className={`font-semibold ${Number(stock.Vol_60D) < 25 ? 'text-green-600 dark:text-green-400' : Number(stock.Vol_60D) > 40 ? 'text-red-600 dark:text-red-400' : 'text-primary'}`}>
-                    {num(stock.Vol_60D)}%
-                  </span>
-                </div>
+              {/* Key metrics */}
+              <div className="grid grid-cols-3 gap-x-4 gap-y-3">
+                {[
+                  { label: 'Piotroski', value: `${stock.Piotroski_F ?? '-'}/9`, good: Number(stock.Piotroski_F) >= 7, bad: Number(stock.Piotroski_F) <= 3 },
+                  { label: '12M Mom', value: stock.Momentum_12M != null ? `${(stock.Momentum_12M * 100).toFixed(1)}%` : 'N/A', good: Number(stock.Momentum_12M) > 0, bad: Number(stock.Momentum_12M) < 0 },
+                  { label: 'P/E', value: num(stock['P/E']), good: false, bad: false },
+                  { label: 'ROE', value: `${num(stock['ROE_%'])}%`, good: false, bad: false },
+                  { label: 'Mkt Cap', value: `${num(stock.Market_Cap_B)}B`, good: false, bad: false },
+                  { label: 'Vol 60D', value: `${num(stock.Vol_60D)}%`, good: Number(stock.Vol_60D) < 25, bad: Number(stock.Vol_60D) > 40 },
+                ].map(m => (
+                  <div key={m.label}>
+                    <span className="text-[11px]" style={{ color: 'var(--text-sub)' }}>{m.label}</span>
+                    <p
+                      className="text-sm font-medium mt-0.5 font-data"
+                      style={{
+                        color: m.good ? 'var(--green)' : m.bad ? 'var(--red)' : 'var(--text-main)',
+                      }}
+                    >
+                      {m.value}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           )

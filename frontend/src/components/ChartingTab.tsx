@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import type { DashboardData } from '../types'
 import { num, colorCode, scoreBar } from './shared'
-import { TrendingUp, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import {
   ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell
 } from 'recharts'
@@ -56,8 +56,8 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
 
   return (
     <div className="relative" ref={containerRef}>
-        <div className="flex items-center gap-3 bg-card border border-border p-1 rounded-lg shadow-card hover:border-brand/50 transition-colors">
-        <div className="pl-3"><Search size={14} className="text-muted" /></div>
+      <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+        <Search size={15} style={{ color: 'var(--text-sub)' }} />
         <input
           ref={inputRef}
           type="text"
@@ -65,22 +65,29 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
           onFocus={() => { setOpen(true); setQuery('') }}
           onChange={e => setQuery(e.target.value)}
           placeholder="Search ticker or sector..."
-          className="bg-transparent text-primary font-mono text-xs uppercase outline-none w-full py-1.5 pr-2 placeholder:text-muted"
+          className="bg-transparent text-sm outline-none w-full"
+          style={{ color: 'var(--text-main)' }}
         />
-        <span className="pr-2 font-mono text-[8px] text-sub border border-border px-1 py-0.5 hidden sm:block">⌘K</span>
+        <kbd className="text-[10px] px-1.5 py-0.5 rounded hidden sm:block" style={{ color: 'var(--text-sub)', background: 'var(--surface)', border: '1px solid var(--border-color)' }}>⌘K</kbd>
       </div>
       {open && query && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 border border-border bg-card shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-xl overflow-hidden max-h-60 overflow-y-auto" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
           {filtered.length === 0 ? (
-            <div className="p-3 font-mono text-[10px] text-muted text-center">No results</div>
+            <div className="p-3 text-xs text-center" style={{ color: 'var(--text-sub)' }}>No results</div>
           ) : filtered.map(d => (
             <button
               key={d.Ticker}
               onClick={() => { onSelect(d.Ticker); setOpen(false); setQuery('') }}
-              className={`w-full text-left px-3 py-2 font-mono text-xs flex items-center justify-between hover:bg-black/5 dark:hover:bg-white/5 transition-colors ${d.Ticker === selectedTicker ? 'bg-brand/10' : ''}`}
+              className="w-full text-left px-3 py-2 text-sm flex items-center justify-between transition-colors"
+              style={{
+                background: d.Ticker === selectedTicker ? 'var(--brand-soft)' : 'transparent',
+                color: 'var(--text-main)',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface)')}
+              onMouseLeave={e => (e.currentTarget.style.background = d.Ticker === selectedTicker ? 'var(--brand-soft)' : 'transparent')}
             >
-              <span className="text-primary uppercase">{d.Ticker.replace('.NS', '')}</span>
-              <span className="text-muted text-[10px]">{d.Sector}</span>
+              <span className="font-medium">{d.Ticker.replace('.NS', '')}</span>
+              <span className="text-xs" style={{ color: 'var(--text-sub)' }}>{d.Sector}</span>
             </button>
           ))}
         </div>
@@ -90,12 +97,31 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
 }
 
 const tooltipStyle = (isDark: boolean) => ({
-  backgroundColor: isDark ? '#0A0A0A' : '#ffffff',
-  borderColor: isDark ? '#27272A' : '#e2e8f0',
-  fontFamily: 'Space Mono',
+  backgroundColor: isDark ? '#111318' : '#ffffff',
+  borderColor: isDark ? '#1E2230' : '#E4E7EC',
+  borderRadius: '12px',
+  fontFamily: 'Inter, system-ui, sans-serif',
   fontSize: '12px',
-  color: isDark ? '#fff' : '#0f172a'
+  color: isDark ? '#E8ECF2' : '#1A1D26',
+  boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.08)',
+  padding: '10px 14px',
 })
+
+const Panel = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+    <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
+      {title}
+    </div>
+    {children}
+  </div>
+)
+
+const InfoBlock = ({ label, value, accent }: { label: string; value: React.ReactNode; accent?: string }) => (
+  <div>
+    <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-sub)' }}>{label}</div>
+    <div className="text-sm font-medium" style={{ color: accent || 'var(--text-main)' }}>{value}</div>
+  </div>
+)
 
 export default function ChartingTab({
   data, selectedTicker, setSelectedTicker, chartData, chartLoading,
@@ -112,308 +138,262 @@ export default function ChartingTab({
   }, [])
 
   const tickerScores = scoreHistory[selectedTicker] || []
+
   return (
     <div className="flex flex-col xl:flex-row gap-6 xl:gap-8">
-      {/* Left Column: Controls & Snapshots */}
-      <div className="w-full xl:w-1/4 flex flex-col gap-4 xl:gap-6 order-2 xl:order-1">
-        <div className="flex flex-col gap-2">
-          <label className="font-mono text-[10px] uppercase tracking-widest text-sub font-semibold">Security</label>
-          <StockSearch data={data} selectedTicker={selectedTicker} onSelect={setSelectedTicker} />
-        </div>
+      {/* Left: Controls & Info */}
+      <div className="w-full xl:w-72 flex flex-col gap-5 order-2 xl:order-1 shrink-0">
+        <StockSearch data={data} selectedTicker={selectedTicker} onSelect={setSelectedTicker} />
 
         {/* Company Profile */}
-        <div className="border border-border bg-card p-4 sm:p-6 shadow-card rounded-card">
-          <h3 className="font-mono text-[10px] uppercase tracking-widest text-primary mb-3 sm:mb-4 border-b border-border pb-2 font-semibold flex justify-between">
-            Company Profile
-            <span className={Number(selectedAsset?.News_Sentiment) > 0.1 ? "text-green-600 dark:text-green-500" : Number(selectedAsset?.News_Sentiment) < -0.1 ? "text-red-600 dark:text-red-500" : "text-muted"}>
-              {selectedAsset?.News_Sentiment !== undefined && selectedAsset.News_Sentiment !== null ? `Sentiment: ${selectedAsset.News_Sentiment}` : ''}
-            </span>
-          </h3>
-          <div className="mb-6">
-            <div className="font-mono text-[10px] text-muted uppercase">Name</div>
-            <div className="font-display text-sm mt-1 text-primary truncate" title={selectedAsset?.Long_Name || 'N/A'}>{selectedAsset?.Long_Name || 'N/A'}</div>
+        <div className="rounded-2xl p-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+          <div className="flex items-start justify-between mb-4">
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--text-main)' }}>Company Profile</h3>
+            {selectedAsset?.News_Sentiment !== undefined && selectedAsset.News_Sentiment !== null && (
+              <span className={`text-xs font-medium ${Number(selectedAsset.News_Sentiment) > 0.1 ? 'text-green' : Number(selectedAsset.News_Sentiment) < -0.1 ? 'text-red' : 'text-sub'}`}>
+                {selectedAsset.News_Sentiment}
+              </span>
+            )}
           </div>
-          <div className="grid grid-cols-2 gap-y-4 gap-x-2">
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">Live Price</div>
-              <div className="font-display text-base font-semibold text-primary mt-1">₹{num(selectedAsset?.Price)}</div>
-            </div>
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">1D Change</div>
-              <div className={`font-mono text-xs mt-1 flex items-center font-semibold ${selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] > 0 ? 'text-green-500' : selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] < 0 ? 'text-red-500' : 'text-primary'}`}>
-                {selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] > 0 ? <TrendingUp size={12} className="mr-1"/> : selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] < 0 ? <TrendingUp size={12} className="mr-1 rotate-180"/> : null}
-                {selectedAsset?.["1d_Chg_%"] ? `${Math.abs(selectedAsset["1d_Chg_%"]).toFixed(2)}%` : 'N/A'}
-              </div>
-            </div>
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">CEO</div>
-              <div className="font-mono text-xs mt-1 text-primary truncate" title={selectedAsset?.CEO || 'N/A'}>{selectedAsset?.CEO || 'N/A'}</div>
-            </div>
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">Market Cap</div>
-              <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Market_Cap_B ? `₹${num(selectedAsset?.Market_Cap_B)}B` : 'N/A'}</div>
-            </div>
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">Revenue</div>
-              <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue)} Cr` : 'N/A'}</div>
-            </div>
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">Profit</div>
-              <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income)} Cr` : 'N/A'}</div>
-            </div>
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">EBITDA</div>
-              <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA)} Cr` : 'N/A'}</div>
-            </div>
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">Div Yield</div>
-              <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.["Div_Yield_%"] ? `${num(selectedAsset?.["Div_Yield_%"])}%` : 'N/A'}</div>
-            </div>
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">52W High</div>
-              <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.["52W_High"] ? `₹${num(selectedAsset?.["52W_High"])}` : 'N/A'}</div>
-            </div>
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">52W Low</div>
-              <div className="font-mono text-xs mt-1 text-primary truncate">{selectedAsset?.["52W_Low"] ? `₹${num(selectedAsset?.["52W_Low"])}` : 'N/A'}</div>
-            </div>
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">All-Time High</div>
-              <div className="font-mono text-xs mt-1 text-primary truncate flex items-center gap-1">
-                {selectedAsset?.All_Time_High ? `₹${num(selectedAsset?.All_Time_High)}` : 'N/A'}
-                {selectedAsset?.ATH_Source === '52W' && <span className="text-[8px] text-sub border border-border px-1 py-0.5 rounded-sm leading-none mt-px">52W</span>}
-              </div>
-            </div>
-            <div>
-              <div className="font-mono text-[10px] text-muted uppercase">All-Time Low</div>
-              <div className="font-mono text-xs mt-1 text-primary truncate flex items-center gap-1">
-                {selectedAsset?.All_Time_Low ? `₹${num(selectedAsset?.All_Time_Low)}` : 'N/A'}
-                {selectedAsset?.ATL_Source === '52W' && <span className="text-[8px] text-sub border border-border px-1 py-0.5 rounded-sm leading-none mt-px">52W</span>}
-              </div>
+          <div className="mb-4">
+            <div className="text-sm font-medium truncate" style={{ color: 'var(--text-main)' }} title={selectedAsset?.Long_Name || 'N/A'}>{selectedAsset?.Long_Name || 'N/A'}</div>
+          </div>
+          <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
+            <InfoBlock label="Price" value={`₹${num(selectedAsset?.Price)}`} />
+            <InfoBlock
+              label="1D Change"
+              value={selectedAsset?.["1d_Chg_%"] ? `${selectedAsset["1d_Chg_%"] > 0 ? '+' : ''}${selectedAsset["1d_Chg_%"].toFixed(2)}%` : 'N/A'}
+              accent={selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] > 0 ? 'var(--green)' : selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] < 0 ? 'var(--red)' : undefined}
+            />
+            <InfoBlock label="CEO" value={selectedAsset?.CEO || 'N/A'} />
+            <InfoBlock label="Market Cap" value={selectedAsset?.Market_Cap_B ? `₹${num(selectedAsset?.Market_Cap_B)}B` : 'N/A'} />
+            <InfoBlock label="Revenue" value={selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue)} Cr` : 'N/A'} />
+            <InfoBlock label="Profit" value={selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income)} Cr` : 'N/A'} />
+            <InfoBlock label="EBITDA" value={selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA)} Cr` : 'N/A'} />
+            <InfoBlock label="Div Yield" value={selectedAsset?.["Div_Yield_%"] ? `${num(selectedAsset?.["Div_Yield_%"])}%` : 'N/A'} />
+            <InfoBlock label="52W High" value={selectedAsset?.["52W_High"] ? `₹${num(selectedAsset?.["52W_High"])}` : 'N/A'} />
+            <InfoBlock label="52W Low" value={selectedAsset?.["52W_Low"] ? `₹${num(selectedAsset?.["52W_Low"])}` : 'N/A'} />
+            <InfoBlock label="ATH" value={selectedAsset?.All_Time_High ? `₹${num(selectedAsset?.All_Time_High)}` : 'N/A'} />
+            <InfoBlock label="ATL" value={selectedAsset?.All_Time_Low ? `₹${num(selectedAsset?.All_Time_Low)}` : 'N/A'} />
+          </div>
+        </div>
+
+        {/* Technicals */}
+        <div className="rounded-2xl p-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+          <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-main)' }}>Technical Snapshot</h3>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} />
+            <InfoBlock label="Conviction" value={selectedAsset?.Conviction || 'N/A'} />
+            <InfoBlock label="RSI (14)" value={num(selectedAsset?.RSI_Value)} />
+            <InfoBlock label="ADX (14)" value={num(selectedAsset?.ADX_Value)} />
+            <InfoBlock label="MACD" value={num(selectedAsset?.MACD_Value)} />
+            <InfoBlock label="Supertrend" value={selectedAsset?.ST_Signal || 'N/A'} />
+            <div className="col-span-2">
+              <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-sub)' }}>Bull / Bear</div>
+              <span className="text-green font-data">{selectedAsset?.Bull_Count ?? '-'}</span>
+              <span className="mx-1 text-sub">/</span>
+              <span className="text-red font-data">{selectedAsset?.Bear_Count ?? '-'}</span>
             </div>
           </div>
         </div>
 
-        {/* Technical Snapshot */}
-        <div className="border border-border bg-card p-4 sm:p-6 shadow-card rounded-card">
-          <h3 className="font-mono text-[10px] uppercase tracking-widest text-primary mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">Technical Snapshot</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div><div className="font-mono text-[10px] text-muted uppercase">Tech Score</div><div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Tech_Score)}`}>{num(selectedAsset?.Tech_Score)}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Conviction</div><div className="font-mono text-sm mt-1 text-primary font-semibold">{selectedAsset?.Conviction || 'N/A'}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">RS Percentile</div><div className="font-mono text-sm mt-1 text-primary font-semibold">{selectedAsset?.RS_Percentile !== undefined ? `${num(selectedAsset?.RS_Percentile)}%` : 'N/A'}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">RSI (14)</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.RSI_Value)}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">ADX (14)</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.ADX_Value)}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">MACD</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.MACD_Value)}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Supertrend</div><div className="font-mono text-sm mt-1 text-primary">{selectedAsset?.ST_Signal || 'N/A'}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Bull / Bear</div><div className="font-mono text-sm mt-1"><span className="text-green-600">{selectedAsset?.Bull_Count ?? '-'}</span> <span className="text-muted">/</span> <span className="text-red-600">{selectedAsset?.Bear_Count ?? '-'}</span></div></div>
-          </div>
-        </div>
-
-        {/* Research Snapshot */}
-        <div className="border border-border bg-card p-4 sm:p-6 shadow-card rounded-card">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-3 sm:mb-4 border-b border-border pb-2 font-semibold flex items-center justify-between">
-            Research Factors
-            <span className={`font-mono text-sm ${Number(selectedAsset?.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : Number(selectedAsset?.Research_Score) < 4 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>
+        {/* Research */}
+        <div className="rounded-2xl p-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--text-main)' }}>Research Factors</h3>
+            <span className="text-sm font-data font-medium" style={{ color: Number(selectedAsset?.Research_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Research_Score) < 4 ? 'var(--red)' : 'var(--text-main)' }}>
               {num(selectedAsset?.Research_Score)}/10
             </span>
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div><div className="font-mono text-[10px] text-muted uppercase">Piotroski F-Score</div><div className="flex items-center gap-2 mt-1"><span className={`font-mono text-sm font-semibold ${Number(selectedAsset?.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : Number(selectedAsset?.Piotroski_F) <= 3 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{selectedAsset?.Piotroski_F ?? '-'}/9</span></div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Gross Profit</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.Gross_Profit_Score)}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Earnings Quality</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.Earnings_Quality)}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Z-Score (60D)</div><div className={`font-mono text-sm mt-1 font-semibold ${Number(selectedAsset?.Z_Score_60) > 2 ? 'text-red-600 dark:text-red-500' : Number(selectedAsset?.Z_Score_60) < -2 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(selectedAsset?.Z_Score_60)}</div></div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <InfoBlock label="Piotroski" value={`${selectedAsset?.Piotroski_F ?? '-'}/9`} accent={Number(selectedAsset?.Piotroski_F) >= 7 ? 'var(--green)' : Number(selectedAsset?.Piotroski_F) <= 3 ? 'var(--red)' : undefined} />
+            <InfoBlock label="Gross Profit" value={num(selectedAsset?.Gross_Profit_Score)} />
+            <InfoBlock label="Earnings Quality" value={num(selectedAsset?.Earnings_Quality)} />
+            <InfoBlock label="Z-Score" value={num(selectedAsset?.Z_Score_60)} accent={Number(selectedAsset?.Z_Score_60) > 2 ? 'var(--red)' : Number(selectedAsset?.Z_Score_60) < -2 ? 'var(--green)' : undefined} />
           </div>
         </div>
 
-        {/* Momentum Snapshot */}
-        <div className="border border-border bg-card p-4 sm:p-6 shadow-card rounded-card">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">Momentum</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div><div className="font-mono text-[10px] text-muted uppercase">1 Month</div><div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Momentum_1M)}`}>{selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : 'N/A'}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">3 Month</div><div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Momentum_3M)}`}>{selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : 'N/A'}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">6 Month</div><div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Momentum_6M)}`}>{selectedAsset?.Momentum_6M != null ? `${(selectedAsset.Momentum_6M * 100).toFixed(2)}%` : 'N/A'}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">12 Month</div><div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Momentum_12M)}`}>{selectedAsset?.Momentum_12M != null ? `${(selectedAsset.Momentum_12M * 100).toFixed(2)}%` : 'N/A'}</div></div>
-            <div className="col-span-2 pt-2 border-t border-border"><div className="font-mono text-[10px] text-muted uppercase">Risk-Adjusted Mom</div><div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Risk_Adj_Mom)}`}>{num(selectedAsset?.Risk_Adj_Mom)}</div></div>
+        {/* Momentum */}
+        <div className="rounded-2xl p-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+          <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-main)' }}>Momentum</h3>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <InfoBlock label="1 Month" value={selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : 'N/A'} accent={colorCode(selectedAsset?.Momentum_1M)} />
+            <InfoBlock label="3 Month" value={selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : 'N/A'} accent={colorCode(selectedAsset?.Momentum_3M)} />
+            <InfoBlock label="6 Month" value={selectedAsset?.Momentum_6M != null ? `${(selectedAsset.Momentum_6M * 100).toFixed(2)}%` : 'N/A'} accent={colorCode(selectedAsset?.Momentum_6M)} />
+            <InfoBlock label="12 Month" value={selectedAsset?.Momentum_12M != null ? `${(selectedAsset.Momentum_12M * 100).toFixed(2)}%` : 'N/A'} accent={colorCode(selectedAsset?.Momentum_12M)} />
+            <div className="col-span-2 pt-2" style={{ borderTop: '1px solid var(--border-color)' }}>
+              <InfoBlock label="Risk-Adjusted" value={num(selectedAsset?.Risk_Adj_Mom)} accent={colorCode(selectedAsset?.Risk_Adj_Mom)} />
+            </div>
           </div>
         </div>
 
-        {/* Fundamental Snapshot */}
-        <div className="border border-border bg-card p-4 sm:p-6 shadow-card rounded-card">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">Fundamentals</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div><div className="font-mono text-[10px] text-muted uppercase">Fund Score</div><div className={`font-mono text-sm mt-1 font-semibold ${Number(selectedAsset?.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(selectedAsset?.Fund_Score)}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Forward P/E</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.['Forward_P/E'])}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Debt to Eq</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.['Debt_to_Equity'])}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">ROE %</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.['ROE_%'])}%</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">ROCE %</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.['ROCE_%'])}%</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Promoter</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.['Promoter_Holding_%'])}%</div></div>
+        {/* Fundamentals */}
+        <div className="rounded-2xl p-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+          <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-main)' }}>Fundamentals</h3>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <InfoBlock label="Fund Score" value={num(selectedAsset?.Fund_Score)} accent={Number(selectedAsset?.Fund_Score) >= 5 ? 'var(--green)' : undefined} />
+            <InfoBlock label="Forward P/E" value={num(selectedAsset?.['Forward_P/E'])} />
+            <InfoBlock label="D/E" value={num(selectedAsset?.['Debt_to_Equity'])} />
+            <InfoBlock label="ROE" value={`${num(selectedAsset?.['ROE_%'])}%`} />
+            <InfoBlock label="ROCE" value={`${num(selectedAsset?.['ROCE_%'])}%`} />
+            <InfoBlock label="Promoter" value={`${num(selectedAsset?.['Promoter_Holding_%'])}%`} />
           </div>
         </div>
 
-        {/* Risk Metrics */}
-        <div className="border border-border bg-card p-4 sm:p-6 shadow-card rounded-card">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">Risk Metrics</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div><div className="font-mono text-[10px] text-muted uppercase">Volatility (60D)</div><div className={`font-mono text-sm mt-1 font-semibold ${Number(selectedAsset?.Vol_60D) < 25 ? 'text-green-600 dark:text-green-500' : Number(selectedAsset?.Vol_60D) > 40 ? 'text-red-600 dark:text-red-500' : 'text-primary'}`}>{num(selectedAsset?.Vol_60D)}%</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Downside Dev</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.Downside_Dev)}%</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Sharpe Ratio</div><div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.Sharpe)}`}>{num(selectedAsset?.Sharpe)}</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Max Drawdown</div><div className="font-mono text-sm mt-1 text-red-600 dark:text-red-500">{num(selectedAsset?.['Max_Drawdown_%'])}%</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Ann. Volatility</div><div className="font-mono text-sm mt-1 text-primary">{num(selectedAsset?.['Ann_Vol_%'])}%</div></div>
-            <div><div className="font-mono text-[10px] text-muted uppercase">Total Return</div><div className={`font-mono text-sm mt-1 font-semibold ${colorCode(selectedAsset?.['Total_Return_%'])}`}>{num(selectedAsset?.['Total_Return_%'])}%</div></div>
+        {/* Risk */}
+        <div className="rounded-2xl p-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+          <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-main)' }}>Risk Metrics</h3>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <InfoBlock label="Volatility (60D)" value={`${num(selectedAsset?.Vol_60D)}%`} accent={Number(selectedAsset?.Vol_60D) < 25 ? 'var(--green)' : Number(selectedAsset?.Vol_60D) > 40 ? 'var(--red)' : undefined} />
+            <InfoBlock label="Sharpe" value={num(selectedAsset?.Sharpe)} accent={colorCode(selectedAsset?.Sharpe)} />
+            <InfoBlock label="Max Drawdown" value={`${num(selectedAsset?.['Max_Drawdown_%'])}%`} accent="var(--red)" />
+            <InfoBlock label="Total Return" value={`${num(selectedAsset?.['Total_Return_%'])}%`} accent={colorCode(selectedAsset?.['Total_Return_%'])} />
           </div>
         </div>
       </div>
 
-      {/* Right Column: Charts & Peers */}
-      <div className="w-full xl:w-3/4 flex flex-col gap-4 xl:gap-6 order-1 xl:order-2">
-        {/* Period & Interval Toggles */}
-        <div className="flex flex-col gap-2">
-          <label className="font-mono text-xs uppercase tracking-widest text-sub hidden sm:block">Timeframe</label>
-          <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-3 sm:gap-4">
-            <div className="flex bg-card border border-border p-0.5 rounded-sm shadow-card rounded-card w-full sm:w-fit overflow-x-auto scrollbar-none">
-              {['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => (
-                <button key={p} onClick={() => setChartPeriod(p)} className={`px-2 sm:px-3 py-1.5 font-mono text-[10px] sm:text-xs uppercase tracking-widest transition-all whitespace-nowrap ${chartPeriod === p ? 'bg-brand text-background shadow-card rounded-card font-semibold' : 'text-muted hover:text-primary'}`}>
-                  {p.replace('mo', 'M').replace('y', 'Y').replace('w', 'W')}
-                </button>
-              ))}
-            </div>
-            <div className="flex bg-card border border-border p-0.5 rounded-sm shadow-card rounded-card w-fit">
-              <button onClick={() => setChartInterval('1d')} className={`px-3 py-1.5 font-mono text-[10px] sm:text-xs uppercase tracking-widest transition-all rounded-md ${chartInterval === '1d' ? 'bg-brand text-background shadow-sm font-semibold' : 'text-muted hover:text-primary hover:bg-brand-soft'}`}>Daily</button>
-              <button onClick={() => setChartInterval('1wk')} className={`px-3 py-1.5 font-mono text-[10px] sm:text-xs uppercase tracking-widest transition-all rounded-md ${chartInterval === '1wk' ? 'bg-brand text-background shadow-sm font-semibold' : 'text-muted hover:text-primary hover:bg-brand-soft'}`}>Weekly</button>
-            </div>
+      {/* Right: Charts */}
+      <div className="w-full xl:flex-1 flex flex-col gap-5 order-1 xl:order-2 min-w-0">
+        {/* Period + Interval */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="inline-flex rounded-xl p-0.5" style={{ background: 'var(--surface)' }}>
+            {['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => (
+              <button key={p} onClick={() => setChartPeriod(p)} className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap" style={{
+                background: chartPeriod === p ? 'var(--bg-card)' : 'transparent',
+                color: chartPeriod === p ? 'var(--text-main)' : 'var(--text-sub)',
+                boxShadow: chartPeriod === p ? 'var(--shadow-sm)' : 'none',
+              }}>
+                {p.replace('mo', 'M').replace('y', 'Y').replace('w', 'W')}
+              </button>
+            ))}
+          </div>
+          <div className="inline-flex rounded-xl p-0.5" style={{ background: 'var(--surface)' }}>
+            {['1d', '1wk'].map(i => (
+              <button key={i} onClick={() => setChartInterval(i)} className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all" style={{
+                background: chartInterval === i ? 'var(--bg-card)' : 'transparent',
+                color: chartInterval === i ? 'var(--text-main)' : 'var(--text-sub)',
+                boxShadow: chartInterval === i ? 'var(--shadow-sm)' : 'none',
+              }}>
+                {i === '1d' ? 'Daily' : 'Weekly'}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Chart Container */}
-        <div className="flex flex-col gap-4 xl:gap-6">
-          {/* Main Price & Volume Chart with Supertrend Overlay */}
-          <div className="border border-border bg-card shadow-card rounded-card chart-main">
-            <div className="px-3 sm:px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
-              {selectedTicker.replace('.NS', '')} &mdash; Price · SMA 50 · SMA 200 · Supertrend
-            </div>
-            <div style={{ width: '100%', height: 'calc(100% - 32px)' }}>
+        {/* Main chart */}
+        <Panel title={`${selectedTicker.replace('.NS', '')} — Price · SMA 50 · SMA 200 · Supertrend`}>
+          <div className="chart-main">
             {chartLoading ? (
-              <div className="flex items-center justify-center h-full font-mono text-muted text-xs uppercase animate-pulse">Loading...</div>
+              <div className="flex items-center justify-center h-full text-sm animate-pulse" style={{ color: 'var(--text-sub)' }}>Loading...</div>
             ) : chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData}>
                   <defs>
                     <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--brand)" stopOpacity={isDark ? 0.3 : 0.1}/>
+                      <stop offset="5%" stopColor="var(--brand)" stopOpacity={isDark ? 0.25 : 0.08}/>
                       <stop offset="95%" stopColor="var(--brand)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} vertical={false} />
-                  <XAxis dataKey="time" stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} tickMargin={10} minTickGap={30} />
-                  <YAxis yAxisId="price" domain={['auto', 'auto']} stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} width={50} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1E2230' : '#E4E7EC'} vertical={false} />
+                  <XAxis dataKey="time" stroke={isDark ? '#2A3040' : '#D0D5DD'} tick={{fill: isDark ? '#4A5468' : '#8B95A5', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} tickMargin={10} minTickGap={30} />
+                  <YAxis yAxisId="price" domain={['auto', 'auto']} stroke={isDark ? '#2A3040' : '#D0D5DD'} tick={{fill: isDark ? '#4A5468' : '#8B95A5', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={55} />
                   <YAxis yAxisId="volume" orientation="right" domain={[0, dataMax => dataMax * 4]} hide={true} />
-                  <Tooltip contentStyle={tooltipStyle(isDark)} itemStyle={{color: isDark ? '#FFFFFF' : '#0f172a'}} labelStyle={{color: isDark ? '#A1A1AA' : '#64748b', marginBottom: '5px'}} />
-                  <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{fontFamily: 'Space Mono', fontSize: '10px', color: isDark ? '#71717A' : '#64748b'}}/>
-                  <Bar yAxisId="volume" name="Volume" dataKey="volume" fill={isDark ? "#3F3F46" : "#cbd5e1"} maxBarSize={6} />
+                  <Tooltip contentStyle={tooltipStyle(isDark)} itemStyle={{color: isDark ? '#E8ECF2' : '#1A1D26'}} labelStyle={{color: isDark ? '#7A8494' : '#5F6B7A', marginBottom: '4px'}} />
+                  <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{fontFamily: 'Inter, system-ui, sans-serif', fontSize: '10px', color: isDark ? '#4A5468' : '#8B95A5'}}/>
+                  <Bar yAxisId="volume" name="Volume" dataKey="volume" fill={isDark ? '#252A36' : '#D0D5DD'} maxBarSize={6} />
                   <Area yAxisId="price" type="monotone" name="Close" dataKey="close" stroke="var(--brand)" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
-                  <Line yAxisId="price" type="monotone" name="SMA 50" dataKey="sma50" stroke="#3B82F6" strokeWidth={1} dot={false} />
-                  <Line yAxisId="price" type="monotone" name="SMA 200" dataKey="sma200" stroke="#F59E0B" strokeWidth={1} dot={false} strokeDasharray="5 5" />
+                  <Line yAxisId="price" type="monotone" name="SMA 50" dataKey="sma50" stroke="var(--blue)" strokeWidth={1} dot={false} />
+                  <Line yAxisId="price" type="monotone" name="SMA 200" dataKey="sma200" stroke="var(--amber)" strokeWidth={1} dot={false} strokeDasharray="5 5" />
                   <Line yAxisId="price" type="monotone" name="Supertrend" dataKey="supertrend" stroke="#06B6D4" strokeWidth={1.5} dot={false} strokeDasharray="2 2" />
                 </ComposedChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full font-mono text-muted text-xs uppercase">No chart data for {selectedTicker}</div>
+              <div className="flex items-center justify-center h-full text-sm" style={{ color: 'var(--text-sub)' }}>No chart data for {selectedTicker}</div>
             )}
-            </div>
           </div>
+        </Panel>
 
-          {/* Subchart: RSI */}
-          <div className="border border-border bg-card shadow-card rounded-card chart-sub">
-            <div className="px-3 sm:px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
-              RSI (14) &nbsp;<span className="text-[8px]">— 30 oversold · 70 overbought</span>
-            </div>
+        {/* RSI */}
+        <Panel title="RSI (14) — 30 oversold · 70 overbought">
+          <div className="chart-sub">
             {chartData.length > 0 && !chartLoading && (
-              <div style={{ width: '100%', height: 'calc(100% - 32px)' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} vertical={false} />
-                    <XAxis dataKey="time" hide={true} />
-                    <YAxis domain={[0, 100]} ticks={[30, 50, 70]} stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} width={50} />
-                    <Tooltip contentStyle={tooltipStyle(isDark)} />
-                    <Line type="monotone" dataKey="rsi" name="RSI" stroke="#A855F7" strokeWidth={1.5} dot={false} />
-                    <Line type="step" dataKey={() => 70} stroke={isDark ? '#ef4444' : '#dc2626'} strokeDasharray="3 3" dot={false} activeDot={false} strokeOpacity={0.5} />
-                    <Line type="step" dataKey={() => 50} stroke={isDark ? "#52525B" : "#94a3b8"} strokeDasharray="2 4" dot={false} activeDot={false} strokeOpacity={0.4} />
-                    <Line type="step" dataKey={() => 30} stroke={isDark ? '#22c55e' : '#16a34a'} strokeDasharray="3 3" dot={false} activeDot={false} strokeOpacity={0.5} />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1E2230' : '#E4E7EC'} vertical={false} />
+                  <XAxis dataKey="time" hide={true} />
+                  <YAxis domain={[0, 100]} ticks={[30, 50, 70]} stroke={isDark ? '#2A3040' : '#D0D5DD'} tick={{fill: isDark ? '#4A5468' : '#8B95A5', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={50} />
+                  <Tooltip contentStyle={tooltipStyle(isDark)} />
+                  <Line type="monotone" dataKey="rsi" name="RSI" stroke="#A855F7" strokeWidth={1.5} dot={false} />
+                  <Line type="step" dataKey={() => 70} stroke={isDark ? '#FF6B6B' : '#C92A2A'} strokeDasharray="3 3" dot={false} activeDot={false} strokeOpacity={0.4} />
+                  <Line type="step" dataKey={() => 50} stroke={isDark ? '#2A3040' : '#D0D5DD'} strokeDasharray="2 4" dot={false} activeDot={false} strokeOpacity={0.3} />
+                  <Line type="step" dataKey={() => 30} stroke={isDark ? '#3DD68C' : '#0D7C3F'} strokeDasharray="3 3" dot={false} activeDot={false} strokeOpacity={0.4} />
+                </ComposedChart>
+              </ResponsiveContainer>
             )}
           </div>
+        </Panel>
 
-          {/* Subchart: MACD */}
-          <div className="border border-border bg-card shadow-card rounded-card chart-sub">
-            <div className="px-3 sm:px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
-              MACD (12, 26, 9) &nbsp;<span className="text-[8px]">— histogram · signal line</span>
-            </div>
+        {/* MACD */}
+        <Panel title="MACD (12, 26, 9) — histogram · signal line">
+          <div className="chart-sub">
             {chartData.length > 0 && !chartLoading && (
-              <div style={{ width: '100%', height: 'calc(100% - 32px)' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} vertical={false} />
-                    <XAxis dataKey="time" hide={true} />
-                    <YAxis stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} width={50} />
-                    <Tooltip contentStyle={tooltipStyle(isDark)} />
-                    <Bar dataKey="macd_hist" name="Histogram" maxBarSize={4}>
-                      {chartData.map((entry, index) => (
-                        <Cell
-                          key={`macd-${index}`}
-                          fill={(entry.macd_hist ?? 0) >= 0
-                            ? (isDark ? '#22c55e' : '#16a34a')
-                            : (isDark ? '#ef4444' : '#dc2626')
-                          }
-                          fillOpacity={0.7}
-                        />
-                      ))}
-                    </Bar>
-                    <Line type="monotone" dataKey="macd" name="MACD" stroke="#3B82F6" strokeWidth={1.5} dot={false} />
-                    <Line type="monotone" dataKey="macd_signal" name="Signal" stroke="#F59E0B" strokeWidth={1} dot={false} strokeDasharray="3 3" />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1E2230' : '#E4E7EC'} vertical={false} />
+                  <XAxis dataKey="time" hide={true} />
+                  <YAxis stroke={isDark ? '#2A3040' : '#D0D5DD'} tick={{fill: isDark ? '#4A5468' : '#8B95A5', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={50} />
+                  <Tooltip contentStyle={tooltipStyle(isDark)} />
+                  <Bar dataKey="macd_hist" name="Histogram" maxBarSize={4}>
+                    {chartData.map((entry, index) => (
+                      <Cell
+                        key={`macd-${index}`}
+                        fill={(entry.macd_hist ?? 0) >= 0
+                          ? (isDark ? '#3DD68C' : '#0D7C3F')
+                          : (isDark ? '#FF6B6B' : '#C92A2A')
+                        }
+                        fillOpacity={0.6}
+                      />
+                    ))}
+                  </Bar>
+                  <Line type="monotone" dataKey="macd" name="MACD" stroke="var(--blue)" strokeWidth={1.5} dot={false} />
+                  <Line type="monotone" dataKey="macd_signal" name="Signal" stroke="var(--amber)" strokeWidth={1} dot={false} strokeDasharray="3 3" />
+                </ComposedChart>
+              </ResponsiveContainer>
             )}
           </div>
+        </Panel>
 
-          {/* Score History Chart */}
-          {tickerScores.length > 1 && (
-            <div className="border border-border bg-card shadow-card rounded-card chart-score">
-              <div className="px-3 sm:px-4 pt-3 pb-1 font-mono text-[10px] text-muted uppercase tracking-widest border-b border-border">
-                Composite Score History &nbsp;<span className="text-[8px]">— {tickerScores.length} scans</span>
-              </div>
-              <div style={{ width: '100%', height: 'calc(100% - 32px)' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={tickerScores}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} vertical={false} />
-                    <XAxis dataKey="date" stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 9, fontFamily: 'Space Mono'}} tickMargin={8} minTickGap={20} />
-                    <YAxis domain={[0, 10]} stroke={isDark ? "#52525B" : "#94a3b8"} tick={{fill: isDark ? '#71717A' : '#64748b', fontSize: 10, fontFamily: 'Space Mono'}} width={35} />
-                    <Tooltip contentStyle={tooltipStyle(isDark)} />
-                    <Legend verticalAlign="top" height={24} align="right" wrapperStyle={{fontFamily: 'Space Mono', fontSize: '9px', color: isDark ? '#71717A' : '#64748b'}}/>
-                    <Line type="monotone" name="Composite" dataKey="composite" stroke="var(--brand)" strokeWidth={2} dot={{r: 2, fill: 'var(--brand)'}} />
-                    <Line type="monotone" name="Tech" dataKey="tech" stroke="#3B82F6" strokeWidth={1} dot={false} strokeDasharray="4 2" />
-                    <Line type="monotone" name="Fund" dataKey="fund" stroke="#22c55e" strokeWidth={1} dot={false} strokeDasharray="4 2" />
-                    <Line type="monotone" name="Research" dataKey="research" stroke="#F59E0B" strokeWidth={1} dot={false} strokeDasharray="4 2" />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
+        {/* Score History */}
+        {tickerScores.length > 1 && (
+          <Panel title={`Composite Score History — ${tickerScores.length} scans`}>
+            <div className="chart-score">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={tickerScores}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1E2230' : '#E4E7EC'} vertical={false} />
+                  <XAxis dataKey="date" stroke={isDark ? '#2A3040' : '#D0D5DD'} tick={{fill: isDark ? '#4A5468' : '#8B95A5', fontSize: 9, fontFamily: 'Inter, system-ui, sans-serif'}} tickMargin={8} minTickGap={20} />
+                  <YAxis domain={[0, 10]} stroke={isDark ? '#2A3040' : '#D0D5DD'} tick={{fill: isDark ? '#4A5468' : '#8B95A5', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={35} />
+                  <Tooltip contentStyle={tooltipStyle(isDark)} />
+                  <Legend verticalAlign="top" height={24} align="right" wrapperStyle={{fontFamily: 'Inter, system-ui, sans-serif', fontSize: '9px', color: isDark ? '#4A5468' : '#8B95A5'}}/>
+                  <Line type="monotone" name="Composite" dataKey="composite" stroke="var(--brand)" strokeWidth={2} dot={{r: 2, fill: 'var(--brand)'}} />
+                  <Line type="monotone" name="Tech" dataKey="tech" stroke="var(--blue)" strokeWidth={1} dot={false} strokeDasharray="4 2" />
+                  <Line type="monotone" name="Fund" dataKey="fund" stroke="var(--green)" strokeWidth={1} dot={false} strokeDasharray="4 2" />
+                  <Line type="monotone" name="Research" dataKey="research" stroke="var(--amber)" strokeWidth={1} dot={false} strokeDasharray="4 2" />
+                </ComposedChart>
+              </ResponsiveContainer>
             </div>
-          )}
-
-        </div>
+          </Panel>
+        )}
 
         {/* Score Breakdown */}
         {selectedAsset && (
-        <div className="border border-border bg-card p-4 sm:p-6 shadow-card rounded-card">
-            <h3 className="font-mono text-xs uppercase tracking-widest text-brand mb-3 sm:mb-4 border-b border-border pb-2 font-semibold">Score Breakdown</h3>
-            <div className="space-y-2">
+          <div className="rounded-2xl p-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+            <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-main)' }}>Score Breakdown</h3>
+            <div className="space-y-2.5">
               {scoreBar('Composite', Number(selectedAsset.Composite_Score) || 0, 0, 10)}
               {scoreBar('Tech', Number(selectedAsset.Tech_Score) || 0, -1, 1)}
               {scoreBar('Fund', Number(selectedAsset.Fund_Score) || 0, 0, 10)}
               {scoreBar('Research', Number(selectedAsset.Research_Score) || 0, 0, 10)}
-              <div className="border-t border-border pt-2 mt-2 space-y-2">
+              <div className="pt-2 space-y-2.5" style={{ borderTop: '1px solid var(--border-color)' }}>
                 {scoreBar('Piotroski', Number(selectedAsset.Piotroski_F) || 0, 0, 9)}
                 {scoreBar('Gross Profit', Number(selectedAsset.Gross_Profit_Score) || 0, 0, 10)}
                 {scoreBar('Earnings Q', Number(selectedAsset.Earnings_Quality) || 0, 0, 10)}
@@ -424,24 +404,24 @@ export default function ChartingTab({
         )}
 
         {/* Peer Comparison */}
-        <div className="border border-border bg-card mt-4 shadow-card rounded-card rounded-sm">
-          <div className="p-4 sm:p-6 border-b border-border bg-black/5 dark:bg-black/20">
-            <h3 className="font-display font-semibold text-lg sm:text-xl tracking-wide text-primary">Sector Peer Comparison</h3>
-            <p className="font-mono text-xs text-sub mt-1">Comparing {selectedAsset?.Sector} by Market Cap</p>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+          <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--text-main)' }}>Sector Peer Comparison</h3>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-sub)' }}>Comparing {selectedAsset?.Sector} by market cap</p>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left font-mono text-xs">
+            <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-border text-sub uppercase tracking-widest">
-                  <th className="p-3 sm:p-4 font-semibold">Ticker</th>
-                  <th className="p-3 sm:p-4 font-semibold text-right hidden sm:table-cell">Mkt Cap</th>
-                  <th className="p-3 sm:p-4 font-semibold text-right">Composite</th>
-                  <th className="p-3 sm:p-4 font-semibold text-right hidden md:table-cell">Tech</th>
-                  <th className="p-3 sm:p-4 font-semibold text-right hidden lg:table-cell">Fund</th>
-                  <th className="p-3 sm:p-4 font-semibold text-right hidden lg:table-cell">Research</th>
-                  <th className="p-3 sm:p-4 font-semibold text-right hidden xl:table-cell">P/E</th>
-                  <th className="p-3 sm:p-4 font-semibold text-right hidden xl:table-cell">F-Score</th>
-                  <th className="p-3 sm:p-4 font-semibold text-right">Conv</th>
+                <tr style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--surface)' }}>
+                  <th className="py-3 px-4 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Ticker</th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden sm:table-cell" style={{ color: 'var(--text-muted)' }}>Mkt Cap</th>
+                  <th className="py-3 px-4 text-xs font-medium text-right" style={{ color: 'var(--text-muted)' }}>Score</th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden md:table-cell" style={{ color: 'var(--text-muted)' }}>Tech</th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden lg:table-cell" style={{ color: 'var(--text-muted)' }}>Fund</th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden lg:table-cell" style={{ color: 'var(--text-muted)' }}>Research</th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-muted)' }}>P/E</th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-muted)' }}>F-Score</th>
+                  <th className="py-3 px-4 text-xs font-medium text-right" style={{ color: 'var(--text-muted)' }}>Conv</th>
                 </tr>
               </thead>
               <tbody>
@@ -449,20 +429,27 @@ export default function ChartingTab({
                   <tr
                     key={i}
                     onClick={() => setSelectedTicker(row.Ticker)}
-                    className={`border-b border-border cursor-pointer transition-colors duration-200 ${row.Ticker === selectedTicker ? 'bg-brand/10 dark:bg-brand/20 border-l-2 border-l-brand' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+                    className="cursor-pointer transition-colors"
+                    style={{
+                      borderBottom: '1px solid var(--border-color)',
+                      background: row.Ticker === selectedTicker ? 'var(--brand-soft)' : 'transparent',
+                      borderLeft: row.Ticker === selectedTicker ? '2px solid var(--brand)' : '2px solid transparent',
+                    }}
+                    onMouseEnter={e => { if (row.Ticker !== selectedTicker) e.currentTarget.style.background = 'var(--surface)' }}
+                    onMouseLeave={e => { if (row.Ticker !== selectedTicker) e.currentTarget.style.background = 'transparent' }}
                   >
-                    <td className="p-3 sm:p-4 text-primary font-medium">{row.Ticker.replace('.NS', '')}</td>
-                    <td className="p-3 sm:p-4 text-right text-muted hidden sm:table-cell">{num(row.Market_Cap_B)}B</td>
-                    <td className={`p-3 sm:p-4 text-right font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
-                    <td className={`p-3 sm:p-4 text-right font-medium hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
-                    <td className={`p-3 sm:p-4 text-right font-medium hidden lg:table-cell ${Number(row.Fund_Score) >= 5 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Fund_Score)}</td>
-                    <td className={`p-3 sm:p-4 text-right font-medium hidden lg:table-cell ${Number(row.Research_Score) >= 7 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{num(row.Research_Score)}</td>
-                    <td className="p-3 sm:p-4 text-right text-muted hidden xl:table-cell">{num(row['P/E'])}</td>
-                    <td className={`p-3 sm:p-4 text-right font-medium hidden xl:table-cell ${Number(row.Piotroski_F) >= 7 ? 'text-green-600 dark:text-green-500' : 'text-primary'}`}>{row.Piotroski_F ?? '-'}</td>
-                    <td className="p-3 sm:p-4 text-right text-primary font-medium">{row.Conviction || 'N/A'}</td>
+                    <td className="py-3 px-4 text-sm font-medium" style={{ color: 'var(--text-main)' }}>{row.Ticker.replace('.NS', '')}</td>
+                    <td className="py-3 px-4 text-right text-sm hidden sm:table-cell" style={{ color: 'var(--text-muted)' }}>{num(row.Market_Cap_B)}B</td>
+                    <td className={`py-3 px-4 text-right text-sm font-medium font-data ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
+                    <td className={`py-3 px-4 text-right text-sm font-medium font-data hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
+                    <td className={`py-3 px-4 text-right text-sm font-medium font-data hidden lg:table-cell ${Number(row.Fund_Score) >= 5 ? 'text-green' : 'text-heading'}`}>{num(row.Fund_Score)}</td>
+                    <td className={`py-3 px-4 text-right text-sm font-medium font-data hidden lg:table-cell ${Number(row.Research_Score) >= 7 ? 'text-green' : 'text-heading'}`}>{num(row.Research_Score)}</td>
+                    <td className="py-3 px-4 text-right text-sm font-data hidden xl:table-cell" style={{ color: 'var(--text-muted)' }}>{num(row['P/E'])}</td>
+                    <td className={`py-3 px-4 text-right text-sm font-medium hidden xl:table-cell ${Number(row.Piotroski_F) >= 7 ? 'text-green' : 'text-heading'}`}>{row.Piotroski_F ?? '-'}</td>
+                    <td className="py-3 px-4 text-right text-sm font-medium" style={{ color: 'var(--text-main)' }}>{row.Conviction || 'N/A'}</td>
                   </tr>
                 )) : (
-                  <tr><td colSpan={9} className="p-4 text-center text-muted">No peers found in {selectedAsset?.Sector}</td></tr>
+                  <tr><td colSpan={9} className="py-4 text-center text-sm" style={{ color: 'var(--text-sub)' }}>No peers in {selectedAsset?.Sector}</td></tr>
                 )}
               </tbody>
             </table>
