@@ -84,12 +84,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
     return (
       <div className="space-y-6">
         {/* Section heading */}
-        <div>
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Factor Lab</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-sub)' }}>
-            Tracking conviction accuracy across 21-day and 63-day forward windows.
-          </p>
-        </div>
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Factor Lab</h1>
 
         {/* Progress bar */}
         {countdown && (
@@ -166,12 +161,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
   return (
     <div className="space-y-6">
       {/* Section heading */}
-      <div>
-        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Factor Lab</h1>
-        <p className="text-sm mt-0.5" style={{ color: 'var(--text-sub)' }}>
-          Tracking conviction accuracy across 21-day and 63-day forward windows.
-        </p>
-      </div>
+      <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Factor Lab</h1>
 
       {/* Header */}
       <div className="rounded-2xl p-6 sm:p-8" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>

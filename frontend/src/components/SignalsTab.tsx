@@ -45,12 +45,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect, is
     <div className="space-y-6">
       {/* Section header */}
       <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>High Conviction Signals</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-sub)' }}>
-            Top picks ranked by composite score across technical, fundamental, and research dimensions.
-          </p>
-        </div>
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Signals</h1>
         <div className="inline-flex rounded-lg p-0.5" style={{ background: 'var(--border-color)' }}>
           {(['short', 'long'] as const).map(h => (
             <button

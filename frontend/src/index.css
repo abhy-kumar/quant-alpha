@@ -82,7 +82,7 @@
   100% { transform: translateX(-50%); }
 }
 .ticker-scroll {
-  animation: ticker-scroll 40s linear infinite;
+  animation: ticker-scroll 55s linear infinite;
 }
 .ticker-scroll:hover {
   animation-play-state: paused;

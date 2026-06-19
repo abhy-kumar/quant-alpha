@@ -143,10 +143,7 @@ export default function ChartingTab({
     <div className="space-y-6">
       {/* Section heading */}
       <div>
-        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Technical Analysis</h1>
-        <p className="text-sm mt-0.5" style={{ color: 'var(--text-sub)' }}>
-          Price action, indicators, and fundamentals for {selectedTicker.replace('.NS', '')}.
-        </p>
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Charts</h1>
       </div>
 
       <div className="flex flex-col xl:flex-row gap-6 xl:gap-8">

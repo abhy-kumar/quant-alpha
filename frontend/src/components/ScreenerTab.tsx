@@ -81,18 +81,13 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
   return (
     <div className="space-y-5">
       {/* Section heading */}
-      <div>
-        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Universe Screener</h1>
-        <p className="text-sm mt-0.5" style={{ color: 'var(--text-sub)' }}>
-          {data.length} securities across NSE. Sort, filter, and expand for signal breakdowns.
-        </p>
+      <div className="flex items-end justify-between">
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Screener</h1>
+        <span className="text-sm" style={{ color: 'var(--text-sub)' }}>{filteredData.length} results</span>
       </div>
 
       {/* Filter bar */}
-      <div className="flex items-center justify-between">
-        <span className="text-sm" style={{ color: 'var(--text-sub)' }}>
-          {filteredData.length} results
-        </span>
+      <div className="flex items-center justify-end">
         <button
           onClick={() => setShowFilters(!showFilters)}
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all"
