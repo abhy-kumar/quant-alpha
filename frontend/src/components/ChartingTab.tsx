@@ -140,7 +140,16 @@ export default function ChartingTab({
   const tickerScores = scoreHistory[selectedTicker] || []
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6 xl:gap-8">
+    <div className="space-y-6">
+      {/* Section heading */}
+      <div>
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Technical Analysis</h1>
+        <p className="text-sm mt-0.5" style={{ color: 'var(--text-sub)' }}>
+          Price action, indicators, and fundamentals for {selectedTicker.replace('.NS', '')}.
+        </p>
+      </div>
+
+      <div className="flex flex-col xl:flex-row gap-6 xl:gap-8">
       {/* Left: Controls & Info */}
       <div className="w-full xl:w-72 flex flex-col gap-5 order-2 xl:order-1 shrink-0">
         <StockSearch data={data} selectedTicker={selectedTicker} onSelect={setSelectedTicker} />
@@ -456,6 +465,7 @@ export default function ChartingTab({
           </div>
         </div>
       </div>
+    </div>
     </div>
   )
 }

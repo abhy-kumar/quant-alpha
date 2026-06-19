@@ -4,69 +4,68 @@
 
 @layer base {
   :root {
-    --bg-app: #F5F6F8;
+    --bg-app: #F8F9FB;
     --bg-card: #FFFFFF;
-    --border-color: #E4E7EC;
-    --text-main: #1A1D26;
-    --text-muted: #5F6B7A;
-    --text-sub: #8B95A5;
+    --bg-dark: #0B1120;
+    --bg-dark-card: #111827;
+    --border-color: #E5E7EB;
+    --border-dark: #1E293B;
+    --text-main: #111827;
+    --text-muted: #6B7280;
+    --text-sub: #9CA3AF;
+    --text-dark: #F1F5F9;
+    --text-dark-muted: #94A3B8;
     --brand: #1E3F68;
     --brand-hover: #2A5580;
     --brand-soft: rgba(30, 63, 104, 0.06);
-    --btn-border: #D0D5DD;
-    --surface: #F0F2F5;
+    --green: #059669;
+    --green-bg: rgba(5, 150, 105, 0.08);
+    --red: #DC2626;
+    --red-bg: rgba(220, 38, 38, 0.08);
+    --blue: #2563EB;
+    --blue-bg: rgba(37, 99, 235, 0.08);
+    --amber: #D97706;
+    --amber-bg: rgba(217, 119, 6, 0.08);
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
     --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
-    --shadow-lg: 0 12px 40px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
-    --green: #0D7C3F;
-    --green-soft: rgba(13,124,63,0.08);
-    --red: #C92A2A;
-    --red-soft: rgba(201,42,42,0.08);
-    --blue: #1E6091;
-    --blue-soft: rgba(30,96,145,0.08);
-    --amber: #B45309;
-    --amber-soft: rgba(180,83,9,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
   }
 
   .dark {
-    --bg-app: #0A0C10;
-    --bg-card: #111318;
-    --border-color: #1E2230;
-    --text-main: #E8ECF2;
-    --text-muted: #7A8494;
-    --text-sub: #4A5468;
-    --brand: #7EB0E0;
-    --brand-hover: #9FC6ED;
-    --brand-soft: rgba(126,176,224,0.08);
-    --btn-border: #252A36;
-    --surface: #151820;
+    --bg-app: #0B1120;
+    --bg-card: #111827;
+    --bg-dark: #060D1B;
+    --bg-dark-card: #0B1120;
+    --border-color: #1E293B;
+    --border-dark: #162032;
+    --text-main: #F1F5F9;
+    --text-muted: #94A3B8;
+    --text-sub: #64748B;
+    --text-dark: #F1F5F9;
+    --text-dark-muted: #94A3B8;
+    --brand: #7CB3E0;
+    --brand-hover: #93C5ED;
+    --brand-soft: rgba(124, 179, 224, 0.08);
+    --green: #34D399;
+    --green-bg: rgba(52, 211, 153, 0.1);
+    --red: #F87171;
+    --red-bg: rgba(248, 113, 113, 0.1);
+    --blue: #60A5FA;
+    --blue-bg: rgba(96, 165, 250, 0.1);
+    --amber: #FBBF24;
+    --amber-bg: rgba(251, 191, 36, 0.1);
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
     --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
-    --shadow-lg: 0 12px 40px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.2);
-    --green: #3DD68C;
-    --green-soft: rgba(61,214,140,0.1);
-    --red: #FF6B6B;
-    --red-soft: rgba(255,107,107,0.1);
-    --blue: #5BA4D9;
-    --blue-soft: rgba(91,164,217,0.1);
-    --amber: #F0B429;
-    --amber-soft: rgba(240,180,41,0.1);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
   }
 
   html, body {
     @apply antialiased;
     background: var(--bg-app);
     color: var(--text-muted);
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-color) transparent;
   }
 }
 
@@ -74,29 +73,27 @@
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--btn-border); }
 
-/* ── Typography helpers ────────────────────────────────────── */
 .font-data { font-family: 'Space Mono', 'SF Mono', monospace; }
-.font-label {
-  font-family: 'Inter', system-ui, sans-serif;
-  letter-spacing: 0.01em;
+
+/* ── Ticker tape ───────────────────────────────────────────── */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-scroll {
+  animation: ticker-scroll 40s linear infinite;
+}
+.ticker-scroll:hover {
+  animation-play-state: paused;
 }
 
-/* ── Subtle surface ────────────────────────────────────────── */
-.surface { background: var(--surface); }
-
-/* ── Conviction glows ──────────────────────────────────────── */
-@keyframes glow-strong-buy {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(13,124,63,0.15), 0 0 20px rgba(13,124,63,0.06); }
-  50% { box-shadow: 0 0 0 1px rgba(13,124,63,0.25), 0 0 28px rgba(13,124,63,0.10); }
+/* ── Conviction glow ───────────────────────────────────────── */
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.15); }
+  50% { box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.05); }
 }
-@keyframes glow-buy {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(30,96,145,0.15), 0 0 20px rgba(30,96,145,0.06); }
-  50% { box-shadow: 0 0 0 1px rgba(30,96,145,0.25), 0 0 28px rgba(30,96,145,0.10); }
-}
-.glow-strong-buy { animation: glow-strong-buy 5s ease-in-out infinite; }
-.glow-buy { animation: glow-buy 5s ease-in-out infinite; }
+.glow-green { animation: pulse-green 3s ease-in-out infinite; }
 
 /* ── Range inputs ──────────────────────────────────────────── */
 input[type="range"] {
@@ -107,20 +104,19 @@ input[type="range"]::-webkit-slider-thumb {
   @apply appearance-none w-3.5 h-3.5 rounded-full cursor-pointer;
   background: var(--brand);
   border: 2px solid var(--bg-card);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-sm);
 }
 input[type="range"]::-moz-range-thumb {
   @apply w-3.5 h-3.5 rounded-full cursor-pointer;
   background: var(--brand);
   border: 2px solid var(--bg-card);
-  box-shadow: var(--shadow);
 }
 
 /* ── Scrollbar hide ────────────────────────────────────────── */
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
-/* ── Responsive chart heights ──────────────────────────────── */
+/* ── Chart heights ─────────────────────────────────────────── */
 .chart-main { height: 300px; }
 .chart-sub { height: 160px; }
 .chart-score { height: 200px; }
@@ -137,9 +133,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* ── Animations ────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-up {
-  animation: fadeUp 0.35s ease-out both;
-}
+.animate-fade-up { animation: fadeUp 0.3s ease-out both; }

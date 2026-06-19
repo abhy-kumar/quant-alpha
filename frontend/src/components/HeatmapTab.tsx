@@ -23,6 +23,14 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
   const sortedSectors = Object.keys(sectorMap).sort()
   return (
     <div className="space-y-6">
+      {/* Section heading */}
+      <div>
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Sector Heatmap</h1>
+        <p className="text-sm mt-0.5" style={{ color: 'var(--text-sub)' }}>
+          Composite scores by sector, color-coded from low (red) to high (green).
+        </p>
+      </div>
+
       {/* Legend */}
       <div className="flex flex-wrap justify-end items-center gap-4 text-xs" style={{ color: 'var(--text-sub)' }}>
         <span className="font-medium">Score:</span>

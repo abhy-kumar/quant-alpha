@@ -79,7 +79,15 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
   const toggleConviction = (c: string) => setSelectedConvictions(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Section heading */}
+      <div>
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Universe Screener</h1>
+        <p className="text-sm mt-0.5" style={{ color: 'var(--text-sub)' }}>
+          {data.length} securities across NSE. Sort, filter, and expand for signal breakdowns.
+        </p>
+      </div>
+
       {/* Filter bar */}
       <div className="flex items-center justify-between">
         <span className="text-sm" style={{ color: 'var(--text-sub)' }}>

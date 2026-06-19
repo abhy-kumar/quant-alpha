@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import axios from 'axios'
-import { Activity, Database, TrendingUp, BarChart2, Layers, Moon, Sun, Zap, Star, X, Plus } from 'lucide-react'
+import { Activity, Database, TrendingUp, BarChart2, Layers, Moon, Sun, Zap, ChevronUp, ChevronDown } from 'lucide-react'
 import type { DashboardData } from './types'
 import SignalsTab from './components/SignalsTab'
 import ScreenerTab from './components/ScreenerTab'
@@ -9,6 +9,35 @@ import HeatmapTab from './components/HeatmapTab'
 import FactorLabTab from './components/FactorLabTab'
 
 const STATIC_URL = '/market_data.json'
+
+function TickerTape({ data }: { data: DashboardData[] }) {
+  const tickers = useMemo(() => {
+    const items = data.slice(0, 30).map(d => ({
+      ticker: d.Ticker.replace('.NS', ''),
+      price: Number(d.Price) || 0,
+      change: Number(d['1d_Chg_%']) || 0,
+    }))
+    return items
+  }, [data])
+
+  if (tickers.length === 0) return null
+
+  return (
+    <div className="overflow-hidden whitespace-nowrap" style={{ background: '#060D1B' }}>
+      <div className="ticker-scroll inline-flex">
+        {[...tickers, ...tickers].map((t, i) => (
+          <span key={i} className="inline-flex items-center gap-2 px-4 py-1.5 text-[11px]" style={{ color: '#94A3B8' }}>
+            <span className="font-medium" style={{ color: '#E2E8F0' }}>{t.ticker}</span>
+            <span className="font-data" style={{ color: '#CBD5E1' }}>{t.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="font-data" style={{ color: t.change >= 0 ? '#34D399' : '#F87171' }}>
+              {t.change >= 0 ? '▲' : '▼'} {Math.abs(t.change).toFixed(2)}%
+            </span>
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function App() {
   const [data, setData] = useState<DashboardData[]>([])
@@ -44,31 +73,10 @@ export default function App() {
     if (wl) return wl.split(',').map(t => t.toUpperCase().trim())
     return []
   })
-  const [watchlistOpen, setWatchlistOpen] = useState(false)
-  const [watchlistInput, setWatchlistInput] = useState('')
-  const watchlistRef = useRef<HTMLDivElement>(null)
   const [scoreHistory, setScoreHistory] = useState<Record<string, {date: string; composite: number}[]>>({})
   const [showIndicators, setShowIndicators] = useState(false)
 
   useEffect(() => { localStorage.setItem('qa_watchlist', JSON.stringify(watchlist)) }, [watchlist])
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (watchlistRef.current && !watchlistRef.current.contains(e.target as Node)) setWatchlistOpen(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
-
-  const addToWatchlist = useCallback(() => {
-    const ticker = watchlistInput.trim().toUpperCase().replace('.NS', '')
-    if (ticker && !watchlist.includes(ticker)) setWatchlist(prev => [...prev, ticker])
-    setWatchlistInput('')
-  }, [watchlistInput, watchlist])
-
-  const removeFromWatchlist = useCallback((ticker: string) => {
-    setWatchlist(prev => prev.filter(t => t !== ticker))
-  }, [])
 
   useEffect(() => {
     if (isDark) document.documentElement.classList.add('dark')
@@ -226,136 +234,89 @@ export default function App() {
     { id: 'factorlab', label: 'Factor Lab', icon: Activity },
   ] as const
 
-  const Pill = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full ${className}`}>
-      {children}
-    </span>
-  )
-
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-app)' }}>
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b" style={{ borderColor: 'var(--border-color)', background: 'color-mix(in srgb, var(--bg-app) 85%, transparent)', backdropFilter: 'blur(20px) saturate(1.5)', WebkitBackdropFilter: 'blur(20px) saturate(1.5)' }}>
-        {/* Top row: logo + indicators */}
-        <div className="max-w-[1400px] mx-auto px-5 lg:px-8 h-14 flex items-center gap-5">
+      {/* Scrolling Ticker Tape */}
+      <TickerTape data={data} />
+
+      {/* Dark Header */}
+      <header className="sticky top-0 z-40" style={{ background: '#0B1120', borderBottom: '1px solid #1E293B' }}>
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 h-14 flex items-center gap-4">
+          {/* Logo */}
           <button onClick={() => setActiveTab('picks')} className="flex-shrink-0 hover:opacity-80 transition-opacity">
-            {isDark
-              ? <img src="/logo-dark.svg" alt="Alpha" className="h-10 w-auto" />
-              : <img src="/logo-light.svg" alt="Alpha" className="h-10 w-auto" />
-            }
+            <img src="/logo-dark.svg" alt="Alpha" className="h-9 w-auto" />
           </button>
+
+          {/* Nav tabs */}
+          <nav className="hidden md:flex items-center gap-0.5 ml-4">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className="relative flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium transition-colors whitespace-nowrap rounded-lg"
+                style={{
+                  color: activeTab === tab.id ? '#F1F5F9' : '#64748B',
+                  background: activeTab === tab.id ? 'rgba(255,255,255,0.08)' : 'transparent',
+                }}
+              >
+                <tab.icon size={14} />
+                {tab.label}
+              </button>
+            ))}
+          </nav>
 
           <div className="flex-1" />
 
-          {/* Live indicators */}
-          <div className="hidden md:flex items-center gap-2">
+          {/* Market indicators */}
+          <div className="hidden lg:flex items-center gap-3">
             {niftyData && (
-              <Pill className={niftyData.is_up ? 'bg-green-soft text-green' : 'bg-red-soft text-red'}>
-                NIFTY {niftyData.price.toLocaleString()}{' '}
-                <span className="font-data text-[11px]">{niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%</span>
-              </Pill>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-medium" style={{ color: '#94A3B8' }}>NIFTY</span>
+                <span className="text-[13px] font-data font-medium" style={{ color: '#F1F5F9' }}>{niftyData.price.toLocaleString('en-IN')}</span>
+                <span className="flex items-center gap-0.5 text-[11px] font-data font-medium" style={{ color: niftyData.is_up ? '#34D399' : '#F87171' }}>
+                  {niftyData.is_up ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                  {niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%
+                </span>
+              </div>
             )}
+            <span className="w-px h-4" style={{ background: '#1E293B' }} />
             {marketRegimeScore !== null && (
-              <Pill className={
-                marketRegimeScore >= 1 ? 'bg-green-soft text-green'
-                : marketRegimeScore <= -1 ? 'bg-red-soft text-red'
-                : 'bg-amber-soft text-amber'
-              }>
-                <Zap size={12} />
-                {regimeLabel}
-              </Pill>
+              <div className="flex items-center gap-1.5">
+                <Zap size={12} style={{ color: marketRegimeScore >= 1 ? '#34D399' : marketRegimeScore <= -1 ? '#F87171' : '#FBBF24' }} />
+                <span className="text-[11px] font-medium" style={{ color: marketRegimeScore >= 1 ? '#34D399' : marketRegimeScore <= -1 ? '#F87171' : '#FBBF24' }}>{regimeLabel}</span>
+              </div>
             )}
             {fiiNet !== null && (
-              <Pill className={fiiNet > 0 ? 'bg-green-soft text-green' : 'bg-red-soft text-red'}>
-                FII <span className="font-data text-[11px]">{fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)} Cr</span>
-              </Pill>
+              <span className="text-[11px] font-data" style={{ color: fiiNet > 0 ? '#34D399' : '#F87171' }}>
+                FII {fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)}
+              </span>
             )}
             {diiNet !== null && (
-              <Pill className={diiNet > 0 ? 'bg-green-soft text-green' : 'bg-red-soft text-red'}>
-                DII <span className="font-data text-[11px]">{diiNet > 0 ? '+' : ''}{Math.round(diiNet)} Cr</span>
-              </Pill>
+              <span className="text-[11px] font-data" style={{ color: diiNet > 0 ? '#34D399' : '#F87171' }}>
+                DII {diiNet > 0 ? '+' : ''}{Math.round(diiNet)}
+              </span>
             )}
             {pcr !== null && (
-              <Pill className={
-                pcr > 1.2 ? 'bg-green-soft text-green' : pcr < 0.7 ? 'bg-red-soft text-red' : 'bg-amber-soft text-amber'
-              }>
-                PCR <span className="font-data text-[11px]">{pcr.toFixed(2)}</span>
-              </Pill>
+              <span className="text-[11px] font-data" style={{ color: '#94A3B8' }}>
+                PCR {pcr.toFixed(2)}
+              </span>
             )}
             {coveragePct !== null && (
-              <Pill className="bg-surface text-sub">
-                {coveragePct}% coverage
-              </Pill>
+              <span className="text-[11px]" style={{ color: '#64748B' }}>
+                {coveragePct}%
+              </span>
             )}
           </div>
 
-          <div className="hidden md:block" />
-
-          {/* Mobile indicators toggle + actions */}
+          {/* Mobile toggle + theme */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowIndicators(!showIndicators)}
-              className="md:hidden px-2 py-1.5 rounded-lg text-sub hover:text-heading transition-colors"
-              title="Market Indicators"
-            >
+            <button onClick={() => setShowIndicators(!showIndicators)} className="lg:hidden p-2 rounded-lg transition-colors" style={{ color: '#94A3B8' }}>
               <Layers size={16} />
             </button>
-
-            {watchlist.length > 0 && (
-              <div className="relative" ref={watchlistRef}>
-                <button
-                  onClick={() => setWatchlistOpen(!watchlistOpen)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors"
-                  style={{ color: 'var(--brand)', background: 'var(--brand-soft)' }}
-                >
-                  <Star size={13} fill="currentColor" />
-                  <span className="hidden sm:inline">{watchlist.length}</span>
-                </button>
-                {watchlistOpen && (
-                  <div className="absolute z-50 right-0 top-full mt-2 w-56 rounded-xl overflow-hidden" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
-                    <div className="p-3" style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <div className="flex gap-1.5">
-                        <input
-                          type="text"
-                          value={watchlistInput}
-                          onChange={e => setWatchlistInput(e.target.value)}
-                          onKeyDown={e => e.key === 'Enter' && addToWatchlist()}
-                          placeholder="Add ticker..."
-                          className="flex-1 bg-transparent text-heading text-xs uppercase outline-none px-2 py-1.5 rounded-lg"
-                          style={{ border: '1px solid var(--border-color)' }}
-                        />
-                        <button onClick={addToWatchlist} className="px-2 py-1.5 rounded-lg text-white" style={{ background: 'var(--brand)' }}>
-                          <Plus size={12} />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="max-h-48 overflow-y-auto">
-                      {watchlist.map(t => (
-                        <div key={t} className="flex items-center justify-between px-3 py-2 hover:bg-brand-soft group transition-colors">
-                          <button
-                            onClick={() => { setSelectedTicker(t); setActiveTab('charting'); setWatchlistOpen(false) }}
-                            className="text-xs font-medium uppercase transition-colors"
-                            style={{ color: 'var(--text-main)' }}
-                          >
-                            {t}
-                          </button>
-                          <button onClick={() => removeFromWatchlist(t)} className="text-sub hover:text-red transition-colors opacity-0 group-hover:opacity-100">
-                            <X size={12} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             <button
               onClick={() => setIsDark(!isDark)}
               className="p-2 rounded-lg transition-colors"
-              style={{ color: 'var(--text-sub)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-main)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-sub)')}
+              style={{ color: '#94A3B8' }}
               title="Toggle Theme"
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
@@ -363,96 +324,52 @@ export default function App() {
           </div>
         </div>
 
-        {/* Mobile: collapsible indicator row */}
+        {/* Mobile nav */}
+        <div className="md:hidden px-4 pb-2 flex gap-1 overflow-x-auto scrollbar-none">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg whitespace-nowrap transition-colors"
+              style={{
+                color: activeTab === tab.id ? '#F1F5F9' : '#64748B',
+                background: activeTab === tab.id ? 'rgba(255,255,255,0.08)' : 'transparent',
+              }}
+            >
+              <tab.icon size={13} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Mobile indicators */}
         {showIndicators && (
-          <div className="md:hidden px-5 pb-3 flex flex-wrap items-center gap-2" style={{ borderTop: '1px solid var(--border-color)' }}>
-            {niftyData && (
-              <Pill className={niftyData.is_up ? 'bg-green-soft text-green' : 'bg-red-soft text-red'}>
-                NIFTY {niftyData.price.toLocaleString()} {niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%
-              </Pill>
-            )}
-            {coveragePct !== null && <Pill className="bg-surface text-sub">{coveragePct}%</Pill>}
-            {marketRegimeScore !== null && (
-              <Pill className={marketRegimeScore >= 1 ? 'bg-green-soft text-green' : marketRegimeScore <= -1 ? 'bg-red-soft text-red' : 'bg-amber-soft text-amber'}>
-                <Zap size={11} /> {regimeLabel}
-              </Pill>
-            )}
-            {fiiNet !== null && <Pill className={fiiNet > 0 ? 'bg-green-soft text-green' : 'bg-red-soft text-red'}>FII {fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)} Cr</Pill>}
-            {diiNet !== null && <Pill className={diiNet > 0 ? 'bg-green-soft text-green' : 'bg-red-soft text-red'}>DII {diiNet > 0 ? '+' : ''}{Math.round(diiNet)} Cr</Pill>}
-            {pcr !== null && <Pill className={pcr > 1.2 ? 'bg-green-soft text-green' : pcr < 0.7 ? 'bg-red-soft text-red' : 'bg-amber-soft text-amber'}>PCR {pcr.toFixed(2)}</Pill>}
+          <div className="lg:hidden px-4 pb-3 flex flex-wrap gap-3 text-[11px]" style={{ borderTop: '1px solid #1E293B' }}>
+            {niftyData && <span style={{ color: '#94A3B8' }}>NIFTY <span className="font-data" style={{ color: '#F1F5F9' }}>{niftyData.price.toLocaleString('en-IN')}</span> <span className="font-data" style={{ color: niftyData.is_up ? '#34D399' : '#F87171' }}>{niftyData.change_pct > 0 ? '+' : ''}{niftyData.change_pct}%</span></span>}
+            {fiiNet !== null && <span style={{ color: fiiNet > 0 ? '#34D399' : '#F87171' }}>FII {fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)} Cr</span>}
+            {diiNet !== null && <span style={{ color: diiNet > 0 ? '#34D399' : '#F87171' }}>DII {diiNet > 0 ? '+' : ''}{Math.round(diiNet)} Cr</span>}
+            {pcr !== null && <span style={{ color: '#94A3B8' }}>PCR {pcr.toFixed(2)}</span>}
+            {coveragePct !== null && <span style={{ color: '#64748B' }}>{coveragePct}%</span>}
           </div>
         )}
-
-        {/* Tab bar */}
-        <div className="max-w-[1400px] mx-auto px-5 lg:px-8">
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className="relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap"
-                style={{
-                  color: activeTab === tab.id ? 'var(--text-main)' : 'var(--text-sub)',
-                }}
-              >
-                <tab.icon size={15} strokeWidth={activeTab === tab.id ? 2.2 : 1.8} />
-                {tab.label}
-                {activeTab === tab.id && (
-                  <span className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full" style={{ background: 'var(--brand)' }} />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow max-w-[1400px] mx-auto w-full px-5 lg:px-8 py-8 lg:py-10">
+      <main className="flex-grow max-w-[1400px] mx-auto w-full px-4 lg:px-8 py-6 lg:py-8">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-64 gap-6 max-w-md mx-auto">
             <div className="w-full rounded-full h-1 overflow-hidden" style={{ background: 'var(--border-color)' }}>
-              <div className="h-1 w-full rounded-full animate-progress origin-left" style={{ background: 'var(--brand)' }}></div>
+              <div className="h-1 w-full rounded-full animate-progress origin-left" style={{ background: 'var(--brand)' }} />
             </div>
             <span className="text-sm animate-pulse" style={{ color: 'var(--text-sub)' }}>Loading market data...</span>
           </div>
         ) : data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-96 gap-4 max-w-md mx-auto text-center">
-            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
-              Could not load market data.
-            </span>
-            <span className="text-xs" style={{ color: 'var(--text-sub)' }}>
-              Ensure market_data.json exists in the public directory.
-            </span>
-            {loadError && <div className="text-xs mt-2 max-w-sm overflow-hidden break-words" style={{ color: 'var(--red)' }}>{loadError}</div>}
+          <div className="flex flex-col items-center justify-center h-96 gap-4 text-center">
+            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Could not load market data.</span>
+            {loadError && <div className="text-xs max-w-sm break-words" style={{ color: 'var(--red)' }}>{loadError}</div>}
           </div>
         ) : (
           <div className="animate-fade-up">
-            {/* Section heading */}
-            <div className="mb-8">
-              <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>
-                {activeTab === 'picks' && 'High Conviction Signals'}
-                {activeTab === 'fundamentals' && 'Universe Screener'}
-                {activeTab === 'charting' && 'Technical Analysis'}
-                {activeTab === 'heatmap' && 'Sector Heatmap'}
-                {activeTab === 'factorlab' && 'Factor Lab'}
-              </h1>
-              {activeTab === 'picks' && (
-                <p className="text-sm mt-1" style={{ color: 'var(--text-sub)' }}>
-                  Top picks ranked by composite score across technical, fundamental, and research dimensions.
-                </p>
-              )}
-              {activeTab === 'fundamentals' && (
-                <p className="text-sm mt-1" style={{ color: 'var(--text-sub)' }}>
-                  {data.length} securities across NSE. Sort, filter, and expand for signal breakdowns.
-                </p>
-              )}
-              {activeTab === 'factorlab' && (
-                <p className="text-sm mt-1" style={{ color: 'var(--text-sub)' }}>
-                  Tracking conviction accuracy across 21-day and 63-day forward windows.
-                </p>
-              )}
-            </div>
-
             {activeTab === 'picks' && (
               <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect} isDark={isDark} sparklineData={sparklineData} />
             )}
@@ -473,40 +390,33 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer style={{ borderTop: '1px solid var(--border-color)' }}>
-        <div className="max-w-[1400px] mx-auto px-5 lg:px-8 py-8 grid grid-cols-1 sm:grid-cols-3 gap-8">
+      <footer className="mt-auto" style={{ borderTop: '1px solid var(--border-color)' }}>
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs">
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-main)' }}>System Status</h4>
-            <div className="space-y-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-              <div className="flex items-center gap-2">
-                <Database size={13} style={{ color: 'var(--text-sub)' }} />
-                <span>Signals updated</span>
-                <span className="font-data text-[11px]" style={{ color: 'var(--text-main)' }}>{scanUpdated || '\u2014'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Activity size={13} style={{ color: 'var(--text-sub)' }} />
-                <span>Prices updated</span>
-                <span className="font-data text-[11px]" style={{ color: 'var(--text-main)' }}>{pricesUpdated || scanUpdated || '\u2014'}</span>
-                {isDynamic && (
-                  <span className="inline-flex items-center gap-1 font-medium" style={{ color: 'var(--green)' }}>
-                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--green)' }} />
-                    Live
-                  </span>
-                )}
-              </div>
+            <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--text-main)' }}>
+              <Database size={12} />
+              <span className="font-medium">System Status</span>
+            </div>
+            <div className="space-y-1" style={{ color: 'var(--text-muted)' }}>
+              <p>Signals: <span className="font-data" style={{ color: 'var(--text-main)' }}>{scanUpdated || '\u2014'}</span></p>
+              <p>Prices: <span className="font-data" style={{ color: 'var(--text-main)' }}>{pricesUpdated || scanUpdated || '\u2014'}</span>
+                {isDynamic && <span className="ml-1 font-medium" style={{ color: 'var(--green)' }}>Live</span>}
+              </p>
             </div>
           </div>
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-main)' }}>Disclaimer</h4>
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-sub)' }}>
-              Educational and academic research purposes only. Not investment advice. Not registered with SEBI. Models are experimental; past performance is not indicative of future results. Consult a SEBI-registered advisor before investing.
+            <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--text-main)' }}>
+              <span className="font-medium">Disclaimer</span>
+            </div>
+            <p className="leading-relaxed" style={{ color: 'var(--text-sub)' }}>
+              Educational purposes only. Not investment advice. Not registered with SEBI. Consult a SEBI-registered advisor before investing.
             </p>
           </div>
           <div className="sm:text-right">
-            <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-main)' }}>Alpha Research</h4>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Alpha Research and Investment Club</p>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Faculty of Management Studies, Delhi</p>
-            <p className="text-xs mt-2" style={{ color: 'var(--text-sub)' }}>Made with &#9829; by Abhishek Kumar</p>
+            <div className="font-medium mb-2" style={{ color: 'var(--text-main)' }}>Alpha Research</div>
+            <p style={{ color: 'var(--text-muted)' }}>Alpha Research and Investment Club</p>
+            <p style={{ color: 'var(--text-muted)' }}>FMS Delhi</p>
+            <p className="mt-1" style={{ color: 'var(--text-sub)' }}>Made with &#9829; by Abhishek Kumar</p>
           </div>
         </div>
       </footer>
