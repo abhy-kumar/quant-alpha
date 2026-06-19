@@ -132,13 +132,15 @@ Market regime adjustments downgrade conviction levels when the regime score is �
 
 ## Market Regime Detection
 
-A composite regime score ranging from −3 to +3 is computed from three India-specific signals:
+A composite regime score ranging from −5 to +5 is computed from five India-specific signals:
 
 1. Nifty 50 (`^NSEI`) position relative to its 200-day SMA (+1 or −1)
 2. India VIX (`^INDIAVIX`) level: < 15 (+1), > 25 (−1)
-3. Market breadth (advances / total NSE stocks): > 0.55 (+1), < 0.45 (−1)
+3. FII/FPI net flow: > ₹500 Cr net buy (+1), < ₹500 Cr net sell (−1)
+4. Put-Call Ratio (NIFTY options OI): > 1.2 bullish contrarian (+1), < 0.7 bearish (−1)
+5. Market breadth (advances / total NSE stocks): > 0.55 (+1), < 0.45 (−1)
 
-The regime score is displayed as a compact chip in the header bar alongside the NIFTY price indicator and universe coverage percentage.
+FII/DII data is sourced from NSE's `fiidiiTradeReact` API with a moneycontrol.com fallback. PCR is computed from NSE's option chain v3 API (`/api/option-chain-v3`). Both degrade gracefully to neutral (0) if unavailable.
 
 ## Technical Indicators
 
@@ -171,6 +173,8 @@ All data sources are evaluated for India-market correctness:
 | Promoter holding / pledging | screener.in only | Not available in yfinance for Indian stocks |
 | NIFTY 50 | `^NSEI` via yfinance | Correct |
 | India VIX | `^INDIAVIX` via yfinance | Correct |
+| FII/DII activity | NSE `fiidiiTradeReact` API → moneycontrol.com fallback | Net buy/sell in INR Crores; degrades to neutral on failure |
+| Put-Call Ratio | NSE option chain v3 API | NIFTY options OI; auto-resolves nearest expiry; degrades to 1.0 on failure |
 | Market breadth | NSE Bhav Copy advance/decline | Correct |
 | Risk-free rate | 6.5% (India 10Y G-Sec yield) | Correct for INR Sharpe calculation |
 | News sentiment | Google News RSS (`gl=IN&hl=en-IN`) | India-locale, returns Moneycontrol/ET/BS headlines |
@@ -269,11 +273,14 @@ The React frontend is a five-tab analytical dashboard:
 
 ### Header Bar
 
-The header contains five persistent indicators:
+The header contains eight persistent indicators:
 
 | Element | Description |
 |---------|-------------|
 | NIFTY chip | Live NIFTY 50 price and 1D% change, green/red coded |
+| FII chip | FII/FPI net flow in INR Crores, green/red coded |
+| DII chip | DII net flow in INR Crores, green/red coded |
+| PCR chip | Put-Call Ratio, green (>1.2), red (<0.7), amber otherwise |
 | Coverage chip | % of the 150-stock universe successfully scanned |
 | Regime chip | Market regime (Bullish/Neutral/Bearish) with score, color-coded |
 | Dark mode toggle | Switches between light and dark themes |
@@ -281,7 +288,7 @@ The header contains five persistent indicators:
 ## Tech Stack
 
 - **Frontend**: React 19, Vite 8, Tailwind CSS 3, Recharts 3, Lucide Icons
-- **Data Engine**: Python 3.12, pandas, numpy, yfinance, BeautifulSoup4, vaderSentiment, feedparser
+- **Data Engine**: Python 3.12, pandas, numpy, yfinance, BeautifulSoup4, vaderSentiment, feedparser, requests
 - **News Source**: Google News RSS (`gl=IN&hl=en-IN&ceid=IN:en`) — India-locale, no API key required
 - **Serverless API**: Vercel Functions (`api/chart.ts`, `api/live_data.ts`) — yahoo-finance2 v3 (class instantiation)
 - **Database**: SQLite (`market_scans.db`)
@@ -393,7 +400,7 @@ stock-dashboard/
 ├── recommendation.py           # Scoring models (tech score, fund score)
 ├── research_factors.py         # Academic research factor implementations
 ├── data_pipeline.py            # ML-ready data storage layer
-├── nse_fetcher.py              # NSE data sources (Bhav Copy, live quotes)
+├── nse_fetcher.py              # NSE data sources (Bhav Copy, live quotes, FII/DII, PCR)
 ├── bse_fetcher.py              # BSE India fallback data
 ├── live_updater.py             # Intraday price updater (local use)
 ├── scheduler.py                # APScheduler background jobs (local use)

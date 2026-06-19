@@ -17,6 +17,7 @@ from io import StringIO
 import time
 import pytz
 import logging
+import re
 
 IST = pytz.timezone("Asia/Kolkata")
 logger = logging.getLogger("nse_fetcher")
@@ -59,7 +60,7 @@ _NSE_HEADERS = {
     ),
     "Accept":          "application/json, text/plain, */*",
     "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Encoding": "gzip, deflate",
     "Referer":         "https://www.nseindia.com/",
     "Connection":      "keep-alive",
 }
@@ -83,10 +84,13 @@ def _create_nse_session() -> requests.Session:
         try:
             resp = session.get("https://www.nseindia.com", timeout=12)
             if resp.status_code == 200:
-                time.sleep(1.2)
+                time.sleep(3)
                 _cached_nse_session = session
                 _nse_session_expiry = now + timedelta(minutes=30)
                 return session
+            else:
+                logger.debug(f"NSE homepage returned {resp.status_code}, using session without cookies")
+                break
         except Exception:
             time.sleep(wait)
     
@@ -100,6 +104,26 @@ def _invalidate_nse_session():
     global _cached_nse_session, _nse_session_expiry
     _cached_nse_session = None
     _nse_session_expiry = None
+
+
+def _validate_nse_json_response(resp: requests.Response, label: str = "") -> bool:
+    """Check that an NSE response is valid JSON before attempting to parse."""
+    ct = resp.headers.get("content-type", "")
+    if "json" not in ct:
+        logger.warning(f"{label} response is not JSON (content-type={ct}, status={resp.status_code})")
+        return False
+    body = resp.content
+    if not body or len(body) < 10:
+        logger.warning(f"{label} response body too short ({len(body)} bytes, status={resp.status_code})")
+        return False
+    try:
+        first_byte = body[0:1]
+        if first_byte not in (b"{", b"["):
+            logger.warning(f"{label} response does not start with JSON (first byte={first_byte!r}, len={len(body)})")
+            return False
+    except Exception:
+        return False
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -303,76 +327,175 @@ def get_fii_dii_activity() -> dict:
     """
     Fetch FII and DII buy/sell data from NSE.
     Returns net buy/sell figures in Rs. Crores.
+    Falls back to moneycontrol.com if NSE is blocked.
     """
+    _default = {"fii_buy": 0, "fii_sell": 0, "fii_net": 0,
+                "dii_buy": 0, "dii_sell": 0, "dii_net": 0}
+
+    session = _create_nse_session()
     for attempt in range(3):
-        session = _create_nse_session()
         url = "https://www.nseindia.com/api/fiidiiTradeReact"
         try:
-            time.sleep(1.5 if attempt > 0 else 0)
+            time.sleep(2 if attempt > 0 else 0)
             resp = session.get(url, timeout=15)
-            if resp.status_code == 200:
-                data = resp.json()
-                result = {"fii_buy": 0, "fii_sell": 0, "fii_net": 0,
-                          "dii_buy": 0, "dii_sell": 0, "dii_net": 0}
-                for item in data:
-                    category = item.get("category", "").upper()
-                    buy = float(item.get("buyValue", 0) or 0)
-                    sell = float(item.get("sellValue", 0) or 0)
-                    if "FII" in category or "FPI" in category:
-                        result["fii_buy"] = buy
-                        result["fii_sell"] = sell
-                        result["fii_net"] = buy - sell
-                    elif "DII" in category:
-                        result["dii_buy"] = buy
-                        result["dii_sell"] = sell
-                        result["dii_net"] = buy - sell
-                logger.info(f"FII/DII data: FII net={result['fii_net']:.0f} Cr, DII net={result['dii_net']:.0f} Cr")
-                return result
-            else:
+            if resp.status_code != 200:
                 logger.warning(f"FII/DII HTTP {resp.status_code} (attempt {attempt+1}/3)")
                 _invalidate_nse_session()
+                session = _create_nse_session()
+                continue
+            if not _validate_nse_json_response(resp, "FII/DII"):
+                logger.warning(f"FII/DII: bad response body (attempt {attempt+1}/3)")
+                continue
+            try:
+                data = resp.json()
+            except ValueError:
+                logger.warning(f"FII/DII: response is not valid JSON (attempt {attempt+1}/3)")
+                continue
+            if not isinstance(data, list) or len(data) == 0:
+                logger.warning(f"FII/DII: unexpected JSON structure (attempt {attempt+1}/3)")
+                continue
+            result = dict(_default)
+            for item in data:
+                category = item.get("category", "").upper()
+                buy = float(item.get("buyValue", 0) or 0)
+                sell = float(item.get("sellValue", 0) or 0)
+                if "FII" in category or "FPI" in category:
+                    result["fii_buy"] = buy
+                    result["fii_sell"] = sell
+                    result["fii_net"] = buy - sell
+                elif "DII" in category:
+                    result["dii_buy"] = buy
+                    result["dii_sell"] = sell
+                    result["dii_net"] = buy - sell
+            logger.info(f"FII/DII data: FII net={result['fii_net']:.0f} Cr, DII net={result['dii_net']:.0f} Cr")
+            return result
         except Exception as e:
             logger.warning(f"FII/DII fetch attempt {attempt+1} failed: {type(e).__name__}: {e}")
             _invalidate_nse_session()
-    logger.warning("Failed to fetch FII/DII data after all retries")
-    return {"fii_buy": 0, "fii_sell": 0, "fii_net": 0,
-            "dii_buy": 0, "dii_sell": 0, "dii_net": 0}
+            session = _create_nse_session()
+
+    logger.warning("NSE FII/DII failed, trying moneycontrol fallback")
+    fallback = _fii_dii_from_moneycontrol()
+    if fallback:
+        return fallback
+    return _default
 
 
-# ---------------------------------------------------------------------------
-# F&O Put/Call Ratio (PCR)
-# ---------------------------------------------------------------------------
+def _fii_dii_from_moneycontrol() -> dict | None:
+    """Fallback: scrape FII/DII data from moneycontrol.com."""
+    try:
+        headers = {"User-Agent": _NSE_HEADERS["User-Agent"]}
+        resp = requests.get(
+            "https://www.moneycontrol.com/stocks/marketinfo/marketstat_fii.php",
+            headers=headers, timeout=15,
+        )
+        if resp.status_code != 200 or not resp.content:
+            logger.debug(f"Moneycontrol FII page: status={resp.status_code}")
+            return None
+        text = resp.text
+        result = {"fii_buy": 0, "fii_sell": 0, "fii_net": 0,
+                  "dii_buy": 0, "dii_sell": 0, "dii_net": 0}
+        fii_match = re.search(r'FII.*?(\d[\d,.]+).*?(\d[\d,.]+)', text)
+        dii_match = re.search(r'DII.*?(\d[\d,.]+).*?(\d[\d,.]+)', text)
+        if fii_match:
+            buy = float(fii_match.group(1).replace(",", ""))
+            sell = float(fii_match.group(2).replace(",", ""))
+            result["fii_buy"] = buy
+            result["fii_sell"] = sell
+            result["fii_net"] = buy - sell
+        if dii_match:
+            buy = float(dii_match.group(1).replace(",", ""))
+            sell = float(dii_match.group(2).replace(",", ""))
+            result["dii_buy"] = buy
+            result["dii_sell"] = sell
+            result["dii_net"] = buy - sell
+        if result["fii_net"] != 0 or result["dii_net"] != 0:
+            logger.info(f"FII/DII from moneycontrol: FII net={result['fii_net']:.0f} Cr, DII net={result['dii_net']:.0f} Cr")
+            return result
+    except Exception as e:
+        logger.debug(f"Moneycontrol FII/DII fallback failed: {e}")
+    return None
+
+def _get_nifty_nearest_expiry(session: requests.Session) -> str | None:
+    """Fetch the nearest NIFTY option expiry date from NSE contract info."""
+    try:
+        resp = session.get(
+            "https://www.nseindia.com/api/option-chain-contract-info?symbol=NIFTY",
+            timeout=15,
+        )
+        if resp.status_code == 200 and _validate_nse_json_response(resp, "expiry"):
+            data = resp.json()
+            dates = data.get("expiryDates", [])
+            if dates:
+                return dates[0]
+    except (ValueError, Exception) as e:
+        logger.debug(f"Failed to fetch NIFTY expiry dates: {type(e).__name__}: {e}")
+    return None
+
 
 def get_put_call_ratio() -> dict:
     """
     Fetch NIFTY option chain data from NSE and compute Put/Call Ratio
-    based on total put vs call OUV (Open Underlying Value).
+    based on total put vs call OI (Open Interest).
     PCR > 1.2 → bullish (contrarian), PCR < 0.7 → bearish.
     """
+    _default = {"pcr": 1.0, "puts_oi": 0, "calls_oi": 0}
+
+    _invalidate_nse_session()
+    session = _create_nse_session()
     for attempt in range(3):
-        session = _create_nse_session()
-        url = "https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY"
         try:
-            time.sleep(1.5 if attempt > 0 else 0)
+            time.sleep(2 if attempt > 0 else 0)
+
+            expiry = _get_nifty_nearest_expiry(session)
+            if not expiry:
+                logger.warning(f"PCR: could not determine nearest NIFTY expiry (attempt {attempt+1}/3)")
+                continue
+
+            url = f"https://www.nseindia.com/api/option-chain-v3?type=Indices&symbol=NIFTY&expiry={expiry}"
             resp = session.get(url, timeout=15)
-            if resp.status_code == 200:
-                data = resp.json()
-                records = data.get("records", {})
-                calls_oi = 0
-                puts_oi = 0
-                for item in records.get("data", []):
-                    if "CE" in item:
-                        calls_oi += item["CE"].get("openInterest", 0) or 0
-                    if "PE" in item:
-                        puts_oi += item["PE"].get("openInterest", 0) or 0
-                pcr = round(puts_oi / calls_oi, 3) if calls_oi > 0 else 1.0
-                logger.info(f"NIFTY PCR: {pcr} (puts_oi={puts_oi}, calls_oi={calls_oi})")
-                return {"pcr": pcr, "puts_oi": puts_oi, "calls_oi": calls_oi}
-            else:
+
+            if resp.status_code != 200:
                 logger.warning(f"PCR HTTP {resp.status_code} (attempt {attempt+1}/3)")
                 _invalidate_nse_session()
+                session = _create_nse_session()
+                continue
+
+            if not _validate_nse_json_response(resp, "PCR"):
+                logger.warning(f"PCR: bad response body (attempt {attempt+1}/3)")
+                continue
+
+            try:
+                data = resp.json()
+            except ValueError:
+                logger.warning(f"PCR: response is not valid JSON (attempt {attempt+1}/3)")
+                continue
+
+            records = data.get("records", {})
+            data_items = records.get("data", [])
+
+            if not data_items:
+                logger.warning(f"PCR: empty option chain data (attempt {attempt+1}/3)")
+                continue
+
+            calls_oi = 0
+            puts_oi = 0
+            for item in data_items:
+                ce = item.get("CE")
+                pe = item.get("PE")
+                if ce and isinstance(ce, dict):
+                    calls_oi += ce.get("openInterest", 0) or 0
+                if pe and isinstance(pe, dict):
+                    puts_oi += pe.get("openInterest", 0) or 0
+
+            pcr = round(puts_oi / calls_oi, 3) if calls_oi > 0 else 1.0
+            logger.info(f"NIFTY PCR: {pcr} (puts_oi={puts_oi}, calls_oi={calls_oi}, expiry={expiry})")
+            return {"pcr": pcr, "puts_oi": puts_oi, "calls_oi": calls_oi}
+
         except Exception as e:
             logger.warning(f"PCR fetch attempt {attempt+1} failed: {type(e).__name__}: {e}")
             _invalidate_nse_session()
+            session = _create_nse_session()
+
     logger.warning("Failed to fetch PCR data after all retries")
-    return {"pcr": 1.0, "puts_oi": 0, "calls_oi": 0}
+    return _default
