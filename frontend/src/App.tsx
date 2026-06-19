@@ -16,15 +16,14 @@ function TapeInner({ data }: { data: DashboardData[] }) {
   })), [data])
   if (!items.length) return null
 
-  // Original speed: 30 items in 20s = 1.5 items/sec
-  // 40% increase = 1.5 * 1.4 = 2.1 items/sec
-  const duration = items.length / 2.1;
+  // Original speed: 1.5 items/sec. After 40% increase: 2.1. New 50% increase: 3.15 items/sec.
+  const duration = items.length / 3.15;
 
   return (
     <div className="overflow-hidden" style={{ background: '#010409' }}>
       <div className="tape flex whitespace-nowrap" style={{ animationDuration: `${duration}s` }}>
         {[...items, ...items].map((x, i) => (
-          <span key={i} className="inline-flex items-center justify-between gap-2 px-4 py-1.5 text-[11px] w-[180px] shrink-0">
+          <span key={i} className="inline-flex items-center justify-between gap-2 px-4 py-1.5 text-[11px] w-[240px] shrink-0">
             <span className="font-medium truncate" style={{ color: '#E6EDF3' }}>{x.t}</span>
             <span className="flex items-center gap-2">
               <span className="font-mono" style={{ color: '#8B949E' }}>{x.p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
