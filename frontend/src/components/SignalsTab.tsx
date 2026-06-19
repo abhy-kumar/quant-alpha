@@ -30,7 +30,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
       <div className="flex items-center justify-between mb-4">
         <div className="inline-flex rounded-lg p-0.5" style={{background:'var(--border)'}}>
           {(['short','long'] as const).map(h => (
-            <button key={h} onClick={()=>setHorizon(h)} className="px-4 py-1.5 text-[13px] font-medium rounded-md transition-all"
+            <button key={h} onClick={()=>setHorizon(h)} className="px-4 py-1.5 text-[13px] font-medium rounded-md transition-all min-w-[100px] text-center"
               style={{background:horizon===h?'var(--surface)':'transparent',color:horizon===h?'var(--text)':'var(--text-3)',boxShadow:horizon===h?'0 1px 3px rgba(0,0,0,0.08)':'none'}}>
               {h==='short'?'Short Term':'Long Term'}
             </button>
