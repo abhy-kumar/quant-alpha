@@ -41,7 +41,7 @@
 
 /* Ticker tape */
 @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.tape { animation: scroll 55s linear infinite; }
+.tape { animation: scroll 30s linear infinite; }
 .tape:hover { animation-play-state: paused; }
 
 /* Scrollbar */

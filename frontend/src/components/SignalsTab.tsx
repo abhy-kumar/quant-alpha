@@ -8,7 +8,22 @@ interface Props {
   onSelect: (t: string) => void
 }
 
+function KeyMetric({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="text-[11px] uppercase tracking-wider" style={{color:'var(--text-3)'}}>{label}</span>
+      <span className="text-[15px] font-semibold font-mono mt-0.5" style={{color:'var(--text)'}}>{value}</span>
+      {sub && <span className="text-[11px] mt-0.5" style={{color:'var(--text-3)'}}>{sub}</span>}
+    </div>
+  )
+}
+
 export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: Props) {
+  const avgScore = topPicks.length ? (topPicks.reduce((s,p)=>s+Number(p.Composite_Score||0),0)/topPicks.length).toFixed(1) : '0'
+  const avgMomentum = topPicks.length ? (topPicks.reduce((s,p)=>s+Number(p.Momentum_12M||0),0)/topPicks.length*100).toFixed(1) : '0'
+  const avgPiotroski = topPicks.length ? (topPicks.reduce((s,p)=>s+Number(p.Piotroski_F||0),0)/topPicks.length).toFixed(1) : '0'
+  const sectors = [...new Set(topPicks.map(p=>p.Sector).filter(Boolean))]
+
   return (
     <div>
       {/* Controls */}
@@ -53,9 +68,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                   onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                   <td className="py-3 px-3 text-[13px] font-medium" style={{color:'var(--text-3)'}}>{i+1}</td>
                   <td className="py-3 px-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[15px] font-semibold" style={{color:'var(--text)'}}>{s.Ticker.replace('.NS','')}</span>
-                    </div>
+                    <span className="text-[15px] font-semibold" style={{color:'var(--text)'}}>{s.Ticker.replace('.NS','')}</span>
                   </td>
                   <td className="py-3 px-3 text-right font-mono text-[13px]" style={{color:'var(--text)'}}>
                     {'\u20B9'}{price.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -87,8 +100,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                     style={{color: Number(s.Piotroski_F)>=7?'var(--green)':Number(s.Piotroski_F)<=3?'var(--red)':'var(--text)'}}>
                     {s.Piotroski_F??'\u2014'}<span style={{color:'var(--text-3)'}}>/9</span>
                   </td>
-                  <td className={`py-3 px-3 text-right font-mono text-[13px] font-medium hidden lg:table-cell ${colorCode(s.Momentum_12M)}`}
-                    style={{color: colorCode(s.Momentum_12M)?undefined:undefined}}>
+                  <td className={`py-3 px-3 text-right font-mono text-[13px] font-medium hidden lg:table-cell ${colorCode(s.Momentum_12M)}`}>
                     {s.Momentum_12M!=null?`${(s.Momentum_12M*100).toFixed(1)}%`:'\u2014'}
                   </td>
                   <td className="py-3 px-3 text-right font-mono text-[13px] hidden xl:table-cell" style={{color:'var(--text)'}}>
@@ -103,6 +115,46 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Summary stats below table */}
+      <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl" style={{background:'var(--surface)',border:'1px solid var(--border)'}}>
+        <KeyMetric label="Avg Score" value={`${avgScore}/10`} sub="Composite" />
+        <KeyMetric label="Avg Momentum" value={`${avgMomentum}%`} sub="12-month" />
+        <KeyMetric label="Avg Piotroski" value={`${avgPiotroski}/9`} sub="Quality" />
+        <KeyMetric label="Sectors" value={sectors.join(', ')} sub={`${sectors.length} represented`} />
+      </div>
+
+      {/* Signal breakdown for each pick */}
+      <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {topPicks.map((s, i) => (
+          <div key={s.Ticker} className="p-4 rounded-xl" style={{background:'var(--surface)',border:'1px solid var(--border)'}}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[13px] font-semibold" style={{color:'var(--text)'}}>{s.Ticker.replace('.NS','')}</span>
+              <span className="text-[11px] font-mono" style={{color:'var(--text-3)'}}>#{i+1}</span>
+            </div>
+            <div className="space-y-2">
+              {[
+                {l:'Tech',v:Number(s.Tech_Score)||0,min:-1,max:1},
+                {l:'Fund',v:Number(s.Fund_Score)||0,min:0,max:10},
+                {l:'Research',v:Number(s.Research_Score)||0,min:0,max:10},
+                {l:'Momentum',v:Math.min(10,Math.max(0,((Number(s.Momentum_12M)||0)+0.3)*12)),min:0,max:10},
+                {l:'Piotroski',v:Number(s.Piotroski_F)||0,min:0,max:9},
+              ].map(m => {
+                const pct = Math.max(0,Math.min(100,((m.v-m.min)/(m.max-m.min))*100))
+                return (
+                  <div key={m.l} className="flex items-center gap-2">
+                    <span className="text-[11px] w-16 shrink-0" style={{color:'var(--text-3)'}}>{m.l}</span>
+                    <div className="flex-1 h-1 rounded-full overflow-hidden" style={{background:'var(--border)'}}>
+                      <div className="h-full rounded-full" style={{width:`${pct}%`,background:pct>=70?'var(--green)':pct>=40?'var(--brand)':'var(--red)'}} />
+                    </div>
+                    <span className="text-[11px] font-mono w-8 text-right" style={{color:'var(--text-2)'}}>{m.v.toFixed(1)}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )

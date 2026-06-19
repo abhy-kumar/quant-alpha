@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import axios from 'axios'
-import { Activity, Database, TrendingUp, BarChart2, Layers, Moon, Sun, Zap, ChevronUp, ChevronDown } from 'lucide-react'
+import { Activity, Database, TrendingUp, BarChart2, Layers, Moon, Sun, Zap } from 'lucide-react'
 import type { DashboardData } from './types'
 import SignalsTab from './components/SignalsTab'
 import ScreenerTab from './components/ScreenerTab'
@@ -154,11 +154,8 @@ export default function App() {
 
       {/* Header */}
       <header className="sticky top-0 z-40" style={{ background:'#0D1117', borderBottom:'1px solid #21262D' }}>
-        <div className="max-w-[1400px] mx-auto px-5 h-14 flex items-center gap-6">
-          <button onClick={()=>setActiveTab('picks')} className="flex-shrink-0 hover:opacity-80 transition-opacity overflow-hidden" style={{height:32,width:100}}>
-            <img src="/logo-dark.svg" alt="Alpha" className="w-full" style={{objectFit:'cover',objectPosition:'center',marginTop:'-40%'}} />
-          </button>
-
+        <div className="max-w-[1400px] mx-auto px-5 h-16 flex items-center">
+          {/* Left: nav */}
           <nav className="hidden md:flex items-center gap-0.5">
             {TABS.map(tab => (
               <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
@@ -171,24 +168,31 @@ export default function App() {
 
           <div className="flex-1" />
 
+          {/* Center: logo */}
+          <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity overflow-hidden flex-shrink-0" style={{height:28,width:90}}>
+            <img src="/logo-dark.svg" alt="Alpha" className="w-full" style={{objectFit:'cover',objectPosition:'center',marginTop:'-40%'}} />
+          </button>
+
+          <div className="flex-1" />
+
+          {/* Right: indicators */}
           <div className="hidden lg:flex items-center gap-3 text-[12px]">
             {niftyData && <>
               <span style={{color:'#8B949E'}}>NIFTY</span>
-              <span className="font-mono font-medium" style={{color:'#E6EDF3'}}>{niftyData.price.toLocaleString('en-IN')}</span>
-              <span className="font-mono font-medium" style={{color:niftyData.is_up?'#3FB950':'#F85149'}}>
-                {niftyData.is_up?<ChevronUp size={12}/>:<ChevronDown size={12}/>}
-                {niftyData.change_pct>0?'+':''}{niftyData.change_pct}%
+              <span className="font-mono font-medium whitespace-nowrap" style={{color:'#E6EDF3'}}>{niftyData.price.toLocaleString('en-IN')}</span>
+              <span className="font-mono font-medium whitespace-nowrap" style={{color:niftyData.is_up?'#3FB950':'#F85149'}}>
+                {niftyData.is_up?'+':''}{niftyData.change_pct}%
               </span>
             </>}
             <span className="w-px h-3.5" style={{background:'#21262D'}}/>
             {marketRegimeScore!==null && <Pill className={marketRegimeScore>=1?'text-[#3FB950]':marketRegimeScore<=-1?'text-[#F85149]':'text-[#D29922]'}><Zap size={11}/>{regimeLabel}</Pill>}
-            {fiiNet!==null && <span className="font-mono" style={{color:fiiNet>0?'#3FB950':'#F85149'}}>FII {fiiNet>0?'+':''}{Math.round(fiiNet)}</span>}
-            {diiNet!==null && <span className="font-mono" style={{color:diiNet>0?'#3FB950':'#F85149'}}>DII {diiNet>0?'+':''}{Math.round(diiNet)}</span>}
+            {fiiNet!==null && <span className="font-mono whitespace-nowrap" style={{color:fiiNet>0?'#3FB950':'#F85149'}}>FII {fiiNet>0?'+':''}{Math.round(fiiNet)}</span>}
+            {diiNet!==null && <span className="font-mono whitespace-nowrap" style={{color:diiNet>0?'#3FB950':'#F85149'}}>DII {diiNet>0?'+':''}{Math.round(diiNet)}</span>}
             {pcr!==null && <span className="font-mono" style={{color:'#8B949E'}}>PCR {pcr.toFixed(2)}</span>}
             {coveragePct!==null && <span style={{color:'#484F58'}}>{coveragePct}%</span>}
           </div>
 
-          <button onClick={()=>setIsDark(!isDark)} className="p-1.5 rounded-md" style={{color:'#8B949E'}} title="Toggle theme">
+          <button onClick={()=>setIsDark(!isDark)} className="ml-3 p-1.5 rounded-md" style={{color:'#8B949E'}} title="Toggle theme">
             {isDark?<Sun size={15}/>:<Moon size={15}/>}
           </button>
         </div>
