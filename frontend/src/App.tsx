@@ -146,21 +146,21 @@ export default function App() {
 
   const handleSelect = (t: string) => { setSelectedTicker(t); setActiveTab('charting') }
   const regimeLabel = marketRegimeScore!==null?(marketRegimeScore>0?'Bullish':marketRegimeScore<0?'Bearish':'Neutral'):''
-  const Pill = ({children, className=''}:{children:React.ReactNode;className?:string}) => <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-md ${className}`}>{children}</span>
+  const Pill = ({children, className=''}:{children:React.ReactNode;className?:string}) => <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium ${className}`}>{children}</span>
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background:'var(--bg)' }}>
       <Tape data={data} />
 
       {/* Header */}
-      <header className="sticky top-0 z-40" style={{ background:'#0D1117', borderBottom:'1px solid #21262D' }}>
+      <header className="sticky top-0 z-40" style={{ background:'var(--surface)', borderBottom:'1px solid var(--border)' }}>
         <div className="max-w-[1400px] mx-auto px-5 h-16 flex items-center">
           {/* Left: nav */}
           <nav className="hidden md:flex items-center gap-0.5">
             {TABS.map(tab => (
               <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors"
-                style={{ color: activeTab===tab.id?'#F0F6FC':'#8B949E', background: activeTab===tab.id?'rgba(255,255,255,0.08)':'transparent' }}>
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium transition-colors"
+                style={{ color: activeTab===tab.id?'var(--text)':'var(--text-3)', background: activeTab===tab.id?'var(--green-bg)':'transparent' }}>
                 <tab.icon size={14} />{tab.label}
               </button>
             ))}
@@ -170,7 +170,7 @@ export default function App() {
 
           {/* Center: logo */}
           <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-            <img src="/logo-dark.svg" alt="Alpha" className="h-8 w-auto" />
+            <img src={isDark?'/logo-dark.svg':'/logo-light.svg'} alt="Alpha" className="h-10 w-auto" />
           </button>
 
           <div className="flex-1" />
@@ -178,21 +178,21 @@ export default function App() {
           {/* Right: indicators */}
           <div className="hidden lg:flex items-center gap-3 text-[12px]">
             {niftyData && <>
-              <span style={{color:'#8B949E'}}>NIFTY</span>
-              <span className="font-mono font-medium whitespace-nowrap" style={{color:'#E6EDF3'}}>{niftyData.price.toLocaleString('en-IN')}</span>
-              <span className="font-mono font-medium whitespace-nowrap" style={{color:niftyData.is_up?'#3FB950':'#F85149'}}>
+              <span style={{color:'var(--text-3)'}}>NIFTY</span>
+              <span className="font-mono font-medium whitespace-nowrap" style={{color:'var(--text)'}}>{niftyData.price.toLocaleString('en-IN')}</span>
+              <span className="font-mono font-medium whitespace-nowrap" style={{color:niftyData.is_up?'var(--green)':'var(--red)'}}>
                 {niftyData.is_up?'+':''}{niftyData.change_pct}%
               </span>
             </>}
-            <span className="w-px h-3.5" style={{background:'#21262D'}}/>
-            {marketRegimeScore!==null && <Pill className={marketRegimeScore>=1?'text-[#3FB950]':marketRegimeScore<=-1?'text-[#F85149]':'text-[#D29922]'}><Zap size={11}/>{regimeLabel}</Pill>}
-            {fiiNet!==null && <span className="font-mono whitespace-nowrap" style={{color:fiiNet>0?'#3FB950':'#F85149'}}>FII {fiiNet>0?'+':''}{Math.round(fiiNet)}</span>}
-            {diiNet!==null && <span className="font-mono whitespace-nowrap" style={{color:diiNet>0?'#3FB950':'#F85149'}}>DII {diiNet>0?'+':''}{Math.round(diiNet)}</span>}
-            {pcr!==null && <span className="font-mono" style={{color:'#8B949E'}}>PCR {pcr.toFixed(2)}</span>}
-            {coveragePct!==null && <span style={{color:'#484F58'}}>{coveragePct}%</span>}
+            <span className="w-px h-3.5" style={{background:'var(--border)'}}/>
+            {marketRegimeScore!==null && <Pill className={marketRegimeScore>=1?'text-[var(--green)]':marketRegimeScore<=-1?'text-[var(--red)]':'text-[var(--amber)]'}><Zap size={11}/>{regimeLabel}</Pill>}
+            {fiiNet!==null && <span className="font-mono whitespace-nowrap" style={{color:fiiNet>0?'var(--green)':'var(--red)'}}>FII {fiiNet>0?'+':''}{Math.round(fiiNet)}</span>}
+            {diiNet!==null && <span className="font-mono whitespace-nowrap" style={{color:diiNet>0?'var(--green)':'var(--red)'}}>DII {diiNet>0?'+':''}{Math.round(diiNet)}</span>}
+            {pcr!==null && <span className="font-mono" style={{color:'var(--text-3)'}}>PCR {pcr.toFixed(2)}</span>}
+            {coveragePct!==null && <span style={{color:'var(--text-3)'}}>{coveragePct}%</span>}
           </div>
 
-          <button onClick={()=>setIsDark(!isDark)} className="ml-3 p-1.5 rounded-md" style={{color:'#8B949E'}} title="Toggle theme">
+          <button onClick={()=>setIsDark(!isDark)} className="shrink-0 p-1.5" style={{color:'var(--text-3)'}} title="Toggle theme">
             {isDark?<Sun size={15}/>:<Moon size={15}/>}
           </button>
         </div>
@@ -213,7 +213,7 @@ export default function App() {
             {loadError && <span className="text-xs" style={{color:'var(--red)'}}>{loadError}</span>}
           </div>
         ) : (
-          <div className="animate-in">
+          <div>
             {activeTab==='picks' && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
             {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory}/>}
             {activeTab==='charting' && <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset}/>}
@@ -225,8 +225,8 @@ export default function App() {
 
       {/* Footer */}
       <footer className="mt-auto" style={{borderTop:'1px solid var(--border)'}}>
-        <div className="max-w-[1400px] mx-auto px-5 py-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="flex flex-col gap-2">
+        <div className="max-w-[1400px] mx-auto px-5 py-5 grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="flex flex-col gap-1.5">
             <h4 className="text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>System Status</h4>
             <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider" style={{color:'var(--text-2)'}}>
               <Database size={10} /><span>Signals</span>
@@ -238,13 +238,13 @@ export default function App() {
               {isDynamic && <span style={{color:'var(--green)'}}>Live</span>}
             </div>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <h4 className="text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>Disclaimer</h4>
             <p className="text-[11px] leading-relaxed" style={{color:'var(--text-2)'}}>
               Educational and academic research purposes only. Not investment advice. Not registered with SEBI. Models are experimental; past performance is not indicative of future results. Data from third-party sources may contain errors. Consult a SEBI-registered advisor before investing.
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:items-end">
+          <div className="flex flex-col gap-1.5 sm:items-end">
             <h4 className="text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>Alpha Research</h4>
             <p className="text-[11px]" style={{color:'var(--text-2)'}}>Alpha Research and Investment Club</p>
             <p className="text-[11px]" style={{color:'var(--text-2)'}}>Faculty of Management Studies, Delhi</p>

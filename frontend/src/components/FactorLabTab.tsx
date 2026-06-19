@@ -49,7 +49,7 @@ function formatDate(d: Date): string {
 const tooltipStyle = (isDark: boolean) => ({
   backgroundColor: isDark ? '#111318' : '#ffffff',
   borderColor: isDark ? '#1E2230' : '#E4E7EC',
-  borderRadius: '12px',
+  borderRadius: '0',
   fontFamily: 'Inter, system-ui, sans-serif',
   fontSize: '12px',
   color: isDark ? '#E8ECF2' : '#1A1D26',
@@ -85,7 +85,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
       <div className="space-y-5">
         {/* Progress bar */}
         {countdown && (
-          <div className="flex flex-wrap items-center gap-4 px-5 py-3 rounded-xl text-xs" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+          <div className="flex flex-wrap items-center gap-4 px-5 py-3 text-xs" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
             <span className="font-semibold" style={{ color: 'var(--brand)' }}>Active</span>
             <span style={{ color: 'var(--text-2)' }}>{countdown.elapsed} trading days of data</span>
             {countdown.remaining63 > 0 && (
@@ -98,7 +98,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
           {sorted.map(([conviction, data]) => (
-            <div key={conviction} className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+            <div key={conviction} className="p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[conviction as keyof typeof COLORS] || 'var(--text-3)' }} />
                 <span className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>{conviction}</span>
@@ -123,7 +123,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
         </div>
 
         {/* Bar chart */}
-        <div className="rounded-2xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+        <div className="p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Average Forward Returns by Conviction</h3>
           <div className="w-full" style={{ height: 'min(300px, 50vw)' }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -158,9 +158,9 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="rounded-2xl p-6 sm:p-8" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+      <div className="p-6 sm:p-8" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
         <div className="flex items-start gap-4 mb-6">
-          <div className="p-3 rounded-xl" style={{ background: 'rgba(30,63,104,0.06)' }}>
+          <div className="p-3" style={{ background: 'rgba(30,63,104,0.06)' }}>
             <FlaskConical size={20} style={{ color: 'var(--brand)' }} />
           </div>
           <div>
@@ -176,7 +176,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
 
         {/* Milestones */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="rounded-xl p-5" style={{ background: 'var(--surface)' }}>
+          <div className="p-5" style={{ background: 'var(--surface)' }}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <TrendingUp size={14} style={{ color: 'var(--brand)' }} />
@@ -201,7 +201,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
             </div>
           </div>
 
-          <div className="rounded-xl p-5" style={{ background: 'var(--surface)' }}>
+          <div className="p-5" style={{ background: 'var(--surface)' }}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Clock size={14} style={{ color: 'var(--brand)' }} />
@@ -230,7 +230,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
 
       {/* Pipeline status */}
       {countdown && (
-        <div className="flex items-center gap-2 px-5 py-3 rounded-xl text-xs" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+        <div className="flex items-center gap-2 px-5 py-3 text-xs" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
           <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--green)' }} />
           <span style={{ color: 'var(--text-2)' }}>Outcome tracking active since <span className="font-medium" style={{ color: 'var(--text)' }}>{formatDate(countdown.start)}</span></span>
           <span className="sm:ml-auto" style={{ color: 'var(--text-3)' }}>{countdown.elapsed} trading days recorded</span>

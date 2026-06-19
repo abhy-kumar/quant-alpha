@@ -85,20 +85,20 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
         <span className="text-[12px]" style={{color:'var(--text-3)'}}>{filteredData.length} results</span>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium rounded-lg transition-all"
+          className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium transition-all"
           style={{
             background: showFilters ? 'var(--brand)' : 'var(--surface)',
             color: showFilters ? '#fff' : 'var(--text-2)',
             border: `1px solid ${showFilters ? 'var(--brand)' : 'var(--border)'}`,
           }}
         >
-          <Filter size={14} /> Filters {activeFilterCount > 0 && <span className="px-1.5 py-0.5 text-[10px] rounded-full" style={{ background: showFilters ? 'rgba(255,255,255,0.2)' : 'rgba(30,63,104,0.06)', color: showFilters ? '#fff' : 'var(--brand)' }}>{activeFilterCount}</span>}
+          <Filter size={14} /> Filters {activeFilterCount > 0 && <span className="px-1.5 py-0.5 text-[10px]" style={{ background: showFilters ? 'rgba(255,255,255,0.2)' : 'rgba(30,63,104,0.06)', color: showFilters ? '#fff' : 'var(--brand)' }}>{activeFilterCount}</span>}
         </button>
       </div>
 
       {/* Filters panel */}
       {showFilters && (
-        <div className="rounded-2xl p-5 animate-fade-up" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+        <div className="p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--brand)' }}>Filters</span>
             {activeFilterCount > 0 && (
@@ -128,7 +128,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <label className="text-xs mb-2 block" style={{ color: 'var(--text-2)' }}>Sectors</label>
               <div className="flex flex-wrap gap-1.5">
                 {availableSectors.map(s => (
-                  <button key={s} onClick={() => toggleSector(s)} className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all" style={selectedSectors.includes(s) ? { background: 'var(--brand)', color: '#fff' } : { background: 'var(--surface)', color: 'var(--text-2)' }}>
+                  <button key={s} onClick={() => toggleSector(s)} className="px-2.5 py-1 text-[11px] font-medium transition-all" style={selectedSectors.includes(s) ? { background: 'var(--brand)', color: '#fff' } : { background: 'var(--surface)', color: 'var(--text-2)' }}>
                     {s}
                   </button>
                 ))}
@@ -138,7 +138,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <label className="text-xs mb-2 block" style={{ color: 'var(--text-2)' }}>Conviction</label>
               <div className="flex flex-wrap gap-1.5">
                 {CONVICTION_OPTIONS.map(c => (
-                  <button key={c} onClick={() => toggleConviction(c)} className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all" style={selectedConvictions.includes(c) ? { background: 'var(--brand)', color: '#fff' } : { background: 'var(--surface)', color: 'var(--text-2)' }}>
+                  <button key={c} onClick={() => toggleConviction(c)} className="px-2.5 py-1 text-[11px] font-medium transition-all" style={selectedConvictions.includes(c) ? { background: 'var(--brand)', color: '#fff' } : { background: 'var(--surface)', color: 'var(--text-2)' }}>
                     {c}
                   </button>
                 ))}
@@ -149,7 +149,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
       )}
 
       {/* Desktop table */}
-      <div className="rounded-2xl overflow-hidden hidden sm:block" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+      <div className="overflow-hidden hidden sm:block" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
         <table className="w-full text-left">
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
@@ -205,7 +205,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden xl:table-cell ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</td>
                   <td className="py-3 px-3 text-right text-sm font-data hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
                   <td className="py-3 px-3 text-sm font-medium">
-                    <span className="inline-block px-2 py-0.5 text-[11px] font-medium rounded-full" style={convictionStyle(row.Conviction)}>
+                    <span className="inline-block px-2 py-0.5 text-[11px] font-medium" style={convictionStyle(row.Conviction)}>
                       {row.Conviction || 'N/A'}
                     </span>
                   </td>
@@ -282,7 +282,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
       {/* Mobile card view */}
       <div className="sm:hidden space-y-3">
         {filteredData.map((row, i) => (
-          <div key={i} className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: `1px solid ${expandedRow === row.Ticker ? 'color-mix(in srgb, var(--brand) 30%, var(--border))' : 'var(--border)'}`, boxShadow: 'none' }}>
+          <div key={i} className="p-4" style={{ background: 'var(--surface)', border: `1px solid ${expandedRow === row.Ticker ? 'color-mix(in srgb, var(--brand) 30%, var(--border))' : 'var(--border)'}`, boxShadow: 'none' }}>
             <div className="flex items-center justify-between mb-3">
               <button onClick={() => onSelect(row.Ticker)} className="text-lg font-bold" style={{ color: 'var(--text)' }}>
                 {row.Ticker.replace('.NS', '')}
@@ -291,7 +291,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 <button onClick={() => toggleWatchlist(row.Ticker)} style={{ color: watchlist.includes(row.Ticker) ? 'var(--brand)' : 'var(--text-3)' }}>
                   <Star size={14} fill={watchlist.includes(row.Ticker) ? 'currentColor' : 'none'} />
                 </button>
-                <span className="px-2 py-0.5 text-[11px] font-medium rounded-full" style={convictionStyle(row.Conviction)}>
+                <span className="px-2 py-0.5 text-[11px] font-medium" style={convictionStyle(row.Conviction)}>
                   {row.Conviction || 'N/A'}
                 </span>
               </div>
@@ -314,13 +314,13 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
             </div>
             <button
               onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
-              className="w-full py-2 text-xs font-medium rounded-lg transition-all"
+              className="w-full py-2 text-xs font-medium transition-all"
               style={{ background: 'var(--surface)', color: 'var(--text-2)' }}
             >
               {expandedRow === row.Ticker ? 'Show less' : 'Show more'}
             </button>
             {expandedRow === row.Ticker && (
-              <div className="mt-3 pt-3 space-y-4 animate-fade-up" style={{ borderTop: '1px solid var(--border)' }}>
+              <div className="mt-3 pt-3 space-y-4" style={{ borderTop: '1px solid var(--border)' }}>
                 <div>
                   <h4 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--brand)' }}>Signals</h4>
                   <div className="space-y-1.5 text-sm">
