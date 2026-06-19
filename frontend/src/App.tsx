@@ -241,10 +241,10 @@ export default function App() {
 
       {/* Dark Header */}
       <header className="sticky top-0 z-40" style={{ background: '#0B1120', borderBottom: '1px solid #1E293B' }}>
-        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 h-14 flex items-center gap-4">
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 h-16 flex items-center gap-4">
           {/* Logo */}
           <button onClick={() => setActiveTab('picks')} className="flex-shrink-0 hover:opacity-80 transition-opacity">
-            <img src="/logo-dark.svg" alt="Alpha" className="h-9 w-auto" />
+            <img src="/logo-dark.svg" alt="Alpha" className="h-7 w-auto" />
           </button>
 
           {/* Nav tabs */}
