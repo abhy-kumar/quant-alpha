@@ -169,8 +169,8 @@ export default function App() {
           <div className="flex-1" />
 
           {/* Center: logo */}
-          <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity overflow-hidden flex-shrink-0" style={{height:36,width:100}}>
-            <img src="/logo-dark.svg" alt="Alpha" className="w-full" style={{objectFit:'cover',objectPosition:'center 55%'}} />
+          <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
+            <img src="/logo-dark.svg" alt="Alpha" className="h-10 w-auto" />
           </button>
 
           <div className="flex-1" />
