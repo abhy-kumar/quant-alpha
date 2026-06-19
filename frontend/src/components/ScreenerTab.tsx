@@ -150,7 +150,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
 
       {/* Desktop table */}
       <div className="overflow-hidden hidden sm:block" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+        <table className="w-full text-left" style={{tableLayout:'auto'}}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
               <SortHeader field="Ticker" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Ticker</SortHeader>
@@ -277,6 +278,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Mobile card view */}
