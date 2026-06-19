@@ -79,23 +79,17 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
   const toggleConviction = (c: string) => setSelectedConvictions(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])
 
   return (
-    <div className="space-y-5">
-      {/* Section heading */}
-      <div className="flex items-end justify-between">
-        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Screener</h1>
-        <span className="text-sm" style={{ color: 'var(--text-sub)' }}>{filteredData.length} results</span>
-      </div>
-
+    <div className="space-y-4">
       {/* Filter bar */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <span className="text-[12px]" style={{color:'var(--text-3)'}}>{filteredData.length} results</span>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all"
+          className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium rounded-lg transition-all"
           style={{
-            background: showFilters ? 'var(--brand)' : 'var(--bg-card)',
-            color: showFilters ? '#fff' : 'var(--text-muted)',
-            border: `1px solid ${showFilters ? 'var(--brand)' : 'var(--border-color)'}`,
-            boxShadow: showFilters ? 'none' : 'var(--shadow-sm)',
+            background: showFilters ? 'var(--brand)' : 'var(--surface)',
+            color: showFilters ? '#fff' : 'var(--text-2)',
+            border: `1px solid ${showFilters ? 'var(--brand)' : 'var(--border)'}`,
           }}
         >
           <Filter size={14} /> Filters {activeFilterCount > 0 && <span className="px-1.5 py-0.5 text-[10px] rounded-full" style={{ background: showFilters ? 'rgba(255,255,255,0.2)' : 'var(--brand-soft)', color: showFilters ? '#fff' : 'var(--brand)' }}>{activeFilterCount}</span>}

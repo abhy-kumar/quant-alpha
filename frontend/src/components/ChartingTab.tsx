@@ -140,12 +140,7 @@ export default function ChartingTab({
   const tickerScores = scoreHistory[selectedTicker] || []
 
   return (
-    <div className="space-y-6">
-      {/* Section heading */}
-      <div>
-        <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Charts</h1>
-      </div>
-
+    <div className="space-y-5">
       <div className="flex flex-col xl:flex-row gap-6 xl:gap-8">
       {/* Left: Controls & Info */}
       <div className="w-full xl:w-72 flex flex-col gap-5 order-2 xl:order-1 shrink-0">
