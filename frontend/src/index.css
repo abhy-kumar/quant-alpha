@@ -15,6 +15,8 @@
     --green-bg: rgba(26,127,55,0.08);
     --red: #CF222E;
     --red-bg: rgba(207,34,46,0.08);
+    --blue: #0969DA;
+    --amber: #BF8700;
   }
   .dark {
     --bg: #0D1117;
@@ -28,6 +30,8 @@
     --green-bg: rgba(63,185,80,0.12);
     --red: #F85149;
     --red-bg: rgba(248,81,73,0.12);
+    --blue: #58A6FF;
+    --amber: #D29922;
   }
   html, body {
     background: var(--bg);

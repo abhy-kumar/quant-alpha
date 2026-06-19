@@ -21,15 +21,44 @@ function ScoreBar({ label, value, max }: { label: string; value: number; max: nu
   )
 }
 
+function MiniChart({ stock }: { stock: DashboardData }) {
+  const vals = [
+    Number(stock.Tech_Score)||0,
+    Number(stock.Fund_Score)||0,
+    Number(stock.Research_Score)||0,
+    Math.max(0,Math.min(10,((Number(stock.Momentum_12M)||0)+0.3)*12)),
+    (Number(stock.Piotroski_F)||0)*(10/9),
+  ]
+  const w = 200, h = 60, pad = 4
+  const max = 10, min = 0
+  const pts = vals.map((v,i) => {
+    const x = pad + (i/(vals.length-1))*(w-2*pad)
+    const y = h - pad - ((v-min)/(max-min))*(h-2*pad)
+    return `${x},${y}`
+  }).join(' ')
+  const area = `${pad},${h-pad} ${pts} ${w-pad},${h-pad}`
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-12 mt-3">
+      <polygon points={area} fill="var(--green)" fillOpacity="0.08" />
+      <polyline points={pts} fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      {vals.map((v,i) => {
+        const x = pad + (i/(vals.length-1))*(w-2*pad)
+        const y = h - pad - ((v-min)/(max-min))*(h-2*pad)
+        return <circle key={i} cx={x} cy={y} r="3" fill="var(--surface)" stroke="var(--green)" strokeWidth="2" />
+      })}
+    </svg>
+  )
+}
+
 export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: Props) {
   return (
     <div>
       {/* Controls */}
       <div className="flex items-center justify-between mb-5">
-        <div className="inline-flex rounded-lg p-0.5" style={{background:'var(--border)'}}>
+        <div className="inline-flex p-0.5" style={{background:'var(--border)'}}>
           {(['short','long'] as const).map(h => (
             <button key={h} onClick={()=>setHorizon(h)}
-              className="w-[110px] py-1.5 text-[13px] font-medium rounded-md transition-all text-center"
+              className="w-[110px] py-1.5 text-[13px] font-medium transition-all text-center"
               style={{background:horizon===h?'var(--surface)':'transparent',color:horizon===h?'var(--text)':'var(--text-3)',boxShadow:horizon===h?'0 1px 3px rgba(0,0,0,0.08)':'none'}}>
               {h==='short'?'Short Term':'Long Term'}
             </button>
@@ -46,7 +75,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
           const composite = Number(s.Composite_Score)||0
           return (
             <div key={s.Ticker} onClick={()=>onSelect(s.Ticker)}
-              className="rounded-xl p-5 cursor-pointer transition-all hover:-translate-y-0.5"
+              className="p-5 cursor-pointer transition-all hover:-translate-y-0.5"
               style={{background:'var(--surface)',border:'1px solid var(--border)'}}>
               {/* Header */}
               <div className="flex items-start justify-between mb-3">
@@ -83,6 +112,9 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                 <ScoreBar label="ROE" value={Number(s['ROE_%'])||0} max={60} />
                 <ScoreBar label="Vol 60D" value={Number(s.Vol_60D)||0} max={60} />
               </div>
+
+              {/* Mini radar chart */}
+              <MiniChart stock={s} />
             </div>
           )
         })}
