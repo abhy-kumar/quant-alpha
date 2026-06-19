@@ -54,7 +54,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
   return (
     <div>
       {/* Controls */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5">
         <div className="inline-flex p-0.5" style={{background:'var(--border)'}}>
           {(['short','long'] as const).map(h => (
             <button key={h} onClick={()=>setHorizon(h)}
@@ -64,7 +64,6 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
             </button>
           ))}
         </div>
-        <span className="text-[12px]" style={{color:'var(--text-3)'}}>Top 3 picks</span>
       </div>
 
       {/* Cards */}

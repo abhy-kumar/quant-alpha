@@ -225,13 +225,31 @@ export default function App() {
 
       {/* Footer */}
       <footer className="mt-auto" style={{borderTop:'1px solid var(--border)'}}>
-        <div className="max-w-[1400px] mx-auto px-5 py-5 flex flex-wrap items-center justify-between gap-4 text-[11px]" style={{color:'var(--text-3)'}}>
-          <div className="flex items-center gap-4">
-            <span>Signals {scanUpdated||'\u2014'}</span>
-            <span>Prices {pricesUpdated||scanUpdated||'\u2014'}{isDynamic&&<span className="ml-1" style={{color:'var(--green)'}}>Live</span>}</span>
+        <div className="max-w-[1400px] mx-auto px-5 py-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-2">
+            <h4 className="text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>System Status</h4>
+            <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider" style={{color:'var(--text-2)'}}>
+              <Database size={10} /><span>Signals</span>
+              <span style={{color:'var(--text)'}}>{scanUpdated||'\u2014'}</span>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider" style={{color:'var(--text-2)'}}>
+              <Activity size={10} /><span>Prices</span>
+              <span style={{color:'var(--text)'}}>{pricesUpdated||scanUpdated||'\u2014'}</span>
+              {isDynamic && <span style={{color:'var(--green)'}}>Live</span>}
+            </div>
           </div>
-          <span>Educational purposes only. Not investment advice.</span>
-          <span>Alpha Research &amp; Investment Club, FMS Delhi</span>
+          <div className="flex flex-col gap-2">
+            <h4 className="text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>Disclaimer</h4>
+            <p className="text-[11px] leading-relaxed" style={{color:'var(--text-2)'}}>
+              Educational and academic research purposes only. Not investment advice. Not registered with SEBI. Models are experimental; past performance is not indicative of future results. Data from third-party sources may contain errors. Consult a SEBI-registered advisor before investing.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <h4 className="text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>Alpha Research</h4>
+            <p className="text-[11px]" style={{color:'var(--text-2)'}}>Alpha Research and Investment Club</p>
+            <p className="text-[11px]" style={{color:'var(--text-2)'}}>Faculty of Management Studies, Delhi</p>
+            <p className="text-[11px] mt-1" style={{color:'var(--text-3)'}}>Made with &#9829; by Abhishek Kumar</p>
+          </div>
         </div>
       </footer>
     </div>
