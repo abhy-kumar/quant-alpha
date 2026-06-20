@@ -148,7 +148,7 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
     if len(final_rows) > 2:
         raw_funds = pd.Series([x["fund_score"] for x in final_rows])
-        raw_research = pd.Series([x["research_composite"] for x in final_rows])
+        raw_research = pd.Series([x["research"]["research_composite"] for x in final_rows])
 
         def _pctile_to_score(pctile: float) -> float:
             if pctile >= 90:
@@ -178,7 +178,7 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
             item["fund_score_ranked"] = _pctile_to_score(fund_pctile)
 
             # Percentile rank of research_composite across universe
-            res_pctile = (raw_research <= item["research_composite"]).sum() / len(raw_research) * 100
+            res_pctile = (raw_research <= item["research"]["research_composite"]).sum() / len(raw_research) * 100
             item["research_pctile"] = res_pctile
             item["research_composite_ranked"] = _pctile_to_score(res_pctile)
 
