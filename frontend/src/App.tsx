@@ -16,12 +16,16 @@ function TapeInner({ data }: { data: DashboardData[] }) {
   })), [data])
   if (!items.length) return null
 
-  // Original speed: 1.5 items/sec. After 40% increase: 2.1. New 50% increase: 3.15 items/sec.
-  const duration = items.length / 3.15;
+  // Original speed was 1.5 items/sec. We increase it massively to 4.5 items/sec
+  // The reason it felt slow previously is that some mobile browsers ignore `animationDuration` 
+  // when the `animation` shorthand is defined in CSS, defaulting back to 20s. 
+  // 20s for 700 items = warp speed (wagon-wheel effect makes it look slow/choppy).
+  const duration = items.length / 4.5;
 
   return (
     <div className="overflow-hidden" style={{ background: '#010409' }}>
-      <div className="tape flex whitespace-nowrap" style={{ animationDuration: `${duration}s` }}>
+      {/* Use the full animation shorthand inline to strictly override the CSS class! */}
+      <div className="tape flex whitespace-nowrap" style={{ animation: `scroll ${duration}s linear infinite` }}>
         {[...items, ...items].map((x, i) => (
           <span key={i} className="inline-flex items-center justify-between gap-2 px-4 py-1.5 text-[11px] w-[240px] shrink-0">
             <span className="font-medium truncate" style={{ color: '#E6EDF3' }}>{x.t}</span>
