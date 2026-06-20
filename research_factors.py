@@ -164,10 +164,11 @@ def compute_momentum_z_score(
         return (float(close.iloc[-1]) / float(close.iloc[-idx]) - 1)
 
     def _ret_skip(skip=21):
-        """Return from -skip to -1 (skip most recent month for reversal)."""
-        if n <= skip:
+        """12-1 month momentum: return from 252 days ago to skip days ago (skip most recent month for reversal)."""
+        total = 252  # 12 months
+        if n <= total:
             return np.nan
-        return (float(close.iloc[-skip]) / float(close.iloc[-1]) - 1)
+        return (float(close.iloc[-skip]) / float(close.iloc[-total]) - 1)
 
     # Raw momentum (including most recent month)
     mom_1m = _ret(21)
