@@ -20,19 +20,19 @@ function TapeInner({ data }: { data: DashboardData[] }) {
   // This meant `translateX(-50%)` was only moving half the screen width, not half the items.
   // Now that we add `w-max`, the tape's width is the true width of all items.
   // Speed target: ~150 pixels per second (fast but readable). 
-  // Distance = items.length * 240px. Duration = Distance / Speed.
-  const duration = (items.length * 240) / 150;
+  // Distance is roughly items.length * 217px (average item width).
+  const duration = (items.length * 217) / 150;
 
   return (
     <div className="overflow-hidden" style={{ background: '#010409' }}>
       {/* Added w-max so the tape spans the full physical width of the ticker items */}
       <div className="tape flex w-max whitespace-nowrap" style={{ animation: `scroll ${duration}s linear infinite` }}>
         {[...items, ...items].map((x, i) => (
-          <span key={i} className="inline-flex items-center justify-between gap-2 px-4 py-1.5 text-[11px] w-[240px] shrink-0">
-            <span className="font-medium truncate" style={{ color: '#E6EDF3' }}>{x.t}</span>
+          <span key={i} className="inline-flex items-center gap-4 px-4 py-1.5 text-[11px] shrink-0">
+            <span className="font-medium" style={{ color: '#E6EDF3' }}>{x.t}</span>
             <span className="flex items-center gap-2">
-              <span className="font-mono" style={{ color: '#8B949E' }}>{x.p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span className="font-mono" style={{ color: x.c >= 0 ? '#3FB950' : '#F85149' }}>{x.c >= 0 ? '\u25B2' : '\u25BC'} {Math.abs(x.c).toFixed(2)}%</span>
+              <span className="font-mono text-right w-[65px] shrink-0" style={{ color: '#8B949E' }}>{x.p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="font-mono text-right w-[60px] shrink-0" style={{ color: x.c >= 0 ? '#3FB950' : '#F85149' }}>{x.c >= 0 ? '\u25B2' : '\u25BC'} {Math.abs(x.c).toFixed(2)}%</span>
             </span>
           </span>
         ))}
