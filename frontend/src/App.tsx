@@ -16,16 +16,17 @@ function TapeInner({ data }: { data: DashboardData[] }) {
   })), [data])
   if (!items.length) return null
 
-  // Original speed was 1.5 items/sec. We increase it massively to 4.5 items/sec
-  // The reason it felt slow previously is that some mobile browsers ignore `animationDuration` 
-  // when the `animation` shorthand is defined in CSS, defaulting back to 20s. 
-  // 20s for 700 items = warp speed (wagon-wheel effect makes it look slow/choppy).
-  const duration = items.length / 4.5;
+  // The real issue: the container didn't have `w-max`, so its width was constrained to the screen size!
+  // This meant `translateX(-50%)` was only moving half the screen width, not half the items.
+  // Now that we add `w-max`, the tape's width is the true width of all items.
+  // Speed target: ~150 pixels per second (fast but readable). 
+  // Distance = items.length * 240px. Duration = Distance / Speed.
+  const duration = (items.length * 240) / 150;
 
   return (
     <div className="overflow-hidden" style={{ background: '#010409' }}>
-      {/* Use the full animation shorthand inline to strictly override the CSS class! */}
-      <div className="tape flex whitespace-nowrap" style={{ animation: `scroll ${duration}s linear infinite` }}>
+      {/* Added w-max so the tape spans the full physical width of the ticker items */}
+      <div className="tape flex w-max whitespace-nowrap" style={{ animation: `scroll ${duration}s linear infinite` }}>
         {[...items, ...items].map((x, i) => (
           <span key={i} className="inline-flex items-center justify-between gap-2 px-4 py-1.5 text-[11px] w-[240px] shrink-0">
             <span className="font-medium truncate" style={{ color: '#E6EDF3' }}>{x.t}</span>
