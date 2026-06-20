@@ -211,6 +211,10 @@ export default function ChartingTab({
             <InfoBlock label="Gross Profit" value={num(selectedAsset?.Gross_Profit_Score)} />
             <InfoBlock label="Earnings Quality" value={num(selectedAsset?.Earnings_Quality)} />
             <InfoBlock label="Z-Score" value={num(selectedAsset?.Z_Score_60)} accent={Number(selectedAsset?.Z_Score_60) > 2 ? 'var(--red)' : Number(selectedAsset?.Z_Score_60) < -2 ? 'var(--green)' : undefined} />
+            <InfoBlock label="Value Score" value={num(selectedAsset?.Value_Score)} accent={Number(selectedAsset?.Value_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Value_Score) < 4 ? 'var(--red)' : undefined} />
+            <InfoBlock label="Investment" value={num(selectedAsset?.Investment_Score)} />
+            <InfoBlock label="SUE" value={num(selectedAsset?.SUE_Score)} />
+            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : 'N/A'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} />
           </div>
         </div>
 
@@ -249,6 +253,8 @@ export default function ChartingTab({
             <InfoBlock label="Sharpe" value={num(selectedAsset?.Sharpe)} accent={colorCode(selectedAsset?.Sharpe)} />
             <InfoBlock label="Max Drawdown" value={`${num(selectedAsset?.['Max_Drawdown_%'])}%`} accent="var(--red)" />
             <InfoBlock label="Total Return" value={`${num(selectedAsset?.['Total_Return_%'])}%`} accent={colorCode(selectedAsset?.['Total_Return_%'])} />
+            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : 'N/A'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} />
+            <InfoBlock label="Alpha (60D)" value={selectedAsset?.Alpha_60D != null ? `${selectedAsset.Alpha_60D.toFixed(1)}%` : 'N/A'} accent={selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D > 0 ? 'var(--green)' : selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D < 0 ? 'var(--red)' : undefined} />
           </div>
         </div>
       </div>
@@ -398,6 +404,9 @@ export default function ChartingTab({
                 {scoreBar('Piotroski', Number(selectedAsset.Piotroski_F) || 0, 0, 9)}
                 {scoreBar('Gross Profit', Number(selectedAsset.Gross_Profit_Score) || 0, 0, 10)}
                 {scoreBar('Earnings Q', Number(selectedAsset.Earnings_Quality) || 0, 0, 10)}
+                {scoreBar('Value', Number(selectedAsset.Value_Score) || 0, 0, 10)}
+                {scoreBar('Investment', Number(selectedAsset.Investment_Score) || 0, 0, 10)}
+                {scoreBar('SUE', Number(selectedAsset.SUE_Score) || 0, 0, 10)}
                 {scoreBar('Volatility', Number(selectedAsset.Vol_60D) || 0, 0, 60)}
               </div>
             </div>
@@ -422,6 +431,8 @@ export default function ChartingTab({
                   <th className="py-3 px-4 text-xs font-medium text-right hidden lg:table-cell" style={{ color: 'var(--text-2)' }}>Research</th>
                   <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>P/E</th>
                   <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>F-Score</th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>Value</th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>Beta</th>
                   <th className="py-3 px-4 text-xs font-medium text-right" style={{ color: 'var(--text-2)' }}>Conv</th>
                 </tr>
               </thead>
@@ -447,10 +458,12 @@ export default function ChartingTab({
                     <td className={`py-3 px-4 text-right text-sm font-medium font-data hidden lg:table-cell ${Number(row.Research_Score) >= 7 ? 'text-green' : 'text-heading'}`}>{num(row.Research_Score)}</td>
                     <td className="py-3 px-4 text-right text-sm font-data hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden xl:table-cell ${Number(row.Piotroski_F) >= 7 ? 'text-green' : 'text-heading'}`}>{row.Piotroski_F ?? '-'}</td>
+                    <td className={`py-3 px-4 text-right text-sm font-medium font-data hidden xl:table-cell ${Number(row.Value_Score) >= 7 ? 'text-green' : Number(row.Value_Score) < 4 ? 'text-red' : 'text-heading'}`}>{num(row.Value_Score)}</td>
+                    <td className={`py-3 px-4 text-right text-sm font-medium font-data hidden xl:table-cell ${row.Beta != null && row.Beta < 0.8 ? 'text-green' : row.Beta != null && row.Beta > 1.2 ? 'text-red' : 'text-heading'}`}>{row.Beta != null ? row.Beta.toFixed(2) : 'N/A'}</td>
                     <td className="py-3 px-4 text-right text-sm font-medium" style={{ color: 'var(--text)' }}>{row.Conviction || 'N/A'}</td>
                   </tr>
                 )) : (
-                  <tr><td colSpan={9} className="py-4 text-center text-sm" style={{ color: 'var(--text-3)' }}>No peers in {selectedAsset?.Sector}</td></tr>
+                  <tr><td colSpan={11} className="py-4 text-center text-sm" style={{ color: 'var(--text-3)' }}>No peers in {selectedAsset?.Sector}</td></tr>
                 )}
               </tbody>
             </table>

@@ -71,7 +71,7 @@ class TestGrossProfitability(unittest.TestCase):
     def test_missing_data(self):
         info = {}
         score = compute_gross_profitability(info)
-        self.assertTrue(np.isnan(score))
+        self.assertEqual(score, 5.0)
 
 
 class TestMomentumZScore(unittest.TestCase):

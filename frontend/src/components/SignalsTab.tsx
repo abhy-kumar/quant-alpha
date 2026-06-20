@@ -43,8 +43,9 @@ function SignalBadge({ label, bullish }: { label: string; bullish: boolean }) {
 export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: Props) {
   const avgScore = useMemo(() => {
     if (!topPicks.length) return 0
-    return topPicks.reduce((sum, p) => sum + (Number(p.Composite_Score) || 0), 0) / topPicks.length
-  }, [topPicks])
+    const scoreKey = horizon === 'long' ? 'Composite_Score_Fund' : horizon === 'short' ? 'Composite_Score_Tech' : 'Composite_Score'
+    return topPicks.reduce((sum, p) => sum + (Number(p[scoreKey as keyof DashboardData]) || Number(p.Composite_Score) || 0), 0) / topPicks.length
+  }, [topPicks, horizon])
 
   const sectorBreakdown = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -53,8 +54,14 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
   }, [topPicks])
 
   const bullishCount = useMemo(() => {
-    return topPicks.filter(p => Number(p.Composite_Score) >= 7).length
-  }, [topPicks])
+    const threshold = horizon === 'long' ? 7.5 : 7
+    return topPicks.filter(p => {
+      const score = horizon === 'long' 
+        ? Number(p.Composite_Score_Fund) || Number(p.Composite_Score) || 0
+        : Number(p.Composite_Score) || 0
+      return score >= threshold
+    }).length
+  }, [topPicks, horizon])
 
   const avgMomentum = useMemo(() => {
     const vals = topPicks.map(p => (Number(p.Momentum_12M) || 0) * 100).filter(v => v !== 0)
@@ -95,7 +102,11 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
         {topPicks.map((s, i) => {
           const change = Number(s['1d_Chg_%'])||0
           const price = Number(s.Price)||0
-          const composite = Number(s.Composite_Score)||0
+          const composite = horizon === 'long' 
+            ? Number(s.Composite_Score_Fund) || Number(s.Composite_Score) || 0
+            : horizon === 'short'
+            ? Number(s.Composite_Score_Tech) || Number(s.Composite_Score) || 0
+            : Number(s.Composite_Score) || 0
           const techScore = Number(s.Tech_Score)||0
           const fundScore = Number(s.Fund_Score)||0
           const researchScore = Number(s.Research_Score)||0
@@ -174,7 +185,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                 <Metric label="ROE" value={roe!==null?`${roe.toFixed(1)}%`:'\u2014'} />
                 <Metric label="D/E" value={debtEq!==null?debtEq.toFixed(2):'\u2014'} />
                 <Metric label="Sharpe" value={sharpe!==null?sharpe.toFixed(2):'\u2014'} color={sharpe!==null?(sharpe>1?'var(--green)':sharpe<0?'var(--red)':'var(--text)'):'var(--text)'} />
-                <Metric label="Max DD" value={maxDD!==null?`${maxDD.toFixed(1)}%`:'\u2014'} color="var(--red)" />
+                <Metric label="Beta" value={s.Beta!=null?Number(s.Beta).toFixed(2):'\u2014'} color={s.Beta!=null?(Number(s.Beta)<0.8?'var(--green)':Number(s.Beta)>1.2?'var(--red)':'var(--text)'):'var(--text)'} />
               </div>
 
               {/* Bull/Bear + 52W range */}
@@ -215,6 +226,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
               <div className="space-y-1.5" style={{borderTop:'1px solid var(--border)',paddingTop:'8px'}}>
                 <ScoreDot label="Piotroski" value={piotroski} max={9} />
                 <ScoreDot label="12M Mom" value={Math.abs(momentum)*100} max={200} />
+                <ScoreDot label="Value" value={Number(s.Value_Score)||0} max={10} />
                 <ScoreDot label="Vol 60D" value={vol} max={60} />
               </div>
             </div>

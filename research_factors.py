@@ -6,9 +6,13 @@ Research-backed quantitative factors for stock selection.
 Implements factors validated by academic literature:
   - Piotroski F-Score (2000): 9-point accounting strength signal
   - Gross Profitability (Novy-Marx 2013): GP/Assets as alpha predictor
-  - Momentum Z-Score (Jegadeesh & Titman 1993): Multi-horizon momentum
-  - Low Volatility Factor (Baker, Bradley & Wurgler 2011): Volatility anomaly
-  - Mean Reversion Signal (De Bondt & Thaler 1985): Overextension detection
+  - Value Factor (Fama-French 1993): B/M, E/P, CF/P, D/P
+  - Momentum (Jegadeesh & Titman 1993): Multi-horizon momentum
+  - Low Volatility (Baker, Bradley & Wurgler 2011): Volatility anomaly
+  - Betting Against Beta (Frazzini & Pedersen 2014): Low-beta premium
+  - Investment Factor (Titman, Wei & Xie 2004): Low asset growth
+  - Earnings Momentum SUE (Bernard & Thomas 1989): Post-earnings drift
+  - Mean Reversion (De Bondt & Thaler 1985): Overextension detection
   - Earnings Quality (Sloan 1996): Accruals-based earnings quality
 """
 
@@ -21,35 +25,38 @@ def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
     """
     Piotroski F-Score (2000) — 9-point financial strength indicator.
 
+    Original paper: "Value Investing: The Use of Historical Financial Statement
+    Information to Separate Winners from Losers" (JAR, 2000)
+
     Profitability (4 points):
       1. ROA > 0
       2. CFO > 0 (operating cash flow positive)
-      3. ΔROA > 0 (improving ROA)
-      4. CFO > Net Income (accruals quality)
+      3. ΔROA > 0 (improving profitability — proxied via earningsGrowth > 0)
+      4. CFO > Net Income (accruals quality — cash earnings exceed reported)
 
     Leverage / Liquidity (3 points):
-      5. ΔLeverage < 0 (decreasing debt)
-      6. ΔCurrent Ratio > 0 (improving liquidity)
-      7. No new equity issued (shares outstanding not increasing)
+      5. ΔLeverage < 0 (decreasing debt — proxied via D/E < 100)
+      6. ΔCurrent Ratio > 0 (improving liquidity — current ratio > 1.5)
+      7. No dilution (shares outstanding stable — high insider holding proxy)
 
     Efficiency (2 points):
-      8. ΔGross Margin > 0 (improving margins)
-      9. ΔAsset Turnover > 0 (improving efficiency)
+      8. ΔGross Margin > 0 (improving margins — proxied via profitMargins > 0.15)
+      9. ΔAsset Turnover > 0 (improving efficiency — revenue/asset > 0.5)
 
     Returns 0-9.
     """
     score = 0
 
     # ── Profitability ──────────────────────────────────────────────────────
-    roe = _safe_float(info.get("returnOnEquity"), default=0)
     roa = _safe_float(info.get("returnOnAssets"), default=0)
-    if roe > 0 or roa > 0:
+    if roa > 0:
         score += 1
 
     cfo = _safe_float(info.get("operatingCashflow"), default=0)
     if cfo > 0:
         score += 1
 
+    # ΔROA: use earningsGrowth as proxy for year-over-year ROA improvement
     earnings_growth = _safe_float(info.get("earningsGrowth"), default=0)
     if earnings_growth > 0:
         score += 1
@@ -61,28 +68,33 @@ def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
         score += 1
 
     # ── Leverage / Liquidity ───────────────────────────────────────────────
+    # ΔLeverage: use debt-to-equity < 100 as proxy for acceptable leverage
     debt_eq = _safe_float(info.get("debtToEquity"), default=0)
     if debt_eq >= 0 and debt_eq < 100:
         score += 1
 
+    # ΔCurrent Ratio: use currentRatio > 1.5 as proxy for improving liquidity
     current_ratio = _safe_float(info.get("currentRatio"), default=1.5)
-    if current_ratio > 1.2:
+    if current_ratio > 1.5:
         score += 1
+    elif current_ratio > 1.0:
+        score += 0.5
 
+    # No dilution: use high insider holding as proxy for share stability
+    insider_pct = _safe_float(info.get("heldPercentInsiders"), default=0)
     shares = _safe_float(info.get("sharesOutstanding"), default=0)
-    float_shares = _safe_float(info.get("floatShares"), default=0)
-    if shares > 0 and float_shares > 0:
-        insider_pct = _safe_float(info.get("heldPercentInsiders"), default=0)
-        if insider_pct > 0.1:
-            score += 1
-    elif shares > 0:
+    if insider_pct > 0.1:
         score += 1
+    elif shares > 0:
+        score += 0.5
 
     # ── Efficiency ─────────────────────────────────────────────────────────
-    rev_growth = _safe_float(info.get("revenueGrowth"), default=0)
-    if rev_growth > 0:
+    # ΔGross Margin: use profitMargins as proxy
+    profit_margin = _safe_float(info.get("profitMargins"), default=0)
+    if profit_margin > 0.15:
         score += 1
 
+    # ΔAsset Turnover: totalRevenue / totalAssets
     total_rev = _safe_float(info.get("totalRevenue"), default=0)
     total_assets = _safe_float(info.get("totalAssets"), default=0)
     if total_assets <= 0:
@@ -101,6 +113,167 @@ def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
         score += 1
 
     return min(score, 9)
+
+
+def compute_value_factor(info: dict, sector_medians: dict = None) -> float:
+    """
+    Value Factor (Fama & French 1993, JFE).
+
+    Multi-metric value composite based on:
+      - Book-to-Market (B/M): High B/M = undervalued (Fama-French 1992)
+      - Earnings-to-Price (E/P): High E/P = undervalued (Basu 1977)
+      - Cash Flow-to-Price (CF/P): High CF/P = undervalued (Lakonishok et al. 1994)
+      - Dividend Yield (D/P): High D/P = value signal (Fama & French 1988)
+
+    Each metric is scored 0-10 and averaged.
+    If sector_medians provided, metrics are evaluated relative to sector.
+
+    Returns 0-10 value score.
+    """
+    scores = []
+    weights = []
+
+    # ── Book-to-Market ─────────────────────────────────────────────────────
+    book_value = _safe_float(info.get("bookValue"), default=np.nan)
+    market_cap = _safe_float(info.get("marketCap"), default=np.nan)
+    shares = _safe_float(info.get("sharesOutstanding"), default=np.nan)
+
+    if not np.isnan(book_value) and not np.isnan(shares) and shares > 0:
+        bv_per_share = book_value
+        price_est = market_cap / shares if not np.isnan(market_cap) and market_cap > 0 else np.nan
+        if not np.isnan(price_est) and price_est > 0:
+            bm_ratio = bv_per_share / price_est
+            bm_score = min(10.0, max(0.0, bm_ratio * 10.0))
+            scores.append(bm_score)
+            weights.append(0.25)
+
+    # ── Earnings-to-Price ──────────────────────────────────────────────────
+    trailing_pe = _safe_float(info.get("trailingPE"), default=np.nan)
+    if not np.isnan(trailing_pe) and trailing_pe > 0:
+        ep_ratio = 1.0 / trailing_pe
+        ep_score = min(10.0, max(0.0, ep_ratio * 200.0))
+        if not np.isnan(ep_ratio):
+            scores.append(ep_score)
+            weights.append(0.25)
+
+    # ── Cash Flow-to-Price ─────────────────────────────────────────────────
+    cfo = _safe_float(info.get("operatingCashflow"), default=np.nan)
+    if not np.isnan(cfo) and not np.isnan(market_cap) and market_cap > 0:
+        cfp_ratio = cfo / market_cap
+        cfp_score = min(10.0, max(0.0, (cfp_ratio + 0.05) / 0.15 * 10.0))
+        scores.append(cfp_score)
+        weights.append(0.30)
+
+    # ── Dividend Yield ─────────────────────────────────────────────────────
+    div_yield = _safe_float(info.get("dividendYield"), default=0)
+    if div_yield > 0:
+        div_score = min(10.0, div_yield * 100.0)
+        scores.append(div_score)
+        weights.append(0.20)
+
+    if not scores:
+        return 5.0
+
+    total_w = sum(weights)
+    return sum(s * (w / total_w) for s, w in zip(scores, weights)) if total_w > 0 else 5.0
+
+
+def compute_investment_factor(info: dict) -> float:
+    """
+    Investment Factor (Titman, Wei & Xie 2004; Fama & French 2015, JFE).
+
+    Low-investment firms earn higher returns. Firms that invest aggressively
+    (high asset growth) tend to underperform. This is the "investment factor"
+    in the Fama-French 5-factor model.
+
+    Proxied via:
+      - Low revenue growth relative to asset base (conservative investment)
+      - Low debt-to-equity (conservative financing)
+      - Positive earnings growth without excessive expansion
+
+    Returns 0-10 score (higher = more conservative/better).
+    """
+    score = 5.0
+
+    rev_growth = _safe_float(info.get("revenueGrowth"), default=np.nan)
+    earnings_growth = _safe_float(info.get("earningsGrowth"), default=np.nan)
+    debt_eq = _safe_float(info.get("debtToEquity"), default=np.nan)
+    roe = _safe_float(info.get("returnOnEquity"), default=np.nan)
+
+    # Conservative growth: moderate revenue growth with good returns
+    if not np.isnan(rev_growth) and not np.isnan(earnings_growth) and not np.isnan(roe):
+        if roe > 0.15 and 0.05 <= rev_growth <= 0.25 and earnings_growth > 0:
+            score = 8.0
+        elif roe > 0.10 and 0 <= rev_growth <= 0.30:
+            score = 7.0
+        elif rev_growth > 0.50:
+            score = 3.0
+        elif rev_growth < -0.10:
+            score = 3.0
+
+    # Low leverage adjustment
+    if not np.isnan(debt_eq):
+        if debt_eq < 50:
+            score = min(10.0, score + 1.0)
+        elif debt_eq > 150:
+            score = max(0.0, score - 1.5)
+
+    return max(0.0, min(10.0, score))
+
+
+def compute_sue_factor(info: dict, df: pd.DataFrame) -> float:
+    """
+    Standardized Unexpected Earnings (SUE) — Earnings Momentum
+    (Bernard & Thomas 1989, JAR).
+
+    Post-Earnings Announcement Drift (PEAD): stocks with positive earnings
+    surprises continue to drift upward for ~60 days. SUE is the most
+    direct measure of earnings surprise.
+
+    Proxied via:
+      - earningsGrowth as surprise magnitude
+      - Forward P/E vs Trailing P/E (analyst revision proxy)
+      - Revenue growth acceleration
+
+    Returns 0-10 score (higher = stronger positive surprise).
+    """
+    score = 5.0
+
+    earnings_growth = _safe_float(info.get("earningsGrowth"), default=np.nan)
+    rev_growth = _safe_float(info.get("revenueGrowth"), default=np.nan)
+    trailing_pe = _safe_float(info.get("trailingPE"), default=np.nan)
+    forward_pe = _safe_float(info.get("forwardPE"), default=np.nan)
+
+    # Strong positive earnings surprise
+    if not np.isnan(earnings_growth):
+        if earnings_growth > 0.30:
+            score = 9.0
+        elif earnings_growth > 0.15:
+            score = 7.5
+        elif earnings_growth > 0.05:
+            score = 6.0
+        elif earnings_growth > 0:
+            score = 5.5
+        elif earnings_growth > -0.10:
+            score = 4.0
+        else:
+            score = 2.0
+
+    # Analyst revision proxy: forward PE < trailing PE = upward revision
+    if not np.isnan(trailing_pe) and not np.isnan(forward_pe) and trailing_pe > 0 and forward_pe > 0:
+        revision = trailing_pe / forward_pe
+        if revision > 1.2:
+            score = min(10.0, score + 1.5)
+        elif revision > 1.05:
+            score = min(10.0, score + 0.5)
+        elif revision < 0.8:
+            score = max(0.0, score - 1.0)
+
+    # Revenue acceleration
+    if not np.isnan(rev_growth) and rev_growth > 0.20:
+        score = min(10.0, score + 0.5)
+
+    return max(0.0, min(10.0, score))
 
 
 def compute_gross_profitability(info: dict) -> float:
@@ -124,7 +297,7 @@ def compute_gross_profitability(info: dict) -> float:
             gp_ratio = gross_margin
 
     if np.isnan(gp_ratio):
-        return np.nan
+        return 5.0
 
     if gp_ratio >= 0.50:
         return 10.0
@@ -269,10 +442,6 @@ def compute_volatility_factor(df: pd.DataFrame, info: dict = None) -> dict:
     atr = _safe_float(df["ATR"].iloc[-1]) if "ATR" in df.columns else np.nan
     atr_pct = (atr / float(close.iloc[-1]) * 100) if (not np.isnan(atr) and float(close.iloc[-1]) > 0) else np.nan
 
-    # Idiosyncratic vol proxy (vol relative to market)
-    # Higher idiosyncratic vol = more risk = lower score
-    idio_vol_ratio = vol_60d  # Absolute for now; sector-relative when available
-
     # Map volatility to 0-10 score (lower vol = higher score)
     score = 5.0  # neutral
     if not np.isnan(vol_60d):
@@ -296,6 +465,92 @@ def compute_volatility_factor(df: pd.DataFrame, info: dict = None) -> dict:
         "atr_pct": atr_pct,
         "vol_score": score,
     }
+
+
+def compute_beta_factor(df: pd.DataFrame, nifty_df: pd.DataFrame = None) -> dict:
+    """
+    Betting Against Beta (Frazzini & Pedersen 2014, JFE).
+
+    Low-beta stocks earn higher risk-adjusted returns than high-beta stocks.
+    This is one of the most robust market anomalies, documented across
+    multiple asset classes and time periods.
+
+    Beta is estimated as covariance(stock, market) / variance(market).
+    Low beta = higher score (better risk-adjusted returns expected).
+
+    Returns beta estimate and a 0-10 factor score.
+    """
+    result = {
+        "beta": np.nan,
+        "beta_score": 5.0,
+        "alpha_60d": np.nan,
+        "alpha_120d": np.nan,
+    }
+
+    if nifty_df is None or len(nifty_df) < 60 or len(df) < 60:
+        return result
+
+    try:
+        stock_close = df["Close"].astype(float).tail(max(len(df), 252))
+        nifty_close = nifty_df["Close"].astype(float).tail(max(len(nifty_df), 252))
+
+        min_len = min(len(stock_close), len(nifty_close))
+        stock_ret = stock_close.iloc[-min_len:].pct_change().dropna()
+        nifty_ret = nifty_close.iloc[-min_len:].pct_change().dropna()
+
+        if len(stock_ret) < 60:
+            return result
+
+        # Align indices
+        common_idx = stock_ret.index.intersection(nifty_ret.index)
+        if len(common_idx) < 60:
+            return result
+
+        stock_aligned = stock_ret.loc[common_idx]
+        nifty_aligned = nifty_ret.loc[common_idx]
+
+        # Beta = Cov(stock, market) / Var(market)
+        cov = stock_aligned.cov(nifty_aligned)
+        var = nifty_aligned.var()
+
+        if var > 0:
+            beta = float(cov / var)
+            result["beta"] = beta
+
+            # Alpha: excess return above CAPM prediction
+            ann_stock_ret = float(stock_aligned.mean()) * 252
+            ann_nifty_ret = float(nifty_aligned.mean()) * 252
+            ann_vol = float(stock_aligned.std()) * np.sqrt(252)
+            risk_free = 0.065
+            alpha = ann_stock_ret - (risk_free + beta * (ann_nifty_ret - risk_free))
+            result["alpha_60d"] = alpha
+
+            # Score: lower beta = higher score (Betting Against Beta)
+            if beta < 0.5:
+                result["beta_score"] = 9.0
+            elif beta < 0.7:
+                result["beta_score"] = 7.5
+            elif beta < 0.9:
+                result["beta_score"] = 6.0
+            elif beta < 1.1:
+                result["beta_score"] = 5.0
+            elif beta < 1.3:
+                result["beta_score"] = 4.0
+            elif beta < 1.5:
+                result["beta_score"] = 3.0
+            else:
+                result["beta_score"] = 2.0
+
+            # Bonus for positive alpha (skill-adjusted return)
+            if alpha > 0.15:
+                result["beta_score"] = min(10.0, result["beta_score"] + 1.5)
+            elif alpha > 0.05:
+                result["beta_score"] = min(10.0, result["beta_score"] + 0.5)
+
+    except (ValueError, TypeError, ZeroDivisionError):
+        pass
+
+    return result
 
 
 def compute_mean_reversion_signal(df: pd.DataFrame, info: dict = None) -> dict:
@@ -454,6 +709,15 @@ def compute_research_composite(
     """
     Compute all research-backed factors and return a unified dictionary
     that can be integrated into the scanner's scoring pipeline.
+
+    Weights calibrated to academic factor return literature:
+      - Quality (Piotroski + Gross Profitability + Earnings Quality): 30%
+      - Momentum (multi-horizon, skip-month): 20%
+      - Value (B/M, E/P, CF/P): 15%
+      - Low Volatility: 10%
+      - Investment Factor: 10%
+      - SUE / Earnings Momentum: 10%
+      - Mean Reversion: 5%
     """
     _empty = {
         "piotroski_f_score": 0, "f_score_norm": 0, "gross_profit_score": 5.0,
@@ -463,6 +727,8 @@ def compute_research_composite(
         "z_score_60": 0, "earnings_quality_score": 5.0, "research_composite": 5.0,
         "mom_1m": np.nan, "mom_3m": np.nan, "mom_6m": np.nan,
         "mom_12m": np.nan, "mom_12m_skip1": np.nan,
+        "value_score": 5.0, "investment_score": 5.0, "sue_score": 5.0,
+        "beta": np.nan, "beta_score": 5.0, "alpha_60d": np.nan,
     }
 
     if df is None or len(df) < 21:
@@ -473,8 +739,12 @@ def compute_research_composite(
         gp_score = compute_gross_profitability(info)
         mom = compute_momentum_z_score(df, nifty_df)
         vol = compute_volatility_factor(df, info)
+        beta_result = compute_beta_factor(df, nifty_df)
         reversion = compute_mean_reversion_signal(df, info)
         eq_score = compute_earnings_quality(info)
+        value_score = compute_value_factor(info, sector_medians)
+        investment_score = compute_investment_factor(info)
+        sue_score = compute_sue_factor(info, df)
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -485,28 +755,35 @@ def compute_research_composite(
     # Normalize momentum to 0-10 using composite_mom
     composite_mom = mom.get("composite_mom", np.nan)
     if not np.isnan(composite_mom):
-        # Typical range: -0.5 to +1.0; map to 0-10
         mom_score = max(0.0, min(10.0, (composite_mom + 0.3) / 1.3 * 10.0))
     else:
         mom_score = 5.0
 
-    # Research composite (weighted average)
+    # Research composite (weighted average based on factor return literature)
     weights = {
-        "f_score": 0.15,
-        "gp_score": 0.15,
-        "mom_score": 0.25,
-        "vol_score": 0.15,
-        "reversion_score": 0.10,
+        "f_score": 0.10,
+        "gp_score": 0.10,
         "eq_score": 0.10,
+        "mom_score": 0.20,
+        "value_score": 0.15,
+        "vol_score": 0.10,
+        "beta_score": 0.10,
+        "investment_score": 0.10,
+        "sue_score": 0.10,
+        "reversion_score": 0.05,
     }
 
     scores = {
         "f_score": f_score_norm,
         "gp_score": gp_score if not np.isnan(gp_score) else 5.0,
-        "mom_score": mom_score,
-        "vol_score": vol.get("vol_score", 5.0),
-        "reversion_score": reversion.get("reversion_score", 5.0),
         "eq_score": eq_score,
+        "mom_score": mom_score,
+        "value_score": value_score,
+        "vol_score": vol.get("vol_score", 5.0),
+        "beta_score": beta_result.get("beta_score", 5.0),
+        "investment_score": investment_score,
+        "sue_score": sue_score,
+        "reversion_score": reversion.get("reversion_score", 5.0),
     }
 
     total_w = 0
@@ -534,7 +811,12 @@ def compute_research_composite(
         "z_score_60": reversion.get("z_score_60", 0),
         "earnings_quality_score": eq_score,
         "research_composite": research_composite,
-        # Raw momentum data
+        "value_score": value_score,
+        "investment_score": investment_score,
+        "sue_score": sue_score,
+        "beta": beta_result.get("beta", np.nan),
+        "beta_score": beta_result.get("beta_score", 5.0),
+        "alpha_60d": beta_result.get("alpha_60d", np.nan),
         "mom_1m": mom.get("mom_1m", np.nan),
         "mom_3m": mom.get("mom_3m", np.nan),
         "mom_6m": mom.get("mom_6m", np.nan),

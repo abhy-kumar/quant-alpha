@@ -2,7 +2,19 @@
 scoring.py
 ----------
 Scoring and composite calculation for the stock scanner.
+
 Separates scoring logic from data acquisition and orchestration.
+Implements horizon-specific composite scores based on academic literature:
+  - Short-term: Technical + Research (momentum/mean-reversion driven)
+  - Long-term: Value + Quality + Low Volatility (Fama-French factor model)
+  - Balanced: Equal blend for general use
+
+Factor weights derived from:
+  - Fama & French (1993, 2015): Value and Investment factors
+  - Novy-Marx (2013): Gross Profitability
+  - Jegadeesh & Titman (1993): Momentum
+  - Baker, Bradley & Wurgler (2011): Low Volatility
+  - Frazzini & Pedersen (2014): Betting Against Beta
 """
 
 import numpy as np
@@ -42,7 +54,15 @@ def compute_sector_medians(raw_data: dict, sector_data: dict) -> dict:
 
 
 def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, sector_medians: dict, regime_score: int) -> list:
-    """Compute tech, fundamental, research, and composite scores for all stocks."""
+    """
+    Compute tech, fundamental, research, and composite scores for all stocks.
+
+    Composite scores (all 0-10 scale):
+      - composite_score: Balanced blend (35% tech, 30% fund, 35% research)
+      - composite_score_tech: Short-term oriented (50% tech, 15% fund, 35% research)
+      - composite_score_fund: Long-term oriented (10% tech, 40% fund, 50% research)
+      - composite_score_mom: Momentum-driven (20% tech, 10% fund, 70% research)
+    """
     rs_series = pd.Series(rs_composites) if rs_composites else pd.Series(dtype=float)
 
     final_rows = []
@@ -96,10 +116,14 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
         research_composite = research["research_composite"]
 
-        composite_score = (norm_tech * 0.35) + (fund_score * 0.30) + (research_composite * 0.35)
-        composite_score_tech = (norm_tech * 0.50) + (fund_score * 0.15) + (research_composite * 0.35)
-        composite_score_fund = (norm_tech * 0.15) + (fund_score * 0.55) + (research_composite * 0.30)
-        composite_score_mom = (research_composite * 0.50) + (norm_tech * 0.30) + (fund_score * 0.20)
+        # Use ranked scores for composites when available (cross-sectional)
+        ranked_fund = item.get("fund_score_ranked", fund_score)
+        ranked_research = item.get("research_composite_ranked", research_composite)
+
+        composite_score = (norm_tech * 0.35) + (ranked_fund * 0.30) + (ranked_research * 0.35)
+        composite_score_tech = (norm_tech * 0.50) + (ranked_fund * 0.15) + (ranked_research * 0.35)
+        composite_score_fund = (norm_tech * 0.10) + (ranked_fund * 0.40) + (ranked_research * 0.50)
+        composite_score_mom = (ranked_research * 0.70) + (norm_tech * 0.20) + (ranked_fund * 0.10)
 
         item["composite_score"] = composite_score
         item["composite_score_tech"] = composite_score_tech
@@ -111,6 +135,52 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         item["research"] = research
 
         final_rows.append(item)
+
+    # ── Cross-Sectional Percentile Ranking ──────────────────────────────────
+    # Instead of absolute thresholds, map raw scores to their percentile rank
+    # within the universe. This is academically correct because:
+    #   - "Good" ROE depends on the sector and market conditions
+    #   - Percentile ranking adapts to the distribution of the current universe
+    #   - Eliminates arbitrary threshold selection bias
+    #
+    # Mapping: percentile 0-100 → score 0-10 via piecewise linear function
+    #   p >= 90 → 9.5, p >= 75 → 8.0, p >= 50 → 6.0, p >= 25 → 4.0, p < 25 → 2.0
+
+    if len(final_rows) > 2:
+        raw_funds = pd.Series([x["fund_score"] for x in final_rows])
+        raw_research = pd.Series([x["research_composite"] for x in final_rows])
+
+        def _pctile_to_score(pctile: float) -> float:
+            if pctile >= 90:
+                return 9.5
+            elif pctile >= 75:
+                return 8.0
+            elif pctile >= 60:
+                return 7.0
+            elif pctile >= 50:
+                return 6.0
+            elif pctile >= 40:
+                return 5.0
+            elif pctile >= 25:
+                return 4.0
+            elif pctile >= 10:
+                return 2.5
+            else:
+                return 1.5
+
+        for item in final_rows:
+            if item.get("is_etf"):
+                continue
+
+            # Percentile rank of fund_score across universe
+            fund_pctile = (raw_funds <= item["fund_score"]).sum() / len(raw_funds) * 100
+            item["fund_score_pctile"] = fund_pctile
+            item["fund_score_ranked"] = _pctile_to_score(fund_pctile)
+
+            # Percentile rank of research_composite across universe
+            res_pctile = (raw_research <= item["research_composite"]).sum() / len(raw_research) * 100
+            item["research_pctile"] = res_pctile
+            item["research_composite_ranked"] = _pctile_to_score(res_pctile)
 
     all_comp_scores = pd.Series([x["composite_score"] for x in final_rows])
     for item in final_rows:
@@ -136,6 +206,8 @@ def _default_research() -> dict:
         "vol_60d": np.nan, "vol_120d": np.nan, "downside_dev": np.nan, "vol_score": 5.0,
         "reversion_signal": 0, "reversion_score": 5.0, "z_score_60": 0,
         "earnings_quality_score": 5.0, "f_score_norm": 0,
+        "value_score": 5.0, "investment_score": 5.0, "sue_score": 5.0,
+        "beta": np.nan, "beta_score": 5.0, "alpha_60d": np.nan,
         "mom_1m": np.nan, "mom_3m": np.nan, "mom_6m": np.nan,
         "mom_12m": np.nan, "mom_12m_skip1": np.nan
     }
@@ -195,6 +267,12 @@ def build_output_row(item: dict) -> dict:
         "Composite_Score_Mom":  round(item.get("composite_score_mom", 5.0), 2),
         "Piotroski_F":      research.get("piotroski_f_score", 0),
         "Gross_Profit_Score": round(research.get("gross_profit_score", 5.0), 2) if not np.isnan(research.get("gross_profit_score", np.nan)) else None,
+        "Value_Score":      round(research.get("value_score", 5.0), 2),
+        "Investment_Score": round(research.get("investment_score", 5.0), 2),
+        "SUE_Score":        round(research.get("sue_score", 5.0), 2),
+        "Beta":             round(research.get("beta", np.nan), 3) if not np.isnan(research.get("beta", np.nan)) else None,
+        "Beta_Score":       round(research.get("beta_score", 5.0), 2),
+        "Alpha_60D":        round(research.get("alpha_60d", np.nan) * 100, 2) if not np.isnan(research.get("alpha_60d", np.nan)) else None,
         "Momentum_1M":      round(research.get("mom_1m", np.nan), 4) if not np.isnan(research.get("mom_1m", np.nan)) else None,
         "Momentum_3M":      round(research.get("mom_3m", np.nan), 4) if not np.isnan(research.get("mom_3m", np.nan)) else None,
         "Momentum_6M":      round(research.get("mom_6m", np.nan), 4) if not np.isnan(research.get("mom_6m", np.nan)) else None,

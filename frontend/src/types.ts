@@ -64,6 +64,12 @@ export interface DashboardData {
   Reversion_Signal?: number
   Z_Score_60?: number
   Earnings_Quality?: number
+  Value_Score?: number
+  Investment_Score?: number
+  SUE_Score?: number
+  Beta?: number
+  Beta_Score?: number
+  Alpha_60D?: number
   "Promoter_Holding_%"?: number
   "Promoter_Pledging_%"?: number
   Bull_Count?: number

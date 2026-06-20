@@ -37,8 +37,8 @@ The footer displays both timestamps independently: **Signals** (last scanner run
 1. **Universe Selection** (`nse_fetcher.py`): Downloads the NSE Bhav Copy (official end-of-day data from NSE directly) and selects the top 150 stocks by turnover.
 2. **OHLCV Fetching** (`data_fetcher.py`): Downloads 2 years of daily OHLCV data per stock via yfinance with retry logic and concurrency control (4 workers).
 3. **Technical Indicator Computation** (`indicators.py`): Computes 18+ indicators per stock using Wilder's smoothing method for RSI, ATR, and ADX.
-4. **Fundamental Data Collection** (`data_fetcher.py`): Fetches P/E, ROE, Debt-to-Equity, market cap, and other fundamentals from yfinance (primary) and screener.in (fallback and enrichment). Computes sector-relative medians for peer comparison. All financial figures are in INR.
-5. **Research Factor Computation** (`research_factors.py`): Calculates six academic research factors: Piotroski F-Score, Gross Profitability, Multi-Horizon Momentum, Low Volatility, Mean Reversion, and Earnings Quality.
+4. **Fundamental Data Collection** (`data_fetcher.py`): Fetches P/E, ROE, Debt-to-Equity, market cap, and other fundamentals from yfinance (primary), yfinance financial statements (secondary fallback), screener.in (tertiary fallback), and BSE India (last resort). Computes sector-relative medians for peer comparison. All financial figures are in INR.
+5. **Research Factor Computation** (`research_factors.py`): Calculates ten academic research factors: Piotroski F-Score, Gross Profitability, Value Factor, Investment Factor, Earnings Momentum (SUE), Multi-Horizon Momentum, Low Volatility, Betting Against Beta, Mean Reversion, and Earnings Quality.
 6. **News Sentiment** (`data_fetcher.py`): Fetches headlines from Google News RSS (India-locale: `hl=en-IN&gl=IN&ceid=IN:en`, no API key required) and runs VADER sentiment analysis on up to 10 headlines per ticker. The average compound score is the news sentiment signal. Scores are cached for 24 hours.
 7. **Scoring and Conviction** (`scoring.py`): Combines all factors into a composite score, ranks stocks by percentile, and assigns conviction labels adjusted for market regime.
 8. **Data Storage** (`data_pipeline.py`): Writes results to `market_data.json` (frontend), `market_scans.db` (ML pipeline), and archives to SQLite.
@@ -98,27 +98,35 @@ Maximum score is capped at 10.0. A penalty of −1.5 is applied for promoter ple
 
 ### Research Factor Score (range: 0 to 10)
 
-Six academic factors, each normalized to 0–10 and combined with research-derived weights:
+Ten academic factors, each normalized to 0–10 and combined with weights calibrated to the factor return literature:
 
 | Factor | Weight | Paper | Range |
 |--------|--------|-------|-------|
-| Piotroski F-Score | 0.15 | Piotroski (2000) | 0–9 mapped to 0–10 |
-| Gross Profitability | 0.15 | Novy-Marx (2013) | 0–10 |
-| Momentum Composite | 0.25 | Jegadeesh & Titman (1993) | −0.5 to +1.0 mapped to 0–10 |
-| Low Volatility | 0.15 | Baker, Bradley & Wurgler (2011) | 0–10 (lower vol = higher score) |
-| Mean Reversion | 0.10 | De Bondt & Thaler (1985) | 0–10 (oversold = higher score) |
+| Piotroski F-Score | 0.10 | Piotroski (2000) | 0–9 mapped to 0–10 |
+| Gross Profitability | 0.10 | Novy-Marx (2013, JFE) | 0–10 |
 | Earnings Quality | 0.10 | Sloan (1996) | 0–10 |
+| Momentum Composite | 0.20 | Jegadeesh & Titman (1993) | −0.5 to +1.0 mapped to 0–10 |
+| Value Factor | 0.15 | Fama & French (1993, JFE) | B/M, E/P, CF/P, D/P composite |
+| Low Volatility | 0.10 | Baker, Bradley & Wurgler (2011, JF) | 0–10 (lower vol = higher score) |
+| Betting Against Beta | 0.10 | Frazzini & Pedersen (2014, JFE) | 0–10 (lower beta = higher score) |
+| Investment Factor | 0.10 | Titman, Wei & Xie (2004) | 0–10 (conservative investment) |
+| Earnings Momentum (SUE) | 0.10 | Bernard & Thomas (1989, JAR) | 0–10 (positive surprise) |
+| Mean Reversion | 0.05 | De Bondt & Thaler (1985) | 0–10 (oversold = higher score) |
+
+The Value Factor is a multi-metric composite of Book-to-Market (Fama-French 1992), Earnings-to-Price (Basu 1977), Cash Flow-to-Price (Lakonishok et al. 1994), and Dividend Yield (Fama & French 1988). The Investment Factor rewards conservative capital allocation per Titman, Wei & Xie (2004) and the Fama-French 5-factor model.
 
 ### Composite Score and Conviction
 
-The composite score blends all three dimensions with configurable weights:
+The composite score blends all three dimensions with configurable weights. Each horizon uses a different blend — **Short-Term** emphasizes technical signals for timing, while **Long-Term** emphasizes value and quality factors:
 
-| Variant | Tech | Fund | Research |
-|---------|------|------|----------|
-| Default | 0.35 | 0.30 | 0.35 |
-| Tech-heavy | 0.50 | 0.15 | 0.35 |
-| Fund-heavy | 0.15 | 0.55 | 0.30 |
-| Momentum | 0.30 | 0.20 | 0.50 |
+| Variant | Tech | Fund | Research | Use Case |
+|---------|------|------|----------|----------|
+| **Balanced** | 0.35 | 0.30 | 0.35 | Default composite ranking |
+| **Short-Term** | 0.50 | 0.15 | 0.35 | Technical timing, momentum trades |
+| **Long-Term** | 0.10 | 0.40 | 0.50 | Value/quality investing, low turnover |
+| **Momentum** | 0.20 | 0.10 | 0.70 | Research-driven momentum plays |
+
+Cross-sectional percentile ranking: Instead of absolute thresholds, fund_score and research_composite are ranked against the full universe and mapped to a 0–10 scale via percentile-based piecewise functions. This ensures "good" scores adapt to market conditions rather than relying on fixed thresholds.
 
 Stocks are ranked by composite percentile across the universe. Conviction labels are assigned and adjusted for market regime:
 
@@ -169,8 +177,15 @@ All data sources are evaluated for India-market correctness:
 | OHLCV prices | yfinance (`.NS` tickers) | INR-denominated, correct for NSE |
 | Market cap | yfinance → screener.in fallback | Stored as **INR Crores** (`÷1e7`). Screener.in returns Crores directly; yfinance returns INR |
 | P/E, ROE, D/E | yfinance → screener.in fallback | Screener.in preferred — more reliable for Indian companies |
-| Sector / Industry | screener.in → yfinance fallback | screener.in uses Indian sector taxonomy |
-| Promoter holding / pledging | screener.in only | Not available in yfinance for Indian stocks |
+| Forward P/E | yfinance info → screener.in analysis section | Used for SUE analyst revision proxy |
+| Return on Assets | yfinance info → yfinance balance_sheet → screener.in #ratios | Three-layer fallback |
+| Current Ratio | yfinance info → screener.in #ratios | Used for Piotroski F-Score |
+| Operating Cashflow | yfinance info → yfinance cashflow statement → screener.in P&L/Cash Flow | Three-layer fallback; critical for Value Factor CF/P |
+| Revenue Growth | yfinance info → yfinance quarterly_financials → screener.in quarterly results | Three-layer fallback; critical for Investment Factor |
+| Earnings Growth | yfinance info → yfinance quarterly_financials → screener.in quarterly results | Three-layer fallback; critical for Piotroski and SUE Factor |
+| Gross Profits | yfinance info → screener.in profit-loss table | Used for Gross Profitability factor |
+| Sector / Industry | screener.in → yfinance → BSE India fallback | screener.in uses Indian sector taxonomy |
+| Promoter holding / pledging | screener.in → BSE India fallback | Not available in yfinance for Indian stocks |
 | NIFTY 50 | `^NSEI` via yfinance | Correct |
 | India VIX | `^INDIAVIX` via yfinance | Correct |
 | FII/DII activity | NSE `fiidiiTradeReact` API → moneycontrol.com fallback | Net buy/sell in INR Crores; degrades to neutral on failure |
@@ -222,7 +237,7 @@ The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 |  4. Writes output to JSON and SQLite                                    |
 |         |                                                               |
 |         +-> [data_fetcher.py]                                           |
-|         |    OHLCV fetching, fundamentals, screener.in scraping         |
+|         |    OHLCV, fundamentals (yfinance + statements + screener + BSE)|
 |         |    News sentiment (VADER), ATH/ATL caching                    |
 |         |                                                               |
 |         +-> [indicators.py]                                             |
@@ -236,8 +251,8 @@ The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 |         |    Tech Score (-1 to +1), Fund Score (0-10)                   |
 |         |                                                               |
 |         +-> [research_factors.py]                                       |
-|         |    Piotroski, Gross Profit, Momentum, Volatility,             |
-|         |    Mean Reversion, Earnings Quality                           |
+|         |    Piotroski, Gross Profit, Value, Investment, SUE,           |
+|         |    Momentum, Volatility, Beta, Mean Reversion, EQ             |
 |         |                                                               |
 |         +-> [data_pipeline.py]                                          |
 |              ML-ready storage: OHLCV, factors, outcomes, regime         |
@@ -265,9 +280,9 @@ The React frontend is a five-tab analytical dashboard:
 
 | Tab | Description |
 |-----|-------------|
-| **Signals** | Top 3 high-conviction picks for Short-Term (momentum) or Long-Term (value) horizon. Each card shows a composite score, a radar chart across Tech / Fund / Research / Momentum / Piotroski axes, and six key metrics. |
-| **Screen** | Full universe screener with sortable columns (Ticker, Sector, LTP, 1D%, Composite, Tech, Fund, Research, F-Score, 12M Momentum, P/E, D/E, Conviction). Dynamic filters for composite score, Piotroski F-Score, sector, conviction, market cap, and D/E ratio. Expandable row shows all 14 technical signals and 12 research factors. |
-| **Charts** | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14) with 30/50/70 reference lines, MACD (12,26,9) with color-coded histogram. Left panel shows company profile, technicals, research factors, momentum, fundamentals, and risk metrics. Sector peer comparison table below. Supports 7 periods (1W-5Y) and daily/weekly interval. |
+| **Signals** | Top 3 high-conviction picks for Short-Term (momentum) or Long-Term (value/quality) horizon. Each card shows a horizon-specific composite score, Tech/Fund/Research sub-scores, key metrics (P/E, Mkt Cap, ROE, D/E, Sharpe, Beta), signal badges, and compact score bars (Piotroski, 12M Mom, Value, Vol 60D). |
+| **Screen** | Full universe screener with sortable columns (Ticker, Sector, LTP, 1D%, Composite, Tech, Fund, Research, F-Score, 12M Mom, Value, Beta, P/E, Conviction). Dynamic filters for composite, Piotroski, Value Score, Beta, sector, conviction, market cap, and D/E. Expandable row shows 14 technical signals and all 10 research factors. |
+| **Charts** | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14), MACD (12,26,9). Left panel shows company profile, technicals, 10 research factors (Piotroski, Gross Profit, Earnings Quality, Value, Investment, SUE, Beta, Z-Score), momentum, fundamentals, and risk metrics (Vol, Sharpe, Max DD, Beta, Alpha). Sector peer comparison table with Value and Beta columns. |
 | **Heatmap** | Color-coded sector heatmap where each tile represents a stock, colored from red (low composite) to green (high composite). Sectors sorted alphabetically. |
 | **Factor Lab** | Conviction accuracy tracker showing historical win rates and average forward returns (21D and 63D) by conviction level, with a bar chart and summary cards. Data accumulates as scans age. |
 
@@ -441,7 +456,8 @@ stock-dashboard/
 ├── tests/
 │   ├── test_indicators.py      # Indicator unit tests
 │   ├── test_scoring.py         # Scoring function tests
-│   └── test_research_factors.py # Research factor tests
+│   ├── test_research_factors.py # Research factor tests
+│   └── test_e2e_recommendation.py # E2E pipeline tests
 └── assets/                     # Logos and preview images
 ```
 

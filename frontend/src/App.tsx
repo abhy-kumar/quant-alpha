@@ -280,7 +280,7 @@ export default function App() {
             </p>
           </div>
           <div className="flex flex-col gap-1.5 sm:items-end">
-            <h4 className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>Alpha Research</h4>
+            <h4 className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest" style={{color:'var(--brand)'}}>Quant Research</h4>
             <p className="text-[10px] md:text-[11px]" style={{color:'var(--text-2)'}}>Alpha Research and Investment Club</p>
             <p className="text-[10px] md:text-[11px]" style={{color:'var(--text-2)'}}>Faculty of Management Studies, Delhi</p>
             <p className="text-[10px] md:text-[11px] mt-1" style={{color:'var(--text-3)'}}>Made with &#9829; by Abhishek Kumar</p>

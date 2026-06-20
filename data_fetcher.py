@@ -36,6 +36,56 @@ SCREENER_COOLDOWN = 300
 vader = SentimentIntensityAnalyzer()
 
 
+def _fetch_yfinance_statements(t: yf.Ticker, info: dict):
+    """
+    Fetch cash flow and financial statements from yfinance to fill gaps
+    in operatingCashflow, earningsGrowth, revenueGrowth, returnOnAssets.
+    """
+    try:
+        if pd.isna(_safe_float(info.get('operatingCashflow'))):
+            cf = t.cashflow
+            if cf is not None and not cf.empty:
+                op_idx = next((i for i in cf.index if 'operating' in str(i).lower()), None)
+                if op_idx is not None and len(cf.columns) >= 1:
+                    info['operatingCashflow'] = _safe_float(cf.loc[op_idx].iloc[0])
+    except Exception:
+        pass
+
+    try:
+        if pd.isna(_safe_float(info.get('revenueGrowth'))) or pd.isna(_safe_float(info.get('earningsGrowth'))):
+            qf = t.quarterly_financials
+            if qf is not None and not qf.empty and qf.shape[1] >= 2:
+                rev_idx = next((i for i in qf.index if 'revenue' in str(i).lower() or 'total revenue' in str(i).lower()), None)
+                if rev_idx is not None:
+                    curr_rev = _safe_float(qf.loc[rev_idx].iloc[0])
+                    prev_rev = _safe_float(qf.loc[rev_idx].iloc[1])
+                    if prev_rev and prev_rev > 0 and pd.isna(_safe_float(info.get('revenueGrowth'))):
+                        info['revenueGrowth'] = (curr_rev - prev_rev) / abs(prev_rev)
+
+                ni_idx = next((i for i in qf.index if 'net income' in str(i).lower()), None)
+                if ni_idx is not None:
+                    curr_ni = _safe_float(qf.loc[ni_idx].iloc[0])
+                    prev_ni = _safe_float(qf.loc[ni_idx].iloc[1])
+                    if prev_ni and prev_ni != 0 and pd.isna(_safe_float(info.get('earningsGrowth'))):
+                        info['earningsGrowth'] = (curr_ni - prev_ni) / abs(prev_ni)
+    except Exception:
+        pass
+
+    try:
+        if pd.isna(_safe_float(info.get('returnOnAssets'))):
+            bs = t.balance_sheet
+            if bs is not None and not bs.empty:
+                ta_idx = next((i for i in bs.index if 'total asset' in str(i).lower()), None)
+                if ta_idx is not None:
+                    total_assets = _safe_float(bs.loc[ta_idx].iloc[0])
+                    if total_assets and total_assets > 0:
+                        net_income = _safe_float(info.get('netIncomeToCommon'), default=0)
+                        if net_income:
+                            info['returnOnAssets'] = net_income / total_assets
+    except Exception:
+        pass
+
+
 def fetch_ohlcv_with_retry(ticker: str, period: str = PERIOD) -> pd.DataFrame:
     """Fetch OHLCV data with exponential backoff retry."""
     retries = [1, 2, 4]
@@ -124,6 +174,14 @@ def fetch_fundamentals(ticker: str) -> dict:
             t = yf.Ticker(ticker, session=_YF_SESSION)
             new_info = t.info or {}
             info.update(new_info)
+
+            missing_critical = (
+                pd.isna(_safe_float(info.get('operatingCashflow'))) or
+                pd.isna(_safe_float(info.get('revenueGrowth'))) or
+                pd.isna(_safe_float(info.get('returnOnAssets')))
+            )
+            if missing_critical:
+                _fetch_yfinance_statements(t, info)
         except (ValueError, KeyError, requests.RequestException) as e:
             log.debug(f"yfinance info fetch failed for {ticker}: {e}")
 
@@ -211,6 +269,9 @@ def _fetch_from_screener(sym: str, info: dict, cached_sector, needs_fundamentals
                     elif 'dividend yield' in name and pd.isna(_safe_float(info.get('dividendYield'))):
                         info['dividendYield'] = val
 
+            _parse_screener_ratios(soup, info)
+            _parse_screener_financials(soup, info)
+
             peers_table = soup.find('table', class_='data-table')
             if peers_table:
                 _parse_screener_peers(peers_table, sym, info)
@@ -264,7 +325,132 @@ def _parse_screener_peers(peers_table, sym: str, info: dict):
                     except (ValueError, IndexError):
                         pass
                 peers.append(peer_data)
-    info['screener_peers'] = peers
+        info['screener_peers'] = peers
+
+
+def _parse_screener_ratios(soup, info: dict):
+    """
+    Parse the #ratios section from Screener.in for detailed financial ratios.
+    This section contains: ROA, Current Ratio, Quick Ratio, Debt/Equity,
+    Inventory Turnover, and other key ratios.
+    """
+    ratios_section = soup.select_one('#ratios')
+    if not ratios_section:
+        return
+
+    rows = ratios_section.select('table tr, .flex-row, li')
+    for row in rows:
+        cells = row.find_all(['td', 'span'])
+        if len(cells) < 2:
+            continue
+        name_text = cells[0].text.strip().lower()
+        val_text = cells[-1].text.strip().replace(',', '').replace('%', '')
+        try:
+            val = float(val_text)
+        except (ValueError, IndexError):
+            continue
+
+        if 'return on assets' in name_text and pd.isna(_safe_float(info.get('returnOnAssets'))):
+            info['returnOnAssets'] = val / 100.0
+        elif 'current ratio' in name_text and pd.isna(_safe_float(info.get('currentRatio'))):
+            info['currentRatio'] = val
+        elif 'quick ratio' in name_text and pd.isna(_safe_float(info.get('quickRatio'))):
+            info['quickRatio'] = val
+        elif 'debt to equity' in name_text and pd.isna(_safe_float(info.get('debtToEquity'))):
+            info['debtToEquity'] = val * 100.0
+
+
+def _parse_screener_financials(soup, info: dict):
+    """
+    Parse quarterly results and annual financials from Screener.in
+    to extract: revenueGrowth, earningsGrowth, operatingCashflow, grossProfits,
+    forwardPE (from analyst estimates section).
+    """
+    quarters_section = soup.select_one('#quarters')
+    if quarters_section:
+        headers = [th.text.strip().lower() for th in quarters_section.select('table th')]
+        rows = quarters_section.select('table tbody tr')
+
+        sales_idx = next((i for i, h in enumerate(headers) if 'sales' in h or 'revenue' in h), -1)
+        net_profit_idx = next((i for i, h in enumerate(headers) if 'net profit' in h or 'profit' in h), -1)
+
+        if rows and len(rows) >= 2 and sales_idx != -1:
+            try:
+                curr_row = rows[0].find_all('td')
+                prev_row = rows[1].find_all('td')
+                if len(curr_row) > sales_idx and len(prev_row) > sales_idx:
+                    curr_sales = float(curr_row[sales_idx].text.strip().replace(',', '').replace('%', ''))
+                    prev_sales = float(prev_row[sales_idx].text.strip().replace(',', '').replace('%', ''))
+                    if prev_sales > 0 and pd.isna(_safe_float(info.get('revenueGrowth'))):
+                        info['revenueGrowth'] = (curr_sales - prev_sales) / abs(prev_sales)
+            except (ValueError, IndexError):
+                pass
+
+        if rows and len(rows) >= 2 and net_profit_idx != -1:
+            try:
+                curr_row = rows[0].find_all('td')
+                prev_row = rows[1].find_all('td')
+                if len(curr_row) > net_profit_idx and len(prev_row) > net_profit_idx:
+                    curr_profit_text = curr_row[net_profit_idx].text.strip().replace(',', '').replace('%', '')
+                    prev_profit_text = prev_row[net_profit_idx].text.strip().replace(',', '').replace('%', '')
+                    curr_profit = float(curr_profit_text) if curr_profit_text not in ('-', '') else 0
+                    prev_profit = float(prev_profit_text) if prev_profit_text not in ('-', '') else 0
+                    if prev_profit != 0 and pd.isna(_safe_float(info.get('earningsGrowth'))):
+                        info['earningsGrowth'] = (curr_profit - prev_profit) / abs(prev_profit)
+            except (ValueError, IndexError):
+                pass
+
+    pl_section = soup.select_one('#profit-loss')
+    if pl_section:
+        headers = [th.text.strip().lower() for th in pl_section.select('table th')]
+        rows = pl_section.select('table tbody tr')
+        for row in rows:
+            cells = row.find_all('td')
+            if not cells:
+                continue
+            label = cells[0].text.strip().lower()
+            if ('gross profit' in label or 'gross block' in label) and pd.isna(_safe_float(info.get('grossProfits'))):
+                try:
+                    val = float(cells[-1].text.strip().replace(',', ''))
+                    info['grossProfits'] = val * 10000000
+                except (ValueError, IndexError):
+                    pass
+            elif 'operating profit' in label and pd.isna(_safe_float(info.get('operatingCashflow'))):
+                try:
+                    val = float(cells[-1].text.strip().replace(',', ''))
+                    info['operatingCashflow'] = val * 10000000
+                except (ValueError, IndexError):
+                    pass
+
+    cf_section = soup.select_one('#cash-flow')
+    if cf_section:
+        rows = cf_section.select('table tbody tr')
+        for row in rows:
+            cells = row.find_all('td')
+            if not cells:
+                continue
+            label = cells[0].text.strip().lower()
+            if 'cash from operating' in label and pd.isna(_safe_float(info.get('operatingCashflow'))):
+                try:
+                    val = float(cells[-1].text.strip().replace(',', ''))
+                    info['operatingCashflow'] = val * 10000000
+                except (ValueError, IndexError):
+                    pass
+
+    analysis_section = soup.select_one('#analysis')
+    if analysis_section:
+        text = analysis_section.text.lower()
+        if 'forward p/e' in text or 'target price' in text:
+            for row in analysis_section.select('tr, li, .flex-row'):
+                row_text = row.text.strip().lower()
+                if 'forward p/e' in row_text or 'forward pe' in row_text:
+                    val_text = row_text.split(':')[-1].strip().replace(',', '')
+                    try:
+                        val = float(val_text)
+                        if pd.isna(_safe_float(info.get('forwardPE'))):
+                            info['forwardPE'] = val
+                    except ValueError:
+                        pass
 
 
 def _fetch_bse_fallback(sym: str, info: dict, needs_sector: bool):

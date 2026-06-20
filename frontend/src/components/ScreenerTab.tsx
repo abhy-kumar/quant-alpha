@@ -30,6 +30,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
 
   const [minComposite, setMinComposite] = useState(0)
   const [minPiotroski, setMinPiotroski] = useState(0)
+  const [minValue, setMinValue] = useState(0)
+  const [maxBeta, setMaxBeta] = useState(3)
   const [selectedSectors, setSelectedSectors] = useState<string[]>([])
   const [selectedConvictions, setSelectedConvictions] = useState<string[]>([])
   const [minMarketCap, setMinMarketCap] = useState(0)
@@ -51,6 +53,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
     let arr = data.filter(d => {
       if (Number(d.Composite_Score) < minComposite) return false
       if (Number(d.Piotroski_F) < minPiotroski) return false
+      if (minValue > 0 && Number(d.Value_Score) < minValue) return false
+      if (maxBeta < 3 && Number(d.Beta) > maxBeta) return false
       if (selectedSectors.length > 0 && !selectedSectors.includes(d.Sector)) return false
       if (selectedConvictions.length > 0 && !selectedConvictions.includes(d.Conviction)) return false
       if (minMarketCap > 0 && Number(d.Market_Cap_B) < minMarketCap) return false
@@ -68,11 +72,11 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
     return arr
   }, [data, sortKey, sortDir, minComposite, minPiotroski, selectedSectors, selectedConvictions, minMarketCap, maxDE])
 
-  const activeFilterCount = [minComposite > 0, minPiotroski > 0, selectedSectors.length > 0, selectedConvictions.length > 0, minMarketCap > 0, maxDE < 999].filter(Boolean).length
+  const activeFilterCount = [minComposite > 0, minPiotroski > 0, minValue > 0, maxBeta < 3, selectedSectors.length > 0, selectedConvictions.length > 0, minMarketCap > 0, maxDE < 999].filter(Boolean).length
 
   const clearFilters = () => {
-    setMinComposite(0); setMinPiotroski(0); setSelectedSectors([])
-    setSelectedConvictions([]); setMinMarketCap(0); setMaxDE(999)
+    setMinComposite(0); setMinPiotroski(0); setMinValue(0); setMaxBeta(3)
+    setSelectedSectors([]); setSelectedConvictions([]); setMinMarketCap(0); setMaxDE(999)
   }
 
   const toggleSector = (s: string) => setSelectedSectors(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
@@ -125,6 +129,14 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <input type="range" min="0" max="10" step="0.5" value={maxDE >= 999 ? 10 : maxDE} onChange={e => setMaxDE(Number(e.target.value) >= 10 ? 999 : Number(e.target.value))} className="w-full" />
             </div>
             <div>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Value Score: {minValue.toFixed(1)}</label>
+              <input type="range" min="0" max="10" step="0.5" value={minValue} onChange={e => setMinValue(Number(e.target.value))} className="w-full" />
+            </div>
+            <div>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max Beta: {maxBeta >= 3 ? 'Any' : maxBeta.toFixed(1)}</label>
+              <input type="range" min="0" max="3" step="0.1" value={maxBeta} onChange={e => setMaxBeta(Number(e.target.value) >= 2.9 ? 3 : Number(e.target.value))} className="w-full" />
+            </div>
+            <div>
               <label className="text-xs mb-2 block" style={{ color: 'var(--text-2)' }}>Sectors</label>
               <div className="flex flex-wrap gap-1.5">
                 {availableSectors.map(s => (
@@ -165,6 +177,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <SortHeader field="Research_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">Research</span></SortHeader>
               <SortHeader field="Piotroski_F" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">F-Score</span></SortHeader>
               <SortHeader field="Momentum_12M" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">12M Mom</span></SortHeader>
+              <SortHeader field="Value_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">Value</span></SortHeader>
+              <SortHeader field="Beta" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">Beta</span></SortHeader>
               <SortHeader field="P/E" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">P/E</span></SortHeader>
               <SortHeader field="Conviction" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Conv</SortHeader>
               <th className="py-3 px-3"></th>
@@ -204,6 +218,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                     <span className="font-data">{row.Piotroski_F ?? '-'}</span><span className="text-sub">/9</span>
                   </td>
                   <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden xl:table-cell ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</td>
+                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden xl:table-cell ${Number(row.Value_Score) >= 7 ? 'text-green' : Number(row.Value_Score) < 4 ? 'text-red' : 'text-heading'}`}>{num(row.Value_Score)}</td>
+                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden xl:table-cell ${row.Beta != null && row.Beta < 0.8 ? 'text-green' : row.Beta != null && row.Beta > 1.2 ? 'text-red' : 'text-heading'}`}>{row.Beta != null ? row.Beta.toFixed(2) : 'N/A'}</td>
                   <td className="py-3 px-3 text-right text-sm font-data hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
                   <td className="py-3 px-3 text-sm font-medium">
                     <span className="inline-block px-2 py-0.5 text-[11px] font-medium" style={convictionStyle(row.Conviction)}>
@@ -256,6 +272,11 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                               ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`],
                               ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`],
                               ['Earnings Quality', `${num(row.Earnings_Quality)}/10`],
+                              ['Value Score', `${num(row.Value_Score)}/10`],
+                              ['Investment Score', `${num(row.Investment_Score)}/10`],
+                              ['SUE Score', `${num(row.SUE_Score)}/10`],
+                              ['Beta', row.Beta != null ? row.Beta.toFixed(2) : 'N/A'],
+                              ['Alpha (60D)', row.Alpha_60D != null ? `${row.Alpha_60D.toFixed(1)}%` : 'N/A'],
                               ['Volatility (60D)', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : 'N/A'],
                               ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'],
                               ['Risk-Adj Mom', num(row.Risk_Adj_Mom)],
@@ -313,12 +334,13 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} width={40} height={12} />
             </div>
 
-            {/* Row 3: Tech, Fund, Research, F-Score */}
+            {/* Row 3: Tech, Fund, Research, F-Score, Value */}
             <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--text-3)' }}>
               <span>T <span className={`font-mono font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</span></span>
               <span>F <span className={`font-mono font-medium ${Number(row.Fund_Score) >= 5 ? 'text-green' : 'text-heading'}`}>{num(row.Fund_Score)}</span></span>
               <span>R <span className={`font-mono font-medium ${Number(row.Research_Score) >= 7 ? 'text-green' : Number(row.Research_Score) < 4 ? 'text-red' : 'text-heading'}`}>{num(row.Research_Score)}</span></span>
               <span>P <span className="font-mono font-medium">{row.Piotroski_F ?? '-'}/9</span></span>
+              {row.Value_Score != null && <span>V <span className={`font-mono font-medium ${Number(row.Value_Score) >= 7 ? 'text-green' : 'text-heading'}`}>{num(row.Value_Score)}</span></span>}
               <span className="ml-auto">
                 <button onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)} style={{ color: 'var(--text-3)' }}>
                   <Info size={13} />
@@ -340,6 +362,22 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                       <div key={label as string} className="flex items-center justify-between">
                         <span style={{ color: 'var(--text-2)' }}>{label}</span>
                         {getSignalLabel(val)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--brand)' }}>Factor Scores</h4>
+                  <div className="grid grid-cols-2 gap-1 text-[11px]">
+                    {[
+                      ['Value', row.Value_Score, 7], ['Investment', row.Investment_Score, 6],
+                      ['SUE', row.SUE_Score, 6], ['Beta', row.Beta, null],
+                    ].map(([label, val, threshold]) => (
+                      <div key={label as string} className="flex justify-between">
+                        <span style={{ color: 'var(--text-2)' }}>{label}</span>
+                        <span className={`font-mono ${threshold != null && Number(val) >= threshold ? 'text-green' : 'text-heading'}`}>
+                          {label === 'Beta' ? (val != null ? Number(val).toFixed(2) : 'N/A') : `${num(val)}/10`}
+                        </span>
                       </div>
                     ))}
                   </div>
