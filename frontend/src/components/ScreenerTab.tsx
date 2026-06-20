@@ -375,7 +375,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                     ].map(([label, val, threshold]) => (
                       <div key={label as string} className="flex justify-between">
                         <span style={{ color: 'var(--text-2)' }}>{label}</span>
-                        <span className={`font-mono ${threshold != null && Number(val) >= threshold ? 'text-green' : 'text-heading'}`}>
+                        <span className={`font-mono ${threshold != null && Number(val) >= Number(threshold) ? 'text-green' : 'text-heading'}`}>
                           {label === 'Beta' ? (val != null ? Number(val).toFixed(2) : 'N/A') : `${num(val)}/10`}
                         </span>
                       </div>

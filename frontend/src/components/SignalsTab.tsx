@@ -122,7 +122,6 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
           const piotroski = Number(s.Piotroski_F)||0
           const debtEq = s['Debt_to_Equity'] ? Number(s['Debt_to_Equity']) : null
           const sharpe = s['Sharpe'] ? Number(s['Sharpe']) : null
-          const maxDD = s['Max_Drawdown_%'] ? Number(s['Max_Drawdown_%']) : null
           const bullCount = s['Bull_Count'] ?? null
           const bearCount = s['Bear_Count'] ?? null
 
