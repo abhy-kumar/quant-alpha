@@ -254,7 +254,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden xl:table-cell ${row.Beta != null && row.Beta < 0.8 ? 'text-green' : row.Beta != null && row.Beta > 1.2 ? 'text-red' : 'text-heading'}`}>{row.Beta != null ? row.Beta.toFixed(2) : 'N/A'}</td>
                   <td className="py-3 px-3 text-right text-sm font-data hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
                   <td className="py-3 px-3 text-sm font-medium">
-                    <span className="inline-block px-2 py-0.5 text-[11px] font-medium" style={convictionStyle(row.Conviction)}>
+                    <span className="inline-block px-2 py-0.5 text-[11px] font-medium whitespace-nowrap" style={convictionStyle(row.Conviction)}>
                       {row.Conviction || 'N/A'}
                     </span>
                   </td>
@@ -344,7 +344,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 <button onClick={() => onSelect(row.Ticker)} className="text-sm font-bold" style={{ color: 'var(--text)' }}>
                   {row.Ticker.replace('.NS', '')}
                 </button>
-                <span className="px-1.5 py-0.5 text-[10px] font-medium" style={convictionStyle(row.Conviction)}>
+                <span className="px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap" style={convictionStyle(row.Conviction)}>
                   {row.Conviction || 'N/A'}
                 </span>
               </div>

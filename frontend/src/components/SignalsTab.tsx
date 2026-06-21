@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { DashboardData } from '../types'
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from 'recharts'
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from 'recharts'
 
 interface Props {
   topPicks: DashboardData[]
@@ -37,14 +37,25 @@ function ScoreRadar({ s }: { s: DashboardData }) {
   const vol = Number(s.Vol_60D) || 0
 
   const data = [
-    { axis: 'Tech', value: Math.max(0, Math.min(10, (techRaw + 1) * 5)) },
-    { axis: 'Fund', value: Math.max(0, Math.min(10, fundRaw)) },
-    { axis: 'Research', value: Math.max(0, Math.min(10, researchRaw)) },
-    { axis: 'Quality', value: Math.max(0, Math.min(10, (piotroski / 9) * 10)) },
-    { axis: 'Mom', value: Math.max(0, Math.min(10, ((momentum + 100) / 200) * 10)) },
-    { axis: 'Value', value: Math.max(0, Math.min(10, value)) },
-    { axis: 'Low Vol', value: Math.max(0, Math.min(10, ((60 - vol) / 60) * 10)) },
+    { axis: 'Tech', value: Math.max(0, Math.min(10, (techRaw + 1) * 5)), raw: techRaw.toFixed(1) },
+    { axis: 'Fund', value: Math.max(0, Math.min(10, fundRaw)), raw: fundRaw.toFixed(1) },
+    { axis: 'Research', value: Math.max(0, Math.min(10, researchRaw)), raw: researchRaw.toFixed(1) },
+    { axis: 'Quality', value: Math.max(0, Math.min(10, (piotroski / 9) * 10)), raw: `${piotroski}/9` },
+    { axis: 'Mom', value: Math.max(0, Math.min(10, ((momentum + 100) / 200) * 10)), raw: `${momentum >= 0 ? '+' : ''}${momentum.toFixed(1)}%` },
+    { axis: 'Value', value: Math.max(0, Math.min(10, value)), raw: value.toFixed(1) },
+    { axis: 'Low Vol', value: Math.max(0, Math.min(10, ((60 - vol) / 60) * 10)), raw: `${vol.toFixed(1)}%` },
   ]
+
+  const renderTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null
+    const d = payload[0].payload
+    return (
+      <div style={{background:'var(--surface)',border:'1px solid var(--border)',padding:'4px 8px',fontSize:11}}>
+        <span style={{color:'var(--text-2)'}}>{d.axis}: </span>
+        <span style={{color:'var(--text)',fontWeight:600}}>{d.raw}</span>
+      </div>
+    )
+  }
 
   return (
     <div style={{width:'100%',height:160}}>
@@ -56,6 +67,7 @@ function ScoreRadar({ s }: { s: DashboardData }) {
             tick={{fontSize:9, fill:'var(--text-3)'}}
             tickLine={false}
           />
+          <Tooltip content={renderTooltip} />
           <Radar
             dataKey="value"
             stroke="var(--brand)"
@@ -136,9 +148,6 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
             : horizon === 'short'
             ? Number(s.Composite_Score_Tech) || Number(s.Composite_Score) || 0
             : Number(s.Composite_Score) || 0
-          const techScore = Number(s.Tech_Score)||0
-          const fundScore = Number(s.Fund_Score)||0
-          const researchScore = Number(s.Research_Score)||0
           const rsi = Number(s.RSI_Value)||0
           const pe = s['P/E'] ? Number(s['P/E']) : null
           const mcap = s['Market_Cap_B'] ? Number(s['Market_Cap_B']) : null
@@ -188,22 +197,6 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                 </span>
               </div>
 
-              {/* Sub-scores row */}
-              <div className="grid grid-cols-3 gap-2 mb-2.5 py-2" style={{borderTop:'1px solid var(--border)',borderBottom:'1px solid var(--border)'}}>
-                <div className="text-center">
-                  <span className="text-[9px] uppercase tracking-wider block" style={{color:'var(--text-3)'}}>Tech</span>
-                  <span className="text-[13px] font-mono font-medium" style={{color: techScore >= 0.5 ? 'var(--green)' : techScore < 0 ? 'var(--red)' : 'var(--text)'}}>{techScore.toFixed(1)}</span>
-                </div>
-                <div className="text-center">
-                  <span className="text-[9px] uppercase tracking-wider block" style={{color:'var(--text-3)'}}>Fund</span>
-                  <span className="text-[13px] font-mono font-medium" style={{color: fundScore >= 5 ? 'var(--green)' : 'var(--text)'}}>{fundScore.toFixed(1)}</span>
-                </div>
-                <div className="text-center">
-                  <span className="text-[9px] uppercase tracking-wider block" style={{color:'var(--text-3)'}}>Research</span>
-                  <span className="text-[13px] font-mono font-medium" style={{color: researchScore >= 7 ? 'var(--green)' : researchScore < 4 ? 'var(--red)' : 'var(--text)'}}>{researchScore.toFixed(1)}</span>
-                </div>
-              </div>
-
               {/* Key metrics grid */}
               <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-2.5">
                 <Metric label="P/E" value={pe!==null?pe.toFixed(1):'\u2014'} />
@@ -246,9 +239,9 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                 {rsi > 0 && <SignalBadge label={`RSI ${rsi.toFixed(0)}`} bullish={rsi < 70} />}
                 {stSignal && <SignalBadge label={stSignal} bullish={stSignal==='Buy'||stSignal==='Long'} />}
                 {macdVal > 0 && <SignalBadge label="MACD +" bullish={true} />}
-                {macdVal < 0 && <SignalBadge label="MACD \u2212" bullish={false} />}
+                {macdVal < 0 && <SignalBadge label={'MACD \u2212'} bullish={false} />}
                 {momentum > 0.1 && <SignalBadge label="Mom +" bullish={true} />}
-                {momentum < -0.1 && <SignalBadge label="Mom \u2212" bullish={false} />}
+                {momentum < -0.1 && <SignalBadge label={'Mom \u2212'} bullish={false} />}
               </div>
 
               {/* Radar chart */}
