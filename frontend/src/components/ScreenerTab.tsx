@@ -195,7 +195,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
       {/* Desktop table */}
       <div className="overflow-hidden hidden sm:block" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
         <div className="overflow-x-auto">
-        <table className="w-full text-left" style={{tableLayout:'auto'}}>
+        <table className="w-full text-left text-sm" style={{borderCollapse:'collapse'}}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
               <SortHeader field="Ticker" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Ticker</SortHeader>
@@ -228,33 +228,33 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   onMouseEnter={e => { if (expandedRow !== row.Ticker) e.currentTarget.style.background = 'var(--surface)' }}
                   onMouseLeave={e => { if (expandedRow !== row.Ticker) e.currentTarget.style.background = 'transparent' }}
                 >
-                  <td className="py-3 px-3 font-medium text-sm cursor-pointer transition-colors" style={{ color: 'var(--text)' }} onClick={() => onSelect(row.Ticker)}
+                  <td className="py-3 px-3 font-medium cursor-pointer transition-colors" style={{ color: 'var(--text)' }} onClick={() => onSelect(row.Ticker)}
                     onMouseEnter={e => (e.currentTarget.style.color = 'var(--brand)')}
                     onMouseLeave={e => (e.currentTarget.style.color = 'var(--text)')}
                   >
                     {row.Ticker.replace('.NS', '')}
                   </td>
-                  <td className="py-3 px-3 text-sm hidden md:table-cell" style={{ color: 'var(--text-2)' }}>{row.Sector || '-'}</td>
-                  <td className="py-3 px-3 text-right font-data text-sm" style={{ color: 'var(--text)' }}>{num(row.Price)}</td>
-                  <td className={`py-3 px-3 text-right text-sm font-medium ${colorCode(row['1d_Chg_%'])}`}>
+                  <td className="py-3 px-3 hidden md:table-cell" style={{ color: 'var(--text-2)' }}>{row.Sector || '-'}</td>
+                  <td className="py-3 px-3 text-right font-mono" style={{ color: 'var(--text)' }}>{num(row.Price)}</td>
+                  <td className={`py-3 px-3 text-right font-medium font-mono ${colorCode(row['1d_Chg_%'])}`}>
                     {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
                   </td>
-                  <td className={`py-3 px-3 text-right text-sm font-medium font-data ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
+                  <td className={`py-3 px-3 text-right font-medium font-mono ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
                   <td className="py-3 px-3 text-center">
                     <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} />
                   </td>
-                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
-                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden lg:table-cell ${Number(row.Fund_Score) >= 5 ? 'text-green' : 'text-heading'}`}>{num(row.Fund_Score)}</td>
-                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden lg:table-cell ${Number(row.Research_Score) >= 7 ? 'text-green' : Number(row.Research_Score) < 4 ? 'text-red' : 'text-heading'}`}>{num(row.Research_Score)}</td>
-                  <td className={`py-3 px-3 text-right text-sm font-medium hidden lg:table-cell ${Number(row.Piotroski_F) >= 7 ? 'text-green' : Number(row.Piotroski_F) <= 3 ? 'text-red' : 'text-heading'}`}>
-                    <span className="font-data">{row.Piotroski_F ?? '-'}</span><span className="text-sub">/9</span>
+                  <td className={`py-3 px-3 text-right font-medium font-mono hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
+                  <td className={`py-3 px-3 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Fund_Score)}</td>
+                  <td className={`py-3 px-3 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Research_Score)}</td>
+                  <td className="py-3 px-3 text-right font-medium hidden lg:table-cell">
+                    <span className="font-mono">{row.Piotroski_F ?? '-'}</span><span className="text-[10px] text-[var(--text-3)]">/9</span>
                   </td>
-                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden xl:table-cell ${colorCode(row.Momentum_12M)}`}>{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'}</td>
-                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden xl:table-cell ${Number(row.Value_Score) >= 7 ? 'text-green' : Number(row.Value_Score) < 4 ? 'text-red' : 'text-heading'}`}>{num(row.Value_Score)}</td>
-                  <td className={`py-3 px-3 text-right text-sm font-medium font-data hidden xl:table-cell ${row.Beta != null && row.Beta < 0.8 ? 'text-green' : row.Beta != null && row.Beta > 1.2 ? 'text-red' : 'text-heading'}`}>{row.Beta != null ? row.Beta.toFixed(2) : 'N/A'}</td>
-                  <td className="py-3 px-3 text-right text-sm font-data hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
-                  <td className="py-3 px-3 text-sm font-medium">
-                    <span className="inline-block px-2 py-0.5 text-[11px] font-medium whitespace-nowrap" style={convictionStyle(row.Conviction)}>
+                  <td className="py-3 px-3 text-right font-medium font-mono hidden xl:table-cell">{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '-'}</td>
+                  <td className="py-3 px-3 text-right font-medium font-mono hidden xl:table-cell">{num(row.Value_Score)}</td>
+                  <td className="py-3 px-3 text-right font-medium font-mono hidden xl:table-cell">{row.Beta != null ? row.Beta.toFixed(2) : '-'}</td>
+                  <td className="py-3 px-3 text-right font-mono hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
+                  <td className="py-3 px-3 font-medium whitespace-nowrap">
+                    <span className="inline-block px-2 py-0.5 text-[11px] font-medium" style={convictionStyle(row.Conviction)}>
                       {row.Conviction || 'N/A'}
                     </span>
                   </td>
@@ -271,11 +271,11 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 </tr>
                 {expandedRow === row.Ticker && (
                   <tr style={{ borderBottom: '1px solid var(--border)', background: 'rgba(30,63,104,0.06)' }}>
-                    <td colSpan={14} className="p-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <td colSpan={16} className="p-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div>
                           <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--brand)' }}>Technical Signals</h4>
-                          <div className="space-y-2 text-sm">
+                          <div className="space-y-1.5 text-[13px]">
                             {[
                               ['Price vs SMA50', row.Sig_Price_vs_SMA50], ['Price vs SMA200', row.Sig_Price_vs_SMA200],
                               ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200], ['RSI', row.Sig_RSI],
@@ -285,40 +285,60 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                               ['ADX Trend', row.Sig_ADX], ['Supertrend', row.Sig_Supertrend],
                               ['Vol Price Trend', row.Sig_VPT], ['Ichimoku Cloud', row.Sig_Ichimoku],
                             ].map(([label, val]) => (
-                              <div key={label as string} className="flex items-center justify-between">
+                              <div key={label as string} className="flex items-center justify-between py-0.5">
                                 <span style={{ color: 'var(--text-2)' }}>{label}</span>
                                 {getSignalLabel(val)}
                               </div>
                             ))}
                           </div>
-                          <div className="mt-4 pt-3 grid grid-cols-3 gap-3 text-xs" style={{ borderTop: '1px solid var(--border)' }}>
-                            <div><span style={{ color: 'var(--text-3)' }}>Bull</span><br/><span className="font-medium font-data text-green">{row.Bull_Count ?? '-'}</span></div>
-                            <div><span style={{ color: 'var(--text-3)' }}>Bear</span><br/><span className="font-medium font-data text-red">{row.Bear_Count ?? '-'}</span></div>
-                            <div><span style={{ color: 'var(--text-3)' }}>RS %ile</span><br/><span className="font-medium font-data text-heading">{num(row.RS_Percentile)}%</span></div>
+                          <div className="mt-3 pt-3 grid grid-cols-3 gap-3 text-[11px]" style={{ borderTop: '1px solid var(--border)' }}>
+                            <div><span style={{ color: 'var(--text-3)' }}>Bull</span><br/><span className="font-medium font-mono" style={{color:'var(--green)'}}>{row.Bull_Count ?? '-'}</span></div>
+                            <div><span style={{ color: 'var(--text-3)' }}>Bear</span><br/><span className="font-medium font-mono" style={{color:'var(--red)'}}>{row.Bear_Count ?? '-'}</span></div>
+                            <div><span style={{ color: 'var(--text-3)' }}>RS %ile</span><br/><span className="font-medium font-mono" style={{color:'var(--text)'}}>{num(row.RS_Percentile)}%</span></div>
                           </div>
                         </div>
                         <div>
                           <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--brand)' }}>Research Factors</h4>
-                          <div className="space-y-2 text-sm">
+                          <div className="space-y-1.5 text-[13px]">
                             {[
-                              ['Piotroski F-Score (2000)', `${row.Piotroski_F ?? '-'}/9`],
-                              ['Gross Profitability (2013)', `${num(row.Gross_Profit_Score)}/10`],
-                              ['Earnings Quality (1996)', `${num(row.Earnings_Quality)}/10`],
-                              ['Value Factor (Fama-French)', `${num(row.Value_Score)}/10`],
-                              ['Investment Factor (2004)', `${num(row.Investment_Score)}/10`],
-                              ['SUE / Earnings Momentum', `${num(row.SUE_Score)}/10`],
-                              ['Low Volatility (2011)', `${num(row.Vol_60D)}%`],
-                              ['Betting Against Beta', row.Beta != null ? `${row.Beta.toFixed(2)} β` : 'N/A'],
-                              ['Alpha (60D)', row.Alpha_60D != null ? `${row.Alpha_60D.toFixed(1)}%` : 'N/A'],
-                              ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'],
+                              ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`],
+                              ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`],
+                              ['Earnings Quality', `${num(row.Earnings_Quality)}/10`],
+                              ['Value Factor', `${num(row.Value_Score)}/10`],
+                              ['Investment Factor', `${num(row.Investment_Score)}/10`],
+                              ['SUE / Earnings Mom', `${num(row.SUE_Score)}/10`],
+                              ['Low Volatility', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : '-'],
+                              ['Betting Against Beta', row.Beta != null ? `${row.Beta.toFixed(2)} β` : '-'],
+                              ['Alpha (60D)', row.Alpha_60D != null ? `${row.Alpha_60D.toFixed(1)}%` : '-'],
+                              ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '-'],
                               ['Risk-Adj Mom', num(row.Risk_Adj_Mom)],
                               ['Z-Score (60D)', num(row.Z_Score_60)],
+                            ].map(([label, val]) => (
+                              <div key={label as string} className="flex items-center justify-between py-0.5">
+                                <span style={{ color: 'var(--text-2)' }}>{label}</span>
+                                <span className="font-mono" style={{color:'var(--text)'}}>{val}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--brand)' }}>Key Metrics</h4>
+                          <div className="space-y-1.5 text-[13px]">
+                            {[
+                              ['P/E', num(row['P/E'])],
+                              ['Forward P/E', num(row['Forward_P/E'])],
+                              ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-'],
+                              ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-'],
+                              ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-'],
+                              ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toFixed(0)}Cr` : '-'],
+                              ['Div Yield', row['Div_Yield_%'] != null ? `${row['Div_Yield_%'].toFixed(2)}%` : '-'],
+                              ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-'],
                               ['Sharpe', num(row.Sharpe)],
                               ['Max DD', num(row['Max_Drawdown_%'])],
                             ].map(([label, val]) => (
-                              <div key={label as string} className="flex items-center justify-between">
+                              <div key={label as string} className="flex items-center justify-between py-0.5">
                                 <span style={{ color: 'var(--text-2)' }}>{label}</span>
-                                <span className="text-heading">{val}</span>
+                                <span className="font-mono" style={{color:'var(--text)'}}>{val}</span>
                               </div>
                             ))}
                           </div>
@@ -382,6 +402,21 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
 
             {expandedRow === row.Ticker && (
               <div className="mt-2.5 pt-2.5 space-y-3" style={{ borderTop: '1px solid var(--border)' }}>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+                  {[
+                    ['P/E', num(row['P/E'])],
+                    ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-'],
+                    ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-'],
+                    ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-'],
+                    ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toFixed(0)}Cr` : '-'],
+                    ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-'],
+                  ].map(([label, val]) => (
+                    <div key={label as string} className="flex justify-between py-0.5">
+                      <span style={{ color: 'var(--text-3)' }}>{label}</span>
+                      <span className="font-mono font-medium" style={{color:'var(--text)'}}>{val}</span>
+                    </div>
+                  ))}
+                </div>
                 <div>
                   <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--brand)' }}>Signals</h4>
                   <div className="space-y-1 text-[11px]">
@@ -402,18 +437,16 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--brand)' }}>Factor Scores</h4>
                   <div className="grid grid-cols-2 gap-1 text-[11px]">
                     {[
-                      ['Value (F-F)', row.Value_Score, 7],
-                      ['Investment', row.Investment_Score, 6],
-                      ['SUE', row.SUE_Score, 6],
-                      ['Beta', row.Beta, null],
-                      ['Piotroski', row.Piotroski_F != null ? Number(row.Piotroski_F) / 0.9 : null, 7],
-                      ['Gross Profit', row.Gross_Profit_Score, 6],
-                    ].map(([label, val, threshold]) => (
+                      ['Value', row.Value_Score],
+                      ['Investment', row.Investment_Score],
+                      ['SUE', row.SUE_Score],
+                      ['Piotroski', row.Piotroski_F != null ? Number(row.Piotroski_F) / 0.9 : null],
+                      ['Gross Profit', row.Gross_Profit_Score],
+                      ['Earnings Q', row.Earnings_Quality],
+                    ].map(([label, val]) => (
                       <div key={label as string} className="flex justify-between">
                         <span style={{ color: 'var(--text-2)' }}>{label}</span>
-                        <span className={`font-mono ${threshold != null && Number(val) >= Number(threshold) ? 'text-green' : 'text-heading'}`}>
-                          {label === 'Beta' ? (val != null ? Number(val).toFixed(2) : 'N/A') : `${num(val)}/10`}
-                        </span>
+                        <span className="font-mono">{`${num(val)}/10`}</span>
                       </div>
                     ))}
                   </div>
