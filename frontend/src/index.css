@@ -39,31 +39,31 @@
     --radius-lg: 10px;
   }
   .dark {
-    --bg: hsl(218, 22%, 7%);
-    --surface: hsl(217, 19%, 11%);
-    --surface-2: hsl(217, 16%, 14%);
-    --surface-3: hsl(217, 14%, 17%);
-    --border: hsl(217, 16%, 18%);
-    --border-2: hsl(217, 16%, 24%);
-    --text: hsl(214, 32%, 92%);
-    --text-2: hsl(214, 14%, 60%);
-    --text-3: hsl(214, 10%, 40%);
-    --text-4: hsl(214, 10%, 30%);
-    --brand: hsl(207, 100%, 72%);
-    --brand-light: hsl(207, 100%, 82%);
-    --brand-soft: hsla(207, 100%, 72%, 0.1);
-    --green: hsl(134, 58%, 60%);
-    --green-bg: hsla(134, 58%, 40%, 0.12);
-    --red: hsl(2, 92%, 65%);
-    --red-bg: hsla(2, 92%, 55%, 0.12);
-    --blue: hsl(210, 100%, 68%);
-    --blue-bg: hsla(210, 100%, 68%, 0.1);
-    --amber: hsl(40, 85%, 55%);
-    --amber-bg: hsla(40, 85%, 55%, 0.1);
-    --shadow-xs: 0 1px 2px hsla(0, 0%, 0%, 0.2);
-    --shadow-sm: 0 1px 3px hsla(0, 0%, 0%, 0.3), 0 1px 2px hsla(0, 0%, 0%, 0.2);
-    --shadow-md: 0 4px 6px hsla(0, 0%, 0%, 0.35), 0 2px 4px hsla(0, 0%, 0%, 0.2);
-    --shadow-lg: 0 10px 15px hsla(0, 0%, 0%, 0.4), 0 4px 6px hsla(0, 0%, 0%, 0.25);
+    --bg: #000000;
+    --surface: #0a0a0a;
+    --surface-2: #111111;
+    --surface-3: #1a1a1a;
+    --border: #1f1f1f;
+    --border-2: #2a2a2a;
+    --text: #f0f0f0;
+    --text-2: #a0a0a0;
+    --text-3: #666666;
+    --text-4: #444444;
+    --brand: #6ea8fe;
+    --brand-light: #8dc0ff;
+    --brand-soft: rgba(110, 168, 254, 0.1);
+    --green: #4ade80;
+    --green-bg: rgba(74, 222, 128, 0.1);
+    --red: #f87171;
+    --red-bg: rgba(248, 113, 113, 0.1);
+    --blue: #60a5fa;
+    --blue-bg: rgba(96, 165, 250, 0.1);
+    --amber: #fbbf24;
+    --amber-bg: rgba(251, 191, 36, 0.1);
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.6), 0 4px 6px rgba(0, 0, 0, 0.4);
   }
   html, body {
     background: var(--bg);

@@ -65,26 +65,19 @@ function TapeInner({ data }: { data: DashboardData[] }) {
 
   return (
     <div className="overflow-hidden" style={{ background: tapeBackground }}>
-      <div className="flex items-center">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 10px',
-          borderRight: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-          <div className="animate-pulse" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--green)' }}/>
-          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', fontWeight: 600 }}>LIVE</span>
-        </div>
-        <div className="tape flex w-max whitespace-nowrap scrollbar-none" style={{ animation: `scroll ${duration}s linear infinite` }}>
+      <div className="tape flex w-max whitespace-nowrap scrollbar-none" style={{ animation: `scroll ${duration}s linear infinite` }}>
           {[...items, ...items].map((x, i) => (
             <span key={i} className="inline-flex items-center px-4 py-1.5 text-[11px] shrink-0">
               <span className="font-medium" style={{ color: '#E6EDF3' }}>{x.t}</span>
               <span style={{ color: 'rgba(255,255,255,0.15)', margin: '0 8px' }}>·</span>
               <span className="flex items-center gap-2">
                 <span className="font-mono text-right w-[65px] shrink-0" style={{ color: '#8B949E' }}>{x.p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                <span className="font-mono text-right w-[60px] shrink-0" style={{ color: x.c >= 0 ? '#3FB950' : '#F85149' }}>{x.c >= 0 ? '\u25B2' : '\u25BC'} {Math.abs(x.c).toFixed(2)}%</span>
+                <span className="font-mono text-right w-[60px] shrink-0" style={{ color: x.c >= 0 ? '#3FB950' : '#F85149' }}>{x.c >= 0 ? '▲' : '▼'} {Math.abs(x.c).toFixed(2)}%</span>
               </span>
             </span>
           ))}
         </div>
       </div>
-    </div>
   )
 }
 
@@ -321,7 +314,7 @@ export default function App() {
                 {niftyData.price.toLocaleString('en-IN')}
               </span>
               <span className="font-mono" style={{ color: niftyData.is_up ? 'var(--green)' : 'var(--red)' }}>
-                {niftyData.is_up?'\u25B2':'\u25BC'}{niftyData.change_pct}%
+                {niftyData.is_up?'▲':'▼'}{niftyData.change_pct}%
               </span>
             </span>
           )}
@@ -424,12 +417,13 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer — minimal */}
+      {/* Footer */}
       <footer className="mt-auto" style={{borderTop:'1px solid var(--border)', background:'var(--surface)'}}>
-        <div className="max-w-[1400px] mx-auto px-3 md:px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px]" style={{color:'var(--text-3)'}}>
+        <div className="max-w-[1400px] mx-auto px-3 md:px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px]" style={{color:'var(--text-3)'}}>
           <div className="flex items-center gap-3">
-            <span className="font-semibold" style={{color:'var(--text-2)'}}>Alpha</span>
-            <span>150 NSE Stocks {'\u00B7'} 10 Academic Factors {'\u00B7'} Updated 3{'\u00D7'} Daily</span>
+            <span>Made with &#10084;&#65039; by Abhishek Kumar</span>
+            <span className="hidden sm:inline">|</span>
+            <span className="hidden sm:inline">Educational and academic research only. Not investment advice. Not registered with SEBI. Data from third-party sources may contain errors. Consult a SEBI-registered advisor before investing.</span>
           </div>
           <div className="flex items-center gap-3">
             {scanUpdated && <span className="font-mono">Last scan: {scanUpdated}</span>}
@@ -438,7 +432,6 @@ export default function App() {
               <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
               Source
             </a>
-            <span>Made with &#10084;&#65039; by Abhishek Kumar</span>
           </div>
         </div>
       </footer>

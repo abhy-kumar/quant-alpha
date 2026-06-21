@@ -34,7 +34,7 @@ export const SortHeader = ({ field, children, align='left', sortKey, sortDir, on
     style={{color:'var(--text-3)',textAlign:align}} onClick={()=>onSort(field)}>
     <span className="inline-flex items-center gap-1">
       {children}
-      {sortKey===field && <span style={{color:'var(--brand)'}}>{sortDir==='asc'?'\u2191':'\u2193'}</span>}
+      {sortKey===field && <span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}
     </span>
   </th>
 )

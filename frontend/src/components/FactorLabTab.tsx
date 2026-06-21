@@ -114,13 +114,13 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
                       fontSize: 20, fontWeight: 700,
                       color: winRate >= 60 ? 'var(--green)' : winRate >= 45 ? 'var(--amber)' : 'var(--red)'
                     }}>
-                      {data.win_rate_21d != null ? `${data.win_rate_21d}%` : '\u2014'}
+                      {data.win_rate_21d != null ? `${data.win_rate_21d}%` : '—'}
                     </p>
                   </div>
                   <div>
                     <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>Avg Return 21D</p>
                     <p className="text-sm font-medium font-mono" style={{ color: (data.avg_return_21d ?? 0) >= 0 ? 'var(--green)' : 'var(--red)' }}>
-                      {data.avg_return_21d != null ? `${data.avg_return_21d > 0 ? '+' : ''}${data.avg_return_21d}%` : '\u2014'}
+                      {data.avg_return_21d != null ? `${data.avg_return_21d > 0 ? '+' : ''}${data.avg_return_21d}%` : '—'}
                     </p>
                   </div>
                 </div>
@@ -197,7 +197,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
                 </span>
               ) : (
                 <span className="text-xs" style={{ color: 'var(--text-3)' }}>
-                  {countdown ? `${countdown.remaining21} days left` : '\u2014'}
+                  {countdown ? `${countdown.remaining21} days left` : '—'}
                 </span>
               )}
             </div>
@@ -205,8 +205,8 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
               <div className="h-full rounded-full" style={{ width: `${pct21}%`, background: pct21 >= 100 ? 'var(--green)' : 'var(--brand)', transition: 'width 500ms var(--ease-out)' }} />
             </div>
             <div className="flex justify-between text-[11px]" style={{ color: 'var(--text-3)' }}>
-              <span>{countdown ? `${countdown.elapsed} / 21 trading days` : '\u2014'}</span>
-              <span>{countdown ? `Unlocks ${formatDate(countdown.target21)}` : '\u2014'}</span>
+              <span>{countdown ? `${countdown.elapsed} / 21 trading days` : '—'}</span>
+              <span>{countdown ? `Unlocks ${formatDate(countdown.target21)}` : '—'}</span>
             </div>
           </div>
 
@@ -222,7 +222,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
                 </span>
               ) : (
                 <span className="text-xs" style={{ color: 'var(--text-3)' }}>
-                  {countdown ? `${countdown.remaining63} days left` : '\u2014'}
+                  {countdown ? `${countdown.remaining63} days left` : '—'}
                 </span>
               )}
             </div>
@@ -230,8 +230,8 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
               <div className="h-full rounded-full" style={{ width: `${pct63}%`, background: pct63 >= 100 ? 'var(--green)' : 'var(--brand)', transition: 'width 500ms var(--ease-out)' }} />
             </div>
             <div className="flex justify-between text-[11px]" style={{ color: 'var(--text-3)' }}>
-              <span>{countdown ? `${countdown.elapsed} / 63 trading days` : '\u2014'}</span>
-              <span>{countdown ? `Unlocks ${formatDate(countdown.target63)}` : '\u2014'}</span>
+              <span>{countdown ? `${countdown.elapsed} / 63 trading days` : '—'}</span>
+              <span>{countdown ? `Unlocks ${formatDate(countdown.target63)}` : '—'}</span>
             </div>
           </div>
         </div>
@@ -240,7 +240,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
         {countdown && countdown.remaining21 > 0 && (
           <div className="mt-4 p-4" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-2)' }}>
-              Alpha is building its track record. Forward returns unlock on <strong>{formatDate(countdown.target21)}</strong> \u2014 the Factor Lab will then show whether each conviction level actually predicts outperformance.
+              Alpha is building its track record. Forward returns unlock on <strong>{formatDate(countdown.target21)}</strong> — the Factor Lab will then show whether each conviction level actually predicts outperformance.
             </p>
           </div>
         )}
