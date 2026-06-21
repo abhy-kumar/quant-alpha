@@ -76,6 +76,7 @@ export interface DashboardData {
   Bear_Count?: number
   "Total_Return_%"?: number
   "Ann_Vol_%"?: number
+  "Vol_vs_Avg_%"?: number
   Sharpe?: number
   "Max_Drawdown_%"?: number
 }

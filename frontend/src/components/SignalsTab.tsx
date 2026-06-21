@@ -217,6 +217,8 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                     <span style={{color:'var(--text-3)'}}>Bull</span>
                     <span className="font-mono font-medium" style={{color:'var(--green)'}}>{bullCount}</span>
                     <span style={{color:'var(--text-3)'}}>/</span>
+                    <span className="font-mono font-medium" style={{color:'var(--text-2)'}}>{bearCount != null ? 15 - bullCount - bearCount : '-'}</span>
+                    <span style={{color:'var(--text-3)'}}>/</span>
                     <span className="font-mono font-medium" style={{color:'var(--red)'}}>{bearCount ?? '-'}</span>
                   </div>
                 )}

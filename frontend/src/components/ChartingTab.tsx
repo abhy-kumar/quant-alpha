@@ -190,8 +190,10 @@ export default function ChartingTab({
             <InfoBlock label="MACD" value={num(selectedAsset?.MACD_Value)} />
             <InfoBlock label="Supertrend" value={selectedAsset?.ST_Signal || 'N/A'} />
             <div className="col-span-2">
-              <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}>Bull / Bear</div>
+              <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}>Bull / Neutral / Bear</div>
               <span className="text-green font-data">{selectedAsset?.Bull_Count ?? '-'}</span>
+              <span className="mx-1 text-sub">/</span>
+              <span className="font-data" style={{color:'var(--text-2)'}}>{selectedAsset?.Bull_Count != null && selectedAsset?.Bear_Count != null ? 15 - selectedAsset.Bull_Count - selectedAsset.Bear_Count : '-'}</span>
               <span className="mx-1 text-sub">/</span>
               <span className="text-red font-data">{selectedAsset?.Bear_Count ?? '-'}</span>
             </div>

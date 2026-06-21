@@ -85,12 +85,12 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
   return (
     <div className="space-y-4">
       {/* Algorithm Info */}
-      <div className="p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--brand)' }}>Scoring Model</span>
-          <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>10 Factors · Cross-Sectional Ranking</span>
+      <div className="p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--brand)' }}>Scoring Model</span>
+          <span className="text-xs" style={{ color: 'var(--text-3)' }}>10 Factors · Cross-Sectional Ranking</span>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 gap-2 text-center">
+        <div className="grid grid-cols-5 sm:grid-cols-10 gap-3 text-center">
           {[
             ['Piotroski', '0.10', 'var(--green)'],
             ['Profitability', '0.10', 'var(--green)'],
@@ -104,12 +104,12 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
             ['Reversion', '0.05', 'var(--text-3)'],
           ].map(([label, weight, color]) => (
             <div key={label} className="flex flex-col items-center">
-              <span className="text-[10px] font-mono" style={{ color }}>{weight}</span>
-              <span className="text-[9px]" style={{ color: 'var(--text-3)' }}>{label}</span>
+              <span className="text-sm font-mono font-medium" style={{ color }}>{weight}</span>
+              <span className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
             </div>
           ))}
         </div>
-        <div className="mt-2 pt-2 flex flex-wrap gap-3 text-[9px]" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-3)' }}>
+        <div className="mt-3 pt-2 flex flex-wrap gap-3 text-[11px]" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-3)' }}>
           <span>Composite: Tech 35% · Fund 30% · Research 35%</span>
           <span className="hidden sm:inline">|</span>
           <span className="hidden sm:inline">Long-Term: Tech 10% · Fund 40% · Research 50%</span>
@@ -291,11 +291,6 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                               </div>
                             ))}
                           </div>
-                          <div className="mt-3 pt-3 grid grid-cols-3 gap-3 text-[11px]" style={{ borderTop: '1px solid var(--border)' }}>
-                            <div><span style={{ color: 'var(--text-3)' }}>Bull</span><br/><span className="font-medium font-mono" style={{color:'var(--green)'}}>{row.Bull_Count ?? '-'}</span></div>
-                            <div><span style={{ color: 'var(--text-3)' }}>Bear</span><br/><span className="font-medium font-mono" style={{color:'var(--red)'}}>{row.Bear_Count ?? '-'}</span></div>
-                            <div><span style={{ color: 'var(--text-3)' }}>RS %ile</span><br/><span className="font-medium font-mono" style={{color:'var(--text)'}}>{num(row.RS_Percentile)}%</span></div>
-                          </div>
                         </div>
                         <div>
                           <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--brand)' }}>Research Factors</h4>
@@ -342,6 +337,26 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                               </div>
                             ))}
                           </div>
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-3 grid grid-cols-3 gap-4 text-xs" style={{ borderTop: '1px solid var(--border)' }}>
+                        <div className="flex items-center gap-2">
+                          <span style={{ color: 'var(--text-3)' }}>Bull</span>
+                          <span className="font-medium font-mono" style={{color:'var(--green)'}}>{row.Bull_Count ?? '-'}</span>
+                          <span style={{ color: 'var(--text-3)' }}>/</span>
+                          <span style={{ color: 'var(--text-3)' }}>Neutral</span>
+                          <span className="font-medium font-mono" style={{color:'var(--text-2)'}}>{row.Bull_Count != null && row.Bear_Count != null ? 15 - row.Bull_Count - row.Bear_Count : '-'}</span>
+                          <span style={{ color: 'var(--text-3)' }}>/</span>
+                          <span style={{ color: 'var(--text-3)' }}>Bear</span>
+                          <span className="font-medium font-mono" style={{color:'var(--red)'}}>{row.Bear_Count ?? '-'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span style={{ color: 'var(--text-3)' }}>RS Percentile</span>
+                          <span className="font-medium font-mono" style={{color:'var(--text)'}}>{num(row.RS_Percentile)}%</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span style={{ color: 'var(--text-3)' }}>Vol vs Avg</span>
+                          <span className="font-medium font-mono" style={{color:'var(--text)'}}>{row['Vol_vs_Avg_%'] != null ? `${row['Vol_vs_Avg_%'].toFixed(1)}%` : '-'}</span>
                         </div>
                       </div>
                     </td>
