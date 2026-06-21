@@ -410,7 +410,7 @@ export default function App() {
             }}>Retry</button>
           </div>
         ) : (
-          <ErrorBoundary>
+          <ErrorBoundary key={activeTab}>
             <Suspense fallback={<TabSkeleton/>}>
               <div>
                 {activeTab==='picks' && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
@@ -429,7 +429,7 @@ export default function App() {
         <div className="max-w-[1400px] mx-auto px-3 md:px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px]" style={{color:'var(--text-3)'}}>
           <div className="flex items-center gap-3">
             <span className="font-semibold" style={{color:'var(--text-2)'}}>Alpha</span>
-            <span>150 NSE Stocks \u00B7 10 Academic Factors \u00B7 Updated 3\u00D7 Daily</span>
+            <span>150 NSE Stocks {'\u00B7'} 10 Academic Factors {'\u00B7'} Updated 3{'\u00D7'} Daily</span>
           </div>
           <div className="flex items-center gap-3">
             {scanUpdated && <span className="font-mono">Last scan: {scanUpdated}</span>}
