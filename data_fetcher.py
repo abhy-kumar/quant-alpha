@@ -7,6 +7,7 @@ Handles OHLCV fetching, fundamental data, and Screener.in scraping.
 
 import time
 import threading
+import urllib.parse
 import numpy as np
 import pandas as pd
 import requests
@@ -203,6 +204,9 @@ def fetch_fundamentals(ticker: str) -> dict:
 
     _fetch_bse_fallback(sym, info, needs_sector)
 
+    if pd.isna(_safe_float(info.get('promoter_holding'))):
+        _fetch_promoter_from_screener(sym, info)
+
     if _safe_float(info.get('totalAssets')) is None or np.isnan(_safe_float(info.get('totalAssets'), default=np.nan)):
         bv = _safe_float(info.get('bookValue'), default=0)
         shares = _safe_float(info.get('sharesOutstanding'), default=0)
@@ -222,10 +226,10 @@ def _fetch_from_screener(sym: str, info: dict, cached_sector, needs_fundamentals
     with _screener_request_lock:
         time.sleep(1.5)
     try:
-        url = f"https://www.screener.in/company/{sym}/consolidated/"
+        url = f"https://www.screener.in/company/{urllib.parse.quote(sym, safe='')}/consolidated/"
         resp = _YF_SESSION.get(url, timeout=15)
         if resp.status_code != 200:
-            url = f"https://www.screener.in/company/{sym}/"
+            url = f"https://www.screener.in/company/{urllib.parse.quote(sym, safe='')}/"
             resp = _YF_SESSION.get(url, timeout=15)
 
         if resp.status_code == 200:
@@ -273,6 +277,7 @@ def _fetch_from_screener(sym: str, info: dict, cached_sector, needs_fundamentals
 
             _parse_screener_ratios(soup, info)
             _parse_screener_financials(soup, info)
+            _parse_screener_shareholding(soup, info)
 
             peers_table = soup.find('table', class_='data-table')
             if peers_table:
@@ -360,6 +365,8 @@ def _parse_screener_ratios(soup, info: dict):
             info['quickRatio'] = val
         elif 'debt to equity' in name_text and pd.isna(_safe_float(info.get('debtToEquity'))):
             info['debtToEquity'] = val * 100.0
+        elif 'roce' in name_text:
+            info['roce'] = val
 
 
 def _parse_screener_financials(soup, info: dict):
@@ -453,6 +460,61 @@ def _parse_screener_financials(soup, info: dict):
                             info['forwardPE'] = val
                     except ValueError:
                         pass
+
+
+def _fetch_promoter_from_screener(sym: str, info: dict):
+    """Fetch promoter holding and missing ratios from Screener.in."""
+    with _screener_request_lock:
+        time.sleep(1.5)
+    try:
+        encoded = urllib.parse.quote(sym, safe='')
+        url = f"https://www.screener.in/company/{encoded}/consolidated/"
+        resp = _YF_SESSION.get(url, timeout=15)
+        if resp.status_code != 200:
+            url = f"https://www.screener.in/company/{encoded}/"
+            resp = _YF_SESSION.get(url, timeout=15)
+
+        if resp.status_code == 200:
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            _parse_screener_ratios(soup, info)
+            _parse_screener_shareholding(soup, info)
+
+        if pd.isna(_safe_float(info.get('roce'))):
+            url2 = f"https://www.screener.in/company/{encoded}/"
+            resp2 = _YF_SESSION.get(url2, timeout=15)
+            if resp2.status_code == 200:
+                soup2 = BeautifulSoup(resp2.text, 'html.parser')
+                _parse_screener_ratios(soup2, info)
+    except Exception as e:
+        log.debug(f"Screener shareholding fetch failed for {sym}: {e}")
+
+
+def _parse_screener_shareholding(soup, info: dict):
+    """Parse promoter holding from the Shareholding Pattern section."""
+    if not pd.isna(_safe_float(info.get('promoter_holding'))):
+        return
+
+    for section in soup.find_all('section'):
+        h = section.find(['h2', 'h3'])
+        if not (h and 'shareholding' in h.text.strip().lower()):
+            continue
+
+        tables = section.find_all('table')
+        for table in tables:
+            rows = table.find_all('tr')
+            for row in rows:
+                cells = row.find_all('td')
+                if len(cells) < 2:
+                    continue
+                label = cells[0].text.strip().lower()
+                if 'promoter' in label:
+                    val_text = cells[-1].text.strip().replace('%', '').replace(',', '')
+                    try:
+                        info['promoter_holding'] = float(val_text)
+                        log.debug(f"Screener: parsed promoter holding={info['promoter_holding']}%")
+                    except (ValueError, IndexError):
+                        pass
+                    return
 
 
 def _fetch_bse_fallback(sym: str, info: dict, needs_sector: bool):
