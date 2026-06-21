@@ -113,12 +113,6 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
     return topPicks.reduce((sum, p) => sum + (Number(p[scoreKey as keyof DashboardData]) || Number(p.Composite_Score) || 0), 0) / topPicks.length
   }, [topPicks, horizon])
 
-  const sectorBreakdown = useMemo(() => {
-    const counts: Record<string, number> = {}
-    topPicks.forEach(p => { const s = p.Sector || 'Unknown'; counts[s] = (counts[s] || 0) + 1 })
-    return Object.entries(counts).sort((a, b) => b[1] - a[1])
-  }, [topPicks])
-
   const bullishCount = useMemo(() => {
     const threshold = horizon === 'long' ? 7.5 : 7
     return topPicks.filter(p => {
@@ -128,8 +122,6 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
       return score >= threshold
     }).length
   }, [topPicks, horizon])
-
-  const neutralCount = useMemo(() => topPicks.length - bullishCount, [topPicks, bullishCount])
 
   const avgMomentum = useMemo(() => {
     const vals = topPicks.map(p => (Number(p.Momentum_12M) || 0) * 100).filter(v => v !== 0)
@@ -194,6 +186,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
           const sharpe = s['Sharpe'] ? Number(s['Sharpe']) : null
           const bullCount = s['Bull_Count'] ?? null
           const bearCount = s['Bear_Count'] ?? null
+          const neutralCount = bullCount != null && bearCount != null ? 15 - bullCount - bearCount : null
 
           const priceVsHigh = high52 ? ((price / high52) * 100) : null
 
@@ -264,7 +257,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                     <span style={{color:'var(--text-3)'}}>Bull</span>
                     <span className="font-mono font-medium" style={{color:'var(--green)'}}>{bullCount}</span>
                     <span style={{color:'var(--text-3)'}}>/</span>
-                    <span className="font-mono font-medium" style={{color:'var(--text-2)'}}>{neutralCount}</span>
+                    <span className="font-mono font-medium" style={{color:'var(--text-2)'}}>{neutralCount ?? '-'}</span>
                     <span style={{color:'var(--text-3)'}}>/</span>
                     <span className="font-mono font-medium" style={{color:'var(--red)'}}>{bearCount ?? '-'}</span>
                   </div>
@@ -301,22 +294,6 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
           )
         })}
       </div>
-
-      {/* Sector breakdown */}
-      {sectorBreakdown.length > 0 && (
-        <div className="card p-4" style={{ background: 'var(--surface-2)' }}>
-          <h3 className="section-label mb-3">Sector Breakdown</h3>
-          <div className="flex flex-wrap gap-3">
-            {sectorBreakdown.map(([sector, count]) => (
-              <div key={sector} className="flex items-center gap-2 text-[12px]">
-                <span className="w-2 h-2 rounded-full" style={{background:'var(--brand)'}} />
-                <span style={{color:'var(--text-2)'}}>{sector}</span>
-                <span className="font-mono font-medium" style={{color:'var(--text)'}}>{count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

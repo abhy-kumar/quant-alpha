@@ -71,7 +71,7 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
             background: sortMode === 'alpha' ? 'var(--brand)' : 'transparent',
             color: sortMode === 'alpha' ? 'white' : 'var(--text-3)',
             border: 'none', cursor: 'pointer',
-          }}>A\u2013Z</button>
+          }}>A–Z</button>
         </div>
       </div>
 

@@ -215,17 +215,17 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           </div>
         ) : (
         <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm" style={{borderCollapse:'collapse'}}>
+        <table className="w-full text-left text-xs" style={{borderCollapse:'collapse'}}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
-              <th className="py-2.5 px-3 text-[11px] font-medium cursor-pointer select-none uppercase tracking-wider" style={{color:'var(--text-3)',textAlign:'left',position:'sticky',left:0,background:'var(--surface)',zIndex:1}} onClick={()=>handleSort('Ticker')}>
+              <th className="py-2 px-2 text-[10px] font-medium cursor-pointer select-none uppercase tracking-wider" style={{color:'var(--text-3)',textAlign:'left',position:'sticky',left:0,background:'var(--surface)',zIndex:1}} onClick={()=>handleSort('Ticker')}>
                 <span className="inline-flex items-center gap-1">Ticker{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}</span>
               </th>
               <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline">Sector</span></SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Price</SortHeader>
               <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>1D</SortHeader>
               <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Score</SortHeader>
-              <th className="py-3 px-3 font-medium text-xs text-center" style={{ color: 'var(--text-2)' }}>Trend</th>
+              <th className="py-2 px-2 font-medium text-[10px] text-center" style={{ color: 'var(--text-2)' }}>Trend</th>
               <SortHeader field="Tech_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline">Tech</span></SortHeader>
               <SortHeader field="Fund_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">Fund</span></SortHeader>
               <SortHeader field="Research_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">Research</span></SortHeader>
@@ -235,7 +235,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <SortHeader field="Beta" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">Beta</span></SortHeader>
               <SortHeader field="P/E" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">P/E</span></SortHeader>
               <SortHeader field="Conviction" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Conv</SortHeader>
-              <th className="py-3 px-3"></th>
+              <th className="py-2 px-2"></th>
             </tr>
           </thead>
           <tbody>
@@ -252,46 +252,46 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   onMouseEnter={e => { if (expandedRow !== row.Ticker && !flashTickers[row.Ticker]) e.currentTarget.style.background = 'var(--surface-2)' }}
                   onMouseLeave={e => { if (expandedRow === row.Ticker) e.currentTarget.style.background = 'var(--brand-soft)' ; else if (!flashTickers[row.Ticker]) e.currentTarget.style.background = 'transparent' }}
                 >
-                  <td className="py-3 px-3 font-medium cursor-pointer transition-colors" style={{ color: 'var(--text)', position:'sticky', left:0, background:'var(--surface)', zIndex:1 }} onClick={() => onSelect(row.Ticker)}
+                  <td className="py-2 px-2 font-medium cursor-pointer transition-colors" style={{ color: 'var(--text)', position:'sticky', left:0, background:'var(--surface)', zIndex:1 }} onClick={() => onSelect(row.Ticker)}
                     onMouseEnter={e => (e.currentTarget.style.color = 'var(--brand)')}
                     onMouseLeave={e => (e.currentTarget.style.color = 'var(--text)')}
                   >
                     {row.Ticker.replace('.NS', '')}
                   </td>
-                  <td className="py-3 px-3 hidden md:table-cell" style={{ color: 'var(--text-2)' }}>{row.Sector || '—'}</td>
-                  <td className="py-3 px-3 text-right font-mono" style={{ color: 'var(--text)' }}>{num(row.Price)}</td>
-                  <td className={`py-3 px-3 text-right font-medium font-mono ${colorCode(row['1d_Chg_%'])}`}>
+                  <td className="py-2 px-2 hidden md:table-cell" style={{ color: 'var(--text-2)' }}>{row.Sector || '—'}</td>
+                  <td className="py-2 px-2 text-right font-mono" style={{ color: 'var(--text)' }}>{num(row.Price)}</td>
+                  <td className={`py-2 px-2 text-right font-medium font-mono ${colorCode(row['1d_Chg_%'])}`}>
                     {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '—'}
                   </td>
-                  <td className={`py-3 px-3 text-right font-medium font-mono ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
-                  <td className="py-3 px-3 text-center">
+                  <td className={`py-2 px-2 text-right font-medium font-mono ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
+                  <td className="py-2 px-2 text-center">
                     <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} ticker={row.Ticker} />
                   </td>
-                  <td className={`py-3 px-3 text-right font-medium font-mono hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
-                  <td className={`py-3 px-3 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Fund_Score)}</td>
-                  <td className={`py-3 px-3 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Research_Score)}</td>
-                  <td className="py-3 px-3 text-right font-medium hidden lg:table-cell">
-                    <span className="font-mono">{row.Piotroski_F ?? '—'}</span><span className="text-[10px] text-[var(--text-3)]">/9</span>
+                  <td className={`py-2 px-2 text-right font-medium font-mono hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
+                  <td className={`py-2 px-2 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Fund_Score)}</td>
+                  <td className={`py-2 px-2 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Research_Score)}</td>
+                  <td className="py-2 px-2 text-right font-medium hidden lg:table-cell">
+                    <span className="font-mono">{row.Piotroski_F ?? '—'}</span><span className="text-[9px] text-[var(--text-3)]">/9</span>
                   </td>
-                  <td className="py-3 px-3 text-right font-medium font-mono hidden xl:table-cell">{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '—'}</td>
-                  <td className="py-3 px-3 text-right font-medium font-mono hidden xl:table-cell">{num(row.Value_Score)}</td>
-                  <td className="py-3 px-3 text-right font-medium font-mono hidden xl:table-cell">{row.Beta != null ? row.Beta.toFixed(2) : '—'}</td>
-                  <td className="py-3 px-3 text-right font-mono hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
-                  <td className="py-3 px-3 font-medium whitespace-nowrap">
+                  <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '—'}</td>
+                  <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{num(row.Value_Score)}</td>
+                  <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{row.Beta != null ? row.Beta.toFixed(2) : '—'}</td>
+                  <td className="py-2 px-2 text-right font-mono hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
+                  <td className="py-2 px-2 font-medium whitespace-nowrap">
                     <span className={`badge ${row.Conviction === 'Strong Buy' ? 'badge-strong-buy' : row.Conviction === 'Buy' ? 'badge-buy' : row.Conviction === 'Caution' ? 'badge-caution' : row.Conviction === 'Avoid' ? 'badge-avoid' : 'badge-hold'}`}>
                       {row.Conviction || '—'}
                     </span>
                   </td>
-                  <td className="py-3 px-3">
+                  <td className="py-2 px-2">
                     <div className="flex items-center gap-1">
                       <button onClick={(e) => { e.stopPropagation(); toggleWatchlist(row.Ticker) }}
                         onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.75)')}
                         onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
                         style={{ transition: 'transform var(--dur-fast) var(--ease-out)', border: 'none', background: 'none', cursor: 'pointer', color: watchlist.includes(row.Ticker) ? 'var(--amber)' : 'var(--text-3)' }}>
-                        <Star size={13} fill={watchlist.includes(row.Ticker) ? 'var(--amber)' : 'none'} style={{ transition: 'color var(--dur-base), fill var(--dur-base)' }}/>
+                        <Star size={12} fill={watchlist.includes(row.Ticker) ? 'var(--amber)' : 'none'} style={{ transition: 'color var(--dur-base), fill var(--dur-base)' }}/>
                       </button>
                       <button onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)} className="transition-colors" style={{ color: 'var(--text-3)' }}>
-                        <Info size={15} />
+                        <Info size={14} />
                       </button>
                     </div>
                   </td>
@@ -299,7 +299,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 <tr>
                   <td colSpan={16} style={{ padding: 0, border: 'none' }}>
                     <div style={{
-                      maxHeight: expandedRow === row.Ticker ? 400 : 0,
+                      maxHeight: expandedRow === row.Ticker ? 800 : 0,
                       overflow: 'hidden',
                       transition: 'max-height var(--dur-slow) var(--ease-out)',
                     }}>
@@ -307,7 +307,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                           <div>
                             <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Technical Signals</h4>
-                            <div className="space-y-1.5 text-[13px]">
+                            <div className="space-y-1.5 text-[11px]">
                               {[
                                 ['Price vs SMA50', row.Sig_Price_vs_SMA50], ['Price vs SMA200', row.Sig_Price_vs_SMA200],
                                 ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200], ['RSI', row.Sig_RSI],
@@ -326,7 +326,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                           </div>
                           <div>
                             <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Research Factors</h4>
-                            <div className="space-y-1.5 text-[13px]">
+                            <div className="space-y-1.5 text-[11px]">
                               {[
                                 ['Piotroski F-Score', `${row.Piotroski_F ?? '—'}/9`],
                                 ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`],
@@ -350,7 +350,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                           </div>
                           <div>
                             <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Key Metrics</h4>
-                            <div className="space-y-1.5 text-[13px]">
+                            <div className="space-y-1.5 text-[11px]">
                               {[
                                 ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E'])],
                                 ['Forward P/E', num(row['Forward_P/E'])],
@@ -454,7 +454,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
             </div>
 
             <div style={{
-              maxHeight: expandedRow === row.Ticker ? 400 : 0,
+              maxHeight: expandedRow === row.Ticker ? 800 : 0,
               overflow: 'hidden',
               transition: 'max-height var(--dur-slow) var(--ease-out)',
             }}>
