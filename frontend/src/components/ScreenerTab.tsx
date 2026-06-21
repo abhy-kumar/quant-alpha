@@ -316,12 +316,6 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                               ['Sharpe', num(row.Sharpe)],
                               ['Max DD', num(row['Max_Drawdown_%'])],
                             ].map(([label, val]) => (
-                              ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'],
-                              ['Risk-Adj Mom', num(row.Risk_Adj_Mom)],
-                              ['Z-Score (60D)', num(row.Z_Score_60)],
-                              ['Sharpe', num(row.Sharpe)],
-                              ['Max DD', num(row['Max_Drawdown_%'])],
-                            ].map(([label, val]) => (
                               <div key={label as string} className="flex items-center justify-between">
                                 <span style={{ color: 'var(--text-2)' }}>{label}</span>
                                 <span className="text-heading">{val}</span>
