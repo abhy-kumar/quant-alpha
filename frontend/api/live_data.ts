@@ -35,7 +35,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const minute = istTime.getUTCMinutes()
 
     const isWeekend = day === 0 || day === 6
-    const isOutsideMarketHours = hour < 9 || hour > 16 || (hour === 16 && minute >= 30)
+    const isOutsideMarketHours = hour < 9 || (hour === 9 && minute < 15) || hour > 15 || (hour === 15 && minute >= 30)
     const isMarketClosed = isWeekend || isOutsideMarketHours
 
     if (isMarketClosed) {
@@ -84,7 +84,17 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       tickerList.push('^NSEI')
     }
 
-    const quotes = await yahooFinance.quote(tickerList) as QuoteResult[]
+    // Batch into groups of 50 to avoid Yahoo Finance rate limits and Vercel timeouts
+    const BATCH_SIZE = 50
+    const batches: string[][] = []
+    for (let i = 0; i < tickerList.length; i += BATCH_SIZE) {
+      batches.push(tickerList.slice(i, i + BATCH_SIZE))
+    }
+
+    const batchResults = await Promise.all(
+      batches.map(batch => yahooFinance.quote(batch) as Promise<QuoteResult[]>)
+    )
+    const quotes = batchResults.flat()
 
     const results: Record<string, { price: number; change_pct: number }> = {}
     let niftyData: { price: number; change_pct: number; is_up: boolean } | null = null

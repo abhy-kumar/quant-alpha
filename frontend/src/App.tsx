@@ -1,13 +1,40 @@
 import React, { useEffect, useState, useMemo, memo, lazy, Suspense } from 'react'
 import axios from 'axios'
-import { Activity, Database, TrendingUp, BarChart2, Layers, Moon, Sun, AlertCircle } from 'lucide-react'
+import { TrendingUp, BarChart2, Layers, Moon, Sun, AlertCircle, Database, Activity } from 'lucide-react'
 import type { DashboardData } from './types'
 
-const SignalsTab   = lazy(() => import('./components/SignalsTab'))
-const ScreenerTab  = lazy(() => import('./components/ScreenerTab'))
-const ChartingTab  = lazy(() => import('./components/ChartingTab'))
-const HeatmapTab   = lazy(() => import('./components/HeatmapTab'))
-const FactorLabTab = lazy(() => import('./components/FactorLabTab'))
+console.log('[Alpha] App.tsx module loaded')
+
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { error: Error | null }
+> {
+  state = { error: null as Error | null }
+  static getDerivedStateFromError(error: Error) { return { error } }
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('[Alpha] ErrorBoundary caught:', error, info.componentStack)
+    this.setState({ error })
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 40, fontFamily: 'monospace', whiteSpace: 'pre-wrap', background: '#fff', color: '#c00' }}>
+          <h2>Component Error</h2>
+          <p>{this.state.error.message}</p>
+          <pre>{this.state.error.stack}</pre>
+          <button onClick={() => this.setState({ error: null })} style={{ marginTop: 16, padding: '8px 16px', cursor: 'pointer' }}>Retry</button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+const SignalsTab   = lazy(() => import('./components/SignalsTab').then(m => { console.log('[Alpha] SignalsTab chunk loaded'); return m }))
+const ScreenerTab  = lazy(() => import('./components/ScreenerTab').then(m => { console.log('[Alpha] ScreenerTab chunk loaded'); return m }))
+const ChartingTab  = lazy(() => import('./components/ChartingTab').then(m => { console.log('[Alpha] ChartingTab chunk loaded'); return m }))
+const HeatmapTab   = lazy(() => import('./components/HeatmapTab').then(m => { console.log('[Alpha] HeatmapTab chunk loaded'); return m }))
+const FactorLabTab = lazy(() => import('./components/FactorLabTab').then(m => { console.log('[Alpha] FactorLabTab chunk loaded'); return m }))
 
 function TabSkeleton() {
   return (
@@ -72,6 +99,7 @@ const TABS = [
 ] as const
 
 export default function App() {
+  console.log('[Alpha] App component mounting')
   const [data, setData] = useState<DashboardData[]>([])
   const [scanUpdated, setScanUpdated] = useState('')
   const [pricesUpdated, setPricesUpdated] = useState('')
@@ -103,7 +131,7 @@ export default function App() {
     const wl = new URLSearchParams(window.location.search).get('watchlist')
     return wl ? wl.split(',').map(t => t.toUpperCase().trim()) : []
   })
-  const [scoreHistory, setScoreHistory] = useState<Record<string,{date:string;composite:number}[]>>({})
+  const [scoreHistory, setScoreHistory] = useState<Record<string,{date:string;composite:number;tech:number;fund:number;research:number}[]>>({})
   const [flashTickers, setFlashTickers] = useState<Record<string, 'up'|'down'>>({})
 
   useEffect(() => { localStorage.setItem('qa_watchlist', JSON.stringify(watchlist)) }, [watchlist])
@@ -133,6 +161,7 @@ export default function App() {
   const fetchLive = async () => {
     if (!dataRef.current.length) return
     try {
+      console.log('[Alpha] fetchLive: calling /api/live_data with', dataRef.current.length, 'tickers')
       const res = await axios.post('/api/live_data', { tickers: dataRef.current.map(d=>d.Ticker) })
       if (res.data.status === 'ok') {
         const lp = res.data.data
@@ -162,12 +191,14 @@ export default function App() {
 
         return res.data.is_market_closed ? 'closed' : 'ok'
       }
-    } catch { return 'err' }
+    } catch (e) { console.error('[Alpha] fetchLive error:', e); return 'err' }
   }
 
   const fetchData = async () => {
     try {
+      console.log('[Alpha] fetchData: fetching /market_data.json')
       const res = await axios.get(`/market_data.json?t=${Date.now()}`)
+      console.log('[Alpha] fetchData: response status =', res.data.status, ', data count =', res.data.data?.length)
       if (res.data.status==='ok' && res.data.data.length>0) {
         const d = res.data.data.sort((a:any,b:any)=>a.Ticker.localeCompare(b.Ticker))
         setData(d); setScanUpdated(res.data.last_updated||'')
@@ -226,9 +257,9 @@ export default function App() {
     <div className="min-h-screen flex flex-col" style={{ background:'var(--bg)' }}>
       <Tape data={data} />
 
-      {/* Header */}
+      {/* Header — Row 1: Nav */}
       <header className="sticky top-0 z-40" style={{ background:'var(--surface)', borderBottom:'1px solid var(--border)' }}>
-        <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
+        <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[44px] flex items-center">
           {/* Left: nav */}
           <nav className="hidden md:flex items-center gap-0.5">
             {TABS.map(tab => (
@@ -250,101 +281,16 @@ export default function App() {
 
           {/* Center: logo */}
           <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-            <img src={isDark?'/logo-dark.svg':'/logo-light.svg'} alt="Alpha" className="h-[40px] md:h-[48px] w-auto" />
+            <img src={isDark?'/logo-dark.svg':'/logo-light.svg'} alt="Alpha" className="h-[36px] md:h-[42px] w-auto" />
           </button>
 
           <div className="flex-1" />
-
-          {/* Right: indicators as bounded chips */}
-          <div className="hidden sm:flex items-center gap-2 text-[11px]">
-            {niftyData && (
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-                padding: '3px 8px', borderRadius: 'var(--radius-sm)',
-                background: 'var(--surface-2)', border: '1px solid var(--border)',
-                fontSize: 11,
-              }}>
-                <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>NIFTY</span>
-                <span className="font-mono" style={{ fontWeight: 700, color: 'var(--text)' }}>
-                  {niftyData.price.toLocaleString('en-IN')}
-                </span>
-                <span className="font-mono" style={{ color: niftyData.is_up ? 'var(--green)' : 'var(--red)' }}>
-                  {niftyData.is_up ? '\u25B2' : '\u25BC'}{niftyData.change_pct}%
-                </span>
-              </div>
-            )}
-
-            {marketRegimeScore!==null && (
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-                padding: '3px 8px', borderRadius: 'var(--radius-sm)',
-                background: 'var(--surface-2)', border: '1px solid var(--border)',
-                fontSize: 11,
-              }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: regimeColor, display: 'inline-block' }}/>
-                <span className="font-mono" style={{ fontWeight: 500, color: 'var(--text)' }}>
-                  {regimeLabel} {marketRegimeScore > 0 ? '+' : ''}{marketRegimeScore}
-                </span>
-              </div>
-            )}
-
-            {fiiNet!==null && (
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                padding: '3px 8px', borderRadius: 'var(--radius-sm)',
-                background: 'var(--surface-2)', border: '1px solid var(--border)',
-                fontSize: 11, fontWeight: 500, color: 'var(--text-3)',
-              }}>
-                <span>FII</span>
-                <span className="font-mono" style={{ color: fiiNet > 0 ? 'var(--green)' : 'var(--red)' }}>
-                  {fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)}
-                </span>
-              </div>
-            )}
-
-            {diiNet!==null && (
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                padding: '3px 8px', borderRadius: 'var(--radius-sm)',
-                background: 'var(--surface-2)', border: '1px solid var(--border)',
-                fontSize: 11, fontWeight: 500, color: 'var(--text-3)',
-              }}>
-                <span>DII</span>
-                <span className="font-mono" style={{ color: diiNet > 0 ? 'var(--green)' : 'var(--red)' }}>
-                  {diiNet > 0 ? '+' : ''}{Math.round(diiNet)}
-                </span>
-              </div>
-            )}
-
-            {pcr!==null && (
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                padding: '3px 8px', borderRadius: 'var(--radius-sm)',
-                background: 'var(--surface-2)', border: '1px solid var(--border)',
-                fontSize: 11, fontWeight: 500, color: 'var(--text-3)',
-              }}>
-                <span>PCR</span>
-                <span className="font-mono" style={{ color: 'var(--text)' }}>{pcr.toFixed(2)}</span>
-              </div>
-            )}
-
-            {coveragePct!==null && (
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                padding: '3px 8px', borderRadius: 'var(--radius-sm)',
-                background: 'var(--surface-2)', border: '1px solid var(--border)',
-                fontSize: 11, fontWeight: 500, color: 'var(--text-3)',
-              }}>
-                <span className="font-mono">{coveragePct}%</span>
-              </div>
-            )}
-          </div>
 
           <button onClick={()=>setIsDark(!isDark)} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px',
               borderRadius: 'var(--radius)', border: '1px solid var(--border)',
               background: 'var(--surface-2)', cursor: 'pointer',
-              fontSize: 11, color: 'var(--text-3)', marginLeft: 8,
+              fontSize: 11, color: 'var(--text-3)',
               transition: 'background var(--dur-base), border-color var(--dur-base)' }}>
             {isDark ? <Sun size={13}/> : <Moon size={13}/>}
             {isDark ? 'Light' : 'Dark'}
@@ -352,12 +298,90 @@ export default function App() {
         </div>
       </header>
 
+      {/* Row 2: Market Data Sub-Header (Bloomberg-style) */}
+      <div style={{ background:'var(--surface-2)', borderBottom:'1px solid var(--border)' }}>
+        <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[30px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
+          {/* LIVE indicator */}
+          <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
+            <div style={{ width:5, height:5, borderRadius:'50%',
+              background: isDynamic ? 'var(--amber)' : 'var(--text-3)',
+              transition: 'background 300ms ease',
+              boxShadow: isDynamic ? '0 0 4px var(--amber)' : 'none' }}/>
+            <span style={{ fontSize:9, color:'var(--text-3)', letterSpacing:'0.08em', fontWeight:600 }}>
+              {isDynamic ? 'LIVE' : 'CLOSED'}
+            </span>
+          </div>
+
+          <span style={{ width:1, height:12, background:'var(--border)', flexShrink:0 }}/>
+
+          {niftyData && (
+            <span style={{ display:'inline-flex', alignItems:'center', gap:4, flexShrink:0 }}>
+              <span style={{ color:'var(--text-3)', fontWeight:500 }}>NIFTY</span>
+              <span className="font-mono" style={{ fontWeight:700, color:'var(--text)' }}>
+                {niftyData.price.toLocaleString('en-IN')}
+              </span>
+              <span className="font-mono" style={{ color: niftyData.is_up ? 'var(--green)' : 'var(--red)' }}>
+                {niftyData.is_up?'\u25B2':'\u25BC'}{niftyData.change_pct}%
+              </span>
+            </span>
+          )}
+
+          {marketRegimeScore!==null && (
+            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0 }}>
+              <span style={{ width:5, height:5, borderRadius:'50%', background: regimeColor, display:'inline-block' }}/>
+              <span className="font-mono" style={{ fontWeight:500, color:'var(--text)' }}>
+                {regimeLabel} {marketRegimeScore > 0 ? '+' : ''}{marketRegimeScore}
+              </span>
+            </span>
+          )}
+
+          {fiiNet!==null && (
+            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0, fontWeight:500 }}>
+              <span style={{ color:'var(--text-3)' }}>FII</span>
+              <span className="font-mono" style={{ color: fiiNet > 0 ? 'var(--green)' : 'var(--red)' }}>
+                {fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)}
+              </span>
+            </span>
+          )}
+
+          {diiNet!==null && (
+            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0, fontWeight:500 }}>
+              <span style={{ color:'var(--text-3)' }}>DII</span>
+              <span className="font-mono" style={{ color: diiNet > 0 ? 'var(--green)' : 'var(--red)' }}>
+                {diiNet > 0 ? '+' : ''}{Math.round(diiNet)}
+              </span>
+            </span>
+          )}
+
+          {pcr!==null && (
+            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0, fontWeight:500 }}>
+              <span style={{ color:'var(--text-3)' }}>PCR</span>
+              <span className="font-mono" style={{ color:'var(--text)' }}>{pcr.toFixed(2)}</span>
+            </span>
+          )}
+
+          {coveragePct!==null && (
+            <span style={{ flexShrink:0, fontWeight:500 }}>
+              <span className="font-mono" style={{ color:'var(--text-2)' }}>{coveragePct}%</span>
+            </span>
+          )}
+
+          <div className="flex-1" />
+
+          {pricesUpdated && (
+            <span style={{ flexShrink:0, color:'var(--text-3)', fontSize:10 }}>
+              {pricesUpdated}
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* Mobile tab bar */}
       <nav className="md:hidden overflow-x-auto border-b" style={{ borderColor:'var(--border)', background:'var(--surface)' }}>
         <div className="flex items-center gap-0.5 px-3 py-1.5">
           {TABS.map(tab => (
             <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium transition-colors whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium whitespace-nowrap shrink-0"
               style={{
                 color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
                 borderBottom: activeTab===tab.id ? '2px solid var(--brand)' : '2px solid transparent',
@@ -386,57 +410,35 @@ export default function App() {
             }}>Retry</button>
           </div>
         ) : (
-          <Suspense fallback={<TabSkeleton/>}>
-            <div>
-              {activeTab==='picks' && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
-              {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers}/>}
-              {activeTab==='charting' && <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset}/>}
-              {activeTab==='heatmap' && <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>}
-              {activeTab==='factorlab' && <FactorLabTab outcomeAccuracy={outcomeAccuracy} firstScanDate={firstScanDate} isDark={isDark}/>}
-            </div>
-          </Suspense>
+          <ErrorBoundary>
+            <Suspense fallback={<TabSkeleton/>}>
+              <div>
+                {activeTab==='picks' && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
+                {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers}/>}
+                {activeTab==='charting' && <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory}/>}
+                {activeTab==='heatmap' && <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>}
+                {activeTab==='factorlab' && <FactorLabTab outcomeAccuracy={outcomeAccuracy} firstScanDate={firstScanDate} isDark={isDark}/>}
+              </div>
+            </Suspense>
+          </ErrorBoundary>
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="mt-auto" style={{borderTop:'1px solid var(--border)'}}>
-        <div className="max-w-[1400px] mx-auto px-3 md:px-5 py-4 md:py-5 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">
-          <div className="flex flex-col gap-1.5">
-            <h4 className="section-label" style={{color:'var(--brand)'}}>System Status</h4>
-            <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-mono uppercase tracking-wider" style={{color:'var(--text-2)'}}>
-              <Database size={10} /><span>Signals</span>
-              <span style={{color:'var(--text)'}}>{scanUpdated||'\u2014'}</span>
-            </div>
-            <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-mono uppercase tracking-wider" style={{color:'var(--text-2)'}}>
-              <Activity size={10} /><span>Prices</span>
-              <span style={{color:'var(--text)'}}>{pricesUpdated||scanUpdated||'\u2014'}</span>
-              {isDynamic && <span style={{color:'var(--green)'}}>Live</span>}
-            </div>
+      {/* Footer — minimal */}
+      <footer className="mt-auto" style={{borderTop:'1px solid var(--border)', background:'var(--surface)'}}>
+        <div className="max-w-[1400px] mx-auto px-3 md:px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px]" style={{color:'var(--text-3)'}}>
+          <div className="flex items-center gap-3">
+            <span className="font-semibold" style={{color:'var(--text-2)'}}>Alpha</span>
+            <span>150 NSE Stocks \u00B7 10 Academic Factors \u00B7 Updated 3\u00D7 Daily</span>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <details>
-              <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: 11,
-                color: 'var(--text-2)', listStyle: 'none', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                Disclaimer &#8595;
-              </summary>
-              <p className="text-[10px] md:text-[11px] leading-relaxed mt-2" style={{color:'var(--text-3)'}}>
-                Educational and academic research purposes only. Not investment advice. Not registered with SEBI. Models are experimental; past performance is not indicative of future results. Data from third-party sources may contain errors. Consult a SEBI-registered advisor before investing.
-              </p>
-            </details>
-          </div>
-          <div className="flex flex-col gap-1.5 sm:items-end">
-            <h4 className="section-label" style={{color:'var(--brand)'}}>Quant Research</h4>
-            <p className="text-[10px] md:text-[11px]" style={{color:'var(--text-2)'}}>Alpha Research and Investment Club</p>
-            <p className="text-[10px] md:text-[11px]" style={{color:'var(--text-2)'}}>Faculty of Management Studies, Delhi</p>
-            <div className="flex items-center gap-3 mt-1">
-              <a href="https://github.com/abhy-kumar/quant-alpha" target="_blank" rel="noopener noreferrer"
-                style={{ color: 'var(--text-3)', textDecoration: 'none',
-                  display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11 }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                GitHub
-              </a>
-              <span style={{ color: 'var(--text-4)', fontSize: 11 }}>Made with &#10084;&#65039; by Abhishek Kumar</span>
-            </div>
+          <div className="flex items-center gap-3">
+            {scanUpdated && <span className="font-mono">Last scan: {scanUpdated}</span>}
+            <a href="https://github.com/abhy-kumar/quant-alpha" target="_blank" rel="noopener noreferrer"
+              style={{ color:'var(--text-3)', textDecoration:'none', display:'inline-flex', alignItems:'center', gap:3 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+              Source
+            </a>
+            <span>Made with &#10084;&#65039; by Abhishek Kumar</span>
           </div>
         </div>
       </footer>

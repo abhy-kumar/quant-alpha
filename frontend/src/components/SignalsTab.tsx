@@ -3,6 +3,20 @@ import type { DashboardData } from '../types'
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from 'recharts'
 import { scoreBar } from './shared'
 
+function ConvictionDots({ conviction }: { conviction: string }) {
+  const levels: Record<string, number> = { 'Strong Buy': 5, 'Buy': 4, 'Hold': 3, 'Caution': 2, 'Avoid': 1 }
+  const level = levels[conviction] ?? 3
+  const colorClass = level <= 2 ? 'avoid' : level === 3 ? 'caution' : ''
+  return (
+    <div className="conviction-dots">
+      {[1,2,3,4,5].map(i => (
+        <span key={i} className={`dot ${i <= level ? `filled ${colorClass}` : ''}`}/>
+      ))}
+      <span style={{ fontSize:10, color:'var(--text-3)', marginLeft:3 }}>{conviction}</span>
+    </div>
+  )
+}
+
 interface Props {
   topPicks: DashboardData[]
   horizon: 'short'|'long'
@@ -173,53 +187,44 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
 
           const priceVsHigh = high52 ? ((price / high52) * 100) : null
 
-          const cardBorderLeft = composite >= 7 ? 'var(--green)' : composite >= 4 ? 'var(--brand)' : 'var(--red)'
-
           return (
             <div key={s.Ticker} onClick={()=>onSelect(s.Ticker)}
               role="button" tabIndex={0}
               onKeyDown={e => e.key === 'Enter' && onSelect(s.Ticker)}
-              className="card card-hover cursor-pointer p-4"
-              style={{ borderLeft: `3px solid ${cardBorderLeft}` }}>
-              {/* Header */}
-              <div className="flex items-start justify-between mb-1.5">
+              className="card card-hover cursor-pointer p-4">
+              {/* Header: ticker + category */}
+              <div className="flex items-start justify-between mb-2">
                 <div>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-base font-bold" style={{color:'var(--text)'}}>{s.Ticker.replace('.NS','')}</span>
                     <span className="text-[10px] font-medium" style={{color:'var(--text-3)'}}>#{i+1}</span>
                   </div>
-                  {s.Long_Name && (
-                    <span style={{ fontSize: 11, color: 'var(--text-3)', overflow: 'hidden',
-                      textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160, display: 'block' }}>
-                      {s.Long_Name.replace(' Limited', ' Ltd').replace(' Industries', ' Ind.')}
-                    </span>
-                  )}
-                  {!s.Long_Name && <span className="text-[10px]" style={{color:'var(--text-3)'}}>{s.Sector||'Equities'}</span>}
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span style={{
-                    fontFamily: "'DM Serif Display', serif",
-                    fontSize: 36, lineHeight: 1,
-                    color: composite >= 7 ? 'var(--green)' : composite >= 4 ? 'var(--brand)' : 'var(--red)',
-                  }}>
-                    {composite.toFixed(1)}
+                  <span style={{ fontSize:10, color:'var(--text-3)' }}>
+                    {s.Sector || 'Equities'} {s.Long_Name ? `\u00B7 ${s.Long_Name.replace(' Limited', ' Ltd').replace(' Industries', ' Ind.')}` : ''}
                   </span>
-                  {s.Conviction && (
-                    <span className={`badge ${s.Conviction === 'Strong Buy' ? 'badge-strong-buy' : s.Conviction === 'Buy' ? 'badge-buy' : s.Conviction === 'Caution' ? 'badge-caution' : s.Conviction === 'Avoid' ? 'badge-avoid' : 'badge-hold'}`}>
-                      {s.Conviction}
-                    </span>
-                  )}
                 </div>
+                {s.Conviction && <ConvictionDots conviction={s.Conviction} />}
               </div>
 
-              {/* Price + change */}
-              <div className="flex items-baseline gap-2 mb-2.5">
-                <span className="text-sm font-mono font-medium" style={{color:'var(--text)'}}>
+              {/* Price — hero element */}
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="font-mono" style={{fontSize:24, lineHeight:1, fontWeight:700, letterSpacing:'-0.02em', color:'var(--text)'}}>
                   {'\u20B9'}{price.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
                 </span>
-                <span className="text-[11px] font-mono font-medium" style={{color:change>=0?'var(--green)':'var(--red)'}}>
-                  {change>0?'+':''}{change.toFixed(2)}%
+                <span className="font-mono" style={{fontSize:13, fontWeight:600, color: change>=0?'var(--green)':'var(--red)'}}>
+                  {change>0?'\u25B2':'\u25BC'} {change>0?'+':''}{change.toFixed(2)}%
                 </span>
+              </div>
+
+              {/* Score */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="font-mono" style={{
+                  fontSize: 20, lineHeight: 1, fontWeight: 700, letterSpacing: '-0.02em',
+                  color: composite >= 7 ? 'var(--green)' : composite >= 4 ? 'var(--brand)' : 'var(--red)',
+                }}>
+                  {composite.toFixed(1)}
+                </span>
+                <span style={{ fontSize:10, color:'var(--text-3)' }}>composite</span>
               </div>
 
               {/* Sub-score bars */}

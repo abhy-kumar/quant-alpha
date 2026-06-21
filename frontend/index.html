@@ -35,15 +35,30 @@
     <title>Alpha — Quantitative Stock Research for NSE India | Alpha Research Club, FMS Delhi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <script>
       try {
         var dark = localStorage.getItem('qa_dark');
         if (dark === 'true' || (!dark && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         }
-      } catch(e) {}
+      } catch(e) { console.warn('[Alpha] Dark mode init failed:', e); }
+    </script>
+    <script>
+      window.__alphaErrors = [];
+      window.onerror = function(msg, src, line, col, err) {
+        var entry = { msg: msg, src: src, line: line, col: col, ts: Date.now() };
+        if (err) entry.stack = err.stack;
+        window.__alphaErrors.push(entry);
+        console.error('[Alpha] Uncaught error:', entry);
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        var entry = { msg: 'UnhandledPromiseRejection', reason: String(e.reason), ts: Date.now() };
+        if (e.reason && e.reason.stack) entry.stack = e.reason.stack;
+        window.__alphaErrors.push(entry);
+        console.error('[Alpha] Unhandled rejection:', entry);
+      });
+      console.log('[Alpha] Boot started at', new Date().toISOString());
     </script>
   </head>
   <body>

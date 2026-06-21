@@ -20,6 +20,7 @@ interface Props {
   isDark: boolean
   peerGroup: DashboardData[]
   selectedAsset: DashboardData | null
+  scoreHistory: Record<string, {date: string; composite: number; tech: number; fund: number; research: number}[]>
 }
 
 function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]; selectedTicker: string; onSelect: (t: string) => void }) {
@@ -68,7 +69,7 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
           className="bg-transparent text-sm outline-none w-full"
           style={{ color: 'var(--text)' }}
         />
-        <kbd className="text-[10px] px-1.5 py-0.5 hidden sm:block" style={{ color: 'var(--text-3)', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>\u2318K</kbd>
+        <kbd className="text-[10px] px-1.5 py-0.5 hidden sm:block" style={{ color: 'var(--text-3)', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>{navigator.platform.includes('Mac') ? '\u2318' : 'Ctrl+'}K</kbd>
       </div>
       {open && query && (
         <div className="absolute z-50 top-full left-0 right-0 mt-1 overflow-hidden max-h-60 overflow-y-auto card" style={{ boxShadow: 'var(--shadow-lg)' }}>
@@ -134,19 +135,8 @@ const InfoBlock = ({ label, value, accent }: { label: string; value: React.React
 export default function ChartingTab({
   data, selectedTicker, setSelectedTicker, chartData, chartLoading,
   chartPeriod, setChartPeriod, chartInterval, setChartInterval,
-  isDark, peerGroup, selectedAsset
+  isDark, peerGroup, selectedAsset, scoreHistory
 }: Props) {
-  const [scoreHistory, setScoreHistory] = useState<Record<string, {date: string; composite: number; tech: number; fund: number; research: number}[]>>({})
-
-  useEffect(() => {
-    const cached = sessionStorage.getItem('qa_score_history')
-    if (cached) { try { setScoreHistory(JSON.parse(cached)); return } catch {} }
-    fetch('/score_history.json?t=' + Date.now())
-      .then(r => r.json())
-      .then(d => { setScoreHistory(d); try { sessionStorage.setItem('qa_score_history', JSON.stringify(d)) } catch {} })
-      .catch(() => {})
-  }, [])
-
   const tickerScores = scoreHistory[selectedTicker] || []
   const price = Number(selectedAsset?.Price) || 0
   const ath = selectedAsset?.All_Time_High ? Number(selectedAsset.All_Time_High) : null

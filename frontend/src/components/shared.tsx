@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const num = (v: any) => !isNaN(Number(v)) && v!=="" && v!==null ? Number(v).toFixed(2) : '\u2014'
+export const num = (v: any) => !isNaN(Number(v)) && v!=="" && v!==null ? Number(v).toFixed(2) : 'N/A'
 
 export const colorCode = (v: any) => Number(v)>0 ? 'text-[var(--green)]' : Number(v)<0 ? 'text-[var(--red)]' : ''
 
@@ -40,7 +40,7 @@ export const SortHeader = ({ field, children, align='left', sortKey, sortDir, on
 )
 
 export function MiniSparkline({ values, width=64, height=22, ticker }: { values: number[]; width?:number; height?:number; ticker?: string }) {
-  if (!values||values.length===0) return <span className="text-[var(--text-3)] text-[10px] block text-center">{'\u2014'}</span>
+  if (!values||values.length===0) return <span className="text-[var(--text-3)] text-[10px] block text-center">N/A</span>
   if (values.length===1) {
     const v = values[0]
     const pct = Math.max(0, Math.min(100, (v / 10) * 100))

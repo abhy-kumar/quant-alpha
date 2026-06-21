@@ -123,7 +123,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               borderRadius: 'var(--radius)', padding: '7px 12px', fontSize: 13,
               color: 'var(--text)', outline: 'none', width: 220, transition: 'border-color var(--dur-base)' }}
           />
-          <span className="text-[12px]" style={{color:'var(--text-3)'}}>{filteredData.length} results</span>
+          <span className="text-[12px]" style={{color:'var(--text-3)'}}>Displaying {filteredData.length} of {data.length} stocks</span>
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
@@ -167,8 +167,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <input type="range" min="0" max="9" step="1" value={minPiotroski} onChange={e => setMinPiotroski(Number(e.target.value))} className="w-full" aria-label="Minimum Piotroski score" />
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min market cap: \u20B9{minMarketCap}Cr</label>
-              <input type="range" min="0" max="500" step="10" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" aria-label="Minimum market cap" />
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min market cap: \u20B9{minMarketCap.toLocaleString('en-IN')}Cr</label>
+              <input type="range" min="0" max="100000" step="500" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" aria-label="Minimum market cap" />
             </div>
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max D/E: {maxDE >= 999 ? 'Any' : maxDE}</label>
@@ -208,11 +208,19 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
 
       {/* Desktop table */}
       <div className="overflow-hidden hidden sm:block card">
+        {filteredData.length === 0 ? (
+          <div style={{ textAlign:'center', padding:'48px 0' }}>
+            <p style={{ color:'var(--text-2)', marginBottom:8 }}>No stocks match your filters.</p>
+            <p style={{ color:'var(--text-3)', fontSize:12 }}>Try removing some filters or lowering the minimum score.</p>
+          </div>
+        ) : (
         <div className="overflow-x-auto">
         <table className="w-full text-left text-sm" style={{borderCollapse:'collapse'}}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
-              <SortHeader field="Ticker" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Ticker</SortHeader>
+              <th className="py-2.5 px-3 text-[11px] font-medium cursor-pointer select-none uppercase tracking-wider" style={{color:'var(--text-3)',textAlign:'left',position:'sticky',left:0,background:'var(--surface)',zIndex:1}} onClick={()=>handleSort('Ticker')}>
+                <span className="inline-flex items-center gap-1">Ticker{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'\u2191':'\u2193'}</span>}</span>
+              </th>
               <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline">Sector</span></SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Price</SortHeader>
               <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>1D</SortHeader>
@@ -231,8 +239,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((row, i) => (
-              <React.Fragment key={i}>
+            {filteredData.map((row) => (
+              <React.Fragment key={row.Ticker}>
                 <tr
                   className="transition-colors"
                   style={{
@@ -244,7 +252,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   onMouseEnter={e => { if (expandedRow !== row.Ticker && !flashTickers[row.Ticker]) e.currentTarget.style.background = 'var(--surface-2)' }}
                   onMouseLeave={e => { if (expandedRow === row.Ticker) e.currentTarget.style.background = 'var(--brand-soft)' ; else if (!flashTickers[row.Ticker]) e.currentTarget.style.background = 'transparent' }}
                 >
-                  <td className="py-3 px-3 font-medium cursor-pointer transition-colors" style={{ color: 'var(--text)' }} onClick={() => onSelect(row.Ticker)}
+                  <td className="py-3 px-3 font-medium cursor-pointer transition-colors" style={{ color: 'var(--text)', position:'sticky', left:0, background:'var(--surface)', zIndex:1 }} onClick={() => onSelect(row.Ticker)}
                     onMouseEnter={e => (e.currentTarget.style.color = 'var(--brand)')}
                     onMouseLeave={e => (e.currentTarget.style.color = 'var(--text)')}
                   >
@@ -392,12 +400,13 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           </tbody>
         </table>
         </div>
+        )}
       </div>
 
       {/* Mobile card view */}
       <div className="sm:hidden space-y-2">
-        {filteredData.map((row, i) => (
-          <div key={i} className="px-3 py-2.5 card" style={{ borderLeft: expandedRow === row.Ticker ? '3px solid var(--brand)' : '3px solid transparent',
+        {filteredData.map((row) => (
+          <div key={row.Ticker} className="px-3 py-2.5 card" style={{ borderLeft: expandedRow === row.Ticker ? '3px solid var(--brand)' : '3px solid transparent',
             background: flashTickers[row.Ticker] === 'up' ? 'var(--green-bg)' : flashTickers[row.Ticker] === 'down' ? 'var(--red-bg)' : undefined }}>
             {/* Row 1: Ticker, Score, Conviction, Watch */}
             <div className="flex items-center justify-between mb-1.5">

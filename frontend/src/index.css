@@ -17,14 +17,14 @@
     --brand: hsl(213, 56%, 26%);
     --brand-light: hsl(213, 60%, 40%);
     --brand-soft: hsla(213, 60%, 40%, 0.08);
-    --green: hsl(140, 60%, 35%);
-    --green-bg: hsla(140, 60%, 35%, 0.07);
+    --green: hsl(152, 58%, 38%);
+    --green-bg: hsla(152, 58%, 38%, 0.07);
     --red: hsl(356, 72%, 44%);
     --red-bg: hsla(356, 72%, 44%, 0.07);
     --blue: hsl(215, 85%, 45%);
     --blue-bg: hsla(215, 85%, 45%, 0.08);
-    --amber: hsl(38, 92%, 40%);
-    --amber-bg: hsla(38, 92%, 40%, 0.08);
+    --amber: hsl(38, 85%, 38%);
+    --amber-bg: hsla(38, 85%, 38%, 0.08);
     --shadow-xs: 0 1px 2px hsla(218, 20%, 14%, 0.04);
     --shadow-sm: 0 1px 3px hsla(218, 20%, 14%, 0.06), 0 1px 2px hsla(218, 20%, 14%, 0.04);
     --shadow-md: 0 4px 6px hsla(218, 20%, 14%, 0.07), 0 2px 4px hsla(218, 20%, 14%, 0.04);
@@ -107,13 +107,37 @@
     text-transform: uppercase;
     color: var(--text-3);
   }
+  .section-band {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-2);
+    letter-spacing: 0.03em;
+  }
+  .conviction-dots {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+  }
+  .conviction-dots .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background var(--dur-base);
+  }
+  .conviction-dots .dot.filled { background: var(--green); }
+  .conviction-dots .dot.filled.caution { background: var(--amber); }
+  .conviction-dots .dot.filled.avoid { background: var(--red); }
 }
 
 .font-mono { font-family: 'Space Mono', 'SF Mono', monospace; }
 
 /* Ticker tape */
 @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.tape { animation: scroll 20s linear infinite; }
+.tape { animation-name: scroll; animation-timing-function: linear; animation-iteration-count: infinite; }
 .tape:hover { animation-play-state: paused; }
 
 /* Shimmer loading */

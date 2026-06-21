@@ -116,19 +116,8 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
         research_composite = research["research_composite"]
 
-        # Use ranked scores for composites when available (cross-sectional)
-        ranked_fund = item.get("fund_score_ranked", fund_score)
-        ranked_research = item.get("research_composite_ranked", research_composite)
-
-        composite_score = (norm_tech * 0.35) + (ranked_fund * 0.30) + (ranked_research * 0.35)
-        composite_score_tech = (norm_tech * 0.50) + (ranked_fund * 0.15) + (ranked_research * 0.35)
-        composite_score_fund = (norm_tech * 0.10) + (ranked_fund * 0.40) + (ranked_research * 0.50)
-        composite_score_mom = (ranked_research * 0.70) + (norm_tech * 0.20) + (ranked_fund * 0.10)
-
-        item["composite_score"] = composite_score
-        item["composite_score_tech"] = composite_score_tech
-        item["composite_score_fund"] = composite_score_fund
-        item["composite_score_mom"] = composite_score_mom
+        # Store raw scores for cross-sectional ranking (composites computed after ranking)
+        item["norm_tech"] = norm_tech
         item["fund_score"] = fund_score
         item["final_tech"] = score
         item["rs_pctile"] = rs_pctile
@@ -181,6 +170,17 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
             res_pctile = (raw_research <= item["research"]["research_composite"]).sum() / len(raw_research) * 100
             item["research_pctile"] = res_pctile
             item["research_composite_ranked"] = _pctile_to_score(res_pctile)
+
+    # ── Compute composite scores using ranked values ────────────────────────
+    for item in final_rows:
+        norm_tech = item["norm_tech"]
+        ranked_fund = item.get("fund_score_ranked", item["fund_score"])
+        ranked_research = item.get("research_composite_ranked", item["research"]["research_composite"])
+
+        item["composite_score"]       = (norm_tech * 0.35) + (ranked_fund * 0.30) + (ranked_research * 0.35)
+        item["composite_score_tech"]  = (norm_tech * 0.50) + (ranked_fund * 0.15) + (ranked_research * 0.35)
+        item["composite_score_fund"]  = (norm_tech * 0.10) + (ranked_fund * 0.40) + (ranked_research * 0.50)
+        item["composite_score_mom"]   = (ranked_research * 0.70) + (norm_tech * 0.20) + (ranked_fund * 0.10)
 
     all_comp_scores = pd.Series([x["composite_score"] for x in final_rows])
     for item in final_rows:
@@ -287,7 +287,7 @@ def build_output_row(item: dict) -> dict:
         "Promoter_Holding_%": np.nan if is_etf else _safe_float(info.get("promoter_holding")),
         "Promoter_Pledging_%": np.nan if is_etf else _safe_float(info.get("promoter_pledging")),
         "Conviction":       item["conviction"],
-        "RS_Percentile":    round(item["rs_pctile"], 1),
+        "RS_Percentile":    round(item["rs_pctile"], 1) if not np.isnan(item.get("rs_pctile", np.nan)) else None,
         "RSI_Value":        round(_safe_float(latest.get("RSI", np.nan)), 2),
         "MACD_Value":       round(_safe_float(latest.get("MACD", np.nan)), 4),
         "CCI_Value":        round(_safe_float(latest.get("CCI", np.nan)), 2),
