@@ -225,9 +225,9 @@ def _add_supertrend(
         # ── Direction ────────────────────────────────────────────────────────
         prev_dir = direction[i - 1]
 
-        if prev_dir == 1:   # Previously bearish — did price break above upper band?
+        if prev_dir == 1:   # Previously bearish - did price break above upper band?
             direction[i] = -1 if close[i] > final_upper[i] else 1
-        else:               # Previously bullish — did price break below lower band?
+        else:               # Previously bullish - did price break below lower band?
             direction[i] = 1 if close[i] < final_lower[i] else -1
 
         # Supertrend value: lower band when bullish, upper band when bearish

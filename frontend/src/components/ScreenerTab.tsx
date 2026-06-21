@@ -258,10 +258,10 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   >
                     {row.Ticker.replace('.NS', '')}
                   </td>
-                  <td className="py-2 px-2 hidden md:table-cell" style={{ color: 'var(--text-2)' }}>{row.Sector || '—'}</td>
+                  <td className="py-2 px-2 hidden md:table-cell" style={{ color: 'var(--text-2)' }}>{row.Sector || '-'}</td>
                   <td className="py-2 px-2 text-right font-mono" style={{ color: 'var(--text)' }}>{num(row.Price)}</td>
                   <td className={`py-2 px-2 text-right font-medium font-mono ${colorCode(row['1d_Chg_%'])}`}>
-                    {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '—'}
+                    {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
                   </td>
                   <td className={`py-2 px-2 text-right font-medium font-mono ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
                   <td className="py-2 px-2 text-center">
@@ -271,15 +271,15 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className={`py-2 px-2 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Fund_Score)}</td>
                   <td className={`py-2 px-2 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Research_Score)}</td>
                   <td className="py-2 px-2 text-right font-medium hidden lg:table-cell">
-                    <span className="font-mono">{row.Piotroski_F ?? '—'}</span><span className="text-[9px] text-[var(--text-3)]">/9</span>
+                    <span className="font-mono">{row.Piotroski_F ?? '-'}</span><span className="text-[9px] text-[var(--text-3)]">/9</span>
                   </td>
-                  <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '—'}</td>
+                  <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '-'}</td>
                   <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{num(row.Value_Score)}</td>
-                  <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{row.Beta != null ? row.Beta.toFixed(2) : '—'}</td>
+                  <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{row.Beta != null ? row.Beta.toFixed(2) : '-'}</td>
                   <td className="py-2 px-2 text-right font-mono hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
                   <td className="py-2 px-2 font-medium whitespace-nowrap">
                     <span className={`badge ${row.Conviction === 'Strong Buy' ? 'badge-strong-buy' : row.Conviction === 'Buy' ? 'badge-buy' : row.Conviction === 'Caution' ? 'badge-caution' : row.Conviction === 'Avoid' ? 'badge-avoid' : 'badge-hold'}`}>
-                      {row.Conviction || '—'}
+                      {row.Conviction || '-'}
                     </span>
                   </td>
                   <td className="py-2 px-2">
@@ -328,16 +328,16 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                             <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Research Factors</h4>
                             <div className="space-y-1.5 text-[11px]">
                               {[
-                                ['Piotroski F-Score', `${row.Piotroski_F ?? '—'}/9`],
+                                ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`],
                                 ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`],
                                 ['Earnings Quality', `${num(row.Earnings_Quality)}/10`],
                                 ['Value Factor', `${num(row.Value_Score)}/10`],
                                 ['Investment Factor', `${num(row.Investment_Score)}/10`],
                                 ['SUE / Earnings Mom', `${num(row.SUE_Score)}/10`],
-                                ['Low Volatility', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : '—'],
-                                ['Betting Against Beta', row.Beta != null ? `${row.Beta.toFixed(2)} β` : '—'],
-                                ['Alpha (60D)', row.Alpha_60D != null ? `${row.Alpha_60D.toFixed(1)}%` : '—'],
-                                ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '—'],
+                                ['Low Volatility', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : '-'],
+                                ['Betting Against Beta', row.Beta != null ? `${row.Beta.toFixed(2)} β` : '-'],
+                                ['Alpha (60D)', row.Alpha_60D != null ? `${row.Alpha_60D.toFixed(1)}%` : '-'],
+                                ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '-'],
                                 ['Risk-Adj Mom', num(row.Risk_Adj_Mom)],
                                 ['Z-Score (60D)', num(row.Z_Score_60)],
                               ].map(([label, val]) => (
@@ -354,12 +354,12 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                               {[
                                 ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E'])],
                                 ['Forward P/E', num(row['Forward_P/E'])],
-                                ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '—'],
-                                ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '—'],
-                                ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '—'],
-                                ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}Cr` : '—'],
-                                ['Div Yield', row['Div_Yield_%'] != null ? `${row['Div_Yield_%'].toFixed(2)}%` : '—'],
-                                ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '—'],
+                                ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-'],
+                                ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-'],
+                                ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-'],
+                                ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}Cr` : '-'],
+                                ['Div Yield', row['Div_Yield_%'] != null ? `${row['Div_Yield_%'].toFixed(2)}%` : '-'],
+                                ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-'],
                                 ['Sharpe', num(row.Sharpe)],
                                 ['Max DD', num(row['Max_Drawdown_%'])],
                               ].map(([label, val]) => (
@@ -374,13 +374,13 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                         <div className="mt-4 pt-3 grid grid-cols-3 gap-4 text-xs" style={{ borderTop: '1px solid var(--border)' }}>
                           <div className="flex items-center gap-2">
                             <span style={{ color: 'var(--text-3)' }}>Bull</span>
-                            <span className="font-medium font-mono" style={{color:'var(--green)'}}>{row.Bull_Count ?? '—'}</span>
+                            <span className="font-medium font-mono" style={{color:'var(--green)'}}>{row.Bull_Count ?? '-'}</span>
                             <span style={{ color: 'var(--text-3)' }}>/</span>
                             <span style={{ color: 'var(--text-3)' }}>Neutral</span>
-                            <span className="font-medium font-mono" style={{color:'var(--text-2)'}}>{row.Bull_Count != null && row.Bear_Count != null ? 15 - row.Bull_Count - row.Bear_Count : '—'}</span>
+                            <span className="font-medium font-mono" style={{color:'var(--text-2)'}}>{row.Bull_Count != null && row.Bear_Count != null ? 15 - row.Bull_Count - row.Bear_Count : '-'}</span>
                             <span style={{ color: 'var(--text-3)' }}>/</span>
                             <span style={{ color: 'var(--text-3)' }}>Bear</span>
-                            <span className="font-medium font-mono" style={{color:'var(--red)'}}>{row.Bear_Count ?? '—'}</span>
+                            <span className="font-medium font-mono" style={{color:'var(--red)'}}>{row.Bear_Count ?? '-'}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span style={{ color: 'var(--text-3)' }}>RS Percentile</span>
@@ -388,7 +388,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                           </div>
                           <div className="flex items-center gap-2">
                             <span style={{ color: 'var(--text-3)' }}>Vol vs Avg</span>
-                            <span className="font-medium font-mono" style={{color:'var(--text)'}}>{row['Vol_vs_Avg_%'] != null ? `${row['Vol_vs_Avg_%'].toFixed(1)}%` : '—'}</span>
+                            <span className="font-medium font-mono" style={{color:'var(--text)'}}>{row['Vol_vs_Avg_%'] != null ? `${row['Vol_vs_Avg_%'].toFixed(1)}%` : '-'}</span>
                           </div>
                         </div>
                       </div>
@@ -415,7 +415,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   {row.Ticker.replace('.NS', '')}
                 </button>
                 <span className={`badge ${row.Conviction === 'Strong Buy' ? 'badge-strong-buy' : row.Conviction === 'Buy' ? 'badge-buy' : row.Conviction === 'Caution' ? 'badge-caution' : row.Conviction === 'Avoid' ? 'badge-avoid' : 'badge-hold'}`}>
-                  {row.Conviction || '—'}
+                  {row.Conviction || '-'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -433,9 +433,9 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
             <div className="flex items-center gap-3 mb-1.5 text-[11px]">
               <span className="font-mono font-medium" style={{ color: 'var(--text)' }}>{num(row.Price)}</span>
               <span className={`font-mono font-medium ${colorCode(row['1d_Chg_%'])}`}>
-                {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '—'}
+                {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
               </span>
-              <span className="hidden xs:inline" style={{ color: 'var(--text-3)' }}>{row.Sector || '—'}</span>
+              <span className="hidden xs:inline" style={{ color: 'var(--text-3)' }}>{row.Sector || '-'}</span>
               <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} width={48} height={16} ticker={row.Ticker} />
             </div>
 
@@ -444,7 +444,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <span>T <span className={`font-mono font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</span></span>
               <span>F <span className="font-mono font-medium">{num(row.Fund_Score)}</span></span>
               <span>R <span className="font-mono font-medium">{num(row.Research_Score)}</span></span>
-              <span>P <span className="font-mono font-medium">{row.Piotroski_F ?? '—'}/9</span></span>
+              <span>P <span className="font-mono font-medium">{row.Piotroski_F ?? '-'}/9</span></span>
               {row.Value_Score != null && <span>V <span className="font-mono font-medium">{num(row.Value_Score)}</span></span>}
               <span className="ml-auto">
                 <button onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)} style={{ color: 'var(--text-3)' }}>
@@ -463,11 +463,11 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
                     {[
                       ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E'])],
-                      ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '—'],
-                      ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '—'],
-                      ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '—'],
-                      ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}Cr` : '—'],
-                      ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '—'],
+                      ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-'],
+                      ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-'],
+                      ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-'],
+                      ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}Cr` : '-'],
+                      ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-'],
                     ].map(([label, val]) => (
                       <div key={label as string} className="flex justify-between py-0.5">
                         <span style={{ color: 'var(--text-3)' }}>{label}</span>

@@ -7,7 +7,7 @@ frontend/public/score_history.json for the ChartingTab score chart.
 Output format:
 {
   "TICKER.NS": [
-    {"date": "2026-06-09", "composite": 6.5, "tech": 0.3, "fund": 7.1, "research": 8.2},
+    {"date": "2026-06-09", "composite": 6.5, "composite_tech": 7.2, "composite_fund": 5.8, "tech": 0.3, "fund": 7.1, "research": 8.2},
     ...
   ],
   ...
@@ -33,7 +33,8 @@ def generate():
 
     try:
         cursor.execute("""
-            SELECT Ticker, Scan_Date, Composite_Score, Tech_Score, Fund_Score, Research_Score
+            SELECT Ticker, Scan_Date, Composite_Score, Composite_Score_Tech, Composite_Score_Fund,
+                   Tech_Score, Fund_Score, Research_Score
             FROM historical_scans
             WHERE Composite_Score IS NOT NULL
             ORDER BY Ticker, Scan_Date
@@ -60,6 +61,8 @@ def generate():
         result[ticker].append({
             "date": row["Scan_Date"][:10],
             "composite": safe_float(row["Composite_Score"]),
+            "composite_tech": safe_float(row["Composite_Score_Tech"]),
+            "composite_fund": safe_float(row["Composite_Score_Fund"]),
             "tech": safe_float(row["Tech_Score"]),
             "fund": safe_float(row["Fund_Score"]),
             "research": safe_float(row["Research_Score"]),

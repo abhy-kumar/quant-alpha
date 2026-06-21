@@ -17,7 +17,7 @@
 
 Alpha is a fully automated stock screening and recommendation platform that evaluates the top 150 liquid equities on the National Stock Exchange of India (NSE) using a multi-factor model grounded in published academic research. The system eliminates emotional bias from equity research by applying systematic, rules-based scoring across three dimensions: technical momentum, fundamental quality, and research-backed quantitative factors.
 
-The platform generates daily recommendations with conviction ratings (Strong Buy, Buy, Hold, Caution, Avoid) and stores all data in a growing SQLite database that accumulates daily feature vectors and forward return outcomes — forming the foundation for future machine learning model training.
+The platform generates daily recommendations with conviction ratings (Strong Buy, Buy, Hold, Caution, Avoid) and stores all data in a growing SQLite database that accumulates daily feature vectors and forward return outcomes, forming the foundation for future machine learning model training.
 
 ## How It Works
 
@@ -27,7 +27,7 @@ The system operates as a dual-mode pipeline: a heavy batch scan runs three times
 
 | Layer | Frequency | What Updates | Trigger |
 |-------|-----------|--------------|---------|
-| **Full Scan** | 3× daily (Mon–Fri) | All scores, signals, fundamentals, recommendations, market regime | GitHub Actions cron |
+| **Full Scan** | 3x daily (Mon-Fri) | All scores, signals, fundamentals, recommendations, market regime | GitHub Actions cron |
 | **Live Prices** | Every 3 min (market hours) | LTP and 1D% change only | Browser polling `/api/live_data` |
 
 The footer displays both timestamps independently: **Signals** (last scanner run) and **Prices** (last live overlay), so the freshness of each data layer is always visible.
@@ -46,36 +46,36 @@ The footer displays both timestamps independently: **Signals** (last scanner run
 
 ### Live Update Pipeline (/api/live_data)
 
-- A Vercel serverless function called by the browser every 3 minutes during market hours (9:15 AM – 3:30 PM IST).
+- A Vercel serverless function called by the browser every 3 minutes during market hours (9:15 AM - 3:30 PM IST).
 - Detects market hours using IST offset from UTC (UTC+5:30, no DST). Caches aggressively (6 hours) when market is closed.
 - Updates only Price and 1D Change % in the React state. Does not write to disk or commit to the repository.
 - Also fetches live NIFTY 50 for the header indicator.
 
 ## Scoring System
 
-### Technical Score (range: −1.0 to +1.0)
+### Technical Score (range: -1.0 to +1.0)
 
-A weighted ensemble of 14 binary signals. Each signal outputs +1 (bullish), −1 (bearish), or 0 (neutral). The weighted sum is normalized to produce a single score.
+A weighted ensemble of 14 binary signals. Each signal outputs +1 (bullish), -1 (bearish), or 0 (neutral). The weighted sum is normalized to produce a single score.
 
 | Signal | Weight | Bullish Condition | Bearish Condition |
 |--------|--------|-------------------|-------------------|
 | Supertrend | 2.0 | Close above Supertrend line | Close below Supertrend line |
 | Price vs SMA 200 | 2.0 | Close > SMA 200 | Close < SMA 200 |
 | SMA 50 vs 200 | 2.0 | SMA 50 > SMA 200 (Golden Cross) | SMA 50 < SMA 200 (Death Cross) |
-| ADX Trend Strength | 2.0 | ADX > 25 and +DI > −DI | ADX > 25 and −DI > +DI |
+| ADX Trend Strength | 2.0 | ADX > 25 and +DI > -DI | ADX > 25 and -DI > +DI |
 | Ichimoku Cloud | 1.5 | Close above both Span A and Span B | Close below both Span A and Span B |
 | MACD Crossover | 1.0 | MACD > Signal Line | MACD < Signal Line |
-| RSI (14-period) | 1.0 | RSI between 40–80 (bullish regime) or RSI < 30 | RSI > 70 |
+| RSI (14-period) | 1.0 | RSI between 40-80 (bullish regime) or RSI < 30 | RSI > 70 |
 | Volume Price Trend | 1.0 | VPT > 20-EMA of VPT | VPT < 20-EMA of VPT |
 | Price vs SMA 50 | 1.0 | Close > SMA 50 | Close < SMA 50 |
 | MACD Histogram | 0.5 | Current histogram > Previous histogram | Current histogram < Previous histogram |
 | Stochastic Oscillator | 0.25 | %K < 20 and %K > %D | %K > 80 and %K < %D |
-| Commodity Channel Index | 0.25 | CCI < −100 | CCI > 100 |
+| Commodity Channel Index | 0.25 | CCI < -100 | CCI > 100 |
 | Bollinger Bands %B | 0.25 | %B < 0.05 | %B > 0.95 |
 
-Relative Strength percentiles provide an additional ±0.2 adjustment for stocks in the top or bottom quartile.
+Relative Strength percentiles provide an additional +/-0.2 adjustment for stocks in the top or bottom quartile.
 
-News sentiment provides an additional **±1.0 adjustment** to the normalized technical score when the average VADER compound score exceeds ±0.15 (lowered from ±0.5 to ensure the signal actually fires in practice).
+News sentiment provides an additional **+/-1.0 adjustment** to the normalized technical score when the average VADER compound score exceeds +/-0.15 (lowered from +/-0.5 to ensure the signal actually fires in practice).
 
 ### Fundamental Score (range: 0 to 10)
 
@@ -83,41 +83,41 @@ Evaluates financial quality using sector-relative comparisons. The system dynami
 
 | Metric | Max Points | Logic |
 |--------|------------|-------|
-| ROE | 1.5 | ≥ 1.5× sector median: 1.5 pts, ≥ sector median: 0.5 pts |
-| ROCE | 1.5 | ≥ 20%: 1.5 pts, ≥ 12%: 0.5 pts |
+| ROE | 1.5 | >= 1.5x sector median: 1.5 pts, >= sector median: 0.5 pts |
+| ROCE | 1.5 | >= 20%: 1.5 pts, >= 12%: 0.5 pts |
 | PEG Ratio | 2.0 | PEG < 1.0: 2.0 pts, PEG < 1.5: 1.0 pts (requires positive EPS growth) |
-| Debt-to-Equity | 1.5 | < 0.8× sector median: 1.5 pts, < sector median: 0.5 pts |
+| Debt-to-Equity | 1.5 | < 0.8x sector median: 1.5 pts, < sector median: 0.5 pts |
 | EPS Growth | 1.5 | > 15% YoY |
 | Revenue Growth | 1.0 | > 10% YoY |
 | Dividend Yield | 0.5 | > 1.0% |
-| Market Cap | 1.0 | > ₹1,000 Crores |
+| Market Cap | 1.0 | > Rs. 1,000 Crores |
 | Sharpe Ratio | 1.0 | > 1.0 (computed using India 10Y G-Sec rate of 6.5% as risk-free rate) |
 | Promoter Holding | 1.0 | > 50% holding and < 10% pledging |
 
-Maximum score is capped at 10.0. A penalty of −1.5 is applied for promoter pledging above 30%.
+Maximum score is capped at 10.0. A penalty of -1.5 is applied for promoter pledging above 30%.
 
 ### Research Factor Score (range: 0 to 10)
 
-Ten academic factors, each normalized to 0–10 and combined with weights calibrated to the factor return literature:
+Ten academic factors, each normalized to 0-10 and combined with weights calibrated to the factor return literature:
 
 | Factor | Weight | Paper | Range |
 |--------|--------|-------|-------|
-| Piotroski F-Score | 0.10 | Piotroski (2000) | 0–9 mapped to 0–10 |
-| Gross Profitability | 0.10 | Novy-Marx (2013, JFE) | 0–10 |
-| Earnings Quality | 0.10 | Sloan (1996) | 0–10 |
-| Momentum Composite | 0.20 | Jegadeesh & Titman (1993) | −0.5 to +1.0 mapped to 0–10 |
+| Piotroski F-Score | 0.10 | Piotroski (2000) | 0-9 mapped to 0-10 |
+| Gross Profitability | 0.10 | Novy-Marx (2013, JFE) | 0-10 |
+| Earnings Quality | 0.10 | Sloan (1996) | 0-10 |
+| Momentum Composite | 0.20 | Jegadeesh & Titman (1993) | -0.5 to +1.0 mapped to 0-10 |
 | Value Factor | 0.15 | Fama & French (1993, JFE) | B/M, E/P, CF/P, D/P composite |
-| Low Volatility | 0.10 | Baker, Bradley & Wurgler (2011, JF) | 0–10 (lower vol = higher score) |
-| Betting Against Beta | 0.10 | Frazzini & Pedersen (2014, JFE) | 0–10 (lower beta = higher score) |
-| Investment Factor | 0.10 | Titman, Wei & Xie (2004) | 0–10 (conservative investment) |
-| Earnings Momentum (SUE) | 0.10 | Bernard & Thomas (1989, JAR) | 0–10 (positive surprise) |
-| Mean Reversion | 0.05 | De Bondt & Thaler (1985) | 0–10 (oversold = higher score) |
+| Low Volatility | 0.10 | Baker, Bradley & Wurgler (2011, JF) | 0-10 (lower vol = higher score) |
+| Betting Against Beta | 0.10 | Frazzini & Pedersen (2014, JFE) | 0-10 (lower beta = higher score) |
+| Investment Factor | 0.10 | Titman, Wei & Xie (2004) | 0-10 (conservative investment) |
+| Earnings Momentum (SUE) | 0.10 | Bernard & Thomas (1989, JAR) | 0-10 (positive surprise) |
+| Mean Reversion | 0.05 | De Bondt & Thaler (1985) | 0-10 (oversold = higher score) |
 
 The Value Factor is a multi-metric composite of Book-to-Market (Fama-French 1992), Earnings-to-Price (Basu 1977), Cash Flow-to-Price (Lakonishok et al. 1994), and Dividend Yield (Fama & French 1988). The Investment Factor rewards conservative capital allocation per Titman, Wei & Xie (2004) and the Fama-French 5-factor model.
 
 ### Composite Score and Conviction
 
-The composite score blends all three dimensions with configurable weights. Each horizon uses a different blend — **Short-Term** emphasizes technical signals for timing, while **Long-Term** emphasizes value and quality factors:
+The composite score blends all three dimensions with configurable weights. Each horizon uses a different blend - **Short-Term** emphasizes technical signals for timing, while **Long-Term** emphasizes value and quality factors:
 
 | Variant | Tech | Fund | Research | Use Case |
 |---------|------|------|----------|----------|
@@ -126,27 +126,27 @@ The composite score blends all three dimensions with configurable weights. Each 
 | **Long-Term** | 0.10 | 0.40 | 0.50 | Value/quality investing, low turnover |
 | **Momentum** | 0.20 | 0.10 | 0.70 | Research-driven momentum plays |
 
-Cross-sectional percentile ranking: Instead of absolute thresholds, fund_score and research_composite are ranked against the full universe and mapped to a 0–10 scale via percentile-based piecewise functions. This ensures "good" scores adapt to market conditions rather than relying on fixed thresholds.
+Cross-sectional percentile ranking: Instead of absolute thresholds, fund_score and research_composite are ranked against the full universe and mapped to a 0-10 scale via percentile-based piecewise functions. This ensures "good" scores adapt to market conditions rather than relying on fixed thresholds.
 
 Stocks are ranked by composite percentile across the universe. Conviction labels are assigned and adjusted for market regime:
 
-- Strong Buy: ≥ 90th percentile (or ≥ 85th in bullish regime)
-- Buy: ≥ 70th percentile
-- Hold: ≥ 40th percentile
-- Caution: ≥ 20th percentile
+- Strong Buy: >= 90th percentile (or >= 85th in bullish regime)
+- Buy: >= 70th percentile
+- Hold: >= 40th percentile
+- Caution: >= 20th percentile
 - Avoid: < 20th percentile
 
-Market regime adjustments downgrade conviction levels when the regime score is ≤ −2 (deep bear) or mildly bearish (−1).
+Market regime adjustments downgrade conviction levels when the regime score is <= -2 (deep bear) or mildly bearish (-1).
 
 ## Market Regime Detection
 
-A composite regime score ranging from −5 to +5 is computed from five India-specific signals:
+A composite regime score ranging from -5 to +5 is computed from five India-specific signals:
 
-1. Nifty 50 (`^NSEI`) position relative to its 200-day SMA (+1 or −1)
-2. India VIX (`^INDIAVIX`) level: < 15 (+1), > 25 (−1)
-3. FII/FPI net flow: > ₹500 Cr net buy (+1), < ₹500 Cr net sell (−1)
-4. Put-Call Ratio (NIFTY options OI): > 1.2 bullish contrarian (+1), < 0.7 bearish (−1)
-5. Market breadth (advances / total NSE stocks): > 0.55 (+1), < 0.45 (−1)
+1. Nifty 50 (`^NSEI`) position relative to its 200-day SMA (+1 or -1)
+2. India VIX (`^INDIAVIX`) level: < 15 (+1), > 25 (-1)
+3. FII/FPI net flow: > Rs.500 Cr net buy (+1), < Rs.500 Cr net sell (-1)
+4. Put-Call Ratio (NIFTY options OI): > 1.2 bullish contrarian (+1), < 0.7 bearish (-1)
+5. Market breadth (advances / total NSE stocks): > 0.55 (+1), < 0.45 (-1)
 
 FII/DII data is sourced from NSE's `fiidiiTradeReact` API with a moneycontrol.com fallback. PCR is computed from NSE's option chain v3 API (`/api/option-chain-v3`). Both degrade gracefully to neutral (0) if unavailable.
 
@@ -155,12 +155,12 @@ FII/DII data is sourced from NSE's `fiidiiTradeReact` API with a moneycontrol.co
 All indicators are computed using Wilder's exponential smoothing method for accuracy. The weekly Supertrend resamples daily data to `W-FRI` (NSE closes on Fridays).
 
 - **RSI (14)**: Wilder-smoothed relative strength index
-- **MACD**: EMA(12) − EMA(26), with 9-period signal line
-- **Bollinger Bands**: 20-period SMA ±2 standard deviations
+- **MACD**: EMA(12) - EMA(26), with 9-period signal line
+- **Bollinger Bands**: 20-period SMA +/-2 standard deviations
 - **Stochastic Oscillator**: 14-period %K and 3-period %D
 - **ATR (14)**: Average True Range with Wilder's smoothing
-- **ADX (14)**: Average Directional Index with +DI/−DI lines
-- **Supertrend**: 10-period, 3× multiplier
+- **ADX (14)**: Average Directional Index with +DI/-DI lines
+- **Supertrend**: 10-period, 3x multiplier
 - **Weekly Supertrend**: Resampled to weekly (W-FRI), direction mapped back to daily
 - **VPT**: Volume Price Trend with 20-period EMA
 - **Ichimoku Cloud**: Tenkan (9), Kijun (26), Span A, Span B (52)
@@ -173,22 +173,22 @@ All data sources are evaluated for India-market correctness:
 
 | Data | Source | Notes |
 |------|---------|-------|
-| Universe selection | NSE Bhav Copy (official) | Direct NSE download — authoritative |
+| Universe selection | NSE Bhav Copy (official) | Direct NSE download - authoritative |
 | OHLCV prices | yfinance (`.NS` tickers) | INR-denominated, correct for NSE |
-| Market cap | yfinance → screener.in fallback | Stored as **INR Crores** (`÷1e7`). Screener.in returns Crores directly; yfinance returns INR |
-| P/E, ROE, D/E | yfinance → screener.in fallback | Screener.in preferred — more reliable for Indian companies |
-| Forward P/E | yfinance info → screener.in analysis section | Used for SUE analyst revision proxy |
-| Return on Assets | yfinance info → yfinance balance_sheet → screener.in #ratios | Three-layer fallback |
-| Current Ratio | yfinance info → screener.in #ratios | Used for Piotroski F-Score |
-| Operating Cashflow | yfinance info → yfinance cashflow statement → screener.in P&L/Cash Flow | Three-layer fallback; critical for Value Factor CF/P |
-| Revenue Growth | yfinance info → yfinance quarterly_financials → screener.in quarterly results | Three-layer fallback; critical for Investment Factor |
-| Earnings Growth | yfinance info → yfinance quarterly_financials → screener.in quarterly results | Three-layer fallback; critical for Piotroski and SUE Factor |
-| Gross Profits | yfinance info → screener.in profit-loss table | Used for Gross Profitability factor |
-| Sector / Industry | screener.in → yfinance → BSE India fallback | screener.in uses Indian sector taxonomy |
-| Promoter holding / pledging | screener.in → BSE India fallback | Not available in yfinance for Indian stocks |
+| Market cap | yfinance -> screener.in fallback | Stored as **INR Crores** (`/1e7`). Screener.in returns Crores directly; yfinance returns INR |
+| P/E, ROE, D/E | yfinance -> screener.in fallback | Screener.in preferred - more reliable for Indian companies |
+| Forward P/E | yfinance info -> screener.in analysis section | Used for SUE analyst revision proxy |
+| Return on Assets | yfinance info -> yfinance balance_sheet -> screener.in #ratios | Three-layer fallback |
+| Current Ratio | yfinance info -> screener.in #ratios | Used for Piotroski F-Score |
+| Operating Cashflow | yfinance info -> yfinance cashflow statement -> screener.in P&L/Cash Flow | Three-layer fallback; critical for Value Factor CF/P |
+| Revenue Growth | yfinance info -> yfinance quarterly_financials -> screener.in quarterly results | Three-layer fallback; critical for Investment Factor |
+| Earnings Growth | yfinance info -> yfinance quarterly_financials -> screener.in quarterly results | Three-layer fallback; critical for Piotroski and SUE Factor |
+| Gross Profits | yfinance info -> screener.in profit-loss table | Used for Gross Profitability factor |
+| Sector / Industry | screener.in -> yfinance -> BSE India fallback | screener.in uses Indian sector taxonomy |
+| Promoter holding / pledging | screener.in -> BSE India fallback | Not available in yfinance for Indian stocks |
 | NIFTY 50 | `^NSEI` via yfinance | Correct |
 | India VIX | `^INDIAVIX` via yfinance | Correct |
-| FII/DII activity | NSE `fiidiiTradeReact` API → moneycontrol.com fallback | Net buy/sell in INR Crores; degrades to neutral on failure |
+| FII/DII activity | NSE `fiidiiTradeReact` API -> moneycontrol.com fallback | Net buy/sell in INR Crores; degrades to neutral on failure |
 | Put-Call Ratio | NSE option chain v3 API | NIFTY options OI; auto-resolves nearest expiry; degrades to 1.0 on failure |
 | Market breadth | NSE Bhav Copy advance/decline | Correct |
 | Risk-free rate | 6.5% (India 10Y G-Sec yield) | Correct for INR Sharpe calculation |
@@ -216,10 +216,10 @@ Outcome tracking automatically backfills forward returns for all past scans on e
 
 The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 
-- `get_ml_dataset(min_date, max_date)` — Full feature+label DataFrame for model training
-- `get_stock_timeseries(ticker)` — Per-stock factor history over time
-- `get_regime_timeseries()` — Market regime evolution
-- `get_outcome_accuracy(min_date)` — Win rate and average return by conviction level
+- `get_ml_dataset(min_date, max_date)` - Full feature+label DataFrame for model training
+- `get_stock_timeseries(ticker)` - Per-stock factor history over time
+- `get_regime_timeseries()` - Market regime evolution
+- `get_outcome_accuracy(min_date)` - Win rate and average return by conviction level
 
 ## Architecture
 
@@ -292,7 +292,7 @@ The header contains eight persistent indicators:
 
 | Element | Description |
 |---------|-------------|
-| Logo | Alpha Research & Investment Club — theme-aware SVG |
+| Logo | Alpha Research & Investment Club - theme-aware SVG |
 | NIFTY chip | Live NIFTY 50 price and 1D% change, green/red coded |
 | FII chip | FII/FPI net flow in INR Crores, green/red coded |
 | DII chip | DII net flow in INR Crores, green/red coded |
@@ -305,8 +305,9 @@ The header contains eight persistent indicators:
 
 - **Frontend**: React 19, Vite 8, Tailwind CSS 3, Recharts 3, Lucide Icons
 - **Data Engine**: Python 3.12, pandas, numpy, yfinance, BeautifulSoup4, vaderSentiment, feedparser, requests
-- **News Source**: Google News RSS (`gl=IN&hl=en-IN&ceid=IN:en`) — India-locale, no API key required
-- **Serverless API**: Vercel Functions (`api/chart.ts`, `api/live_data.ts`) — yahoo-finance2 v3 (class instantiation)
+- **News Source**: Google News RSS (`gl=IN&hl=en-IN&ceid=IN:en`) - India-locale, no API key required
+- **Serverless API**: Vercel Functions (`api/chart.ts`, `api/live_data.ts`) - yahoo-finance2 v3 (class instantiation)
+- **Analytics**: Vercel Analytics
 - **Database**: SQLite (`market_scans.db`)
 - **CI/CD**: GitHub Actions (three times daily: pre-open, mid-day, post-market scans)
 - **Deployment**: Vercel (frontend + serverless), GitHub (data + backend)
@@ -467,9 +468,9 @@ The scanner runs automatically three times daily via GitHub Actions. All times a
 
 | Cron | IST Time | Purpose |
 |------|----------|---------|
-| `30 3 * * 1-5` | 9:00 AM IST | Pre-open scan — fresh data before market opens |
-| `0 7 * * 1-5` | 12:30 PM IST | Mid-day snapshot — intraday scoring |
-| `45 10 * * 1-5` | 4:15 PM IST | Post-market scan — end-of-day signals (primary run) |
+| `30 3 * * 1-5` | 9:00 AM IST | Pre-open scan - fresh data before market opens |
+| `0 7 * * 1-5` | 12:30 PM IST | Mid-day snapshot - intraday scoring |
+| `45 10 * * 1-5` | 4:15 PM IST | Post-market scan - end-of-day signals (primary run) |
 
 Each run pulls the latest database, runs the scanner, and commits the updated `market_data.json` and `market_scans.db` back to the repository with `[skip ci]` to avoid recursive triggers.
 
@@ -477,7 +478,7 @@ Each run pulls the latest database, runs the scanner, and commits the updated `m
 
 ### General
 
-This platform is provided strictly for educational and academic research purposes. It does not constitute, and should not be construed as, investment advice, a solicitation, or a recommendation to buy, sell, or hold any security or financial instrument. This platform is not registered with the Securities and Exchange Board of India (SEBI) or any other regulatory authority.
+This platform is provided strictly for educational and academic research purposes. It does not constitute, and should not be construed as, investment advice, a solicitation, or a recommendation to buy, sell, or hold any security or financial instrument.
 
 ### No Investment Advice
 

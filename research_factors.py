@@ -23,7 +23,7 @@ from utils import _safe_float
 
 def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
     """
-    Piotroski F-Score (2000) — 9-point financial strength indicator.
+    Piotroski F-Score (2000) - 9-point financial strength indicator.
 
     Original paper: "Value Investing: The Use of Historical Financial Statement
     Information to Separate Winners from Losers" (JAR, 2000)
@@ -31,17 +31,17 @@ def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
     Profitability (4 points):
       1. ROA > 0
       2. CFO > 0 (operating cash flow positive)
-      3. ΔROA > 0 (improving profitability — proxied via earningsGrowth > 0)
-      4. CFO > Net Income (accruals quality — cash earnings exceed reported)
+      3. ΔROA > 0 (improving profitability - proxied via earningsGrowth > 0)
+      4. CFO > Net Income (accruals quality - cash earnings exceed reported)
 
     Leverage / Liquidity (3 points):
-      5. ΔLeverage < 0 (decreasing debt — proxied via D/E < 100)
-      6. ΔCurrent Ratio > 0 (improving liquidity — current ratio > 1.5)
-      7. No dilution (shares outstanding stable — high insider holding proxy)
+      5. ΔLeverage < 0 (decreasing debt - proxied via D/E < 100)
+      6. ΔCurrent Ratio > 0 (improving liquidity - current ratio > 1.5)
+      7. No dilution (shares outstanding stable - high insider holding proxy)
 
     Efficiency (2 points):
-      8. ΔGross Margin > 0 (improving margins — proxied via profitMargins > 0.15)
-      9. ΔAsset Turnover > 0 (improving efficiency — revenue/asset > 0.5)
+      8. ΔGross Margin > 0 (improving margins - proxied via profitMargins > 0.15)
+      9. ΔAsset Turnover > 0 (improving efficiency - revenue/asset > 0.5)
 
     Returns 0-9.
     """
@@ -223,7 +223,7 @@ def compute_investment_factor(info: dict) -> float:
 
 def compute_sue_factor(info: dict, df: pd.DataFrame) -> float:
     """
-    Standardized Unexpected Earnings (SUE) — Earnings Momentum
+    Standardized Unexpected Earnings (SUE) - Earnings Momentum
     (Bernard & Thomas 1989, JAR).
 
     Post-Earnings Announcement Drift (PEAD): stocks with positive earnings

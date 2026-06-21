@@ -209,25 +209,25 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                 {s.Conviction && <ConvictionDots conviction={s.Conviction} />}
               </div>
 
-              {/* Price — hero element */}
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="font-mono" style={{fontSize:24, lineHeight:1, fontWeight:700, letterSpacing:'-0.02em', color:'var(--text)'}}>
-                  {'₹'}{price.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
-                </span>
-                <span className="font-mono" style={{fontSize:13, fontWeight:600, color: change>=0?'var(--green)':'var(--red)'}}>
-                  {change>0?'▲':'▼'} {change>0?'+':''}{change.toFixed(2)}%
-                </span>
-              </div>
-
-              {/* Score */}
-              <div className="flex items-center gap-2 mb-3">
-                <span className="font-mono" style={{
-                  fontSize: 20, lineHeight: 1, fontWeight: 700, letterSpacing: '-0.02em',
-                  color: composite >= 7 ? 'var(--green)' : composite >= 4 ? 'var(--brand)' : 'var(--red)',
-                }}>
-                  {composite.toFixed(1)}
-                </span>
-                <span style={{ fontSize:10, color:'var(--text-3)' }}>composite</span>
+              {/* Price + Composite - hero row */}
+              <div className="flex items-baseline justify-between mb-3">
+                <div className="flex items-baseline gap-2">
+                  <span className="font-mono" style={{fontSize:24, lineHeight:1, fontWeight:700, letterSpacing:'-0.02em', color:'var(--text)'}}>
+                    {'₹'}{price.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+                  </span>
+                  <span className="font-mono" style={{fontSize:13, fontWeight:600, color: change>=0?'var(--green)':'var(--red)'}}>
+                    {change>0?'▲':'▼'} {change>0?'+':''}{change.toFixed(2)}%
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-mono" style={{
+                    fontSize: 20, lineHeight: 1, fontWeight: 700, letterSpacing: '-0.02em',
+                    color: composite >= 7 ? 'var(--green)' : composite >= 4 ? 'var(--brand)' : 'var(--red)',
+                  }}>
+                    {composite.toFixed(1)}
+                  </span>
+                  <span style={{ fontSize:10, color:'var(--text-3)' }}>composite</span>
+                </div>
               </div>
 
               {/* Sub-score bars */}
@@ -239,15 +239,15 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
 
               {/* Key metrics grid */}
               <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-2.5">
-                <Metric label="P/E" value={pe!==null?(pe<0?'Loss':pe.toFixed(1)):'—'} />
-                <Metric label="Mkt Cap" value={mcap!==null?`₹${mcap.toLocaleString('en-IN')}Cr`:'—'} />
-                <Metric label="ROE" value={roe!==null?`${roe.toFixed(1)}%`:'—'} />
-                <Metric label="ROCE" value={s['ROCE_%']!=null?`${Number(s['ROCE_%']).toFixed(1)}%`:'—'} />
-                <Metric label="Div Yld" value={s['Div_Yield_%']!=null?`${Number(s['Div_Yield_%']).toFixed(2)}%`:'—'} />
-                <Metric label="Promoter" value={s['Promoter_Holding_%']!=null?`${Number(s['Promoter_Holding_%']).toFixed(1)}%`:'—'} color={s['Promoter_Pledging_%']!=null&&Number(s['Promoter_Pledging_%'])>20?'var(--red)':'var(--text)'} />
-                <Metric label="D/E" value={debtEq!==null?debtEq.toFixed(2):'—'} />
-                <Metric label="Sharpe" value={sharpe!==null?sharpe.toFixed(2):'—'} color={sharpe!==null?(sharpe>1?'var(--green)':sharpe<0?'var(--red)':'var(--text)'):'var(--text)'} />
-                <Metric label="Beta" value={s.Beta!=null?Number(s.Beta).toFixed(2):'—'} color={s.Beta!=null?(Number(s.Beta)<0.8?'var(--green)':Number(s.Beta)>1.2?'var(--red)':'var(--text)'):'var(--text)'} />
+                <Metric label="P/E" value={pe!==null?(pe<0?'Loss':pe.toFixed(1)):'-'} />
+                <Metric label="Mkt Cap" value={mcap!==null?`₹${mcap.toLocaleString('en-IN')}Cr`:'-'} />
+                <Metric label="ROE" value={roe!==null?`${roe.toFixed(1)}%`:'-'} />
+                <Metric label="ROCE" value={s['ROCE_%']!=null?`${Number(s['ROCE_%']).toFixed(1)}%`:'-'} />
+                <Metric label="Div Yld" value={s['Div_Yield_%']!=null?`${Number(s['Div_Yield_%']).toFixed(2)}%`:'-'} />
+                <Metric label="Promoter" value={s['Promoter_Holding_%']!=null?`${Number(s['Promoter_Holding_%']).toFixed(1)}%`:'-'} color={s['Promoter_Pledging_%']!=null&&Number(s['Promoter_Pledging_%'])>20?'var(--red)':'var(--text)'} />
+                <Metric label="D/E" value={debtEq!==null?debtEq.toFixed(2):'-'} />
+                <Metric label="Sharpe" value={sharpe!==null?sharpe.toFixed(2):'-'} color={sharpe!==null?(sharpe>1?'var(--green)':sharpe<0?'var(--red)':'var(--text)'):'var(--text)'} />
+                <Metric label="Beta" value={s.Beta!=null?Number(s.Beta).toFixed(2):'-'} color={s.Beta!=null?(Number(s.Beta)<0.8?'var(--green)':Number(s.Beta)>1.2?'var(--red)':'var(--text)'):'var(--text)'} />
               </div>
 
               {/* Bull/Bear + 52W range */}

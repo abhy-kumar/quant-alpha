@@ -117,7 +117,7 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
                       }}
                       onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)' }}
                       onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none' }}
-                      title={`${stock.Ticker.replace('.NS', '')} \u2014 Score: ${s.toFixed(2)}`}
+                      title={`${stock.Ticker.replace('.NS', '')} - Score: ${s.toFixed(2)}`}
                     >
                       <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '-0.02em',
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',

@@ -20,7 +20,8 @@ interface Props {
   isDark: boolean
   peerGroup: DashboardData[]
   selectedAsset: DashboardData | null
-  scoreHistory: Record<string, {date: string; composite: number; tech: number; fund: number; research: number}[]>
+  scoreHistory: Record<string, {date: string; composite: number; composite_tech?: number; composite_fund?: number; tech: number; fund: number; research: number}[]>
+  horizon: 'short'|'long'
 }
 
 function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]; selectedTicker: string; onSelect: (t: string) => void }) {
@@ -135,16 +136,20 @@ const InfoBlock = ({ label, value, accent }: { label: string; value: React.React
 export default function ChartingTab({
   data, selectedTicker, setSelectedTicker, chartData, chartLoading,
   chartPeriod, setChartPeriod, chartInterval, setChartInterval,
-  isDark, peerGroup, selectedAsset, scoreHistory
+  isDark, peerGroup, selectedAsset, scoreHistory, horizon
 }: Props) {
-  const tickerScores = scoreHistory[selectedTicker] || []
+  const rawTickerScores = scoreHistory[selectedTicker] || []
+  const tickerScores = rawTickerScores.map(s => ({
+    ...s,
+    composite: horizon === 'long' ? (s.composite_fund ?? s.composite) : horizon === 'short' ? (s.composite_tech ?? s.composite) : s.composite,
+  }))
   const price = Number(selectedAsset?.Price) || 0
   const ath = selectedAsset?.All_Time_High ? Number(selectedAsset.All_Time_High) : null
 
   return (
     <div className="space-y-5">
       <div className="flex flex-col xl:flex-row gap-6 xl:gap-8">
-      {/* Left: Controls & Info — sticky */}
+      {/* Left: Controls & Info - sticky */}
       <div className="w-full xl:w-72 flex flex-col gap-5 order-2 xl:order-1 shrink-0" style={{ position: 'sticky', top: 60, maxHeight: 'calc(100vh - 80px)', overflowY: 'auto' }}>
         <StockSearch data={data} selectedTicker={selectedTicker} onSelect={setSelectedTicker} />
 
@@ -159,28 +164,28 @@ export default function ChartingTab({
             )}
           </div>
           <div className="mb-4">
-            <div className="text-sm font-medium truncate" style={{ color: 'var(--text)' }} title={selectedAsset?.Long_Name || '—'}>{selectedAsset?.Long_Name?.replace(' Limited', ' Ltd').replace(' Industries', ' Ind.') || '—'}</div>
+            <div className="text-sm font-medium truncate" style={{ color: 'var(--text)' }} title={selectedAsset?.Long_Name || '-'}>{selectedAsset?.Long_Name?.replace(' Limited', ' Ltd').replace(' Industries', ' Ind.') || '-'}</div>
           </div>
           <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
             <InfoBlock label="Price" value={`₹${num(selectedAsset?.Price)}`} />
             <InfoBlock
               label="1D Change"
-              value={selectedAsset?.["1d_Chg_%"] ? `${selectedAsset["1d_Chg_%"] > 0 ? '+' : ''}${selectedAsset["1d_Chg_%"].toFixed(2)}%` : '—'}
+              value={selectedAsset?.["1d_Chg_%"] ? `${selectedAsset["1d_Chg_%"] > 0 ? '+' : ''}${selectedAsset["1d_Chg_%"].toFixed(2)}%` : '-'}
               accent={selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] > 0 ? 'var(--green)' : selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] < 0 ? 'var(--red)' : undefined}
             />
-            <InfoBlock label="CEO" value={selectedAsset?.CEO || '—'} />
-            <InfoBlock label="Market Cap" value={selectedAsset?.Market_Cap_B ? `₹${num(selectedAsset?.Market_Cap_B)}Cr` : '—'} />
-            <InfoBlock label="Revenue" value={selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue)} Cr` : '—'} />
-            <InfoBlock label="Profit" value={selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income)} Cr` : '—'} />
-            <InfoBlock label="EBITDA" value={selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA)} Cr` : '—'} />
-            <InfoBlock label="Div Yield" value={selectedAsset?.["Div_Yield_%"] ? `${num(selectedAsset?.["Div_Yield_%"])}%` : '—'} />
-            <InfoBlock label="52W High" value={selectedAsset?.["52W_High"] ? `₹${num(selectedAsset?.["52W_High"])}` : '—'} />
-            <InfoBlock label="52W Low" value={selectedAsset?.["52W_Low"] ? `₹${num(selectedAsset?.["52W_Low"])}` : '—'} />
+            <InfoBlock label="CEO" value={selectedAsset?.CEO || '-'} />
+            <InfoBlock label="Market Cap" value={selectedAsset?.Market_Cap_B ? `₹${num(selectedAsset?.Market_Cap_B)}Cr` : '-'} />
+            <InfoBlock label="Revenue" value={selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue)} Cr` : '-'} />
+            <InfoBlock label="Profit" value={selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income)} Cr` : '-'} />
+            <InfoBlock label="EBITDA" value={selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA)} Cr` : '-'} />
+            <InfoBlock label="Div Yield" value={selectedAsset?.["Div_Yield_%"] ? `${num(selectedAsset?.["Div_Yield_%"])}%` : '-'} />
+            <InfoBlock label="52W High" value={selectedAsset?.["52W_High"] ? `₹${num(selectedAsset?.["52W_High"])}` : '-'} />
+            <InfoBlock label="52W Low" value={selectedAsset?.["52W_Low"] ? `₹${num(selectedAsset?.["52W_Low"])}` : '-'} />
             {ath && price > 0 && (
               <InfoBlock label="vs ATH" value={`${(((price / ath) - 1) * 100).toFixed(1)}%`} accent={(price / ath) > 0.95 ? 'var(--green)' : 'var(--amber)'} />
             )}
-            <InfoBlock label="ATH" value={ath ? `₹${num(ath)}` : '—'} />
-            <InfoBlock label="ATL" value={selectedAsset?.All_Time_Low ? `₹${num(selectedAsset?.All_Time_Low)}` : '—'} />
+            <InfoBlock label="ATH" value={ath ? `₹${num(ath)}` : '-'} />
+            <InfoBlock label="ATL" value={selectedAsset?.All_Time_Low ? `₹${num(selectedAsset?.All_Time_Low)}` : '-'} />
           </div>
         </div>
 
@@ -189,18 +194,18 @@ export default function ChartingTab({
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Technical Snapshot</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} />
-            <InfoBlock label="Conviction" value={selectedAsset?.Conviction || '—'} />
+            <InfoBlock label="Conviction" value={selectedAsset?.Conviction || '-'} />
             <InfoBlock label="RSI(14)" value={num(selectedAsset?.RSI_Value)} />
             <InfoBlock label="ADX(14)" value={num(selectedAsset?.ADX_Value)} />
             <InfoBlock label="MACD" value={num(selectedAsset?.MACD_Value)} />
-            <InfoBlock label="Supertrend" value={selectedAsset?.ST_Signal || '—'} />
+            <InfoBlock label="Supertrend" value={selectedAsset?.ST_Signal || '-'} />
             <div className="col-span-2">
               <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}>Bull / Neutral / Bear</div>
-              <span style={{color:'var(--green)'}}>{selectedAsset?.Bull_Count ?? '—'}</span>
+              <span style={{color:'var(--green)'}}>{selectedAsset?.Bull_Count ?? '-'}</span>
               <span className="mx-1" style={{color:'var(--text-3)'}}>/</span>
-              <span style={{color:'var(--text-2)'}}>{selectedAsset?.Bull_Count != null && selectedAsset?.Bear_Count != null ? 15 - selectedAsset.Bull_Count - selectedAsset.Bear_Count : '—'}</span>
+              <span style={{color:'var(--text-2)'}}>{selectedAsset?.Bull_Count != null && selectedAsset?.Bear_Count != null ? 15 - selectedAsset.Bull_Count - selectedAsset.Bear_Count : '-'}</span>
               <span className="mx-1" style={{color:'var(--text-3)'}}>/</span>
-              <span style={{color:'var(--red)'}}>{selectedAsset?.Bear_Count ?? '—'}</span>
+              <span style={{color:'var(--red)'}}>{selectedAsset?.Bear_Count ?? '-'}</span>
             </div>
           </div>
         </div>
@@ -214,14 +219,14 @@ export default function ChartingTab({
             </span>
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="Piotroski" value={`${selectedAsset?.Piotroski_F ?? '—'}/9`} accent={Number(selectedAsset?.Piotroski_F) >= 7 ? 'var(--green)' : Number(selectedAsset?.Piotroski_F) <= 3 ? 'var(--red)' : undefined} />
+            <InfoBlock label="Piotroski" value={`${selectedAsset?.Piotroski_F ?? '-'}/9`} accent={Number(selectedAsset?.Piotroski_F) >= 7 ? 'var(--green)' : Number(selectedAsset?.Piotroski_F) <= 3 ? 'var(--red)' : undefined} />
             <InfoBlock label="Gross Profit" value={num(selectedAsset?.Gross_Profit_Score)} />
             <InfoBlock label="Earnings Quality" value={num(selectedAsset?.Earnings_Quality)} />
             <InfoBlock label="Z-Score" value={num(selectedAsset?.Z_Score_60)} accent={Number(selectedAsset?.Z_Score_60) > 2 ? 'var(--red)' : Number(selectedAsset?.Z_Score_60) < -2 ? 'var(--green)' : undefined} />
             <InfoBlock label="Value Score" value={num(selectedAsset?.Value_Score)} accent={Number(selectedAsset?.Value_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Value_Score) < 4 ? 'var(--red)' : undefined} />
             <InfoBlock label="Investment" value={num(selectedAsset?.Investment_Score)} />
             <InfoBlock label="SUE" value={num(selectedAsset?.SUE_Score)} />
-            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '—'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} />
+            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '-'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} />
           </div>
         </div>
 
@@ -229,10 +234,10 @@ export default function ChartingTab({
         <div className="card p-5">
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Momentum</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="1 Month" value={selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : '—'} accent={colorCode(selectedAsset?.Momentum_1M)} />
-            <InfoBlock label="3 Month" value={selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : '—'} accent={colorCode(selectedAsset?.Momentum_3M)} />
-            <InfoBlock label="6 Month" value={selectedAsset?.Momentum_6M != null ? `${(selectedAsset.Momentum_6M * 100).toFixed(2)}%` : '—'} accent={colorCode(selectedAsset?.Momentum_6M)} />
-            <InfoBlock label="12 Month" value={selectedAsset?.Momentum_12M != null ? `${(selectedAsset.Momentum_12M * 100).toFixed(2)}%` : '—'} accent={colorCode(selectedAsset?.Momentum_12M)} />
+            <InfoBlock label="1 Month" value={selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_1M)} />
+            <InfoBlock label="3 Month" value={selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_3M)} />
+            <InfoBlock label="6 Month" value={selectedAsset?.Momentum_6M != null ? `${(selectedAsset.Momentum_6M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_6M)} />
+            <InfoBlock label="12 Month" value={selectedAsset?.Momentum_12M != null ? `${(selectedAsset.Momentum_12M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_12M)} />
             <div className="col-span-2 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
               <InfoBlock label="Risk-Adjusted" value={num(selectedAsset?.Risk_Adj_Mom)} accent={colorCode(selectedAsset?.Risk_Adj_Mom)} />
             </div>
@@ -260,15 +265,15 @@ export default function ChartingTab({
             <InfoBlock label="Sharpe" value={num(selectedAsset?.Sharpe)} accent={colorCode(selectedAsset?.Sharpe)} />
             <InfoBlock label="Max Drawdown" value={`${num(selectedAsset?.['Max_Drawdown_%'])}%`} accent="var(--red)" />
             <InfoBlock label="Total Return" value={`${num(selectedAsset?.['Total_Return_%'])}%`} accent={colorCode(selectedAsset?.['Total_Return_%'])} />
-            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '—'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} />
-            <InfoBlock label="Alpha (60D)" value={selectedAsset?.Alpha_60D != null ? `${selectedAsset.Alpha_60D.toFixed(1)}%` : '—'} accent={selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D > 0 ? 'var(--green)' : selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D < 0 ? 'var(--red)' : undefined} />
+            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '-'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} />
+            <InfoBlock label="Alpha (60D)" value={selectedAsset?.Alpha_60D != null ? `${selectedAsset.Alpha_60D.toFixed(1)}%` : '-'} accent={selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D > 0 ? 'var(--green)' : selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D < 0 ? 'var(--red)' : undefined} />
           </div>
         </div>
       </div>
 
       {/* Right: Charts */}
       <div className="w-full xl:flex-1 flex flex-col gap-5 order-1 xl:order-2 min-w-0">
-        {/* Period + Interval — segmented controls */}
+        {/* Period + Interval - segmented controls */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="inline-flex" style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
             {['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => (
@@ -301,7 +306,7 @@ export default function ChartingTab({
         </div>
 
         {/* Main chart */}
-        <Panel title={`${selectedTicker.replace('.NS', '')} — Price · SMA 50 · SMA 200 · Supertrend`}>
+        <Panel title={`${selectedTicker.replace('.NS', '')} - Price · SMA 50 · SMA 200 · Supertrend`}>
           <div className="chart-main" role="img" aria-label={`${selectedTicker} price chart`}>
             {chartLoading ? (
               <div className="flex items-center justify-center h-full text-sm animate-pulse" style={{ color: 'var(--text-3)' }}>Loading…</div>
@@ -334,7 +339,7 @@ export default function ChartingTab({
         </Panel>
 
         {/* RSI with reference lines */}
-        <Panel title="RSI(14) — 30 oversold · 70 overbought">
+        <Panel title="RSI(14) - 30 oversold · 70 overbought">
           <div className="chart-sub" role="img" aria-label={`${selectedTicker} RSI chart`}>
             {chartData.length > 0 && !chartLoading && (
               <ResponsiveContainer width="100%" height="100%">
@@ -356,7 +361,7 @@ export default function ChartingTab({
         </Panel>
 
         {/* MACD with zero line */}
-        <Panel title="MACD (12, 26, 9) — histogram · signal line">
+        <Panel title="MACD (12, 26, 9) - histogram · signal line">
           <div className="chart-sub" role="img" aria-label={`${selectedTicker} MACD chart`}>
             {chartData.length > 0 && !chartLoading && (
               <ResponsiveContainer width="100%" height="100%">
@@ -388,7 +393,7 @@ export default function ChartingTab({
 
         {/* Score History */}
         {tickerScores.length > 1 && (
-          <Panel title={`Composite Score History — ${tickerScores.length} scans`}>
+          <Panel title={`Composite Score History - ${tickerScores.length} scans`}>
             <div className="chart-score">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={tickerScores}>
@@ -474,10 +479,10 @@ export default function ChartingTab({
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden lg:table-cell`}>{num(row.Fund_Score)}</td>
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden lg:table-cell`}>{num(row.Research_Score)}</td>
                     <td className="py-3 px-4 text-right text-sm hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
-                    <td className={`py-3 px-4 text-right text-sm font-medium hidden xl:table-cell`}>{row.Piotroski_F ?? '—'}</td>
+                    <td className={`py-3 px-4 text-right text-sm font-medium hidden xl:table-cell`}>{row.Piotroski_F ?? '-'}</td>
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden xl:table-cell ${Number(row.Value_Score) >= 7 ? 'text-green' : Number(row.Value_Score) < 4 ? 'text-red' : ''}`}>{num(row.Value_Score)}</td>
-                    <td className={`py-3 px-4 text-right text-sm font-medium hidden xl:table-cell ${row.Beta != null && row.Beta < 0.8 ? 'text-green' : row.Beta != null && row.Beta > 1.2 ? 'text-red' : ''}`}>{row.Beta != null ? row.Beta.toFixed(2) : '—'}</td>
-                    <td className="py-3 px-4 text-right text-sm font-medium" style={{ color: 'var(--text)' }}>{row.Conviction || '—'}</td>
+                    <td className={`py-3 px-4 text-right text-sm font-medium hidden xl:table-cell ${row.Beta != null && row.Beta < 0.8 ? 'text-green' : row.Beta != null && row.Beta > 1.2 ? 'text-red' : ''}`}>{row.Beta != null ? row.Beta.toFixed(2) : '-'}</td>
+                    <td className="py-3 px-4 text-right text-sm font-medium" style={{ color: 'var(--text)' }}>{row.Conviction || '-'}</td>
                   </tr>
                 )) : (
                   <tr><td colSpan={11} className="py-4 text-center text-sm" style={{ color: 'var(--text-3)' }}>No peers in {selectedAsset?.Sector}</td></tr>

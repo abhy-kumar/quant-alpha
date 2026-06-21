@@ -2,9 +2,9 @@
 nse_fetcher.py
 --------------
 Handles all free NSE data sources:
-  1. NSE Bhav Copy  — Official EOD OHLCV for every listed equity (post 4 PM)
-  2. NSE Live API   — Delayed (~1–5 min) quotes via NSE's own public endpoints
-  3. Market Status  — IST clock + open/closed detection
+  1. NSE Bhav Copy  - Official EOD OHLCV for every listed equity (post 4 PM)
+  2. NSE Live API   - Delayed (~1–5 min) quotes via NSE's own public endpoints
+  3. Market Status  - IST clock + open/closed detection
 
 No API keys, no paid subscriptions.
 """
@@ -144,8 +144,8 @@ def download_bhav_copy(max_lookback: int = 5) -> tuple[pd.DataFrame, datetime | 
 
     Returns
     -------
-    (DataFrame, date)  — filtered to EQ series only
-    (empty DataFrame, None)  — if all attempts fail
+    (DataFrame, date)  - filtered to EQ series only
+    (empty DataFrame, None)  - if all attempts fail
     """
     headers = {"User-Agent": _NSE_HEADERS["User-Agent"]}
     today   = datetime.now(IST).replace(tzinfo=None)
@@ -298,7 +298,7 @@ def get_live_quote(session: requests.Session, symbol: str) -> dict:
 def get_bulk_live_quotes(symbols_ns: list[str], max_symbols: int = 40) -> pd.DataFrame:
     """
     Fetch live delayed quotes for up to `max_symbols` stocks.
-    `symbols_ns` — list of tickers in 'SYMBOL.NS' format.
+    `symbols_ns` - list of tickers in 'SYMBOL.NS' format.
     Returns a DataFrame with one row per symbol.
     """
     session = _create_nse_session()

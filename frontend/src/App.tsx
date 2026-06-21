@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, memo, lazy, Suspense } from 'react'
 import axios from 'axios'
 import { TrendingUp, BarChart2, Layers, Moon, Sun, AlertCircle, Database, Activity } from 'lucide-react'
+import { Analytics } from '@vercel/analytics/react'
 import type { DashboardData } from './types'
 
 console.log('[Alpha] App.tsx module loaded')
@@ -23,9 +24,10 @@ class ErrorBoundary extends React.Component<
           <p>{this.state.error.message}</p>
           <pre>{this.state.error.stack}</pre>
           <button onClick={() => this.setState({ error: null })} style={{ marginTop: 16, padding: '8px 16px', cursor: 'pointer' }}>Retry</button>
-        </div>
-      )
-    }
+      <Analytics />
+    </div>
+  )
+}
     return this.props.children
   }
 }
@@ -250,7 +252,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col" style={{ background:'var(--bg)' }}>
       <Tape data={data} />
 
-      {/* Header — Row 1: Nav */}
+      {/* Header - Row 1: Nav */}
       <header className="sticky top-0 z-40" style={{ background:'var(--surface)', borderBottom:'1px solid var(--border)' }}>
         <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[44px] flex items-center">
           {/* Left: nav */}
@@ -408,7 +410,7 @@ export default function App() {
               <div>
                 {activeTab==='picks' && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
                 {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers}/>}
-                {activeTab==='charting' && <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory}/>}
+                {activeTab==='charting' && <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon}/>}
                 {activeTab==='heatmap' && <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>}
                 {activeTab==='factorlab' && <FactorLabTab outcomeAccuracy={outcomeAccuracy} firstScanDate={firstScanDate} isDark={isDark}/>}
               </div>
@@ -423,7 +425,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <span>Made with &#10084;&#65039; by Abhishek Kumar</span>
             <span className="hidden sm:inline">|</span>
-            <span className="hidden sm:inline">Educational and academic research only. Not investment advice. Not registered with SEBI. Data from third-party sources may contain errors. Consult a SEBI-registered advisor before investing.</span>
+            <span className="hidden sm:inline">Educational and academic research only. Not investment advice. Data from third-party sources may contain errors. Consult a SEBI-registered advisor before investing.</span>
           </div>
           <div className="flex items-center gap-3">
             {scanUpdated && <span className="font-mono">Last scan: {scanUpdated}</span>}

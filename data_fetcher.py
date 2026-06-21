@@ -190,7 +190,11 @@ def fetch_fundamentals(ticker: str) -> dict:
         if info.get('quoteType') == 'ETF':
             cache_manager.add_to_etf_list(sym)
 
-    needs_fundamentals = pd.isna(_safe_float(info.get('trailingPE'))) or pd.isna(_safe_float(info.get('returnOnEquity')))
+    needs_fundamentals = (
+        pd.isna(_safe_float(info.get('trailingPE'))) or
+        pd.isna(_safe_float(info.get('returnOnEquity'))) or
+        pd.isna(_safe_float(info.get('roce')))
+    )
 
     now_ts = time.time()
     with _screener_lock:
@@ -282,6 +286,18 @@ def _fetch_from_screener(sym: str, info: dict, cached_sector, needs_fundamentals
             peers_table = soup.find('table', class_='data-table')
             if peers_table:
                 _parse_screener_peers(peers_table, sym, info)
+
+            # If ROCE is still missing, the consolidated page may have empty
+            # values. Try the non-consolidated page as fallback.
+            if pd.isna(_safe_float(info.get('roce'))):
+                try:
+                    url_fb = f"https://www.screener.in/company/{urllib.parse.quote(sym, safe='')}/"
+                    resp_fb = _YF_SESSION.get(url_fb, timeout=15)
+                    if resp_fb.status_code == 200:
+                        soup_fb = BeautifulSoup(resp_fb.text, 'html.parser')
+                        _parse_screener_ratios(soup_fb, info)
+                except Exception as e:
+                    log.debug(f"Screener.in ROCE fallback failed for {sym}: {e}")
         else:
             _screener_state["failures"] += 1
             log.warning(f"Screener.in HTTP {resp.status_code} for {sym} (failure {_screener_state['failures']}/{SCREENER_MAX_FAILURES})")
@@ -311,7 +327,8 @@ def _parse_screener_peers(peers_table, sym: str, info: dict):
             if sym.lower() in cells[1].text.strip().lower():
                 if debt_idx != -1 and pd.isna(_safe_float(info.get('debtToEquity'))):
                     try:
-                        info['debtToEquity'] = float(cells[debt_idx].text.strip().replace(',', '')) * 100.0
+                        raw_de = float(cells[debt_idx].text.strip().replace(',', ''))
+                        info['debtToEquity'] = raw_de if raw_de > 10 else raw_de * 100.0
                     except (ValueError, IndexError):
                         pass
             else:
@@ -364,7 +381,7 @@ def _parse_screener_ratios(soup, info: dict):
         elif 'quick ratio' in name_text and pd.isna(_safe_float(info.get('quickRatio'))):
             info['quickRatio'] = val
         elif 'debt to equity' in name_text and pd.isna(_safe_float(info.get('debtToEquity'))):
-            info['debtToEquity'] = val * 100.0
+            info['debtToEquity'] = val if val > 10 else val * 100.0
         elif 'roce' in name_text:
             info['roce'] = val
 

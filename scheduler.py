@@ -1,7 +1,7 @@
 """
 scheduler.py
 ------------
-APScheduler background job — runs a full market scan at 4:15 PM IST
+APScheduler background job - runs a full market scan at 4:15 PM IST
 every Monday–Friday (after NSE equity market closes at 3:30 PM).
 
 Usage
@@ -33,7 +33,7 @@ def _post_market_scan() -> None:
     try:
         from scanner import run_scanner
         df = run_scanner()
-        logger.info(f"Scan complete — {len(df)} stocks processed.")
+        logger.info(f"Scan complete - {len(df)} stocks processed.")
     except Exception as exc:
         logger.error(f"Scan failed: {exc}")
 
@@ -83,7 +83,7 @@ def start_scheduler() -> BackgroundScheduler:
     )
     
     scheduler.start()
-    logger.info("📅 Scheduler started — daily scan at 4:15 PM IST (Mon–Fri), live updates every 3m (9am-4pm).")
+    logger.info("📅 Scheduler started - daily scan at 4:15 PM IST (Mon–Fri), live updates every 3m (9am-4pm).")
     return scheduler
 
 
