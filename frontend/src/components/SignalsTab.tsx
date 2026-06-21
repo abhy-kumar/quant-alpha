@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import type { DashboardData } from '../types'
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from 'recharts'
 import { scoreBar } from './shared'
 
 function ConvictionDots({ conviction }: { conviction: string }) {
@@ -51,47 +50,58 @@ function ScoreRadar({ s }: { s: DashboardData }) {
   const value = Number(s.Value_Score) || 0
   const vol = Number(s.Vol_60D) || 0
 
-  const data = [
-    { axis: 'Tech', value: Math.max(0, Math.min(10, (techRaw + 1) * 5)), raw: techRaw.toFixed(1) },
-    { axis: 'Fund', value: Math.max(0, Math.min(10, fundRaw)), raw: fundRaw.toFixed(1) },
-    { axis: 'Research', value: Math.max(0, Math.min(10, researchRaw)), raw: researchRaw.toFixed(1) },
-    { axis: 'Quality', value: Math.max(0, Math.min(10, (piotroski / 9) * 10)), raw: `${piotroski}/9` },
-    { axis: 'Mom', value: Math.max(0, Math.min(10, ((momentum + 100) / 200) * 10)), raw: `${momentum >= 0 ? '+' : ''}${momentum.toFixed(1)}%` },
-    { axis: 'Value', value: Math.max(0, Math.min(10, value)), raw: value.toFixed(1) },
-    { axis: 'Low Vol', value: Math.max(0, Math.min(10, ((60 - vol) / 60) * 10)), raw: `${vol.toFixed(1)}%` },
+  const axes = [
+    { label: 'Tech', value: Math.max(0, Math.min(10, (techRaw + 1) * 5)), raw: techRaw.toFixed(1) },
+    { label: 'Fund', value: Math.max(0, Math.min(10, fundRaw)), raw: fundRaw.toFixed(1) },
+    { label: 'Research', value: Math.max(0, Math.min(10, researchRaw)), raw: researchRaw.toFixed(1) },
+    { label: 'Quality', value: Math.max(0, Math.min(10, (piotroski / 9) * 10)), raw: `${piotroski}/9` },
+    { label: 'Mom', value: Math.max(0, Math.min(10, ((momentum + 100) / 200) * 10)), raw: `${momentum >= 0 ? '+' : ''}${momentum.toFixed(1)}%` },
+    { label: 'Value', value: Math.max(0, Math.min(10, value)), raw: value.toFixed(1) },
+    { label: 'Vol', value: Math.max(0, Math.min(10, ((60 - vol) / 60) * 10)), raw: `${vol.toFixed(1)}%` },
   ]
 
-  const renderTooltip = ({ active, payload }: any) => {
-    if (!active || !payload?.length) return null
-    const d = payload[0].payload
-    return (
-      <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'var(--radius)',padding:'4px 8px',fontSize:11}}>
-        <span style={{color:'var(--text-2)'}}>{d.axis}: </span>
-        <span style={{color:'var(--text)',fontWeight:600}}>{d.raw}</span>
-      </div>
-    )
+  const cx = 100, cy = 100, r = 70, n = axes.length
+  const toXY = (i: number, val: number) => {
+    const angle = (Math.PI * 2 * i) / n - Math.PI / 2
+    const dist = (val / 10) * r
+    return { x: cx + dist * Math.cos(angle), y: cy + dist * Math.sin(angle) }
   }
 
+  const gridLevels = [2, 4, 6, 8, 10]
+  const dataPoints = axes.map((a, i) => toXY(i, a.value))
+  const dataPath = dataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ') + 'Z'
+
   return (
-    <div style={{width:'100%',height:200}}>
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
-          <PolarGrid stroke="var(--border)" />
-          <PolarAngleAxis
-            dataKey="axis"
-            tick={{fontSize:9, fill:'var(--text-3)'}}
-            tickLine={false}
-          />
-          <Tooltip content={renderTooltip} />
-          <Radar
-            dataKey="value"
-            stroke="var(--brand)"
-            fill="var(--brand)"
-            fillOpacity={0.2}
-            strokeWidth={1.5}
-          />
-        </RadarChart>
-      </ResponsiveContainer>
+    <div style={{ width: '100%', height: 200 }}>
+      <svg viewBox="0 0 200 200" width="100%" height="100%">
+        {/* Grid rings */}
+        {gridLevels.map(level => {
+          const pts = Array.from({ length: n }, (_, i) => toXY(i, level))
+          const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ') + 'Z'
+          return <path key={level} d={d} fill="none" stroke="var(--border)" strokeWidth={0.5} />
+        })}
+        {/* Axis lines */}
+        {axes.map((_, i) => {
+          const end = toXY(i, 10)
+          return <line key={i} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="var(--border)" strokeWidth={0.5} />
+        })}
+        {/* Data shape */}
+        <path d={dataPath} fill="var(--brand)" fillOpacity={0.15} stroke="var(--brand)" strokeWidth={1.5} />
+        {/* Data dots */}
+        {dataPoints.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={2.5} fill="var(--brand)" />
+        ))}
+        {/* Labels */}
+        {axes.map((a, i) => {
+          const lbl = toXY(i, 12)
+          return (
+            <text key={i} x={lbl.x} y={lbl.y} textAnchor="middle" dominantBaseline="middle"
+              fontSize={8} fill="var(--text-3)" fontWeight={500}>
+              {a.label}
+            </text>
+          )
+        })}
+      </svg>
     </div>
   )
 }
