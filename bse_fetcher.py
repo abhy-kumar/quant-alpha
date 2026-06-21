@@ -78,9 +78,28 @@ def _load_nse_to_bse_map() -> dict:
 
     session = _create_bse_session()
     url = "https://www.bseindia.com/BSEIndiaAPI/api/GetStkLstDt/w?Indx=EQ&Industry=ALL&Flag=0"
-    try:
-        resp = session.get(url, timeout=15)
-        if resp.status_code == 200:
+    for attempt, wait in enumerate([2, 4]):
+        try:
+            resp = session.get(url, timeout=15)
+            if resp.status_code != 200:
+                logger.warning(f"BSE: stock mapping HTTP {resp.status_code}")
+                time.sleep(wait)
+                _invalidate_bse_session()
+                session = _create_bse_session()
+                continue
+
+            content_type = resp.headers.get("Content-Type", "")
+            if "json" not in content_type and "text/plain" not in content_type:
+                logger.warning(f"BSE: stock mapping non-JSON response ({content_type})")
+                time.sleep(wait)
+                continue
+
+            text = resp.text.strip()
+            if not text or text.startswith("<") or len(text) < 10:
+                logger.warning(f"BSE: stock mapping empty/HTML response ({len(text)} bytes)")
+                time.sleep(wait)
+                continue
+
             data = resp.json()
             mapping = {}
             for item in data.get("Table", []):
@@ -94,8 +113,9 @@ def _load_nse_to_bse_map() -> dict:
             _nse_to_bse_map = mapping
             logger.info(f"BSE: loaded {len(mapping)} NSE→BSE mappings")
             return _nse_to_bse_map
-    except Exception as e:
-        logger.warning(f"BSE: failed to load stock mapping: {e}")
+        except Exception as e:
+            logger.warning(f"BSE: failed to load stock mapping (attempt {attempt + 1}): {type(e).__name__}: {e}")
+            time.sleep(wait)
 
     _nse_to_bse_map = {}
     return _nse_to_bse_map

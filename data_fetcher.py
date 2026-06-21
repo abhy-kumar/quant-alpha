@@ -32,6 +32,7 @@ _screener_state = {"failures": 0, "disabled_until": 0}
 _screener_lock = threading.Lock()
 SCREENER_MAX_FAILURES = 10
 SCREENER_COOLDOWN = 300
+_screener_request_lock = threading.Lock()
 
 vader = SentimentIntensityAnalyzer()
 
@@ -217,14 +218,15 @@ def fetch_fundamentals(ticker: str) -> dict:
 
 
 def _fetch_from_screener(sym: str, info: dict, cached_sector, needs_fundamentals: bool, needs_sector: bool):
-    """Scrape fundamental data from Screener.in."""
-    time.sleep(1.0)
+    """Scrape fundamental data from Screener.in with rate limiting."""
+    with _screener_request_lock:
+        time.sleep(1.5)
     try:
         url = f"https://www.screener.in/company/{sym}/consolidated/"
-        resp = _YF_SESSION.get(url, timeout=10)
+        resp = _YF_SESSION.get(url, timeout=15)
         if resp.status_code != 200:
             url = f"https://www.screener.in/company/{sym}/"
-            resp = _YF_SESSION.get(url, timeout=10)
+            resp = _YF_SESSION.get(url, timeout=15)
 
         if resp.status_code == 200:
             _screener_state["failures"] = max(0, _screener_state["failures"] - 1)

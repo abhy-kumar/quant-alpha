@@ -31,23 +31,26 @@ BB_PERIOD = 20
 # Scoring & Ranking
 RS_PERIODS = [21, 63, 126]  # Approx 1m, 3m, 6m trading days
 
-# Research Factor Weights (Piotroski 2000, Novy-Marx 2013, Jegadeesh & Titman 1993)
+# Research Factor Weights (calibrated to academic factor return literature)
 RESEARCH_FACTOR_WEIGHTS = {
-    "piotroski": 0.15,    # Piotroski (2000): Accounting-based financial strength
-    "profitability": 0.15, # Novy-Marx (2013): GP/Assets as alpha predictor
-    "momentum": 0.25,     # Jegadeesh & Titman (1993): 12-1 month momentum
-    "volatility": 0.15,   # Baker, Bradley & Wurgler (2011): Low vol anomaly
-    "reversion": 0.10,    # De Bondt & Thaler (1985): Mean reversion
-    "earnings": 0.10,     # Sloan (1996): Earnings quality / accruals
-    "tech_existing": 0.10 # Baseline technical analysis
+    "piotroski": 0.10,      # Piotroski (2000): Accounting-based financial strength
+    "profitability": 0.10,  # Novy-Marx (2013): GP/Assets as alpha predictor
+    "earnings": 0.10,       # Sloan (1996): Earnings quality / accruals
+    "momentum": 0.20,       # Jegadeesh & Titman (1993): 12-1 month momentum
+    "value": 0.15,          # Fama & French (1993): B/M, E/P, CF/P, D/P
+    "volatility": 0.10,     # Baker, Bradley & Wurgler (2011): Low vol anomaly
+    "beta": 0.10,           # Frazzini & Pedersen (2014): Betting Against Beta
+    "investment": 0.10,     # Titman, Wei & Xie (2004): Conservative investment
+    "sue": 0.10,            # Bernard & Thomas (1989): Post-earnings drift
+    "reversion": 0.05,      # De Bondt & Thaler (1985): Mean reversion
 }
 
 # Composite Score Weights
 COMPOSITE_WEIGHTS = {
     "default":  {"tech": 0.35, "fund": 0.30, "research": 0.35},
     "tech":     {"tech": 0.50, "fund": 0.15, "research": 0.35},
-    "fund":     {"tech": 0.15, "fund": 0.55, "research": 0.30},
-    "momentum": {"tech": 0.30, "fund": 0.20, "research": 0.50},
+    "fund":     {"tech": 0.10, "fund": 0.40, "research": 0.50},
+    "momentum": {"tech": 0.20, "fund": 0.10, "research": 0.70},
 }
 
 # Risk-free rate for Sharpe ratio (India 10Y G-Sec yield)

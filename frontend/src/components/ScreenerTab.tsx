@@ -84,6 +84,38 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
 
   return (
     <div className="space-y-4">
+      {/* Algorithm Info */}
+      <div className="p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--brand)' }}>Scoring Model</span>
+          <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>10 Factors · Cross-Sectional Ranking</span>
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 gap-2 text-center">
+          {[
+            ['Piotroski', '0.10', 'var(--green)'],
+            ['Profitability', '0.10', 'var(--green)'],
+            ['Earnings Q', '0.10', 'var(--green)'],
+            ['Momentum', '0.20', 'var(--brand)'],
+            ['Value', '0.15', 'var(--blue)'],
+            ['Low Vol', '0.10', 'var(--text-2)'],
+            ['Beta', '0.10', 'var(--text-2)'],
+            ['Investment', '0.10', 'var(--text-2)'],
+            ['SUE', '0.10', 'var(--text-2)'],
+            ['Reversion', '0.05', 'var(--text-3)'],
+          ].map(([label, weight, color]) => (
+            <div key={label} className="flex flex-col items-center">
+              <span className="text-[10px] font-mono" style={{ color }}>{weight}</span>
+              <span className="text-[9px]" style={{ color: 'var(--text-3)' }}>{label}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 pt-2 flex flex-wrap gap-3 text-[9px]" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-3)' }}>
+          <span>Composite: Tech 35% · Fund 30% · Research 35%</span>
+          <span className="hidden sm:inline">|</span>
+          <span className="hidden sm:inline">Long-Term: Tech 10% · Fund 40% · Research 50%</span>
+        </div>
+      </div>
+
       {/* Filter bar */}
       <div className="flex items-center justify-between">
         <span className="text-[12px]" style={{color:'var(--text-3)'}}>{filteredData.length} results</span>
@@ -269,15 +301,21 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                           <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--brand)' }}>Research Factors</h4>
                           <div className="space-y-2 text-sm">
                             {[
-                              ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`],
-                              ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`],
-                              ['Earnings Quality', `${num(row.Earnings_Quality)}/10`],
-                              ['Value Score', `${num(row.Value_Score)}/10`],
-                              ['Investment Score', `${num(row.Investment_Score)}/10`],
-                              ['SUE Score', `${num(row.SUE_Score)}/10`],
-                              ['Beta', row.Beta != null ? row.Beta.toFixed(2) : 'N/A'],
+                              ['Piotroski F-Score (2000)', `${row.Piotroski_F ?? '-'}/9`],
+                              ['Gross Profitability (2013)', `${num(row.Gross_Profit_Score)}/10`],
+                              ['Earnings Quality (1996)', `${num(row.Earnings_Quality)}/10`],
+                              ['Value Factor (Fama-French)', `${num(row.Value_Score)}/10`],
+                              ['Investment Factor (2004)', `${num(row.Investment_Score)}/10`],
+                              ['SUE / Earnings Momentum', `${num(row.SUE_Score)}/10`],
+                              ['Low Volatility (2011)', `${num(row.Vol_60D)}%`],
+                              ['Betting Against Beta', row.Beta != null ? `${row.Beta.toFixed(2)} β` : 'N/A'],
                               ['Alpha (60D)', row.Alpha_60D != null ? `${row.Alpha_60D.toFixed(1)}%` : 'N/A'],
-                              ['Volatility (60D)', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : 'N/A'],
+                              ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'],
+                              ['Risk-Adj Mom', num(row.Risk_Adj_Mom)],
+                              ['Z-Score (60D)', num(row.Z_Score_60)],
+                              ['Sharpe', num(row.Sharpe)],
+                              ['Max DD', num(row['Max_Drawdown_%'])],
+                            ].map(([label, val]) => (
                               ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : 'N/A'],
                               ['Risk-Adj Mom', num(row.Risk_Adj_Mom)],
                               ['Z-Score (60D)', num(row.Z_Score_60)],
@@ -370,8 +408,12 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--brand)' }}>Factor Scores</h4>
                   <div className="grid grid-cols-2 gap-1 text-[11px]">
                     {[
-                      ['Value', row.Value_Score, 7], ['Investment', row.Investment_Score, 6],
-                      ['SUE', row.SUE_Score, 6], ['Beta', row.Beta, null],
+                      ['Value (F-F)', row.Value_Score, 7],
+                      ['Investment', row.Investment_Score, 6],
+                      ['SUE', row.SUE_Score, 6],
+                      ['Beta', row.Beta, null],
+                      ['Piotroski', row.Piotroski_F != null ? Number(row.Piotroski_F) / 0.9 : null, 7],
+                      ['Gross Profit', row.Gross_Profit_Score, 6],
                     ].map(([label, val, threshold]) => (
                       <div key={label as string} className="flex justify-between">
                         <span style={{ color: 'var(--text-2)' }}>{label}</span>
