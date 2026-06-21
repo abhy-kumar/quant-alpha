@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type { DashboardData } from '../types'
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from 'recharts'
 
 interface Props {
   topPicks: DashboardData[]
@@ -17,26 +18,54 @@ function Metric({ label, value, color }: { label: string; value: string; color?:
   )
 }
 
-function ScoreDot({ label, value, max }: { label: string; value: number; max: number }) {
-  const pct = Math.max(0, Math.min(100, (value / max) * 100))
-  const color = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--brand)' : 'var(--red)'
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-[11px] w-14 shrink-0" style={{color:'var(--text-3)'}}>{label}</span>
-      <div className="flex-1 h-1 rounded-full overflow-hidden" style={{background:'var(--border)'}}>
-        <div className="h-full rounded-full" style={{width:`${pct}%`,background:color}} />
-      </div>
-      <span className="text-[11px] font-mono w-8 text-right" style={{color:'var(--text)'}}>{value.toFixed(1)}</span>
-    </div>
-  )
-}
-
 function SignalBadge({ label, bullish }: { label: string; bullish: boolean }) {
   return (
     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium"
       style={{background: bullish?'var(--green-bg)':'var(--red-bg)', color: bullish?'var(--green)':'var(--red)'}}>
       {bullish?'↑':'↓'} {label}
     </span>
+  )
+}
+
+function ScoreRadar({ s }: { s: DashboardData }) {
+  const techRaw = Number(s.Tech_Score) || 0
+  const fundRaw = Number(s.Fund_Score) || 0
+  const researchRaw = Number(s.Research_Score) || 0
+  const piotroski = Number(s.Piotroski_F) || 0
+  const momentum = (Number(s.Momentum_12M) || 0) * 100
+  const value = Number(s.Value_Score) || 0
+  const vol = Number(s.Vol_60D) || 0
+
+  const data = [
+    { axis: 'Tech', value: Math.max(0, Math.min(10, (techRaw + 1) * 5)) },
+    { axis: 'Fund', value: Math.max(0, Math.min(10, fundRaw)) },
+    { axis: 'Research', value: Math.max(0, Math.min(10, researchRaw)) },
+    { axis: 'Quality', value: Math.max(0, Math.min(10, (piotroski / 9) * 10)) },
+    { axis: 'Mom', value: Math.max(0, Math.min(10, ((momentum + 100) / 200) * 10)) },
+    { axis: 'Value', value: Math.max(0, Math.min(10, value)) },
+    { axis: 'Low Vol', value: Math.max(0, Math.min(10, ((60 - vol) / 60) * 10)) },
+  ]
+
+  return (
+    <div style={{width:'100%',height:160}}>
+      <ResponsiveContainer width="100%" height="100%">
+        <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
+          <PolarGrid stroke="var(--border)" />
+          <PolarAngleAxis
+            dataKey="axis"
+            tick={{fontSize:9, fill:'var(--text-3)'}}
+            tickLine={false}
+          />
+          <Radar
+            dataKey="value"
+            stroke="var(--brand)"
+            fill="var(--brand)"
+            fillOpacity={0.2}
+            strokeWidth={1.5}
+          />
+        </RadarChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
 
@@ -118,8 +147,6 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
           const stSignal = s.ST_Signal || ''
           const macdVal = Number(s.MACD_Value)||0
           const momentum = Number(s.Momentum_12M)||0
-          const vol = Number(s.Vol_60D)||0
-          const piotroski = Number(s.Piotroski_F)||0
           const debtEq = s['Debt_to_Equity'] ? Number(s['Debt_to_Equity']) : null
           const sharpe = s['Sharpe'] ? Number(s['Sharpe']) : null
           const bullCount = s['Bull_Count'] ?? null
@@ -182,6 +209,9 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                 <Metric label="P/E" value={pe!==null?pe.toFixed(1):'\u2014'} />
                 <Metric label="Mkt Cap" value={mcap!==null?`\u20B9${mcap.toFixed(0)}Cr`:'\u2014'} />
                 <Metric label="ROE" value={roe!==null?`${roe.toFixed(1)}%`:'\u2014'} />
+                <Metric label="ROCE" value={s['ROCE_%']!=null?`${Number(s['ROCE_%']).toFixed(1)}%`:'\u2014'} />
+                <Metric label="Div Yld" value={s['Div_Yield_%']!=null?`${Number(s['Div_Yield_%']).toFixed(2)}%`:'\u2014'} />
+                <Metric label="Promoter" value={s['Promoter_Holding_%']!=null?`${Number(s['Promoter_Holding_%']).toFixed(1)}%`:'\u2014'} color={s['Promoter_Pledging_%']!=null&&Number(s['Promoter_Pledging_%'])>20?'var(--red)':'var(--text)'} />
                 <Metric label="D/E" value={debtEq!==null?debtEq.toFixed(2):'\u2014'} />
                 <Metric label="Sharpe" value={sharpe!==null?sharpe.toFixed(2):'\u2014'} color={sharpe!==null?(sharpe>1?'var(--green)':sharpe<0?'var(--red)':'var(--text)'):'var(--text)'} />
                 <Metric label="Beta" value={s.Beta!=null?Number(s.Beta).toFixed(2):'\u2014'} color={s.Beta!=null?(Number(s.Beta)<0.8?'var(--green)':Number(s.Beta)>1.2?'var(--red)':'var(--text)'):'var(--text)'} />
@@ -190,7 +220,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
               {/* Bull/Bear + 52W range */}
               <div className="flex items-center gap-3 mb-2.5 text-[11px]">
                 {bullCount !== null && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0" style={{minWidth:'70px'}}>
                     <span style={{color:'var(--text-3)'}}>Bull</span>
                     <span className="font-mono font-medium" style={{color:'var(--green)'}}>{bullCount}</span>
                     <span style={{color:'var(--text-3)'}}>/</span>
@@ -198,7 +228,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                   </div>
                 )}
                 {priceVsHigh !== null && (
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex justify-between mb-0.5" style={{color:'var(--text-3)'}}>
                       <span>52W Range</span>
                       <span className="font-mono" style={{color: priceVsHigh > 90 ? 'var(--green)' : 'var(--text)'}}>{priceVsHigh.toFixed(0)}%</span>
@@ -221,12 +251,9 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                 {momentum < -0.1 && <SignalBadge label="Mom \u2212" bullish={false} />}
               </div>
 
-              {/* Compact scores */}
-              <div className="space-y-1.5" style={{borderTop:'1px solid var(--border)',paddingTop:'8px'}}>
-                <ScoreDot label="Piotroski" value={piotroski} max={9} />
-                <ScoreDot label="12M Mom" value={Math.abs(momentum)*100} max={200} />
-                <ScoreDot label="Value" value={Number(s.Value_Score)||0} max={10} />
-                <ScoreDot label="Vol 60D" value={vol} max={60} />
+              {/* Radar chart */}
+              <div style={{borderTop:'1px solid var(--border)',paddingTop:'8px'}}>
+                <ScoreRadar s={s} />
               </div>
             </div>
           )
