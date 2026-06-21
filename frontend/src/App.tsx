@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo, memo, lazy, Suspense, useRef } from 'react'
+import React, { useEffect, useState, useMemo, memo, lazy, Suspense } from 'react'
 import axios from 'axios'
-import { Activity, Database, TrendingUp, BarChart2, Layers, Moon, Sun, Zap, AlertCircle } from 'lucide-react'
+import { Activity, Database, TrendingUp, BarChart2, Layers, Moon, Sun, AlertCircle } from 'lucide-react'
 import type { DashboardData } from './types'
 
 const SignalsTab   = lazy(() => import('./components/SignalsTab'))

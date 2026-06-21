@@ -16,14 +16,6 @@ interface Props {
 
 const CONVICTION_OPTIONS = ['Strong Buy', 'Buy', 'Hold', 'Caution', 'Avoid']
 
-const convictionStyle = (c: string) => {
-  if (c === 'Strong Buy') return { background: 'var(--green-bg)', color: 'var(--green)' }
-  if (c === 'Buy') return { background: 'var(--blue-bg)', color: 'var(--blue)' }
-  if (c === 'Caution') return { background: 'var(--amber-bg)', color: 'var(--amber)' }
-  if (c === 'Avoid') return { background: 'var(--red-bg)', color: 'var(--red)' }
-  return { background: 'var(--surface-2)', color: 'var(--text-2)' }
-}
-
 export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRow, watchlist, toggleWatchlist, scoreHistory, flashTickers = {} }: Props) {
   const [sortKey, setSortKey] = useState<string>('Composite_Score')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
