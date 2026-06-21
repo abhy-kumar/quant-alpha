@@ -4,10 +4,47 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Free, research-backed quantitative stock screener for the NSE. Screens 150 stocks daily using 10 academic factors: Piotroski F-Score, Momentum, Value, Low Volatility, and more. By the Alpha Research and Investment Club, FMS Delhi.">
+    <meta name="keywords" content="NSE stock screener, quantitative research India, Piotroski F-Score, stock momentum NSE, NIFTY 50 analysis, FMS Delhi, quant investing India, factor investing NSE">
+    <meta name="author" content="Abhishek Kumar, Alpha Research and Investment Club">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://quant-alpha.vercel.app">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://quant-alpha.vercel.app">
+    <meta property="og:title" content="Alpha — Quantitative NSE Stock Research">
+    <meta property="og:description" content="Daily quantitative screening of 150 NSE stocks using 10 academic factors. Free, open-source, research-backed.">
+    <meta property="og:image" content="https://quant-alpha.vercel.app/og-preview.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Alpha Research">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Alpha — Quantitative NSE Stock Research">
+    <meta name="twitter:description" content="Daily quantitative screening of 150 NSE stocks using 10 academic factors.">
+    <meta name="twitter:image" content="https://quant-alpha.vercel.app/og-preview.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Alpha Research Dashboard",
+      "applicationCategory": "FinanceApplication",
+      "description": "Quantitative stock screening for the National Stock Exchange of India",
+      "author": { "@type": "Organization", "name": "Alpha Research and Investment Club, FMS Delhi" },
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" }
+    }
+    </script>
+    <title>Alpha — Quantitative Stock Research for NSE India | Alpha Research Club, FMS Delhi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <title>Alpha | Quantitative Research</title>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        var dark = localStorage.getItem('qa_dark');
+        if (dark === 'true' || (!dark && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

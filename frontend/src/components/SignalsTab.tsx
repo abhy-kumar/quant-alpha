@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { DashboardData } from '../types'
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from 'recharts'
+import { scoreBar } from './shared'
 
 interface Props {
   topPicks: DashboardData[]
@@ -22,7 +23,7 @@ function SignalBadge({ label, bullish }: { label: string; bullish: boolean }) {
   return (
     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium"
       style={{background: bullish?'var(--green-bg)':'var(--red-bg)', color: bullish?'var(--green)':'var(--red)'}}>
-      {bullish?'↑':'↓'} {label}
+      {bullish?'\u2191':'\u2193'} {label}
     </span>
   )
 }
@@ -50,7 +51,7 @@ function ScoreRadar({ s }: { s: DashboardData }) {
     if (!active || !payload?.length) return null
     const d = payload[0].payload
     return (
-      <div style={{background:'var(--surface)',border:'1px solid var(--border)',padding:'4px 8px',fontSize:11}}>
+      <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'var(--radius)',padding:'4px 8px',fontSize:11}}>
         <span style={{color:'var(--text-2)'}}>{d.axis}: </span>
         <span style={{color:'var(--text)',fontWeight:600}}>{d.raw}</span>
       </div>
@@ -58,7 +59,7 @@ function ScoreRadar({ s }: { s: DashboardData }) {
   }
 
   return (
-    <div style={{width:'100%',height:160}}>
+    <div style={{width:'100%',height:200}}>
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
           <PolarGrid stroke="var(--border)" />
@@ -104,6 +105,8 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
     }).length
   }, [topPicks, horizon])
 
+  const neutralCount = useMemo(() => topPicks.length - bullishCount, [topPicks, bullishCount])
+
   const avgMomentum = useMemo(() => {
     const vals = topPicks.map(p => (Number(p.Momentum_12M) || 0) * 100).filter(v => v !== 0)
     return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
@@ -118,12 +121,19 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
     <div className="space-y-4">
       {/* Controls + Summary row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="inline-flex p-0.5" style={{background:'var(--border)'}}>
-          {(['short','long'] as const).map(h => (
-            <button key={h} onClick={()=>setHorizon(h)}
-              className="w-[110px] py-1.5 text-[13px] font-medium transition-all text-center"
-              style={{background:horizon===h?'var(--surface)':'transparent',color:horizon===h?'var(--text)':'var(--text-3)',boxShadow:horizon===h?'0 1px 3px rgba(0,0,0,0.08)':'none'}}>
-              {h==='short'?'Short Term':'Long Term'}
+        <div className="inline-flex" style={{ background: 'var(--surface-2)',
+          border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 2 }}>
+          {(['short', 'long'] as const).map(h => (
+            <button key={h} onClick={() => setHorizon(h)} style={{
+              padding: '5px 20px', fontSize: 12, fontWeight: 500,
+              borderRadius: 'calc(var(--radius) - 2px)',
+              background: horizon === h ? 'var(--surface)' : 'transparent',
+              color: horizon === h ? 'var(--text)' : 'var(--text-3)',
+              boxShadow: horizon === h ? 'var(--shadow-sm)' : 'none',
+              transition: 'all var(--dur-base) var(--ease-out)',
+              cursor: 'pointer', border: 'none',
+            }}>
+              {h === 'short' ? 'Short-Term' : 'Long-Term'}
             </button>
           ))}
         </div>
@@ -163,10 +173,14 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
 
           const priceVsHigh = high52 ? ((price / high52) * 100) : null
 
+          const cardBorderLeft = composite >= 7 ? 'var(--green)' : composite >= 4 ? 'var(--brand)' : 'var(--red)'
+
           return (
             <div key={s.Ticker} onClick={()=>onSelect(s.Ticker)}
-              className="p-3.5 cursor-pointer transition-colors"
-              style={{background:'var(--surface)',border:'1px solid var(--border)'}}>
+              role="button" tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && onSelect(s.Ticker)}
+              className="card card-hover cursor-pointer p-4"
+              style={{ borderLeft: `3px solid ${cardBorderLeft}` }}>
               {/* Header */}
               <div className="flex items-start justify-between mb-1.5">
                 <div>
@@ -174,16 +188,27 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                     <span className="text-base font-bold" style={{color:'var(--text)'}}>{s.Ticker.replace('.NS','')}</span>
                     <span className="text-[10px] font-medium" style={{color:'var(--text-3)'}}>#{i+1}</span>
                   </div>
-                  <span className="text-[10px]" style={{color:'var(--text-3)'}}>{s.Sector||'Equities'}</span>
+                  {s.Long_Name && (
+                    <span style={{ fontSize: 11, color: 'var(--text-3)', overflow: 'hidden',
+                      textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160, display: 'block' }}>
+                      {s.Long_Name.replace(' Limited', ' Ltd').replace(' Industries', ' Ind.')}
+                    </span>
+                  )}
+                  {!s.Long_Name && <span className="text-[10px]" style={{color:'var(--text-3)'}}>{s.Sector||'Equities'}</span>}
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-lg font-mono font-bold" style={{color:composite>=7?'var(--green)':composite>=4?'var(--brand)':'var(--red)'}}>
+                <div className="flex flex-col items-end gap-1">
+                  <span style={{
+                    fontFamily: "'DM Serif Display', serif",
+                    fontSize: 36, lineHeight: 1,
+                    color: composite >= 7 ? 'var(--green)' : composite >= 4 ? 'var(--brand)' : 'var(--red)',
+                  }}>
                     {composite.toFixed(1)}
                   </span>
-                  <span className="px-1.5 py-0.5 text-[9px] font-medium"
-                    style={s.Conviction==='Strong Buy'?{background:'var(--green-bg)',color:'var(--green)'}:s.Conviction==='Buy'?{background:'rgba(30,96,145,0.08)',color:'var(--blue)'}:{background:'var(--bg)',color:'var(--text-2)'}}>
-                    {s.Conviction||'\u2014'}
-                  </span>
+                  {s.Conviction && (
+                    <span className={`badge ${s.Conviction === 'Strong Buy' ? 'badge-strong-buy' : s.Conviction === 'Buy' ? 'badge-buy' : s.Conviction === 'Caution' ? 'badge-caution' : s.Conviction === 'Avoid' ? 'badge-avoid' : 'badge-hold'}`}>
+                      {s.Conviction}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -197,10 +222,17 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                 </span>
               </div>
 
+              {/* Sub-score bars */}
+              <div className="mb-3 space-y-1.5">
+                {scoreBar('Technical', (Number(s.Tech_Score) + 1) * 5, 0, 10)}
+                {scoreBar('Fundamental', Number(s.Fund_Score) || 0, 0, 10)}
+                {scoreBar('Research', Number(s.Research_Score) || 0, 0, 10)}
+              </div>
+
               {/* Key metrics grid */}
               <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-2.5">
-                <Metric label="P/E" value={pe!==null?pe.toFixed(1):'\u2014'} />
-                <Metric label="Mkt Cap" value={mcap!==null?`\u20B9${mcap.toFixed(0)}Cr`:'\u2014'} />
+                <Metric label="P/E" value={pe!==null?(pe<0?'Loss':pe.toFixed(1)):'\u2014'} />
+                <Metric label="Mkt Cap" value={mcap!==null?`\u20B9${mcap.toLocaleString('en-IN')}Cr`:'\u2014'} />
                 <Metric label="ROE" value={roe!==null?`${roe.toFixed(1)}%`:'\u2014'} />
                 <Metric label="ROCE" value={s['ROCE_%']!=null?`${Number(s['ROCE_%']).toFixed(1)}%`:'\u2014'} />
                 <Metric label="Div Yld" value={s['Div_Yield_%']!=null?`${Number(s['Div_Yield_%']).toFixed(2)}%`:'\u2014'} />
@@ -213,11 +245,11 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
               {/* Bull/Bear + 52W range */}
               <div className="flex items-center gap-3 mb-2.5 text-[11px]">
                 {bullCount !== null && (
-                  <div className="flex items-center gap-1 shrink-0" style={{minWidth:'70px'}}>
+                  <div className="flex items-center gap-1 shrink-0" style={{minWidth:'90px'}}>
                     <span style={{color:'var(--text-3)'}}>Bull</span>
                     <span className="font-mono font-medium" style={{color:'var(--green)'}}>{bullCount}</span>
                     <span style={{color:'var(--text-3)'}}>/</span>
-                    <span className="font-mono font-medium" style={{color:'var(--text-2)'}}>{bearCount != null ? 15 - bullCount - bearCount : '-'}</span>
+                    <span className="font-mono font-medium" style={{color:'var(--text-2)'}}>{neutralCount}</span>
                     <span style={{color:'var(--text-3)'}}>/</span>
                     <span className="font-mono font-medium" style={{color:'var(--red)'}}>{bearCount ?? '-'}</span>
                   </div>
@@ -238,7 +270,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
 
               {/* Signals */}
               <div className="flex flex-wrap gap-1 mb-2.5">
-                {rsi > 0 && <SignalBadge label={`RSI ${rsi.toFixed(0)}`} bullish={rsi < 70} />}
+                {rsi > 0 && <SignalBadge label={`RSI(14) ${rsi.toFixed(0)}`} bullish={rsi < 70} />}
                 {stSignal && <SignalBadge label={stSignal} bullish={stSignal==='Buy'||stSignal==='Long'} />}
                 {macdVal > 0 && <SignalBadge label="MACD +" bullish={true} />}
                 {macdVal < 0 && <SignalBadge label={'MACD \u2212'} bullish={false} />}
@@ -257,8 +289,8 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
 
       {/* Sector breakdown */}
       {sectorBreakdown.length > 0 && (
-        <div className="p-4" style={{background:'var(--surface)',border:'1px solid var(--border)'}}>
-          <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{color:'var(--text-2)'}}>Sector Breakdown</h3>
+        <div className="card p-4" style={{ background: 'var(--surface-2)' }}>
+          <h3 className="section-label mb-3">Sector Breakdown</h3>
           <div className="flex flex-wrap gap-3">
             {sectorBreakdown.map(([sector, count]) => (
               <div key={sector} className="flex items-center gap-2 text-[12px]">

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { OutcomeAccuracy } from '../types'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine } from 'recharts'
 import { FlaskConical, Clock, TrendingUp, CheckCircle } from 'lucide-react'
 
 interface Props {
@@ -49,7 +49,7 @@ function formatDate(d: Date): string {
 const tooltipStyle = (isDark: boolean) => ({
   backgroundColor: isDark ? '#111318' : '#ffffff',
   borderColor: isDark ? '#1E2230' : '#E4E7EC',
-  borderRadius: '0',
+  borderRadius: 'var(--radius)',
   fontFamily: 'Inter, system-ui, sans-serif',
   fontSize: '12px',
   color: isDark ? '#E8ECF2' : '#1A1D26',
@@ -85,7 +85,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
       <div className="space-y-5">
         {/* Progress bar */}
         {countdown && (
-          <div className="flex flex-wrap items-center gap-4 px-5 py-3 text-xs" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+          <div className="flex flex-wrap items-center gap-4 px-5 py-3 text-xs card">
             <span className="font-semibold" style={{ color: 'var(--brand)' }}>Active</span>
             <span style={{ color: 'var(--text-2)' }}>{countdown.elapsed} trading days of data</span>
             {countdown.remaining63 > 0 && (
@@ -97,48 +97,57 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-          {sorted.map(([conviction, data]) => (
-            <div key={conviction} className="p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[conviction as keyof typeof COLORS] || 'var(--text-3)' }} />
-                <span className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>{conviction}</span>
-              </div>
-              <p className="text-xs mb-3" style={{ color: 'var(--text-3)' }}>{data.n} samples</p>
-              <div className="space-y-2">
-                <div>
-                  <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>Win Rate 21D</p>
-                  <p className="text-lg font-semibold font-data" style={{ color: (data.win_rate_21d ?? 0) >= 50 ? 'var(--green)' : 'var(--red)' }}>
-                    {data.win_rate_21d != null ? `${data.win_rate_21d}%` : 'N/A'}
-                  </p>
+          {sorted.map(([conviction, data]) => {
+            const winRate = data.win_rate_21d ?? 0
+            return (
+              <div key={conviction} className="p-4 card">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[conviction as keyof typeof COLORS] || 'var(--text-3)' }} />
+                  <span className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>{conviction}</span>
                 </div>
-                <div>
-                  <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>Avg Return 21D</p>
-                  <p className="text-sm font-medium font-data" style={{ color: (data.avg_return_21d ?? 0) >= 0 ? 'var(--green)' : 'var(--red)' }}>
-                    {data.avg_return_21d != null ? `${data.avg_return_21d > 0 ? '+' : ''}${data.avg_return_21d}%` : 'N/A'}
-                  </p>
+                <p className="text-xs mb-3" style={{ color: 'var(--text-3)' }}>{data.n} samples</p>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>Win Rate 21D</p>
+                    <p style={{
+                      fontFamily: "'DM Serif Display', serif",
+                      fontSize: 20, fontWeight: 700,
+                      color: winRate >= 60 ? 'var(--green)' : winRate >= 45 ? 'var(--amber)' : 'var(--red)'
+                    }}>
+                      {data.win_rate_21d != null ? `${data.win_rate_21d}%` : '\u2014'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>Avg Return 21D</p>
+                    <p className="text-sm font-medium font-mono" style={{ color: (data.avg_return_21d ?? 0) >= 0 ? 'var(--green)' : 'var(--red)' }}>
+                      {data.avg_return_21d != null ? `${data.avg_return_21d > 0 ? '+' : ''}${data.avg_return_21d}%` : '\u2014'}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Bar chart */}
-        <div className="p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+        <div className="card p-5">
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Average Forward Returns by Conviction</h3>
-          <div className="w-full" style={{ height: 'min(300px, 50vw)' }}>
+          <div style={{ width: '75%', margin: '0 auto', height: 240 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1E2230' : '#E4E7EC'} vertical={false} />
-                <XAxis dataKey="conviction" stroke={isDark ? '#2A3040' : '#D0D5DD'} tick={{ fill: isDark ? '#4A5468' : '#8B95A5', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} />
-                <YAxis stroke={isDark ? '#2A3040' : '#D0D5DD'} tick={{ fill: isDark ? '#4A5468' : '#8B95A5', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} />
+                <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
+                <XAxis dataKey="conviction" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} />
+                <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} />
                 <Tooltip contentStyle={tooltipStyle(isDark)} />
+                <ReferenceLine y={0} stroke="var(--text-3)" strokeDasharray="3 3"
+                  label={{ value: 'Break-even', position: 'insideTopRight', fontSize: 9, fill: 'var(--text-3)' }}/>
                 <Legend wrapperStyle={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '10px' }} />
-                <Bar dataKey="21D Return" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="21D Return" maxBarSize={44} radius={[4, 4, 0, 0]}>
                   {chartData.map((entry) => (
                     <Cell key={entry.conviction} fill={COLORS[entry.conviction as keyof typeof COLORS] || 'var(--text-3)'} fillOpacity={0.85} />
                   ))}
                 </Bar>
-                <Bar dataKey="63D Return" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="63D Return" maxBarSize={44} radius={[4, 4, 0, 0]}>
                   {chartData.map((entry) => (
                     <Cell key={entry.conviction} fill={COLORS[entry.conviction as keyof typeof COLORS] || 'var(--text-3)'} fillOpacity={0.35} />
                   ))}
@@ -158,9 +167,9 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="p-6 sm:p-8" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+      <div className="p-6 sm:p-8 card">
         <div className="flex items-start gap-4 mb-6">
-          <div className="p-3" style={{ background: 'rgba(30,63,104,0.06)' }}>
+          <div className="p-3" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
             <FlaskConical size={20} style={{ color: 'var(--brand)' }} />
           </div>
           <div>
@@ -176,7 +185,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
 
         {/* Milestones */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="p-5" style={{ background: 'var(--surface)' }}>
+          <div className="p-5" style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)' }}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <TrendingUp size={14} style={{ color: 'var(--brand)' }} />
@@ -193,7 +202,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
               )}
             </div>
             <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: 'var(--border)' }}>
-              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct21}%`, background: pct21 >= 100 ? 'var(--green)' : 'var(--brand)' }} />
+              <div className="h-full rounded-full" style={{ width: `${pct21}%`, background: pct21 >= 100 ? 'var(--green)' : 'var(--brand)', transition: 'width 500ms var(--ease-out)' }} />
             </div>
             <div className="flex justify-between text-[11px]" style={{ color: 'var(--text-3)' }}>
               <span>{countdown ? `${countdown.elapsed} / 21 trading days` : '\u2014'}</span>
@@ -201,7 +210,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
             </div>
           </div>
 
-          <div className="p-5" style={{ background: 'var(--surface)' }}>
+          <div className="p-5" style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)' }}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Clock size={14} style={{ color: 'var(--brand)' }} />
@@ -218,7 +227,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
               )}
             </div>
             <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: 'var(--border)' }}>
-              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct63}%`, background: pct63 >= 100 ? 'var(--green)' : 'var(--brand)' }} />
+              <div className="h-full rounded-full" style={{ width: `${pct63}%`, background: pct63 >= 100 ? 'var(--green)' : 'var(--brand)', transition: 'width 500ms var(--ease-out)' }} />
             </div>
             <div className="flex justify-between text-[11px]" style={{ color: 'var(--text-3)' }}>
               <span>{countdown ? `${countdown.elapsed} / 63 trading days` : '\u2014'}</span>
@@ -226,11 +235,20 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
             </div>
           </div>
         </div>
+
+        {/* Warmer countdown copy */}
+        {countdown && countdown.remaining21 > 0 && (
+          <div className="mt-4 p-4" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-2)' }}>
+              Alpha is building its track record. Forward returns unlock on <strong>{formatDate(countdown.target21)}</strong> \u2014 the Factor Lab will then show whether each conviction level actually predicts outperformance.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Pipeline status */}
       {countdown && (
-        <div className="flex items-center gap-2 px-5 py-3 text-xs" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'none' }}>
+        <div className="flex items-center gap-2 px-5 py-3 text-xs card">
           <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--green)' }} />
           <span style={{ color: 'var(--text-2)' }}>Outcome tracking active since <span className="font-medium" style={{ color: 'var(--text)' }}>{formatDate(countdown.start)}</span></span>
           <span className="sm:ml-auto" style={{ color: 'var(--text-3)' }}>{countdown.elapsed} trading days recorded</span>

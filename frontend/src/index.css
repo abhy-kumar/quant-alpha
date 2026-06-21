@@ -4,34 +4,66 @@
 
 @layer base {
   :root {
-    --bg: #F4F5F7;
-    --surface: #FFFFFF;
-    --border: #E0E3E8;
-    --text: #1B1F23;
-    --text-2: #57606A;
-    --text-3: #8B949E;
-    --brand: #1E3F68;
-    --green: #1A7F37;
-    --green-bg: rgba(26,127,55,0.08);
-    --red: #CF222E;
-    --red-bg: rgba(207,34,46,0.08);
-    --blue: #0969DA;
-    --amber: #BF8700;
+    --bg: hsl(220, 20%, 97%);
+    --surface: hsl(0, 0%, 100%);
+    --surface-2: hsl(220, 16%, 96%);
+    --surface-3: hsl(220, 14%, 93%);
+    --border: hsl(220, 13%, 91%);
+    --border-2: hsl(220, 13%, 86%);
+    --text: hsl(218, 20%, 14%);
+    --text-2: hsl(218, 11%, 42%);
+    --text-3: hsl(218, 9%, 60%);
+    --text-4: hsl(218, 9%, 74%);
+    --brand: hsl(213, 56%, 26%);
+    --brand-light: hsl(213, 60%, 40%);
+    --brand-soft: hsla(213, 60%, 40%, 0.08);
+    --green: hsl(140, 60%, 35%);
+    --green-bg: hsla(140, 60%, 35%, 0.07);
+    --red: hsl(356, 72%, 44%);
+    --red-bg: hsla(356, 72%, 44%, 0.07);
+    --blue: hsl(215, 85%, 45%);
+    --blue-bg: hsla(215, 85%, 45%, 0.08);
+    --amber: hsl(38, 92%, 40%);
+    --amber-bg: hsla(38, 92%, 40%, 0.08);
+    --shadow-xs: 0 1px 2px hsla(218, 20%, 14%, 0.04);
+    --shadow-sm: 0 1px 3px hsla(218, 20%, 14%, 0.06), 0 1px 2px hsla(218, 20%, 14%, 0.04);
+    --shadow-md: 0 4px 6px hsla(218, 20%, 14%, 0.07), 0 2px 4px hsla(218, 20%, 14%, 0.04);
+    --shadow-lg: 0 10px 15px hsla(218, 20%, 14%, 0.08), 0 4px 6px hsla(218, 20%, 14%, 0.05);
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --dur-fast: 120ms;
+    --dur-base: 200ms;
+    --dur-slow: 350ms;
+    --radius-sm: 3px;
+    --radius: 6px;
+    --radius-lg: 10px;
   }
   .dark {
-    --bg: #0D1117;
-    --surface: #161B22;
-    --border: #21262D;
-    --text: #E6EDF3;
-    --text-2: #8B949E;
-    --text-3: #484F58;
-    --brand: #79C0FF;
-    --green: #3FB950;
-    --green-bg: rgba(63,185,80,0.12);
-    --red: #F85149;
-    --red-bg: rgba(248,81,73,0.12);
-    --blue: #58A6FF;
-    --amber: #D29922;
+    --bg: hsl(218, 22%, 7%);
+    --surface: hsl(217, 19%, 11%);
+    --surface-2: hsl(217, 16%, 14%);
+    --surface-3: hsl(217, 14%, 17%);
+    --border: hsl(217, 16%, 18%);
+    --border-2: hsl(217, 16%, 24%);
+    --text: hsl(214, 32%, 92%);
+    --text-2: hsl(214, 14%, 60%);
+    --text-3: hsl(214, 10%, 40%);
+    --text-4: hsl(214, 10%, 30%);
+    --brand: hsl(207, 100%, 72%);
+    --brand-light: hsl(207, 100%, 82%);
+    --brand-soft: hsla(207, 100%, 72%, 0.1);
+    --green: hsl(134, 58%, 60%);
+    --green-bg: hsla(134, 58%, 40%, 0.12);
+    --red: hsl(2, 92%, 65%);
+    --red-bg: hsla(2, 92%, 55%, 0.12);
+    --blue: hsl(210, 100%, 68%);
+    --blue-bg: hsla(210, 100%, 68%, 0.1);
+    --amber: hsl(40, 85%, 55%);
+    --amber-bg: hsla(40, 85%, 55%, 0.1);
+    --shadow-xs: 0 1px 2px hsla(0, 0%, 0%, 0.2);
+    --shadow-sm: 0 1px 3px hsla(0, 0%, 0%, 0.3), 0 1px 2px hsla(0, 0%, 0%, 0.2);
+    --shadow-md: 0 4px 6px hsla(0, 0%, 0%, 0.35), 0 2px 4px hsla(0, 0%, 0%, 0.2);
+    --shadow-lg: 0 10px 15px hsla(0, 0%, 0%, 0.4), 0 4px 6px hsla(0, 0%, 0%, 0.25);
   }
   html, body {
     background: var(--bg);
@@ -41,12 +73,64 @@
   }
 }
 
+@layer components {
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .card-hover {
+    transition: box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+  }
+  .card-hover:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-2);
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge-strong-buy { background: var(--green-bg); color: var(--green); }
+  .badge-buy { background: var(--blue-bg); color: var(--blue); }
+  .badge-hold { background: var(--surface-2); color: var(--text-2); }
+  .badge-caution { background: var(--amber-bg); color: var(--amber); }
+  .badge-avoid { background: var(--red-bg); color: var(--red); }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+}
+
 .font-mono { font-family: 'Space Mono', 'SF Mono', monospace; }
 
 /* Ticker tape */
 @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .tape { animation: scroll 20s linear infinite; }
 .tape:hover { animation-play-state: paused; }
+
+/* Shimmer loading */
+@keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+.loading-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+  animation: shimmer 1.5s var(--ease-in-out) infinite;
+}
+
+/* Price flash */
+@keyframes flash-green { 0%, 100% { background: transparent } 30% { background: var(--green-bg) } }
+@keyframes flash-red   { 0%, 100% { background: transparent } 30% { background: var(--red-bg)   } }
+.price-flash-up   { animation: flash-green 800ms ease-out; }
+.price-flash-down { animation: flash-red   800ms ease-out; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -68,3 +152,8 @@ html { overflow-y: scroll; }
 /* Range */
 input[type="range"] { @apply h-1 rounded-full appearance-none cursor-pointer; background: var(--border); }
 input[type="range"]::-webkit-slider-thumb { @apply appearance-none w-3 h-3 rounded-full; background: var(--brand); border: 2px solid var(--surface); }
+
+/* Filter panel animation */
+.filter-panel { transition: max-height var(--dur-slow) var(--ease-out), opacity var(--dur-slow); overflow: hidden; }
+.filter-panel[data-open="false"] { max-height: 0; opacity: 0; }
+.filter-panel[data-open="true"]  { max-height: 600px; opacity: 1; }
