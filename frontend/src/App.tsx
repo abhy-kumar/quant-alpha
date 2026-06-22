@@ -252,7 +252,7 @@ export default function App() {
       <Tape data={data} />
 
       {isDark ? (
-      <div className="sticky-glass">
+      <div>
         {/* Header - Row 1: Nav */}
         <header className="glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
@@ -376,7 +376,7 @@ export default function App() {
       </div>
       </div>
       ) : (
-      <div className="sticky-glass">
+      <div>
         {/* Header - Row 1: Nav */}
         <header className="glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
