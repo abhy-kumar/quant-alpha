@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import type { DashboardData } from '../types'
-import { num, colorCode, getSignalLabel, SortHeader, MiniSparkline } from './shared'
+import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline } from './shared'
 import { Info, Filter, X, Star } from 'lucide-react'
 
 interface Props {
@@ -167,8 +167,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <input type="range" min="0" max="9" step="1" value={minPiotroski} onChange={e => setMinPiotroski(Number(e.target.value))} className="w-full" aria-label="Minimum Piotroski score" />
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min market cap: ₹{minMarketCap.toLocaleString('en-IN')}Cr</label>
-              <input type="range" min="0" max="100000" step="500" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" aria-label="Minimum market cap" />
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min market cap: ₹{minMarketCap >= 1000 ? `${(minMarketCap/1000).toFixed(1)}T` : `${minMarketCap}B`}</label>
+              <input type="range" min="0" max="500" step="5" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" aria-label="Minimum market cap" />
             </div>
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max D/E: {maxDE >= 999 ? 'Any' : maxDE}</label>
@@ -263,7 +263,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className={`py-2 px-2 text-right font-medium font-mono ${colorCode(row['1d_Chg_%'])}`}>
                     {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
                   </td>
-                  <td className={`py-2 px-2 text-right font-medium font-mono ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
+                  <td className={`py-2 px-2 text-right font-medium font-mono ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
                   <td className="py-2 px-2 text-center">
                     <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} ticker={row.Ticker} />
                   </td>
@@ -357,7 +357,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                                 ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-'],
                                 ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-'],
                                 ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-'],
-                                ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}Cr` : '-'],
+                                ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-'],
                                 ['Div Yield', row['Div_Yield_%'] != null ? `${row['Div_Yield_%'].toFixed(2)}%` : '-'],
                                 ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-'],
                                 ['Sharpe', num(row.Sharpe)],
@@ -419,7 +419,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-mono font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</span>
+                <span className={`text-sm font-mono font-medium ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</span>
                 <button onClick={() => toggleWatchlist(row.Ticker)}
                   onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.75)')}
                   onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
@@ -466,7 +466,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                       ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-'],
                       ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-'],
                       ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-'],
-                      ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}Cr` : '-'],
+                      ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-'],
                       ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-'],
                     ].map(([label, val]) => (
                       <div key={label as string} className="flex justify-between py-0.5">

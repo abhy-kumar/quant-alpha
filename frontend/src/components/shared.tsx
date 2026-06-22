@@ -4,6 +4,11 @@ export const num = (v: any) => !isNaN(Number(v)) && v!=="" && v!==null ? Number(
 
 export const colorCode = (v: any) => Number(v)>0 ? 'text-[var(--green)]' : Number(v)<0 ? 'text-[var(--red)]' : ''
 
+export const scoreColor = (v: any) => {
+  const n = Number(v)
+  return n >= 7 ? 'text-[var(--green)]' : n >= 4 ? 'text-[var(--brand)]' : 'text-[var(--red)]'
+}
+
 export const scoreBar = (label: string, value: number, min: number = 0, max: number = 10, color?: string) => {
   const range = max - min
   const normalized = range > 0 ? ((value - min) / range) * 100 : 0

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import type { DashboardData } from '../types'
-import { num, colorCode, scoreBar } from './shared'
+import { num, colorCode, scoreColor, scoreBar } from './shared'
 import { Search } from 'lucide-react'
 import {
   ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine
@@ -158,7 +158,7 @@ export default function ChartingTab({
           <div className="flex items-start justify-between mb-4">
             <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Company Profile</h3>
             {selectedAsset?.News_Sentiment !== undefined && selectedAsset.News_Sentiment !== null && (
-              <span className={`text-xs font-medium ${Number(selectedAsset.News_Sentiment) > 0.1 ? 'text-green' : Number(selectedAsset.News_Sentiment) < -0.1 ? 'text-red' : 'text-sub'}`}>
+              <span className={`text-xs font-medium ${Number(selectedAsset.News_Sentiment) > 0.1 ? 'text-[var(--green)]' : Number(selectedAsset.News_Sentiment) < -0.1 ? 'text-[var(--red)]' : 'text-[var(--text-3)]'}`}>
                 {selectedAsset.News_Sentiment}
               </span>
             )}
@@ -174,10 +174,10 @@ export default function ChartingTab({
               accent={selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] > 0 ? 'var(--green)' : selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] < 0 ? 'var(--red)' : undefined}
             />
             <InfoBlock label="CEO" value={selectedAsset?.CEO || '-'} />
-            <InfoBlock label="Market Cap" value={selectedAsset?.Market_Cap_B ? `₹${num(selectedAsset?.Market_Cap_B)}Cr` : '-'} />
-            <InfoBlock label="Revenue" value={selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue)} Cr` : '-'} />
-            <InfoBlock label="Profit" value={selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income)} Cr` : '-'} />
-            <InfoBlock label="EBITDA" value={selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA)} Cr` : '-'} />
+            <InfoBlock label="Market Cap" value={selectedAsset?.Market_Cap_B ? `₹${num(selectedAsset?.Market_Cap_B)}B` : '-'} />
+            <InfoBlock label="Revenue" value={selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue)}B` : '-'} />
+            <InfoBlock label="Profit" value={selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income)}B` : '-'} />
+            <InfoBlock label="EBITDA" value={selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA)}B` : '-'} />
             <InfoBlock label="Div Yield" value={selectedAsset?.["Div_Yield_%"] ? `${num(selectedAsset?.["Div_Yield_%"])}%` : '-'} />
             <InfoBlock label="52W High" value={selectedAsset?.["52W_High"] ? `₹${num(selectedAsset?.["52W_High"])}` : '-'} />
             <InfoBlock label="52W Low" value={selectedAsset?.["52W_Low"] ? `₹${num(selectedAsset?.["52W_Low"])}` : '-'} />
@@ -473,8 +473,8 @@ export default function ChartingTab({
                     onMouseLeave={e => { if (row.Ticker !== selectedTicker) e.currentTarget.style.background = 'transparent' }}
                   >
                     <td className="py-3 px-4 text-sm font-medium" style={{ color: 'var(--text)' }}>{row.Ticker.replace('.NS', '')}</td>
-                    <td className="py-3 px-4 text-right text-sm hidden sm:table-cell" style={{ color: 'var(--text-2)' }}>{num(row.Market_Cap_B)}Cr</td>
-                    <td className={`py-3 px-4 text-right text-sm font-medium ${colorCode(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
+                    <td className="py-3 px-4 text-right text-sm hidden sm:table-cell" style={{ color: 'var(--text-2)' }}>{num(row.Market_Cap_B)}B</td>
+                    <td className={`py-3 px-4 text-right text-sm font-medium ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden lg:table-cell`}>{num(row.Fund_Score)}</td>
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden lg:table-cell`}>{num(row.Research_Score)}</td>

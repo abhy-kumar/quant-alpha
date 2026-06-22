@@ -87,7 +87,7 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
         fwd_pe = _safe_float(info.get("forwardPE"), item["pe"])
         div_yield_pct = round(_safe_float(info.get("dividendYield"), 0), 2)
-        mkt_cap_b = round((_safe_float(info.get("marketCap"), 0)) / 1e7, 2)
+        mkt_cap_b = round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2)
         eps_growth = _safe_float(info.get("earningsGrowth"))
         rev_growth = _safe_float(info.get("revenueGrowth"))
 
@@ -241,9 +241,9 @@ def build_output_row(item: dict) -> dict:
         "Industry":         item["industry"],
         "Long_Name":        long_name,
         "CEO":              ceo_name,
-        "Total_Revenue":    np.nan if is_etf else round(_safe_float(info.get("totalRevenue"), 0) / 1e7, 2),
-        "Net_Income":       np.nan if is_etf else round(_safe_float(info.get("netIncomeToCommon"), 0) / 1e7, 2),
-        "EBITDA":           np.nan if is_etf else round(_safe_float(info.get("ebitda"), 0) / 1e7, 2),
+        "Total_Revenue":    np.nan if is_etf else round(_safe_float(info.get("totalRevenue"), 0) / 1e9, 2),
+        "Net_Income":       np.nan if is_etf else round(_safe_float(info.get("netIncomeToCommon"), 0) / 1e9, 2),
+        "EBITDA":           np.nan if is_etf else round(_safe_float(info.get("ebitda"), 0) / 1e9, 2),
         "News_Sentiment":   round(info.get("news_sentiment", 0.0), 3),
         "Price":            round(close, 2),
         "1d_Chg_%":         round(chg, 2),
@@ -252,7 +252,7 @@ def build_output_row(item: dict) -> dict:
         "ROE_%":            np.nan if is_etf else item["roe"],
         "Debt_to_Equity":   np.nan if is_etf else round(item["debt_eq"], 2),
         "Div_Yield_%":      np.nan if is_etf else round(_safe_float(info.get("dividendYield"), 0), 2),
-        "Market_Cap_B":     np.nan if is_etf else round((_safe_float(info.get("marketCap"), 0)) / 1e7, 2),
+        "Market_Cap_B":     np.nan if is_etf else round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2),
         "52W_High":         _safe_float(info.get("fiftyTwoWeekHigh")),
         "52W_Low":          _safe_float(info.get("fiftyTwoWeekLow")),
         "All_Time_High":    item["ath"],

@@ -240,7 +240,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
               {/* Key metrics grid */}
               <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-2.5">
                 <Metric label="P/E" value={pe!==null?(pe<0?'Loss':pe.toFixed(1)):'-'} />
-                <Metric label="Mkt Cap" value={mcap!==null?`₹${mcap.toLocaleString('en-IN')}Cr`:'-'} />
+                <Metric label="Mkt Cap" value={mcap!==null?`₹${mcap.toLocaleString('en-IN')}B`:'-'} />
                 <Metric label="ROE" value={roe!==null?`${roe.toFixed(1)}%`:'-'} />
                 <Metric label="ROCE" value={s['ROCE_%']!=null?`${Number(s['ROCE_%']).toFixed(1)}%`:'-'} />
                 <Metric label="Div Yld" value={s['Div_Yield_%']!=null?`${Number(s['Div_Yield_%']).toFixed(2)}%`:'-'} />
@@ -279,7 +279,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
               {/* Signals */}
               <div className="flex flex-wrap gap-1 mb-2.5">
                 {rsi > 0 && <SignalBadge label={`RSI(14) ${rsi.toFixed(0)}`} bullish={rsi < 70} />}
-                {stSignal && <SignalBadge label={stSignal} bullish={stSignal==='Buy'||stSignal==='Long'} />}
+                {stSignal && <SignalBadge label={stSignal} bullish={stSignal==='Bullish'||stSignal==='Buy'||stSignal==='Long'} />}
                 {macdVal > 0 && <SignalBadge label="MACD +" bullish={true} />}
                 {macdVal < 0 && <SignalBadge label={'MACD −'} bullish={false} />}
                 {momentum > 0.1 && <SignalBadge label="Mom +" bullish={true} />}

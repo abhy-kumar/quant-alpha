@@ -11,6 +11,7 @@ Indicators added in this version:
 
 import pandas as pd
 import numpy as np
+from config import RISK_FREE_RATE
 
 
 # ---------------------------------------------------------------------------
@@ -62,10 +63,11 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     # ── Volume MA ─────────────────────────────────────────────────────────────
     df["VOL_MA20"] = vol.rolling(20).mean()
 
-    # ── CCI ──────────────────────────────────────────────────────────────────
+    # ── CCI (Lambert's CCI uses Mean Absolute Deviation, not StdDev) ──────────
     tp         = (high + low + close) / 3
-    df["CCI"]  = (tp - tp.rolling(20).mean()) / (
-        0.015 * tp.rolling(20).std().replace(0, np.nan))
+    tp_sma     = tp.rolling(20).mean()
+    tp_mad     = tp.rolling(20).apply(lambda x: np.mean(np.abs(x - np.mean(x))), raw=True)
+    df["CCI"]  = (tp - tp_sma) / (0.015 * tp_mad.replace(0, np.nan))
 
     # ── NEW: ATR (Wilder's smoothing) ────────────────────────────────────────
     df = _add_atr(df, period=14)
@@ -270,13 +272,13 @@ def _add_ichimoku(df: pd.DataFrame) -> pd.DataFrame:
     period26_low = low.rolling(window=26).min()
     df["Ichimoku_Kijun"] = (period26_high + period26_low) / 2
     
-    # Senkou Span A (Current cloud level, no forward shift)
-    df["Ichimoku_SpanA"] = (df["Ichimoku_Tenkan"] + df["Ichimoku_Kijun"]) / 2
+    # Senkou Span A (projected 26 periods forward per standard Ichimoku)
+    df["Ichimoku_SpanA"] = ((df["Ichimoku_Tenkan"] + df["Ichimoku_Kijun"]) / 2).shift(26)
     
-    # Senkou Span B (52 period, current cloud level, no forward shift)
+    # Senkou Span B (52 period, projected 26 periods forward)
     period52_high = high.rolling(window=52).max()
     period52_low = low.rolling(window=52).min()
-    df["Ichimoku_SpanB"] = (period52_high + period52_low) / 2
+    df["Ichimoku_SpanB"] = ((period52_high + period52_low) / 2).shift(26)
     
     return df
 
@@ -336,7 +338,7 @@ def compute_metrics(df: pd.DataFrame) -> dict:
         if n_days > 0 else 0
     )
     ann_vol  = float(returns.std()) * np.sqrt(252) if n_days > 1 else 0
-    sharpe   = (ann_ret - 0.065) / ann_vol if ann_vol else 0
+    sharpe   = (ann_ret - RISK_FREE_RATE) / ann_vol if ann_vol else 0
 
     roll_max  = close.cummax()
     drawdowns = (close - roll_max) / roll_max

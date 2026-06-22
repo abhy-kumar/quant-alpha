@@ -42,6 +42,7 @@ def _fetch_yfinance_statements(t: yf.Ticker, info: dict):
     """
     Fetch cash flow and financial statements from yfinance to fill gaps
     in operatingCashflow, earningsGrowth, revenueGrowth, returnOnAssets.
+    Also fetches YoY deltas for Piotroski F-Score and Investment Factor.
     """
     try:
         if pd.isna(_safe_float(info.get('operatingCashflow'))):
@@ -50,6 +51,135 @@ def _fetch_yfinance_statements(t: yf.Ticker, info: dict):
                 op_idx = next((i for i in cf.index if 'operating' in str(i).lower()), None)
                 if op_idx is not None and len(cf.columns) >= 1:
                     info['operatingCashflow'] = _safe_float(cf.loc[op_idx].iloc[0])
+    except Exception:
+        pass
+
+    try:
+        if pd.isna(_safe_float(info.get('revenueGrowth'))) or pd.isna(_safe_float(info.get('earningsGrowth'))):
+            qf = t.quarterly_financials
+            if qf is not None and not qf.empty and qf.shape[1] >= 2:
+                rev_idx = next((i for i in qf.index if 'revenue' in str(i).lower() or 'total revenue' in str(i).lower()), None)
+                if rev_idx is not None:
+                    curr_rev = _safe_float(qf.loc[rev_idx].iloc[0])
+                    prev_rev = _safe_float(qf.loc[rev_idx].iloc[1])
+                    if prev_rev and prev_rev > 0 and pd.isna(_safe_float(info.get('revenueGrowth'))):
+                        info['revenueGrowth'] = (curr_rev - prev_rev) / abs(prev_rev)
+
+                ni_idx = next((i for i in qf.index if 'net income' in str(i).lower()), None)
+                if ni_idx is not None:
+                    curr_ni = _safe_float(qf.loc[ni_idx].iloc[0])
+                    prev_ni = _safe_float(qf.loc[ni_idx].iloc[1])
+                    if prev_ni and prev_ni != 0 and pd.isna(_safe_float(info.get('earningsGrowth'))):
+                        info['earningsGrowth'] = (curr_ni - prev_ni) / abs(prev_ni)
+    except Exception:
+        pass
+
+    try:
+        if pd.isna(_safe_float(info.get('returnOnAssets'))):
+            bs = t.balance_sheet
+            if bs is not None and not bs.empty:
+                ta_idx = next((i for i in bs.index if 'total asset' in str(i).lower()), None)
+                if ta_idx is not None:
+                    total_assets = _safe_float(bs.loc[ta_idx].iloc[0])
+                    if total_assets and total_assets > 0:
+                        net_income = _safe_float(info.get('netIncomeToCommon'), default=0)
+                        if net_income:
+                            info['returnOnAssets'] = net_income / total_assets
+    except Exception:
+        pass
+
+    _fetch_yoy_financials(t, info)
+
+
+def _fetch_yoy_financials(t: yf.Ticker, info: dict):
+    """
+    Fetch annual financials and balance sheet to compute YoY deltas for:
+    - Piotroski F-Score: ΔLeverage, ΔCurrent Ratio, ΔGross Margin, ΔAsset Turnover
+    - Investment Factor: Total asset growth
+    
+    Stores YoY deltas in info dict for downstream consumption.
+    """
+    try:
+        annual_fs = t.financials
+        annual_bs = t.balance_sheet
+
+        if annual_fs is None or annual_fs.empty or annual_bs is None or annual_bs.empty:
+            return
+
+        if annual_fs.shape[1] < 2 or annual_bs.shape[1] < 2:
+            return
+
+        curr_col = annual_fs.columns[0]
+        prev_col = annual_fs.columns[1]
+
+        # Total Revenue YoY
+        rev_idx = next((i for i in annual_fs.index if 'total revenue' in str(i).lower() or 'revenue' in str(i).lower()), None)
+        curr_rev = _safe_float(annual_fs.loc[rev_idx].iloc[0]) if rev_idx is not None else np.nan
+        prev_rev = _safe_float(annual_fs.loc[rev_idx].iloc[1]) if rev_idx is not None else np.nan
+
+        # Gross Profit YoY
+        gp_idx = next((i for i in annual_fs.index if 'gross profit' in str(i).lower()), None)
+        curr_gp = _safe_float(annual_fs.loc[gp_idx].iloc[0]) if gp_idx is not None else np.nan
+        prev_gp = _safe_float(annual_fs.loc[gp_idx].iloc[1]) if gp_idx is not None else np.nan
+
+        # Total Assets YoY
+        ta_idx = next((i for i in annual_bs.index if 'total asset' in str(i).lower()), None)
+        curr_ta = _safe_float(annual_bs.loc[ta_idx].iloc[0]) if ta_idx is not None else np.nan
+        prev_ta = _safe_float(annual_bs.loc[ta_idx].iloc[1]) if ta_idx is not None else np.nan
+
+        # Current Ratio YoY
+        curr_cr = _safe_float(info.get('currentRatio'))
+        cr_idx = next((i for i in annual_bs.index if 'current' in str(i).lower() and 'ratio' not in str(i).lower()), None)
+        if cr_idx is not None:
+            curr_ca = _safe_float(annual_bs.loc[cr_idx].iloc[0])
+            prev_ca = _safe_float(annual_bs.loc[cr_idx].iloc[1])
+            cl_idx = next((i for i in annual_bs.index if 'current liability' in str(i).lower()), None)
+            if cl_idx is not None:
+                curr_cl = _safe_float(annual_bs.loc[cl_idx].iloc[0])
+                prev_cl = _safe_float(annual_bs.loc[cl_idx].iloc[1])
+                if curr_cl and curr_cl > 0:
+                    curr_cr = curr_ca / curr_cl
+                if prev_cl and prev_cl > 0 and not np.isnan(prev_ca):
+                    prev_cr_val = prev_ca / prev_cl
+                    if not np.isnan(curr_cr):
+                        info['yoy_current_ratio_change'] = curr_cr - prev_cr_val
+
+        # Total Debt YoY (for leverage)
+        td_idx = next((i for i in annual_bs.index if 'total debt' in str(i).lower() or 'long term debt' in str(i).lower()), None)
+        curr_debt = _safe_float(annual_bs.loc[td_idx].iloc[0]) if td_idx is not None else np.nan
+        prev_debt = _safe_float(annual_bs.loc[td_idx].iloc[1]) if td_idx is not None else np.nan
+
+        # Shares Outstanding YoY (for dilution)
+        so_idx = next((i for i in annual_bs.index if 'share' in str(i).lower() and 'ordinary' in str(i).lower()), None)
+        if so_idx is None:
+            so_idx = next((i for i in annual_bs.index if 'ordinary share' in str(i).lower()), None)
+        curr_shares = _safe_float(annual_bs.loc[so_idx].iloc[0]) if so_idx is not None else np.nan
+        prev_shares = _safe_float(annual_bs.loc[so_idx].iloc[1]) if so_idx is not None else np.nan
+
+        # Compute and store YoY deltas
+        if not np.isnan(curr_debt) and not np.isnan(prev_debt) and prev_debt != 0:
+            info['yoy_leverage_change'] = (curr_debt - prev_debt) / abs(prev_debt)
+
+        if not np.isnan(curr_ta) and not np.isnan(prev_ta) and prev_ta > 0:
+            info['yoy_asset_growth'] = (curr_ta - prev_ta) / abs(prev_ta)
+
+            # Gross Margin YoY (GP/Assets)
+            if not np.isnan(curr_gp) and not np.isnan(curr_ta) and curr_ta > 0:
+                curr_gm = curr_gp / curr_ta
+                if not np.isnan(prev_gp) and not np.isnan(prev_ta) and prev_ta > 0:
+                    prev_gm = prev_gp / prev_ta
+                    info['yoy_gross_margin_change'] = curr_gm - prev_gm
+
+            # Asset Turnover YoY
+            if not np.isnan(curr_rev) and not np.isnan(prev_rev):
+                curr_turnover = curr_rev / curr_ta if curr_ta > 0 else np.nan
+                prev_turnover = prev_rev / prev_ta if prev_ta > 0 else np.nan
+                if not np.isnan(curr_turnover) and not np.isnan(prev_turnover):
+                    info['yoy_asset_turnover_change'] = curr_turnover - prev_turnover
+
+        if not np.isnan(curr_shares) and not np.isnan(prev_shares) and prev_shares > 0:
+            info['yoy_shares_change'] = (curr_shares - prev_shares) / abs(prev_shares)
+
     except Exception:
         pass
 
@@ -218,6 +348,13 @@ def fetch_fundamentals(ticker: str) -> dict:
         total_cash = _safe_float(info.get('totalCash'), default=0)
         if bv > 0 and shares > 0:
             info['totalAssets'] = bv * shares + total_debt - total_cash
+
+    if pd.isna(_safe_float(info.get('yoy_asset_growth'), default=np.nan)):
+        try:
+            t = yf.Ticker(ticker, session=_YF_SESSION)
+            _fetch_yoy_financials(t, info)
+        except Exception:
+            pass
 
     cache_manager.set("fundamentals", sym, info)
 

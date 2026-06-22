@@ -19,6 +19,7 @@ Implements factors validated by academic literature:
 import numpy as np
 import pandas as pd
 from utils import _safe_float
+from config import RISK_FREE_RATE
 
 
 def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
@@ -27,6 +28,13 @@ def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
 
     Original paper: "Value Investing: The Use of Historical Financial Statement
     Information to Separate Winners from Losers" (JAR, 2000)
+
+    NOTE: The original F-Score requires year-over-year comparisons for 6 of 9
+    signals (ΔLeverage, ΔCurrent Ratio, ΔGross Margin, ΔAsset Turnover, etc.).
+    This implementation uses static thresholds as proxies because yfinance's
+    `info` dict does not provide prior-year financial statement data directly.
+    This is a known limitation — a more accurate implementation would require
+    downloading historical quarterly/annual financials.
 
     Profitability (4 points):
       1. ROA > 0
@@ -43,7 +51,7 @@ def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
       8. ΔGross Margin > 0 (improving margins - proxied via profitMargins > 0.15)
       9. ΔAsset Turnover > 0 (improving efficiency - revenue/asset > 0.5)
 
-    Returns 0-9.
+    Returns integer 0-9.
     """
     score = 0
 
@@ -68,33 +76,45 @@ def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
         score += 1
 
     # ── Leverage / Liquidity ───────────────────────────────────────────────
-    # ΔLeverage: use debt-to-equity < 100 as proxy for acceptable leverage
+    # ΔLeverage: prefer YoY change, fallback to static threshold
+    yoy_leverage = _safe_float(info.get("yoy_leverage_change"), default=np.nan)
     debt_eq = _safe_float(info.get("debtToEquity"), default=0)
-    if debt_eq >= 0 and debt_eq < 100:
+    if not np.isnan(yoy_leverage):
+        if yoy_leverage < 0:
+            score += 1
+    elif debt_eq >= 0 and debt_eq < 100:
         score += 1
 
-    # ΔCurrent Ratio: use currentRatio > 1.5 as proxy for improving liquidity
+    # ΔCurrent Ratio: prefer YoY change, fallback to static threshold
+    yoy_cr_change = _safe_float(info.get("yoy_current_ratio_change"), default=np.nan)
     current_ratio = _safe_float(info.get("currentRatio"), default=1.5)
-    if current_ratio > 1.5:
+    if not np.isnan(yoy_cr_change):
+        if yoy_cr_change > 0:
+            score += 1
+    elif current_ratio > 1.5:
         score += 1
-    elif current_ratio > 1.0:
-        score += 0.5
 
-    # No dilution: use high insider holding as proxy for share stability
+    # No dilution: prefer YoY shares change, fallback to insider holding
+    yoy_shares = _safe_float(info.get("yoy_shares_change"), default=np.nan)
     insider_pct = _safe_float(info.get("heldPercentInsiders"), default=0)
-    shares = _safe_float(info.get("sharesOutstanding"), default=0)
-    if insider_pct > 0.1:
+    if not np.isnan(yoy_shares):
+        if yoy_shares <= 0:
+            score += 1
+    elif insider_pct > 0.1:
         score += 1
-    elif shares > 0:
-        score += 0.5
 
     # ── Efficiency ─────────────────────────────────────────────────────────
-    # ΔGross Margin: use profitMargins as proxy
+    # ΔGross Margin: prefer YoY change, fallback to static threshold
+    yoy_gm_change = _safe_float(info.get("yoy_gross_margin_change"), default=np.nan)
     profit_margin = _safe_float(info.get("profitMargins"), default=0)
-    if profit_margin > 0.15:
+    if not np.isnan(yoy_gm_change):
+        if yoy_gm_change > 0:
+            score += 1
+    elif profit_margin > 0.15:
         score += 1
 
-    # ΔAsset Turnover: totalRevenue / totalAssets
+    # ΔAsset Turnover: prefer YoY change, fallback to static threshold
+    yoy_to_change = _safe_float(info.get("yoy_asset_turnover_change"), default=np.nan)
     total_rev = _safe_float(info.get("totalRevenue"), default=0)
     total_assets = _safe_float(info.get("totalAssets"), default=0)
     if total_assets <= 0:
@@ -105,7 +125,10 @@ def compute_piotroski_f_score(info: dict, df: pd.DataFrame) -> int:
         if bv > 0 and shares_val > 0:
             total_assets = bv * shares_val + total_debt - total_cash
 
-    if total_assets > 0 and total_rev > 0:
+    if not np.isnan(yoy_to_change):
+        if yoy_to_change > 0:
+            score += 1
+    elif total_assets > 0 and total_rev > 0:
         turnover = total_rev / total_assets
         if turnover > 0.5:
             score += 1
@@ -186,30 +209,46 @@ def compute_investment_factor(info: dict) -> float:
     (high asset growth) tend to underperform. This is the "investment factor"
     in the Fama-French 5-factor model.
 
-    Proxied via:
-      - Low revenue growth relative to asset base (conservative investment)
-      - Low debt-to-equity (conservative financing)
-      - Positive earnings growth without excessive expansion
+    Uses YoY total asset growth when available (from annual balance sheet),
+    falling back to revenue growth as a proxy.
 
     Returns 0-10 score (higher = more conservative/better).
     """
     score = 5.0
 
-    rev_growth = _safe_float(info.get("revenueGrowth"), default=np.nan)
+    asset_growth = _safe_float(info.get("yoy_asset_growth"), default=np.nan)
     earnings_growth = _safe_float(info.get("earningsGrowth"), default=np.nan)
     debt_eq = _safe_float(info.get("debtToEquity"), default=np.nan)
     roe = _safe_float(info.get("returnOnEquity"), default=np.nan)
 
-    # Conservative growth: moderate revenue growth with good returns
-    if not np.isnan(rev_growth) and not np.isnan(earnings_growth) and not np.isnan(roe):
-        if roe > 0.15 and 0.05 <= rev_growth <= 0.25 and earnings_growth > 0:
+    if not np.isnan(asset_growth):
+        # Conservative investment: low or negative asset growth = good
+        if asset_growth < 0.05:
             score = 8.0
-        elif roe > 0.10 and 0 <= rev_growth <= 0.30:
+        elif asset_growth < 0.10:
             score = 7.0
-        elif rev_growth > 0.50:
-            score = 3.0
-        elif rev_growth < -0.10:
-            score = 3.0
+        elif asset_growth < 0.20:
+            score = 5.0
+        elif asset_growth < 0.35:
+            score = 3.5
+        else:
+            score = 2.0
+
+        # Bonus for good returns with conservative investment
+        if not np.isnan(roe) and roe > 0.15 and asset_growth < 0.15:
+            score = min(10.0, score + 1.0)
+    else:
+        # Fallback: use revenue growth as proxy
+        rev_growth = _safe_float(info.get("revenueGrowth"), default=np.nan)
+        if not np.isnan(rev_growth) and not np.isnan(earnings_growth) and not np.isnan(roe):
+            if roe > 0.15 and 0.05 <= rev_growth <= 0.25 and earnings_growth > 0:
+                score = 8.0
+            elif roe > 0.10 and 0 <= rev_growth <= 0.30:
+                score = 7.0
+            elif rev_growth > 0.50:
+                score = 3.0
+            elif rev_growth < -0.10:
+                score = 3.0
 
     # Low leverage adjustment
     if not np.isnan(debt_eq):
@@ -281,8 +320,8 @@ def compute_gross_profitability(info: dict) -> float:
     Gross Profitability (Novy-Marx 2013, JFE).
     GP/Total Assets is the single most powerful accounting-based predictor.
 
-    Fallback: uses grossMargins directly from yfinance when totalAssets unavailable.
-    Returns a 0-10 score.
+    Returns 0-10 score. Falls back to 5.0 when totalAssets is unavailable.
+    Note: grossMargins (GP/Revenue) is NOT a valid substitute for GP/Total Assets.
     """
     gp_ratio = np.nan
 
@@ -291,10 +330,6 @@ def compute_gross_profitability(info: dict) -> float:
 
     if not np.isnan(gross_profit) and not np.isnan(total_assets) and total_assets > 0:
         gp_ratio = gross_profit / total_assets
-    else:
-        gross_margin = _safe_float(info.get("grossMargins"), default=np.nan)
-        if not np.isnan(gross_margin):
-            gp_ratio = gross_margin
 
     if np.isnan(gp_ratio):
         return 5.0
@@ -355,7 +390,7 @@ def compute_momentum_z_score(
     # Risk-adjusted momentum: momentum / volatility
     returns = close.pct_change().dropna()
     vol_6m = float(returns.iloc[-126:].std()) * np.sqrt(252) if n > 126 else np.nan
-    vol_12m = float(returns.std()) * np.sqrt(252) if n > 60 else np.nan
+    vol_12m = float(returns.iloc[-252:].std()) * np.sqrt(252) if n > 252 else (float(returns.std()) * np.sqrt(252) if n > 60 else np.nan)
 
     risk_adj_mom = mom_12m / vol_12m if (not np.isnan(mom_12m) and not np.isnan(vol_12m) and vol_12m > 0) else np.nan
 
@@ -429,9 +464,8 @@ def compute_volatility_factor(df: pd.DataFrame, info: dict = None) -> dict:
     vol_60d = float(returns.iloc[-60:].std()) * np.sqrt(252) if n >= 60 else np.nan
     vol_120d = float(returns.iloc[-120:].std()) * np.sqrt(252) if n >= 120 else np.nan
 
-    # Downside deviation (penalizes only negative returns)
-    neg_returns = returns.clip(upper=0)
-    downside_dev = float(neg_returns.iloc[-60:].std()) * np.sqrt(252) if n >= 60 else np.nan
+    # Downside deviation: sqrt(mean(min(R_i, 0)^2)) - standard Sortino formula
+    downside_dev = float(np.sqrt((np.minimum(returns.iloc[-60:], 0)**2).mean())) * np.sqrt(252) if n >= 60 else np.nan
 
     # Maximum drawdown (risk measure)
     roll_max = close.cummax()
@@ -521,7 +555,7 @@ def compute_beta_factor(df: pd.DataFrame, nifty_df: pd.DataFrame = None) -> dict
             ann_stock_ret = float(stock_aligned.mean()) * 252
             ann_nifty_ret = float(nifty_aligned.mean()) * 252
             ann_vol = float(stock_aligned.std()) * np.sqrt(252)
-            risk_free = 0.065
+            risk_free = RISK_FREE_RATE
             alpha = ann_stock_ret - (risk_free + beta * (ann_nifty_ret - risk_free))
             result["alpha_60d"] = alpha
 
@@ -570,9 +604,10 @@ def compute_mean_reversion_signal(df: pd.DataFrame, info: dict = None) -> dict:
     if n < 60:
         return {"reversion_signal": 0, "reversion_score": 5.0, "overbought": False, "oversold": False}
 
-    # Distance from 52-week high and low
-    high_52w = float(close.max())
-    low_52w = float(close.min())
+    # Distance from 52-week high and low (last 252 trading days)
+    window = min(252, n)
+    high_52w = float(close.iloc[-window:].max())
+    low_52w = float(close.iloc[-window:].min())
     current = float(close.iloc[-1])
 
     pct_from_high = (current - high_52w) / high_52w if high_52w > 0 else 0

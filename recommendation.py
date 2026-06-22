@@ -62,8 +62,6 @@ def compute_fund_score(
         else:
             if debt_eq < 50: score += 1.5
             elif debt_eq < 100: score += 0.5
-    else:
-        score += 0.5
 
     # ── Growth ───────────────────────────────────────────────────────────────
     if not np.isnan(eps_growth) and eps_growth > 0.15:
@@ -118,7 +116,7 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
 
     rsi = _safe_float(latest["RSI"])
     if bullish_regime:
-        sig_rsi = 1 if 40 <= rsi <= 80 else (-1 if rsi < 40 or rsi > 80 else 0)
+        sig_rsi = 1 if 35 <= rsi <= 80 else (-1 if rsi < 35 or rsi > 80 else 0)
     else:
         sig_rsi = 1 if rsi < 30 else (-1 if rsi > 70 else 0)
 

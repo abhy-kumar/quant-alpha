@@ -309,7 +309,7 @@ class TestFullPipelineE2E(unittest.TestCase):
         debt_eq = _safe_float(info.get("debtToEquity"))
         fwd_pe = _safe_float(info.get("forwardPE"), pe)
         div_yield_pct = round(_safe_float(info.get("dividendYield"), 0), 2)
-        mkt_cap_b = round((_safe_float(info.get("marketCap"), 0)) / 1e7, 2)
+        mkt_cap_b = round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2)
         eps_growth = _safe_float(info.get("earningsGrowth"))
         rev_growth = _safe_float(info.get("revenueGrowth"))
 
