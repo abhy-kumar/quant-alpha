@@ -21,7 +21,7 @@
 <br />
 
 <div align="center">
-  <img src="assets/dashboard-preview.png" alt="Alpha Dashboard" width="800" />
+  <img src="frontend/public/dashboard-preview.png" alt="Alpha Dashboard" width="800" />
 </div>
 
 <br />
