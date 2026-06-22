@@ -3,7 +3,6 @@ import axios from 'axios'
 import { TrendingUp, BarChart2, Layers, Moon, Sun, AlertCircle, Database, Activity } from 'lucide-react'
 import { Analytics } from '@vercel/analytics/react'
 import type { DashboardData } from './types'
-import { LiquidGlassRoot } from './components/LiquidGlassRoot'
 
 console.log('[Alpha] App.tsx module loaded')
 
@@ -62,7 +61,7 @@ function TapeInner({ data }: { data: DashboardData[] }) {
   })), [data])
   if (!items.length) return null
 
-  const tapeBackground = 'var(--bg)'
+  const tapeBackground = '#000000'
   const duration = (items.length * 217) / 150;
 
   return (
@@ -252,22 +251,10 @@ export default function App() {
     <div className="min-h-screen flex flex-col" style={{ background:'var(--bg-gradient)' }}>
       <Tape data={data} />
 
-      <LiquidGlassRoot
-        className="sticky top-0 z-40"
-        defaults={{
-          blurAmount: 0.2,
-          refraction: 0.4,
-          chromAberration: 0.02,
-          edgeHighlight: 0.05,
-          specular: 0.1,
-          fresnel: 0.6,
-          cornerRadius: 0,
-          zRadius: 20,
-          shadowOpacity: 0.15,
-        }}
-      >
+      {isDark ? (
+      <div className="sticky top-0 z-40">
         {/* Header - Row 1: Nav */}
-        <header data-glass className="glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
+        <header className="glass-strong" style={{ background:'rgba(0,0,0,0.85)', borderBottom:'1px solid var(--glass-border)', borderRadius: 0, backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)' }}>
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
             {/* Left: nav */}
             <nav className="hidden md:flex items-center gap-1">
@@ -289,12 +276,12 @@ export default function App() {
 
             {/* Center: logo */}
             <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-              <img src={isDark?'/logo-dark.svg':'/logo-light.svg'} alt="Alpha" className="h-[36px] md:h-[42px] w-auto" />
+              <img src='/logo-dark.svg' alt="Alpha" className="h-[36px] md:h-[42px] w-auto" />
             </button>
 
             <div className="flex-1" />
 
-            <button onClick={()=>setIsDark(!isDark)} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            <button onClick={()=>setIsDark(!isDark)} aria-label="Switch to light mode"
               className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
               style={{
                 color: 'var(--text-3)',
@@ -305,14 +292,13 @@ export default function App() {
                 boxShadow: 'var(--glass-shadow)',
                 cursor: 'pointer',
               }}>
-              {isDark ? <Sun size={13}/> : <Moon size={13}/>}
-              {isDark ? 'Light' : 'Dark'}
+              <Sun size={13}/>Light
             </button>
           </div>
         </header>
 
-        {/* Row 2: Market Data Sub-Header (Bloomberg-style) */}
-        <div data-glass className="glass-subtle" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
+        {/* Row 2: Market Data Sub-Header */}
+        <div className="glass-subtle" style={{ background:'rgba(0,0,0,0.6)', borderBottom:'1px solid var(--glass-border)', borderRadius: 0, backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)' }}>
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
           {/* LIVE indicator */}
           <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
@@ -388,7 +374,132 @@ export default function App() {
           )}
         </div>
       </div>
-      </LiquidGlassRoot>
+      </div>
+      ) : (
+      <div className="sticky top-0 z-40">
+        {/* Header - Row 1: Nav */}
+        <header className="glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
+          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
+            {/* Left: nav */}
+            <nav className="hidden md:flex items-center gap-1">
+              {TABS.map(tab => (
+                <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
+                  style={{
+                    color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
+                    background: activeTab===tab.id ? 'var(--glass-bg)' : 'transparent',
+                    border: activeTab===tab.id ? '1px solid var(--glass-border)' : '1px solid transparent',
+                    boxShadow: activeTab===tab.id ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+                  }}>
+                  <tab.icon size={14} />{tab.label}
+                </button>
+              ))}
+            </nav>
+
+            <div className="flex-1" />
+
+            {/* Center: logo */}
+            <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
+              <img src='/logo-light.svg' alt="Alpha" className="h-[36px] md:h-[42px] w-auto" />
+            </button>
+
+            <div className="flex-1" />
+
+            <button onClick={()=>setIsDark(!isDark)} aria-label="Switch to dark mode"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+              style={{
+                color: 'var(--text-3)',
+                background: 'var(--glass-bg-subtle)',
+                border: '1px solid var(--glass-border)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                boxShadow: 'var(--glass-shadow)',
+                cursor: 'pointer',
+              }}>
+              <Moon size={13}/>Dark
+            </button>
+          </div>
+        </header>
+
+        {/* Row 2: Market Data Sub-Header (Bloomberg-style) */}
+        <div className="glass-subtle" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
+          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
+          {/* LIVE indicator */}
+          <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
+            <div style={{ width:5, height:5, borderRadius:'50%',
+              background: isDynamic ? 'var(--amber)' : 'var(--text-3)',
+              transition: 'background 300ms ease',
+              boxShadow: isDynamic ? '0 0 4px var(--amber)' : 'none' }}/>
+            <span style={{ fontSize:9, color:'var(--text-3)', letterSpacing:'0.08em', fontWeight:600 }}>
+              {isDynamic ? 'LIVE' : 'CLOSED'}
+            </span>
+          </div>
+
+          <span style={{ width:1, height:12, background:'var(--border)', flexShrink:0 }}/>
+
+          {niftyData && (
+            <span style={{ display:'inline-flex', alignItems:'center', gap:4, flexShrink:0 }}>
+              <span style={{ color:'var(--text-3)', fontWeight:500 }}>NIFTY</span>
+              <span className="font-mono" style={{ fontWeight:700, color:'var(--text)' }}>
+                {niftyData.price.toLocaleString('en-IN')}
+              </span>
+              <span className="font-mono" style={{ color: niftyData.is_up ? 'var(--green)' : 'var(--red)' }}>
+                {niftyData.is_up?'▲':'▼'}{niftyData.change_pct}%
+              </span>
+            </span>
+          )}
+
+          {marketRegimeScore!==null && (
+            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0 }}>
+              <span style={{ width:5, height:5, borderRadius:'50%', background: regimeColor, display:'inline-block' }}/>
+              <span className="font-mono" style={{ fontWeight:500, color:'var(--text)' }}>
+                {regimeLabel} {marketRegimeScore > 0 ? '+' : ''}{marketRegimeScore}
+              </span>
+            </span>
+          )}
+
+          {fiiNet!==null && (
+            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0, fontWeight:500 }}>
+              <span style={{ color:'var(--text-3)' }}>FII</span>
+              <span className="font-mono" style={{ color: fiiNet > 0 ? 'var(--green)' : 'var(--red)' }}>
+                {fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)}
+              </span>
+            </span>
+          )}
+
+          {diiNet!==null && (
+            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0, fontWeight:500 }}>
+              <span style={{ color:'var(--text-3)' }}>DII</span>
+              <span className="font-mono" style={{ color: diiNet > 0 ? 'var(--green)' : 'var(--red)' }}>
+                {diiNet > 0 ? '+' : ''}{Math.round(diiNet)}
+              </span>
+            </span>
+          )}
+
+          {pcr!==null && (
+            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0, fontWeight:500 }}>
+              <span style={{ color:'var(--text-3)' }}>PCR</span>
+              <span className="font-mono" style={{ color:'var(--text)' }}>{pcr.toFixed(2)}</span>
+            </span>
+          )}
+
+          {coveragePct!==null && (
+            <span style={{ flexShrink:0, fontWeight:500 }}>
+              <span className="font-mono" style={{ color:'var(--text-2)' }}>{coveragePct}%</span>
+            </span>
+          )}
+
+          <div className="flex-1" />
+
+          {pricesUpdated && (
+            <span style={{ flexShrink:0, color:'var(--text-3)', fontSize:10 }}>
+              {pricesUpdated}
+            </span>
+          )}
+        </div>
+      </div>
+      </div>
+      )}
 
       {/* Mobile tab bar */}
       <nav className="md:hidden overflow-x-auto glass" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>

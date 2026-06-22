@@ -262,12 +262,12 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   className="transition-colors"
                   style={{
                     borderBottom: '1px solid var(--glass-border)',
-                    background: expandedRow === row.Ticker ? 'var(--brand-soft)' : flashTickers[row.Ticker] === 'up' ? 'var(--green-bg)' : flashTickers[row.Ticker] === 'down' ? 'var(--red-bg)' : 'transparent',
+                    background: expandedRow === row.Ticker ? 'var(--glass-bg-subtle)' : flashTickers[row.Ticker] === 'up' ? 'var(--green-bg)' : flashTickers[row.Ticker] === 'down' ? 'var(--red-bg)' : 'transparent',
                     cursor: 'pointer',
                     transition: 'background var(--dur-fast)',
                   }}
                   onMouseEnter={e => { if (expandedRow !== row.Ticker && !flashTickers[row.Ticker]) e.currentTarget.style.background = 'var(--glass-bg-subtle)' }}
-                  onMouseLeave={e => { if (expandedRow === row.Ticker) e.currentTarget.style.background = 'var(--brand-soft)' ; else if (!flashTickers[row.Ticker]) e.currentTarget.style.background = 'transparent' }}
+                  onMouseLeave={e => { if (expandedRow === row.Ticker) e.currentTarget.style.background = 'var(--glass-bg-subtle)' ; else if (!flashTickers[row.Ticker]) e.currentTarget.style.background = 'transparent' }}
                 >
                   <td className="py-2 px-2 font-medium cursor-pointer transition-colors" style={{ color: 'var(--text)', position:'sticky', left:0, background:'var(--surface)', zIndex:1 }} onClick={() => onSelect(row.Ticker)}
                     onMouseEnter={e => (e.currentTarget.style.color = 'var(--brand)')}
@@ -320,7 +320,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                       overflow: 'hidden',
                       transition: 'max-height var(--dur-slow) var(--ease-out)',
                     }}>
-                      <div className="p-6 glass-subtle" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                      <div className="p-6" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--glass-border)' }}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                           <div>
                             <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Technical Signals</h4>
