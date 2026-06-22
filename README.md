@@ -10,7 +10,7 @@
   [![Last Commit](https://img.shields.io/github/last-commit/abhy-kumar/quant-alpha?label=last%20scan&color=4ade80)](https://github.com/abhy-kumar/quant-alpha/commits/main)
   [![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
   [![React](https://img.shields.io/badge/react-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-  [![License](https://img.shields.io/badge/license-proprietary-red)](./README.md#license)
+  [![License](https://img.shields.io/badge/license-Apache%202.0%20%2B%20Commons%20Clause-orange)](./LICENSE)
 
   <br /><br />
 
@@ -550,10 +550,8 @@ If you use Alpha's data, methodology, or code in academic work, please cite:
 
 ## License
 
-This project is proprietary software developed for the Alpha Research and Investment Club, FMS Delhi. All rights reserved.
+This project is licensed under the [Apache License 2.0 with Commons Clause](./LICENSE). You may use, modify, and distribute this software, but you **may not sell it** as a product or service whose value derives entirely or substantially from the functionality of this software.
 
-## Copyright
-
-Copyright (c) 2026 Abhishek Kumar. All rights reserved.
+Copyright (c) 2026 Abhishek Kumar / Alpha Research and Investment Club, FMS Delhi.
 
 Developed by Abhishek Kumar
