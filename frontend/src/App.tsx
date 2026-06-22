@@ -24,10 +24,9 @@ class ErrorBoundary extends React.Component<
           <p>{this.state.error.message}</p>
           <pre>{this.state.error.stack}</pre>
           <button onClick={() => this.setState({ error: null })} style={{ marginTop: 16, padding: '8px 16px', cursor: 'pointer' }}>Retry</button>
-      <Analytics />
-    </div>
-  )
-}
+        </div>
+      )
+    }
     return this.props.children
   }
 }
@@ -437,6 +436,7 @@ export default function App() {
           </div>
         </div>
       </footer>
+      <Analytics />
     </div>
   )
 }
