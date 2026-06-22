@@ -541,7 +541,7 @@ export default function App() {
           </div>
         ) : (
           <ErrorBoundary key={activeTab}>
-            <Suspense fallback={<TabSkeleton/>}>
+            <Suspense fallback={null}>
               <div className="tab-fade-in">
                 {activeTab==='picks' && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
                 {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers}/>}
