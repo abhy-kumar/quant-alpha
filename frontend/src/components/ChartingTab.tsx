@@ -151,7 +151,7 @@ export default function ChartingTab({
     <div className="space-y-5">
       <div className="flex flex-col xl:flex-row gap-6 xl:gap-8">
       {/* Left: Controls & Info - sticky */}
-      <div className="w-full xl:w-72 flex flex-col gap-5 order-2 xl:order-1 shrink-0 scrollbar-none" style={{ position: 'sticky', top: 60, maxHeight: 'calc(100vh - 80px)', overflowY: 'auto' }}>
+      <div className="w-full xl:w-72 flex flex-col gap-3 order-2 xl:order-1 shrink-0">
         <StockSearch data={data} selectedTicker={selectedTicker} onSelect={setSelectedTicker} />
 
         {/* Company Profile */}
