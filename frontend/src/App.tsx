@@ -252,9 +252,9 @@ export default function App() {
       <Tape data={data} />
 
       {isDark ? (
-      <div className="sticky top-0 z-40">
+      <div className="sticky top-0 z-40" style={{ isolation: 'isolate' }}>
         {/* Header - Row 1: Nav */}
-        <header className="glass-strong" style={{ background:'rgba(0,0,0,0.85)', borderBottom:'1px solid var(--glass-border)', borderRadius: 0, backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)' }}>
+        <header className="glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
             {/* Left: nav */}
             <nav className="hidden md:flex items-center gap-1">
@@ -298,7 +298,7 @@ export default function App() {
         </header>
 
         {/* Row 2: Market Data Sub-Header */}
-        <div className="glass-subtle" style={{ background:'rgba(0,0,0,0.6)', borderBottom:'1px solid var(--glass-border)', borderRadius: 0, backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)' }}>
+        <div className="glass-subtle" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
           {/* LIVE indicator */}
           <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
@@ -376,7 +376,7 @@ export default function App() {
       </div>
       </div>
       ) : (
-      <div className="sticky top-0 z-40">
+      <div className="sticky top-0 z-40" style={{ isolation: 'isolate' }}>
         {/* Header - Row 1: Nav */}
         <header className="glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
