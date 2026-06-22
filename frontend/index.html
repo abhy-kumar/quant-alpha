@@ -3,34 +3,73 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#6366f1" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)" />
     <meta name="description" content="Free, research-backed quantitative stock screener for the NSE. Screens 150 stocks daily using 10 academic factors: Piotroski F-Score, Momentum, Value, Low Volatility, and more. By the Alpha Research and Investment Club, FMS Delhi.">
     <meta name="keywords" content="NSE stock screener, quantitative research India, Piotroski F-Score, stock momentum NSE, NIFTY 50 analysis, FMS Delhi, quant investing India, factor investing NSE">
     <meta name="author" content="Abhishek Kumar, Alpha Research and Investment Club">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://quant-alpha.vercel.app">
+    <link rel="canonical" href="https://quant-alpha-sage.vercel.app">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://quant-alpha.vercel.app">
+    <meta property="og:url" content="https://quant-alpha-sage.vercel.app">
     <meta property="og:title" content="Alpha - Quantitative NSE Stock Research">
     <meta property="og:description" content="Daily quantitative screening of 150 NSE stocks using 10 academic factors. Free, open-source, research-backed.">
-    <meta property="og:image" content="https://quant-alpha.vercel.app/og-preview.png">
+    <meta property="og:image" content="https://quant-alpha-sage.vercel.app/dashboard-preview.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Alpha Research">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Alpha - Quantitative NSE Stock Research">
     <meta name="twitter:description" content="Daily quantitative screening of 150 NSE stocks using 10 academic factors.">
-    <meta name="twitter:image" content="https://quant-alpha.vercel.app/og-preview.png">
+    <meta name="twitter:image" content="https://quant-alpha-sage.vercel.app/dashboard-preview.png">
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Alpha Research Dashboard",
-      "applicationCategory": "FinanceApplication",
-      "description": "Quantitative stock screening for the National Stock Exchange of India",
-      "author": { "@type": "Organization", "name": "Alpha Research and Investment Club, FMS Delhi" },
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" }
-    }
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Alpha Research Dashboard",
+        "url": "https://quant-alpha-sage.vercel.app",
+        "applicationCategory": "FinanceApplication",
+        "applicationSubCategory": "Stock Screener",
+        "description": "Quantitative stock screening for the National Stock Exchange of India using 10 academic research factors: Piotroski F-Score, Momentum, Value, Low Volatility, Gross Profitability, Earnings Quality, Betting Against Beta, Investment Factor, SUE, and Mean Reversion.",
+        "operatingSystem": "Web",
+        "browserRequirements": "Requires JavaScript",
+        "inLanguage": "en-IN",
+        "featureList": [
+          "150 NSE stock universe screened 3x daily",
+          "14 technical signals with Wilder-smoothed indicators",
+          "10 academic research factors (Piotroski, Momentum, Value, Low Volatility, BAB, SUE)",
+          "Multi-factor composite scoring with 4 horizon variants",
+          "Live intraday price overlay every 3 minutes during market hours",
+          "India market regime detection (Nifty, VIX, FII/DII, PCR, breadth)",
+          "ML-ready SQLite database accumulating daily feature vectors and forward returns",
+          "Interactive charting with Price, RSI, MACD overlays",
+          "Sector heatmap and factor lab with conviction accuracy tracking"
+        ],
+        "screenshot": "https://quant-alpha-sage.vercel.app/dashboard-preview.png",
+        "author": {
+          "@type": "Organization",
+          "name": "Alpha Research and Investment Club, FMS Delhi",
+          "url": "https://github.com/abhy-kumar/quant-alpha"
+        },
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
+        "codeRepository": "https://github.com/abhy-kumar/quant-alpha",
+        "programmingLanguage": ["Python", "TypeScript"]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Alpha Research and Investment Club",
+        "parentOrganization": {
+          "@type": "EducationalOrganization",
+          "name": "Faculty of Management Studies, University of Delhi"
+        },
+        "url": "https://quant-alpha-sage.vercel.app",
+        "sameAs": ["https://github.com/abhy-kumar/quant-alpha"]
+      }
+    ]
     </script>
     <title>Alpha - Quantitative Stock Research for NSE India | Alpha Research Club, FMS Delhi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">

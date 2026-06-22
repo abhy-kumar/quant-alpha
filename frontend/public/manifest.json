@@ -1,0 +1,31 @@
+{
+  "name": "Alpha - Quantitative NSE Stock Research",
+  "short_name": "Alpha Research",
+  "description": "Daily quantitative screening of 150 NSE stocks using 10 academic research factors. Free, open-source, research-backed.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#6366f1",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "en-IN",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/dashboard-preview.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "label": "Alpha Research Dashboard - Signals tab showing top NSE stock picks"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

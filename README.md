@@ -3,6 +3,19 @@
   <br /><br />
   <p><strong>A research-backed quantitative stock recommendation system for the National Stock Exchange of India.</strong></p>
   <p>Engineered for the Alpha Research and Investment Club, FMS Delhi.</p>
+
+  <br />
+
+  [![GitHub Actions](https://github.com/abhy-kumar/quant-alpha/actions/workflows/daily_scan.yml/badge.svg)](https://github.com/abhy-kumar/quant-alpha/actions/workflows/daily_scan.yml)
+  [![Last Commit](https://img.shields.io/github/last-commit/abhy-kumar/quant-alpha?label=last%20scan&color=4ade80)](https://github.com/abhy-kumar/quant-alpha/commits/main)
+  [![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+  [![React](https://img.shields.io/badge/react-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+  [![License](https://img.shields.io/badge/license-proprietary-red)](./README.md#license)
+
+  <br /><br />
+
+  **[Live Dashboard](https://quant-alpha-sage.vercel.app)**&nbsp;&nbsp;&nbsp;**[Live Data API](https://quant-alpha-sage.vercel.app/api/live_data)**&nbsp;&nbsp;&nbsp;**[AI Summary (llms.txt)](https://quant-alpha-sage.vercel.app/llms.txt)**
+
 </div>
 
 <br />
@@ -12,6 +25,7 @@
 </div>
 
 <br />
+
 
 ## Goal and Impact
 
@@ -511,6 +525,26 @@ If any provision of this disclaimer is held to be invalid or unenforceable, the 
 ### Contact
 
 For questions regarding this disclaimer, contact: Alpha Research and Investment Club, Faculty of Management Studies, University of Delhi.
+
+---
+
+## Cite This Project
+
+If you use Alpha's data, methodology, or code in academic work, please cite:
+
+```bibtex
+@software{kumar2024alpha,
+  author    = {Kumar, Abhishek},
+  title     = {Alpha: A Multi-Factor Quantitative Stock Recommendation System for the NSE},
+  year      = {2024},
+  url       = {https://github.com/abhy-kumar/quant-alpha},
+  note      = {Alpha Research and Investment Club, Faculty of Management Studies, University of Delhi}
+}
+```
+
+## Topics
+
+`quantitative-finance` · `nse-india` · `factor-investing` · `algorithmic-trading` · `piotroski-f-score` · `stock-screener` · `react` · `python` · `fms-delhi` · `machine-learning`
 
 ---
 

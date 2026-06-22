@@ -1,0 +1,93 @@
+﻿# Alpha - Quantitative NSE Stock Research
+# llms.txt - Machine-readable site summary for AI assistants and LLM crawlers
+# Standard: https://llmstxt.org
+
+> Alpha is a fully automated, research-backed quantitative stock screening and recommendation
+> platform for the National Stock Exchange of India (NSE). It evaluates the top 150 liquid
+> NSE equities daily using a multi-factor model grounded in published academic research,
+> and publishes the results as a free, open-access dashboard.
+
+## What Alpha Does
+
+- Screens 150 NSE stocks three times daily (pre-open, mid-day, post-market) via GitHub Actions
+- Computes 14 technical signals, 10 fundamental metrics, and 10 academic research factors per stock
+- Assigns conviction ratings: Strong Buy, Buy, Hold, Caution, Avoid
+- Detects Indian market regime (bullish / neutral / bearish) using 5 India-specific signals
+- Stores all data in a growing SQLite database for machine learning training
+- Provides live intraday price overlays via Vercel serverless functions (every 3 min, market hours)
+
+## Academic Research Factors
+
+1. Piotroski F-Score (Piotroski, 2000)
+2. Gross Profitability (Novy-Marx, 2013 JFE)
+3. Earnings Quality / Accruals (Sloan, 1996)
+4. Multi-Horizon Momentum (Jegadeesh & Titman, 1993)
+5. Value Factor - B/M, E/P, CF/P composite (Fama & French, 1992-1993)
+6. Low Volatility (Baker, Bradley & Wurgler, 2011 JF)
+7. Betting Against Beta (Frazzini & Pedersen, 2014 JFE)
+8. Investment Factor (Titman, Wei & Xie, 2004)
+9. Earnings Momentum / SUE (Bernard & Thomas, 1989 JAR)
+10. Mean Reversion (De Bondt & Thaler, 1985)
+
+## Scoring Dimensions
+
+- Technical Score: -1.0 to +1.0 (14 binary signals, Wilder-smoothed indicators)
+- Fundamental Score: 0-10 (ROE, ROCE, PEG, D/E, EPS growth, Revenue growth, Sharpe, Promoter holding)
+- Research Factor Score: 0-10 (10 academic factors, cross-sectional percentile ranked)
+- Composite Score: Weighted blend in 4 variants - Balanced, Short-Term, Long-Term, Momentum
+
+## Data Sources
+
+- NSE Bhav Copy (official NSE end-of-day data) - universe selection
+- yfinance with .NS tickers - OHLCV and fundamentals (INR-denominated)
+- screener.in - fallback for promoter holding, pledging, sector taxonomy
+- BSE India - last-resort fallback
+- Google News RSS (India locale: gl=IN&hl=en-IN) - news sentiment via VADER
+- NSE Option Chain v3 API - Put-Call Ratio
+- NSE fiidiiTradeReact API - FII/DII net flows
+
+## Live API Endpoints (Vercel Serverless)
+
+- GET /api/live_data - Live NIFTY 50, LTP and 1D% change for all 150 stocks, FII/DII, PCR
+- GET /api/chart?ticker=RELIANCE.NS - OHLCV + technicals for charting (yahoo-finance2 v3)
+
+## Static Data
+
+- GET /market_data.json - Full scan output: all scores, factors, conviction, regime (updated 3x daily)
+- GET /score_history.json - Historical composite scores per stock for trend charting
+
+## Tech Stack
+
+- Backend: Python 3.12, pandas, numpy, yfinance, BeautifulSoup4, vaderSentiment, feedparser
+- Frontend: React 19, Vite, Tailwind CSS, Recharts, TypeScript
+- Database: SQLite (market_scans.db) - factor_history, outcome_tracking, regime_history tables
+- CI/CD: GitHub Actions (3x daily cron: 03:30, 07:00, 10:45 UTC, Mon-Fri)
+- Hosting: Vercel (frontend + serverless), GitHub (data + backend)
+
+## Machine Learning Data
+
+The SQLite database accumulates daily feature vectors (62 columns) and forward return labels
+(5d, 10d, 21d, 63d, 126d, 252d) for every stock in every scan. It is designed as a training
+dataset for future ML models. Key tables:
+
+- factor_history: 62-column feature matrix, 150 rows per scan
+- outcome_tracking: Forward returns at 6 horizons, auto-backfilled
+- regime_history: Market regime, Nifty level, breadth per scan
+
+## Project Links
+
+- Dashboard: https://quant-alpha-sage.vercel.app
+- Source Code: https://github.com/abhy-kumar/quant-alpha
+- Live Data API: https://quant-alpha-sage.vercel.app/api/live_data
+- Full Scan Data: https://quant-alpha-sage.vercel.app/market_data.json
+
+## Scope and Limitations
+
+- Coverage: Top 150 NSE stocks by turnover only (not full NSE universe)
+- Geography: India / NSE only. All figures in INR.
+- Not investment advice. For academic and research purposes only.
+- Data may lag by up to 8 hours between scheduled scans.
+
+## Contact
+
+Alpha Research and Investment Club, Faculty of Management Studies (FMS), University of Delhi.
