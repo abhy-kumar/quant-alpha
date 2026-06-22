@@ -44,7 +44,7 @@ export default {
         'progress': 'progress 2s ease-in-out infinite alternate',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['-apple-system', 'BlinkMacSystemFont', '"Product Sans"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
         data: ['Space Mono', 'SF Mono', 'monospace'],
       },
     },
