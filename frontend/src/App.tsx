@@ -3,6 +3,7 @@ import axios from 'axios'
 import { TrendingUp, BarChart2, Layers, Moon, Sun, AlertCircle, Database, Activity } from 'lucide-react'
 import { Analytics } from '@vercel/analytics/react'
 import type { DashboardData } from './types'
+import { LiquidGlassRoot } from './components/LiquidGlassRoot'
 
 console.log('[Alpha] App.tsx module loaded')
 
@@ -171,7 +172,7 @@ export default function App() {
         if (changed) setData(newData)
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
         setPricesUpdated(new Date().toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',hour12:true})+' IST')
-        setIsDynamic(true)
+        setIsDynamic(!res.data.is_market_closed)
 
         const newFlash: Record<string, 'up'|'down'> = {}
         newData.forEach((d, i) => {
@@ -251,54 +252,68 @@ export default function App() {
     <div className="min-h-screen flex flex-col" style={{ background:'var(--bg-gradient)' }}>
       <Tape data={data} />
 
-      {/* Header - Row 1: Nav */}
-      <header className="sticky top-0 z-40 glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
-        <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
-          {/* Left: nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {TABS.map(tab => (
-              <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
-                style={{
-                  color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
-                  background: activeTab===tab.id ? 'var(--glass-bg)' : 'transparent',
-                  border: activeTab===tab.id ? '1px solid var(--glass-border)' : '1px solid transparent',
-                  boxShadow: activeTab===tab.id ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
-                }}>
-                <tab.icon size={14} />{tab.label}
-              </button>
-            ))}
-          </nav>
+      <LiquidGlassRoot
+        className="sticky top-0 z-40"
+        defaults={{
+          blurAmount: 0.2,
+          refraction: 0.4,
+          chromAberration: 0.02,
+          edgeHighlight: 0.05,
+          specular: 0.1,
+          fresnel: 0.6,
+          cornerRadius: 0,
+          zRadius: 20,
+          shadowOpacity: 0.15,
+        }}
+      >
+        {/* Header - Row 1: Nav */}
+        <header data-glass className="glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
+          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
+            {/* Left: nav */}
+            <nav className="hidden md:flex items-center gap-1">
+              {TABS.map(tab => (
+                <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
+                  style={{
+                    color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
+                    background: activeTab===tab.id ? 'var(--glass-bg)' : 'transparent',
+                    border: activeTab===tab.id ? '1px solid var(--glass-border)' : '1px solid transparent',
+                    boxShadow: activeTab===tab.id ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+                  }}>
+                  <tab.icon size={14} />{tab.label}
+                </button>
+              ))}
+            </nav>
 
-          <div className="flex-1" />
+            <div className="flex-1" />
 
-          {/* Center: logo */}
-          <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-            <img src={isDark?'/logo-dark.svg':'/logo-light.svg'} alt="Alpha" className="h-[36px] md:h-[42px] w-auto" />
-          </button>
+            {/* Center: logo */}
+            <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
+              <img src={isDark?'/logo-dark.svg':'/logo-light.svg'} alt="Alpha" className="h-[36px] md:h-[42px] w-auto" />
+            </button>
 
-          <div className="flex-1" />
+            <div className="flex-1" />
 
-          <button onClick={()=>setIsDark(!isDark)} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
-            style={{
-              color: 'var(--text-3)',
-              background: 'var(--glass-bg-subtle)',
-              border: '1px solid var(--glass-border)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              boxShadow: 'var(--glass-shadow)',
-              cursor: 'pointer',
-            }}>
-            {isDark ? <Sun size={13}/> : <Moon size={13}/>}
-            {isDark ? 'Light' : 'Dark'}
-          </button>
-        </div>
-      </header>
+            <button onClick={()=>setIsDark(!isDark)} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+              style={{
+                color: 'var(--text-3)',
+                background: 'var(--glass-bg-subtle)',
+                border: '1px solid var(--glass-border)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                boxShadow: 'var(--glass-shadow)',
+                cursor: 'pointer',
+              }}>
+              {isDark ? <Sun size={13}/> : <Moon size={13}/>}
+              {isDark ? 'Light' : 'Dark'}
+            </button>
+          </div>
+        </header>
 
-      {/* Row 2: Market Data Sub-Header (Bloomberg-style) */}
-      <div className="glass-subtle" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
-        <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
+        {/* Row 2: Market Data Sub-Header (Bloomberg-style) */}
+        <div data-glass className="glass-subtle" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
+          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
           {/* LIVE indicator */}
           <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
             <div style={{ width:5, height:5, borderRadius:'50%',
@@ -373,6 +388,7 @@ export default function App() {
           )}
         </div>
       </div>
+      </LiquidGlassRoot>
 
       {/* Mobile tab bar */}
       <nav className="md:hidden overflow-x-auto glass" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
@@ -415,7 +431,7 @@ export default function App() {
         ) : (
           <ErrorBoundary key={activeTab}>
             <Suspense fallback={<TabSkeleton/>}>
-              <div>
+              <div className="tab-fade-in">
                 {activeTab==='picks' && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
                 {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers}/>}
                 {activeTab==='charting' && <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon}/>}

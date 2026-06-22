@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { DashboardData } from '../types'
+import { SegmentedControl } from './shared'
 
 interface Props {
   sectorMap: Record<string, DashboardData[]>
@@ -58,12 +59,14 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
             High (&gt;7)
           </span>
         </div>
-        <div className="segmented-control">
-          <button onClick={() => setSortMode('score')}
-            className={sortMode === 'score' ? 'active' : ''}>By Score</button>
-          <button onClick={() => setSortMode('alpha')}
-            className={sortMode === 'alpha' ? 'active' : ''}>A-Z</button>
-        </div>
+        <SegmentedControl
+          options={[
+            { key: 'score', label: 'By Score' },
+            { key: 'alpha', label: 'A-Z' },
+          ]}
+          value={sortMode}
+          onChange={(v) => setSortMode(v as 'alpha' | 'score')}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -72,7 +75,7 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
           const avgScore = sectorAvgScores[sector]
           const colCount = Math.min(4, Math.max(2, Math.ceil(Math.sqrt(stocks.length))))
           return (
-            <div key={sector} className="p-5 card" style={{ borderRadius: 'var(--radius-xl)' }}>
+            <div key={sector} className="p-5 card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
               <div className="mb-4 pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{sector}</h3>

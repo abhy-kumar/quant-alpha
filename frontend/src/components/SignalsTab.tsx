@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { DashboardData } from '../types'
-import { scoreBar } from './shared'
+import { scoreBar, SegmentedControl } from './shared'
 
 function ConvictionDots({ conviction }: { conviction: string }) {
   const levels: Record<string, number> = { 'Strong Buy': 5, 'Buy': 4, 'Hold': 3, 'Caution': 2, 'Avoid': 1 }
@@ -143,14 +143,14 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
     <div className="space-y-4">
       {/* Controls + Summary row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="segmented-control">
-          {(['short', 'long'] as const).map(h => (
-            <button key={h} onClick={() => setHorizon(h)}
-              className={horizon === h ? 'active' : ''}>
-              {h === 'short' ? 'Short-Term' : 'Long-Term'}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={[
+            { key: 'short', label: 'Short-Term' },
+            { key: 'long', label: 'Long-Term' },
+          ]}
+          value={horizon}
+          onChange={(h) => setHorizon(h as 'short' | 'long')}
+        />
 
         <div className="flex items-center gap-4 text-[12px]" style={{color:'var(--text-3)'}}>
           <span>Avg Score <span className="font-mono font-medium" style={{color: avgScore >= 7 ? 'var(--green)' : 'var(--text)'}}>{avgScore.toFixed(1)}</span></span>
@@ -193,7 +193,9 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
               role="button" tabIndex={0}
               onKeyDown={e => e.key === 'Enter' && onSelect(s.Ticker)}
               className="card card-hover cursor-pointer p-4"
+              data-liquid
               style={{ borderRadius: 'var(--radius-xl)' }}>
+              <div className="liquid-sheen" />
               {/* Header: ticker + category */}
               <div className="flex items-start justify-between mb-2">
                 <div>
@@ -269,7 +271,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                     </div>
                     <div className="relative h-1.5 rounded-full" style={{background:'var(--border)'}}>
                       <div className="absolute h-1.5 rounded-full" style={{left:0,width:`${priceVsHigh}%`,background: priceVsHigh > 90 ? 'var(--green)' : priceVsHigh > 50 ? 'var(--brand)' : 'var(--amber)'}} />
-                      <div className="absolute w-1.5 h-1.5 rounded-full border-2 border-white" style={{left:`${priceVsHigh}%`,top:'-1px',transform:'translateX(-50%)',background:'var(--text)'}} />
+                      <div className="absolute rounded-full border-2 border-white" style={{left:`${priceVsHigh}%`,top:'50%',width:10,height:10,transform:'translate(-50%,-50%)',background:'var(--text)'}} />
                     </div>
                   </div>
                 )}

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 
 export const num = (v: any) => !isNaN(Number(v)) && v!=="" && v!==null ? Number(v).toFixed(2) : 'N/A'
 
@@ -67,7 +67,53 @@ export function MiniSparkline({ values, width=64, height=22, ticker }: { values:
         </linearGradient>
       </defs>
       <polygon points={`0,${height} ${fillPts} ${width},${height}`} fill={`url(#${gradientId})`}/>
-      <polyline points={pts} fill="none" stroke={lineColor} strokeWidth="1.5" strokeLinecap="round"/>
+      <polyline points={pts} fill="none" stroke={lineColor} strokeWidth="1.5" strokeLinecap="round" />
     </svg>
+  )
+}
+
+export function SegmentedControl({ options, value, onChange, className = '' }: {
+  options: { key: string; label: string }[]
+  value: string
+  onChange: (key: string) => void
+  className?: string
+}) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const btnRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
+  const [indicator, setIndicator] = useState<{ left: number; width: number } | null>(null)
+
+  const updateIndicator = useCallback(() => {
+    const container = containerRef.current
+    const btn = btnRefs.current.get(value)
+    if (container && btn) {
+      const containerRect = container.getBoundingClientRect()
+      const btnRect = btn.getBoundingClientRect()
+      setIndicator({
+        left: btnRect.left - containerRect.left,
+        width: btnRect.width,
+      })
+    }
+  }, [value])
+
+  useEffect(() => {
+    updateIndicator()
+    window.addEventListener('resize', updateIndicator)
+    return () => window.removeEventListener('resize', updateIndicator)
+  }, [updateIndicator])
+
+  return (
+    <div ref={containerRef} className={`segmented-control ${className}`}>
+      {indicator && <div className="seg-indicator" style={{ left: indicator.left, width: indicator.width }} />}
+      {options.map(opt => (
+        <button
+          key={opt.key}
+          ref={el => { if (el) btnRefs.current.set(opt.key, el) }}
+          onClick={() => onChange(opt.key)}
+          className={value === opt.key ? 'active' : ''}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
   )
 }

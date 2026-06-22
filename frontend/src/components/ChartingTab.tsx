@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import type { DashboardData } from '../types'
-import { num, colorCode, scoreColor, scoreBar } from './shared'
+import { num, colorCode, scoreColor, scoreBar, SegmentedControl } from './shared'
 import { Search } from 'lucide-react'
 import {
   ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine
@@ -119,7 +119,7 @@ const ChartTooltip = ({ active, payload, label }: any) => {
 }
 
 const Panel = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="overflow-hidden card" style={{ borderRadius: 'var(--radius-xl)' }}>
+  <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
     <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
       {title}
     </div>
@@ -276,23 +276,22 @@ export default function ChartingTab({
       <div className="w-full xl:flex-1 flex flex-col gap-5 order-1 xl:order-2 min-w-0">
         {/* Period + Interval - segmented controls */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="segmented-control">
-            {['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => (
-              <button key={p} onClick={() => setChartPeriod(p)}
-                className={chartPeriod === p ? 'active' : ''}>
-                {p.replace('mo', 'M').replace('y', 'Y').replace('w', 'W')}
-              </button>
-            ))}
-          </div>
-          <div className="segmented-control">
-            {['1d', '1wk'].map(i => (
-              <button key={i} onClick={() => setChartInterval(i)}
-                className={chartInterval === i ? 'active' : ''}
-                style={{ borderRight: i !== '1wk' ? 'none' : undefined }}>
-                {i === '1d' ? 'Daily' : 'Weekly'}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            options={['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => ({
+              key: p,
+              label: p.replace('mo', 'M').replace('y', 'Y').replace('w', 'W'),
+            }))}
+            value={chartPeriod}
+            onChange={setChartPeriod}
+          />
+          <SegmentedControl
+            options={[
+              { key: '1d', label: 'Daily' },
+              { key: '1wk', label: 'Weekly' },
+            ]}
+            value={chartInterval}
+            onChange={setChartInterval}
+          />
         </div>
 
         {/* Main chart */}
