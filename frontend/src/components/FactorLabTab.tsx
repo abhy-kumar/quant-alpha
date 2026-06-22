@@ -47,8 +47,8 @@ function formatDate(d: Date): string {
 }
 
 const tooltipStyle = (isDark: boolean) => ({
-  backgroundColor: isDark ? '#111318' : '#ffffff',
-  borderColor: isDark ? '#1E2230' : '#E4E7EC',
+  backgroundColor: isDark ? '#09090b' : '#ffffff',
+  borderColor: isDark ? '#18181b' : '#E4E7EC',
   borderRadius: 'var(--radius)',
   fontFamily: 'Inter, system-ui, sans-serif',
   fontSize: '12px',

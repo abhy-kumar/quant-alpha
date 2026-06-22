@@ -62,7 +62,7 @@ function TapeInner({ data }: { data: DashboardData[] }) {
   })), [data])
   if (!items.length) return null
 
-  const tapeBackground = 'hsl(217, 20%, 8%)'
+  const tapeBackground = 'var(--bg)'
   const duration = (items.length * 217) / 150;
 
   return (
