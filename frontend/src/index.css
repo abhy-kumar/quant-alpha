@@ -52,17 +52,17 @@
     --glass-highlight-strong: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -1px 0 rgba(0, 0, 0, 0.02);
   }
   .dark {
-    --bg: #050508;
-    --bg-gradient: linear-gradient(135deg, #050508 0%, #0a0a10 50%, #06060c 100%);
-    --surface: #0a0a0a;
-    --surface-2: #111111;
-    --surface-3: #1a1a1a;
-    --border: #1f1f1f;
-    --border-2: #2a2a2a;
-    --text: #f0f0f0;
-    --text-2: #a0a0a0;
-    --text-3: #666666;
-    --text-4: #444444;
+    --bg: #000000;
+    --bg-gradient: #000000;
+    --surface: #000000;
+    --surface-2: #09090b;
+    --surface-3: #111113;
+    --border: #18181b;
+    --border-2: #232326;
+    --text: #f4f4f5;
+    --text-2: #a1a1aa;
+    --text-3: #52525b;
+    --text-4: #3f3f46;
     --brand: #6ea8fe;
     --brand-light: #8dc0ff;
     --brand-soft: rgba(110, 168, 254, 0.1);
@@ -79,16 +79,16 @@
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.6), 0 4px 6px rgba(0, 0, 0, 0.4);
 
-    --glass-bg: rgba(18, 18, 24, 0.6);
-    --glass-bg-strong: rgba(18, 18, 24, 0.75);
-    --glass-bg-subtle: rgba(18, 18, 24, 0.4);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-border-strong: rgba(255, 255, 255, 0.12);
+    --glass-bg: rgba(12, 12, 12, 0.7);
+    --glass-bg-strong: rgba(12, 12, 12, 0.85);
+    --glass-bg-subtle: rgba(12, 12, 12, 0.5);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-border-strong: rgba(255, 255, 255, 0.1);
     --glass-blur: 24px;
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    --glass-highlight-strong: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    --glass-highlight-strong: inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -1px 0 rgba(255, 255, 255, 0.02);
   }
   html, body {
     background: var(--bg);
@@ -217,7 +217,7 @@
     z-index: 0;
   }
   .dark .segmented-control .seg-indicator {
-    background: rgba(30, 30, 40, 0.85);
+    background: #18181b;
   }
   .segmented-control button {
     padding: 5px 16px;
@@ -440,16 +440,16 @@ tr[data-glass-row]:hover {
 .dark .card[data-liquid]:hover {
   box-shadow:
     var(--glass-shadow-lg),
-    -1px 0 0 rgba(120, 80, 200, 0.04),
-    1px 0 0 rgba(80, 120, 200, 0.04);
+    -1px 0 0 rgba(255, 255, 255, 0.02),
+    1px 0 0 rgba(255, 255, 255, 0.02);
 }
 .dark .card[data-liquid]::after {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.03) 0%,
     transparent 40%,
     transparent 60%,
-    rgba(255, 255, 255, 0.02) 100%
+    rgba(255, 255, 255, 0.01) 100%
   );
 }
 
