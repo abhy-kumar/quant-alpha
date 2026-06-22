@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fetchChartData, type YahooInterval } from './api/chart'
+import liveDataHandler from './api/live_data'
 
 function chartApiDevPlugin(): Plugin {
   return {
@@ -51,9 +52,24 @@ function chartApiDevPlugin(): Plugin {
   }
 }
 
+function liveDataApiDevPlugin(): Plugin {
+  return {
+    name: 'live-data-api-dev',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url?.startsWith('/api/live_data')) {
+          next()
+          return
+        }
+        await liveDataHandler(req, res)
+      })
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), chartApiDevPlugin()],
+  plugins: [react(), chartApiDevPlugin(), liveDataApiDevPlugin()],
   build: {
     minify: 'esbuild',
   },
