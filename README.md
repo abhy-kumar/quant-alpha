@@ -14,7 +14,7 @@
 
   <br /><br />
 
-  **[Live Dashboard](https://quant-alpha-sage.vercel.app)**&nbsp;&nbsp;&nbsp;**[Live Data API](https://quant-alpha-sage.vercel.app/api/live_data)**&nbsp;&nbsp;&nbsp;**[AI Summary (llms.txt)](https://quant-alpha-sage.vercel.app/llms.txt)**
+  **[Live Dashboard](https://quant-alpha-sage.vercel.app)**&nbsp;&nbsp;&nbsp;**[Live Data API](https://quant-alpha-sage.vercel.app/api/live_data)**
 
 </div>
 
