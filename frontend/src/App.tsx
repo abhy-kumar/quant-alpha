@@ -276,7 +276,7 @@ export default function App() {
 
             {/* Center: logo */}
             <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-              <img src='/logo-dark.svg' alt="Alpha" className="h-[36px] md:h-[42px] w-auto" />
+              <img src='/logo-dark.svg' alt="Alpha" className="h-[41px] md:h-[48px] w-auto" />
             </button>
 
             <div className="flex-1" />
@@ -400,7 +400,7 @@ export default function App() {
 
             {/* Center: logo */}
             <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-              <img src='/logo-light.svg' alt="Alpha" className="h-[36px] md:h-[42px] w-auto" />
+              <img src='/logo-light.svg' alt="Alpha" className="h-[41px] md:h-[48px] w-auto" />
             </button>
 
             <div className="flex-1" />
