@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import type { DashboardData } from '../types'
 import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline } from './shared'
-import { Info, Filter, X, Star } from 'lucide-react'
+import { Info, Funnel, X, Star } from '@phosphor-icons/react'
 
 interface Props {
   data: DashboardData[]
@@ -136,7 +136,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
             boxShadow: showFilters ? '0 4px 12px rgba(110, 168, 254, 0.3)' : 'var(--glass-shadow)',
           }}
         >
-          <Filter size={14} /> Filters
+          <Funnel size={14} weight="duotone" /> Filters
           {activeFilterCount > 0 && (
             <span style={{ minWidth: 18, height: 18, borderRadius: 9, background: showFilters ? 'rgba(255,255,255,0.2)' : 'var(--brand)',
               color: showFilters ? 'white' : 'white', fontSize: 10, fontWeight: 700,
@@ -154,7 +154,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
             <span className="section-label" style={{ color: 'var(--brand)' }}>Filters</span>
             {activeFilterCount > 0 && (
               <button onClick={clearFilters} className="flex items-center gap-1 text-xs transition-colors" style={{ color: 'var(--text-3)' }}>
-                <X size={12} /> Clear all
+                <X size={12} weight="light" /> Clear all
               </button>
             )}
           </div>
@@ -305,10 +305,10 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                         onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.75)')}
                         onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
                         style={{ transition: 'transform var(--dur-fast) var(--ease-out)', border: 'none', background: 'none', cursor: 'pointer', color: watchlist.includes(row.Ticker) ? 'var(--amber)' : 'var(--text-3)' }}>
-                        <Star size={12} fill={watchlist.includes(row.Ticker) ? 'var(--amber)' : 'none'} style={{ transition: 'color var(--dur-base), fill var(--dur-base)' }}/>
+                        <Star size={12} weight="fill" color={watchlist.includes(row.Ticker) ? 'var(--amber)' : 'var(--text-3)'} style={{ transition: 'color var(--dur-base)' }}/>
                       </button>
                       <button onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)} className="transition-colors" style={{ color: 'var(--text-3)' }}>
-                        <Info size={14} />
+                        <Info size={14} weight="duotone" />
                       </button>
                     </div>
                   </td>
@@ -444,7 +444,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.75)')}
                   onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
                   style={{ transition: 'transform var(--dur-fast) var(--ease-out)', border: 'none', background: 'none', cursor: 'pointer', color: watchlist.includes(row.Ticker) ? 'var(--amber)' : 'var(--text-3)' }}>
-                  <Star size={13} fill={watchlist.includes(row.Ticker) ? 'var(--amber)' : 'none'} />
+                  <Star size={13} weight="fill" color={watchlist.includes(row.Ticker) ? 'var(--amber)' : 'var(--text-3)'} />
                 </button>
               </div>
             </div>
@@ -468,7 +468,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               {row.Value_Score != null && <span>V <span className="font-mono font-medium">{num(row.Value_Score)}</span></span>}
               <span className="ml-auto">
                 <button onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)} style={{ color: 'var(--text-3)' }}>
-                  <Info size={13} />
+                  <Info size={13} weight="duotone" />
                 </button>
               </span>
             </div>
