@@ -536,7 +536,7 @@ If you use Alpha's data, methodology, or code in academic work, please cite:
 @software{kumar2024alpha,
   author    = {Kumar, Abhishek},
   title     = {Alpha: A Multi-Factor Quantitative Stock Recommendation System for the NSE},
-  year      = {2024},
+  year      = {2026},
   url       = {https://github.com/abhy-kumar/quant-alpha},
   note      = {Alpha Research and Investment Club, Faculty of Management Studies, University of Delhi}
 }
@@ -554,6 +554,6 @@ This project is proprietary software developed for the Alpha Research and Invest
 
 ## Copyright
 
-Copyright (c) 2024-2026 Abhishek Kumar. All rights reserved.
+Copyright (c) 2026 Abhishek Kumar. All rights reserved.
 
 Developed by Abhishek Kumar
