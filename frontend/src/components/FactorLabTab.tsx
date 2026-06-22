@@ -85,7 +85,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
       <div className="space-y-5">
         {/* Progress bar */}
         {countdown && (
-          <div className="flex flex-wrap items-center gap-4 px-5 py-3 text-xs card">
+          <div className="flex flex-wrap items-center gap-4 px-5 py-3 text-xs card" style={{ borderRadius: 'var(--radius-xl)' }}>
             <span className="font-semibold" style={{ color: 'var(--brand)' }}>Active</span>
             <span style={{ color: 'var(--text-2)' }}>{countdown.elapsed} trading days of data</span>
             {countdown.remaining63 > 0 && (
@@ -100,7 +100,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
           {sorted.map(([conviction, data]) => {
             const winRate = data.win_rate_21d ?? 0
             return (
-              <div key={conviction} className="p-4 card">
+              <div key={conviction} className="p-4 card" style={{ borderRadius: 'var(--radius-xl)' }}>
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[conviction as keyof typeof COLORS] || 'var(--text-3)' }} />
                   <span className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>{conviction}</span>
@@ -130,7 +130,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
         </div>
 
         {/* Bar chart */}
-        <div className="card p-5">
+        <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Average Forward Returns by Conviction</h3>
           <div style={{ width: '75%', margin: '0 auto', height: 240 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -167,7 +167,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="p-6 sm:p-8 card">
+      <div className="p-6 sm:p-8 card" style={{ borderRadius: 'var(--radius-xl)' }}>
         <div className="flex items-start gap-4 mb-6">
           <div className="p-3" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
             <FlaskConical size={20} style={{ color: 'var(--brand)' }} />
@@ -185,7 +185,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
 
         {/* Milestones */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="p-5" style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)' }}>
+          <div className="p-5 glass" style={{ borderRadius: 'var(--radius-lg)' }}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <TrendingUp size={14} style={{ color: 'var(--brand)' }} />
@@ -210,7 +210,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
             </div>
           </div>
 
-          <div className="p-5" style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)' }}>
+          <div className="p-5 glass" style={{ borderRadius: 'var(--radius-lg)' }}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Clock size={14} style={{ color: 'var(--brand)' }} />
@@ -238,7 +238,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
 
         {/* Warmer countdown copy */}
         {countdown && countdown.remaining21 > 0 && (
-          <div className="mt-4 p-4" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
+          <div className="mt-4 p-4 glass-subtle" style={{ borderRadius: 'var(--radius-lg)' }}>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-2)' }}>
               Alpha is building its track record. Forward returns unlock on <strong>{formatDate(countdown.target21)}</strong> - the Factor Lab will then show whether each conviction level actually predicts outperformance.
             </p>
@@ -248,7 +248,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
 
       {/* Pipeline status */}
       {countdown && (
-        <div className="flex items-center gap-2 px-5 py-3 text-xs card">
+        <div className="flex items-center gap-2 px-5 py-3 text-xs card" style={{ borderRadius: 'var(--radius-xl)' }}>
           <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--green)' }} />
           <span style={{ color: 'var(--text-2)' }}>Outcome tracking active since <span className="font-medium" style={{ color: 'var(--text)' }}>{formatDate(countdown.start)}</span></span>
           <span className="sm:ml-auto" style={{ color: 'var(--text-3)' }}>{countdown.elapsed} trading days recorded</span>

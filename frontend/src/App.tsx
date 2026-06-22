@@ -42,9 +42,9 @@ function TabSkeleton() {
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {[0, 1, 2].map(i => (
-          <div key={i} style={{
-            height: 340, background: 'var(--surface)',
-            borderRadius: 'var(--radius)',
+          <div key={i} className="glass" style={{
+            height: 340,
+            borderRadius: 'var(--radius-lg)',
             animation: `pulse 1.5s ${i * 0.12}s ease-in-out infinite`,
           }}/>
         ))}
@@ -248,23 +248,22 @@ export default function App() {
   const regimeColor = marketRegimeScore!==null?(marketRegimeScore>0?'var(--green)':marketRegimeScore<0?'var(--red)':'var(--amber)'):'var(--text-3)'
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background:'var(--bg)' }}>
+    <div className="min-h-screen flex flex-col" style={{ background:'var(--bg-gradient)' }}>
       <Tape data={data} />
 
       {/* Header - Row 1: Nav */}
-      <header className="sticky top-0 z-40" style={{ background:'var(--surface)', borderBottom:'1px solid var(--border)' }}>
-        <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[44px] flex items-center">
+      <header className="sticky top-0 z-40 glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
+        <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
           {/* Left: nav */}
-          <nav className="hidden md:flex items-center gap-0.5">
+          <nav className="hidden md:flex items-center gap-1">
             {TABS.map(tab => (
               <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
                 style={{
                   color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
-                  borderBottom: activeTab===tab.id ? '2px solid var(--brand)' : '2px solid transparent',
-                  paddingBottom: '6px',
-                  background: 'transparent',
-                  transition: 'color 150ms ease, border-color 150ms ease',
+                  background: activeTab===tab.id ? 'var(--glass-bg)' : 'transparent',
+                  border: activeTab===tab.id ? '1px solid var(--glass-border)' : '1px solid transparent',
+                  boxShadow: activeTab===tab.id ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
                 }}>
                 <tab.icon size={14} />{tab.label}
               </button>
@@ -281,11 +280,16 @@ export default function App() {
           <div className="flex-1" />
 
           <button onClick={()=>setIsDark(!isDark)} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px',
-              borderRadius: 'var(--radius)', border: '1px solid var(--border)',
-              background: 'var(--surface-2)', cursor: 'pointer',
-              fontSize: 11, color: 'var(--text-3)',
-              transition: 'background var(--dur-base), border-color var(--dur-base)' }}>
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+            style={{
+              color: 'var(--text-3)',
+              background: 'var(--glass-bg-subtle)',
+              border: '1px solid var(--glass-border)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              boxShadow: 'var(--glass-shadow)',
+              cursor: 'pointer',
+            }}>
             {isDark ? <Sun size={13}/> : <Moon size={13}/>}
             {isDark ? 'Light' : 'Dark'}
           </button>
@@ -293,8 +297,8 @@ export default function App() {
       </header>
 
       {/* Row 2: Market Data Sub-Header (Bloomberg-style) */}
-      <div style={{ background:'var(--surface-2)', borderBottom:'1px solid var(--border)' }}>
-        <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[30px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
+      <div className="glass-subtle" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
+        <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
           {/* LIVE indicator */}
           <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
             <div style={{ width:5, height:5, borderRadius:'50%',
@@ -371,16 +375,16 @@ export default function App() {
       </div>
 
       {/* Mobile tab bar */}
-      <nav className="md:hidden overflow-x-auto border-b" style={{ borderColor:'var(--border)', background:'var(--surface)' }}>
-        <div className="flex items-center gap-0.5 px-3 py-1.5">
+      <nav className="md:hidden overflow-x-auto glass" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
+        <div className="flex items-center gap-1 px-3 py-2">
           {TABS.map(tab => (
             <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium whitespace-nowrap shrink-0 rounded-lg transition-all duration-200"
               style={{
                 color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
-                borderBottom: activeTab===tab.id ? '2px solid var(--brand)' : '2px solid transparent',
-                paddingBottom: '6px',
-                background: 'transparent',
+                background: activeTab===tab.id ? 'var(--glass-bg-strong)' : 'transparent',
+                border: activeTab===tab.id ? '1px solid var(--glass-border-strong)' : '1px solid transparent',
+                boxShadow: activeTab===tab.id ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
               }}>
               <tab.icon size={13} />{tab.label}
             </button>
@@ -397,11 +401,16 @@ export default function App() {
             <AlertCircle size={32} style={{ color: 'var(--red)', margin: '0 auto 12px' }}/>
             <p style={{ color: 'var(--text-2)', marginBottom: 8, fontSize: 14 }}>Could not load market data.</p>
             {loadError && <p style={{ color: 'var(--red)', fontSize: 12, marginBottom: 16 }}>{loadError}</p>}
-            <button onClick={() => fetchData()} style={{
-              background: 'var(--brand)', color: 'white',
-              padding: '8px 20px', borderRadius: 'var(--radius)',
-              border: 'none', cursor: 'pointer', fontSize: 13
-            }}>Retry</button>
+            <button onClick={() => fetchData()} className="rounded-xl px-5 py-2 text-[13px] font-medium transition-all duration-200"
+              style={{
+                background: 'var(--glass-bg-strong)',
+                color: 'var(--brand)',
+                border: '1px solid var(--glass-border-strong)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                boxShadow: 'var(--glass-shadow)',
+                cursor: 'pointer',
+              }}>Retry</button>
           </div>
         ) : (
           <ErrorBoundary key={activeTab}>
@@ -419,7 +428,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto" style={{borderTop:'1px solid var(--border)', background:'var(--surface)'}}>
+      <footer className="mt-auto glass" style={{borderTop:'1px solid var(--glass-border)', borderRadius: 0 }}>
         <div className="max-w-[1400px] mx-auto px-3 md:px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px]" style={{color:'var(--text-3)'}}>
           <div className="flex items-center gap-3">
             <span>Made with &#10084;&#65039; by Abhishek Kumar</span>

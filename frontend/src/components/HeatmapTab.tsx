@@ -58,20 +58,11 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
             High (&gt;7)
           </span>
         </div>
-        <div className="inline-flex" style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
-          <button onClick={() => setSortMode('score')} style={{
-            padding: '3px 10px', fontSize: 11, fontWeight: 500,
-            background: sortMode === 'score' ? 'var(--brand)' : 'transparent',
-            color: sortMode === 'score' ? 'white' : 'var(--text-3)',
-            border: 'none', cursor: 'pointer',
-            borderRight: '1px solid var(--border)',
-          }}>By Score</button>
-          <button onClick={() => setSortMode('alpha')} style={{
-            padding: '3px 10px', fontSize: 11, fontWeight: 500,
-            background: sortMode === 'alpha' ? 'var(--brand)' : 'transparent',
-            color: sortMode === 'alpha' ? 'white' : 'var(--text-3)',
-            border: 'none', cursor: 'pointer',
-          }}>A–Z</button>
+        <div className="segmented-control">
+          <button onClick={() => setSortMode('score')}
+            className={sortMode === 'score' ? 'active' : ''}>By Score</button>
+          <button onClick={() => setSortMode('alpha')}
+            className={sortMode === 'alpha' ? 'active' : ''}>A-Z</button>
         </div>
       </div>
 
@@ -81,7 +72,7 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
           const avgScore = sectorAvgScores[sector]
           const colCount = Math.min(4, Math.max(2, Math.ceil(Math.sqrt(stocks.length))))
           return (
-            <div key={sector} className="p-5 card">
+            <div key={sector} className="p-5 card" style={{ borderRadius: 'var(--radius-xl)' }}>
               <div className="mb-4 pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{sector}</h3>
@@ -112,8 +103,10 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
                       style={{
                         ...colors,
                         borderRadius: 'var(--radius-sm)',
-                        transition: 'transform 120ms ease, box-shadow 120ms ease',
+                        transition: 'transform 120ms ease, box-shadow 120ms ease, backdrop-filter 120ms ease',
                         cursor: 'pointer',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
                       }}
                       onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)' }}
                       onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none' }}

@@ -34,9 +34,15 @@ function Metric({ label, value, color }: { label: string; value: string; color?:
 
 function SignalBadge({ label, bullish }: { label: string; bullish: boolean }) {
   return (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium"
-      style={{background: bullish?'var(--green-bg)':'var(--red-bg)', color: bullish?'var(--green)':'var(--red)'}}>
-      {bullish?'↑':'↓'} {label}
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-lg"
+      style={{
+        background: bullish ? 'rgba(74, 222, 128, 0.1)' : 'rgba(248, 113, 113, 0.1)',
+        color: bullish ? 'var(--green)' : 'var(--red)',
+        border: `1px solid ${bullish ? 'rgba(74, 222, 128, 0.12)' : 'rgba(248, 113, 113, 0.12)'}`,
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }}>
+      {bullish ? '↑' : '↓'} {label}
     </span>
   )
 }
@@ -137,18 +143,10 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
     <div className="space-y-4">
       {/* Controls + Summary row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="inline-flex" style={{ background: 'var(--surface-2)',
-          border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 2 }}>
+        <div className="segmented-control">
           {(['short', 'long'] as const).map(h => (
-            <button key={h} onClick={() => setHorizon(h)} style={{
-              padding: '5px 20px', fontSize: 12, fontWeight: 500,
-              borderRadius: 'calc(var(--radius) - 2px)',
-              background: horizon === h ? 'var(--surface)' : 'transparent',
-              color: horizon === h ? 'var(--text)' : 'var(--text-3)',
-              boxShadow: horizon === h ? 'var(--shadow-sm)' : 'none',
-              transition: 'all var(--dur-base) var(--ease-out)',
-              cursor: 'pointer', border: 'none',
-            }}>
+            <button key={h} onClick={() => setHorizon(h)}
+              className={horizon === h ? 'active' : ''}>
               {h === 'short' ? 'Short-Term' : 'Long-Term'}
             </button>
           ))}
@@ -194,7 +192,8 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
             <div key={s.Ticker} onClick={()=>onSelect(s.Ticker)}
               role="button" tabIndex={0}
               onKeyDown={e => e.key === 'Enter' && onSelect(s.Ticker)}
-              className="card card-hover cursor-pointer p-4">
+              className="card card-hover cursor-pointer p-4"
+              style={{ borderRadius: 'var(--radius-xl)' }}>
               {/* Header: ticker + category */}
               <div className="flex items-start justify-between mb-2">
                 <div>
@@ -287,7 +286,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
               </div>
 
               {/* Radar chart */}
-              <div style={{borderTop:'1px solid var(--border)',paddingTop:'8px'}}>
+              <div style={{borderTop:'1px solid var(--glass-border)',paddingTop:'8px'}}>
                 <ScoreRadar s={s} />
               </div>
             </div>
