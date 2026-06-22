@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { OutcomeAccuracy } from '../types'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine } from 'recharts'
-import { FlaskConical, Clock, TrendingUp, CheckCircle } from 'lucide-react'
+import { Flask, Clock, TrendUp, CheckCircle } from '@phosphor-icons/react'
 
 interface Props {
   outcomeAccuracy: Record<string, OutcomeAccuracy>
@@ -170,7 +170,7 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
       <div className="p-6 sm:p-8 card" style={{ borderRadius: 'var(--radius-xl)' }}>
         <div className="flex items-start gap-4 mb-6">
           <div className="p-3" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
-            <FlaskConical size={20} style={{ color: 'var(--brand)' }} />
+            <Flask size={20} weight="duotone" style={{ color: 'var(--brand)' }} />
           </div>
           <div>
             <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--text)' }}>Factor Lab</h2>
@@ -188,12 +188,12 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
           <div className="p-5 glass" style={{ borderRadius: 'var(--radius-lg)' }}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <TrendingUp size={14} style={{ color: 'var(--brand)' }} />
+                <TrendUp size={14} weight="duotone" style={{ color: 'var(--brand)' }} />
                 <span className="text-xs font-semibold" style={{ color: 'var(--brand)' }}>21-Day Window</span>
               </div>
               {countdown && countdown.remaining21 === 0 ? (
                 <span className="flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--green)' }}>
-                  <CheckCircle size={12} /> Ready
+                  <CheckCircle size={12} weight="duotone" /> Ready
                 </span>
               ) : (
                 <span className="text-xs" style={{ color: 'var(--text-3)' }}>
@@ -213,12 +213,12 @@ export default function FactorLabTab({ outcomeAccuracy, firstScanDate, isDark }:
           <div className="p-5 glass" style={{ borderRadius: 'var(--radius-lg)' }}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Clock size={14} style={{ color: 'var(--brand)' }} />
+                <Clock size={14} weight="duotone" style={{ color: 'var(--brand)' }} />
                 <span className="text-xs font-semibold" style={{ color: 'var(--brand)' }}>63-Day Window</span>
               </div>
               {countdown && countdown.remaining63 === 0 ? (
                 <span className="flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--green)' }}>
-                  <CheckCircle size={12} /> Ready
+                  <CheckCircle size={12} weight="duotone" /> Ready
                 </span>
               ) : (
                 <span className="text-xs" style={{ color: 'var(--text-3)' }}>

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import type { DashboardData } from '../types'
 import { num, colorCode, scoreColor, scoreBar, SegmentedControl } from './shared'
-import { Search } from 'lucide-react'
+import { MagnifyingGlass } from '@phosphor-icons/react'
 import {
   ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine
 } from 'recharts'
@@ -59,7 +59,7 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
   return (
     <div className="relative" ref={containerRef}>
       <div className="flex items-center gap-3 px-3 py-2.5 card" style={{ borderRadius: 'var(--radius-xl)' }}>
-        <Search size={15} style={{ color: 'var(--text-3)' }} />
+        <MagnifyingGlass size={15} weight="light" style={{ color: 'var(--text-3)' }} />
         <input
           ref={inputRef}
           type="text"

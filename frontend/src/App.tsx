@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, memo, lazy, Suspense } from 'react'
 import axios from 'axios'
-import { TrendingUp, BarChart2, Layers, Moon, Sun, AlertCircle, Database, Activity } from 'lucide-react'
+import { TrendUp, ChartBar, StackSimple, Moon, Sun, WarningCircle, Database, Pulse } from '@phosphor-icons/react'
 import { Analytics } from '@vercel/analytics/react'
 import type { DashboardData } from './types'
 
@@ -85,11 +85,11 @@ function TapeInner({ data }: { data: DashboardData[] }) {
 const Tape = memo(TapeInner)
 
 const TABS = [
-  { id: 'picks', label: 'Signals', icon: TrendingUp },
+  { id: 'picks', label: 'Signals', icon: TrendUp },
   { id: 'fundamentals', label: 'Screen', icon: Database },
-  { id: 'charting', label: 'Charts', icon: BarChart2 },
-  { id: 'heatmap', label: 'Heatmap', icon: Layers },
-  { id: 'factorlab', label: 'Factor Lab', icon: Activity },
+  { id: 'charting', label: 'Charts', icon: ChartBar },
+  { id: 'heatmap', label: 'Heatmap', icon: StackSimple },
+  { id: 'factorlab', label: 'Factor Lab', icon: Pulse },
 ] as const
 
 export default function App() {
@@ -267,7 +267,7 @@ export default function App() {
                     border: activeTab===tab.id ? '1px solid var(--glass-border)' : '1px solid transparent',
                     boxShadow: activeTab===tab.id ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
                   }}>
-                  <tab.icon size={14} />{tab.label}
+                  <tab.icon size={14} weight="duotone" />{tab.label}
                 </button>
               ))}
             </nav>
@@ -292,7 +292,7 @@ export default function App() {
                 boxShadow: 'var(--glass-shadow)',
                 cursor: 'pointer',
               }}>
-              <Sun size={13}/>Light
+              <Sun size={13} weight="duotone"/>Light
             </button>
           </div>
         </header>
@@ -391,7 +391,7 @@ export default function App() {
                     border: activeTab===tab.id ? '1px solid var(--glass-border)' : '1px solid transparent',
                     boxShadow: activeTab===tab.id ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
                   }}>
-                  <tab.icon size={14} />{tab.label}
+                   <tab.icon size={14} weight="duotone" />{tab.label}
                 </button>
               ))}
             </nav>
@@ -416,7 +416,7 @@ export default function App() {
                 boxShadow: 'var(--glass-shadow)',
                 cursor: 'pointer',
               }}>
-              <Moon size={13}/>Dark
+              <Moon size={13} weight="duotone"/>Dark
             </button>
           </div>
         </header>
@@ -513,7 +513,7 @@ export default function App() {
                 border: activeTab===tab.id ? '1px solid var(--glass-border-strong)' : '1px solid transparent',
                 boxShadow: activeTab===tab.id ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
               }}>
-              <tab.icon size={13} />{tab.label}
+              <tab.icon size={13} weight="duotone" />{tab.label}
             </button>
           ))}
         </div>
@@ -525,7 +525,7 @@ export default function App() {
           <TabSkeleton />
         ) : !data.length ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <AlertCircle size={32} style={{ color: 'var(--red)', margin: '0 auto 12px' }}/>
+            <WarningCircle size={32} weight="duotone" style={{ color: 'var(--red)', margin: '0 auto 12px' }}/>
             <p style={{ color: 'var(--text-2)', marginBottom: 8, fontSize: 14 }}>Could not load market data.</p>
             {loadError && <p style={{ color: 'var(--red)', fontSize: 12, marginBottom: 16 }}>{loadError}</p>}
             <button onClick={() => fetchData()} className="rounded-xl px-5 py-2 text-[13px] font-medium transition-all duration-200"
