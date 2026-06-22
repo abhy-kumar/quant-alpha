@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import type { DashboardData } from '../types'
-import { num, colorCode, scoreColor, scoreBar } from './shared'
+import { num, colorCode, scoreColor, scoreBar, SegmentedControl } from './shared'
 import { Search } from 'lucide-react'
 import {
   ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine
@@ -58,7 +58,7 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
 
   return (
     <div className="relative" ref={containerRef}>
-      <div className="flex items-center gap-3 px-3 py-2.5 card">
+      <div className="flex items-center gap-3 px-3 py-2.5 card" style={{ borderRadius: 'var(--radius-xl)' }}>
         <Search size={15} style={{ color: 'var(--text-3)' }} />
         <input
           ref={inputRef}
@@ -66,14 +66,14 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
           value={open ? query : selectedTicker.replace('.NS', '')}
           onFocus={() => { setOpen(true); setQuery('') }}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Search ticker or company…"
+          placeholder="Search ticker or company..."
           className="bg-transparent text-sm outline-none w-full"
           style={{ color: 'var(--text)' }}
         />
-        <kbd className="text-[10px] px-1.5 py-0.5 hidden sm:block" style={{ color: 'var(--text-3)', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'}K</kbd>
+        <kbd className="text-[10px] px-1.5 py-0.5 hidden sm:block rounded-md" style={{ color: 'var(--text-3)', background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'}K</kbd>
       </div>
       {open && query && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 overflow-hidden max-h-60 overflow-y-auto card" style={{ boxShadow: 'var(--shadow-lg)' }}>
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 overflow-hidden max-h-60 overflow-y-auto card glass-strong" style={{ borderRadius: 'var(--radius-lg)', boxShadow: 'var(--glass-shadow-lg)' }}>
           {filtered.length === 0 ? (
             <div className="p-3 text-xs text-center" style={{ color: 'var(--text-3)' }}>No results</div>
           ) : filtered.map(d => (
@@ -101,9 +101,10 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
 const ChartTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)',
-      borderRadius: 'var(--radius)', padding: '8px 12px',
-      boxShadow: 'var(--shadow-lg)', fontSize: 11 }}>
+    <div className="glass-strong" style={{
+      borderRadius: 'var(--radius-lg)', padding: '8px 12px',
+      fontSize: 11, minWidth: 120,
+    }}>
       <p style={{ color: 'var(--text-3)', marginBottom: 4, fontWeight: 500 }}>{label}</p>
       {payload.map((p: any) => (
         <div key={p.name} style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
@@ -118,8 +119,8 @@ const ChartTooltip = ({ active, payload, label }: any) => {
 }
 
 const Panel = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="overflow-hidden card">
-    <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-2)' }}>
+  <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+    <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
       {title}
     </div>
     {children}
@@ -154,7 +155,7 @@ export default function ChartingTab({
         <StockSearch data={data} selectedTicker={selectedTicker} onSelect={setSelectedTicker} />
 
         {/* Company Profile */}
-        <div className="card p-5">
+        <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <div className="flex items-start justify-between mb-4">
             <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Company Profile</h3>
             {selectedAsset?.News_Sentiment !== undefined && selectedAsset.News_Sentiment !== null && (
@@ -190,7 +191,7 @@ export default function ChartingTab({
         </div>
 
         {/* Technicals */}
-        <div className="card p-5">
+        <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Technical Snapshot</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} />
@@ -211,7 +212,7 @@ export default function ChartingTab({
         </div>
 
         {/* Research */}
-        <div className="card p-5">
+        <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Research Factors</h3>
             <span className="text-sm font-medium" style={{ color: Number(selectedAsset?.Research_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Research_Score) < 4 ? 'var(--red)' : 'var(--text)' }}>
@@ -231,7 +232,7 @@ export default function ChartingTab({
         </div>
 
         {/* Momentum */}
-        <div className="card p-5">
+        <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Momentum</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <InfoBlock label="1 Month" value={selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_1M)} />
@@ -245,7 +246,7 @@ export default function ChartingTab({
         </div>
 
         {/* Fundamentals */}
-        <div className="card p-5">
+        <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Fundamentals</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <InfoBlock label="Fund Score" value={num(selectedAsset?.Fund_Score)} accent={Number(selectedAsset?.Fund_Score) >= 5 ? 'var(--green)' : undefined} />
@@ -258,7 +259,7 @@ export default function ChartingTab({
         </div>
 
         {/* Risk */}
-        <div className="card p-5">
+        <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Risk Metrics</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <InfoBlock label="Volatility (60D)" value={`${num(selectedAsset?.Vol_60D)}%`} accent={Number(selectedAsset?.Vol_60D) < 25 ? 'var(--green)' : Number(selectedAsset?.Vol_60D) > 40 ? 'var(--red)' : undefined} />
@@ -275,34 +276,22 @@ export default function ChartingTab({
       <div className="w-full xl:flex-1 flex flex-col gap-5 order-1 xl:order-2 min-w-0">
         {/* Period + Interval - segmented controls */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="inline-flex" style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
-            {['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => (
-              <button key={p} onClick={() => setChartPeriod(p)} style={{
-                padding: '4px 10px', fontSize: 11, fontWeight: 500,
-                background: chartPeriod === p ? 'var(--brand)' : 'transparent',
-                color: chartPeriod === p ? 'white' : 'var(--text-3)',
-                border: 'none', cursor: 'pointer',
-                borderRight: '1px solid var(--border)',
-                transition: 'background var(--dur-fast), color var(--dur-fast)',
-              }}>
-                {p.replace('mo', 'M').replace('y', 'Y').replace('w', 'W')}
-              </button>
-            ))}
-          </div>
-          <div className="inline-flex" style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
-            {['1d', '1wk'].map(i => (
-              <button key={i} onClick={() => setChartInterval(i)} style={{
-                padding: '4px 10px', fontSize: 11, fontWeight: 500,
-                background: chartInterval === i ? 'var(--brand)' : 'transparent',
-                color: chartInterval === i ? 'white' : 'var(--text-3)',
-                border: 'none', cursor: 'pointer',
-                borderRight: i !== '1wk' ? '1px solid var(--border)' : 'none',
-                transition: 'background var(--dur-fast), color var(--dur-fast)',
-              }}>
-                {i === '1d' ? 'Daily' : 'Weekly'}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            options={['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => ({
+              key: p,
+              label: p.replace('mo', 'M').replace('y', 'Y').replace('w', 'W'),
+            }))}
+            value={chartPeriod}
+            onChange={setChartPeriod}
+          />
+          <SegmentedControl
+            options={[
+              { key: '1d', label: 'Daily' },
+              { key: '1wk', label: 'Weekly' },
+            ]}
+            value={chartInterval}
+            onChange={setChartInterval}
+          />
         </div>
 
         {/* Main chart */}
@@ -414,7 +403,7 @@ export default function ChartingTab({
 
         {/* Score Breakdown */}
         {selectedAsset && (
-        <div className="card p-5">
+        <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
             <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Score Breakdown</h3>
             <div className="space-y-2.5">
               {scoreBar('Composite', Number(selectedAsset.Composite_Score) || 0, 0, 10)}
@@ -435,7 +424,7 @@ export default function ChartingTab({
         )}
 
         {/* Peer Comparison */}
-  <div className="overflow-hidden card">
+  <div className="overflow-hidden card" style={{ borderRadius: 'var(--radius-xl)' }}>
           <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
             <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sector Peer Comparison</h3>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>Comparing {selectedAsset?.Sector} by market cap</p>
@@ -443,7 +432,7 @@ export default function ChartingTab({
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+                <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
                   <th className="py-3 px-4 text-xs font-medium" style={{ color: 'var(--text-2)' }}>Ticker</th>
                   <th className="py-3 px-4 text-xs font-medium text-right hidden sm:table-cell" style={{ color: 'var(--text-2)' }}>Mkt Cap</th>
                   <th className="py-3 px-4 text-xs font-medium text-right" style={{ color: 'var(--text-2)' }}>Score</th>
@@ -462,14 +451,14 @@ export default function ChartingTab({
                   <tr
                     key={i}
                     onClick={() => setSelectedTicker(row.Ticker)}
+                    className="transition-colors"
                     style={{
-                      borderBottom: '1px solid var(--border)',
+                      borderBottom: '1px solid var(--glass-border)',
                       background: row.Ticker === selectedTicker ? 'var(--brand-soft)' : 'transparent',
                       borderLeft: row.Ticker === selectedTicker ? '2px solid var(--brand)' : '2px solid transparent',
                       cursor: 'pointer',
-                      transition: 'background var(--dur-fast)',
                     }}
-                    onMouseEnter={e => { if (row.Ticker !== selectedTicker) e.currentTarget.style.background = 'var(--surface-2)' }}
+                    onMouseEnter={e => { if (row.Ticker !== selectedTicker) e.currentTarget.style.background = 'var(--glass-bg-subtle)' }}
                     onMouseLeave={e => { if (row.Ticker !== selectedTicker) e.currentTarget.style.background = 'transparent' }}
                   >
                     <td className="py-3 px-4 text-sm font-medium" style={{ color: 'var(--text)' }}>{row.Ticker.replace('.NS', '')}</td>
