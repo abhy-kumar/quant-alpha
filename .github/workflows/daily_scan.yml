@@ -2,12 +2,12 @@ name: Daily Market Scan
 
 on:
   schedule:
-    # Pre-open scan:   9:00 AM IST = 03:30 UTC, Mon-Fri (fresh data before market opens)
-    - cron: "30 3 * * 1-5"
-    # Mid-day scan:   12:30 PM IST = 07:00 UTC, Mon-Fri (intraday snapshot)
+    # Morning scan:   9:30 AM IST = 04:00 UTC, Mon-Fri
+    - cron: "0 4 * * 1-5"
+    # Mid-day scan:   12:30 PM IST = 07:00 UTC, Mon-Fri
     - cron: "0 7 * * 1-5"
-    # Post-market scan: 4:15 PM IST = 10:45 UTC, Mon-Fri (end-of-day signals, primary run)
-    - cron: "45 10 * * 1-5"
+    # Afternoon scan: 4:00 PM IST = 10:30 UTC, Mon-Fri
+    - cron: "30 10 * * 1-5"
   workflow_dispatch:
 
 # Prevent overlapping runs - if a new scan triggers while one is running,
