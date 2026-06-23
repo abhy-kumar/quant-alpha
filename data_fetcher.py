@@ -482,7 +482,8 @@ def _parse_screener_peers(peers_table, sym: str, info: dict):
                         pass
                 if debt_idx != -1:
                     try:
-                        peer_data['debt_eq'] = float(cells[debt_idx].text.strip().replace(',', '')) * 100.0
+                        raw_de = float(cells[debt_idx].text.strip().replace(',', ''))
+                        peer_data['debt_eq'] = raw_de if raw_de > 10 else raw_de * 100.0
                     except (ValueError, IndexError):
                         pass
                 peers.append(peer_data)
@@ -576,12 +577,6 @@ def _parse_screener_financials(soup, info: dict):
                 try:
                     val = float(cells[-1].text.strip().replace(',', ''))
                     info['grossProfits'] = val * 10000000
-                except (ValueError, IndexError):
-                    pass
-            elif 'operating profit' in label and pd.isna(_safe_float(info.get('operatingCashflow'))):
-                try:
-                    val = float(cells[-1].text.strip().replace(',', ''))
-                    info['operatingCashflow'] = val * 10000000
                 except (ValueError, IndexError):
                     pass
 
