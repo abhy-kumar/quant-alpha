@@ -89,11 +89,11 @@ A weighted ensemble of 14 binary signals. Each signal outputs +1 (bullish), -1 (
 
 Relative Strength percentiles provide an additional +/-0.2 adjustment for stocks in the top or bottom quartile.
 
-News sentiment provides an additional **+/-1.0 adjustment** to the normalized technical score when the average VADER compound score exceeds +/-0.15 (lowered from +/-0.5 to ensure the signal actually fires in practice).
+News sentiment provides an additional **+/-1.0 adjustment** to the normalized technical score when the average VADER compound score exceeds +/-0.15 (lowered from +/-0.5 to ensure the signal actually fires in practice). However, when a stock is overbought (Z-Score > 1.5 or mean reversion signal = -1), the news sentiment boost is capped at +0.3 to prevent overbought stocks from receiving inflated technical scores.
 
 ### Fundamental Score (range: 0 to 10)
 
-Evaluates financial quality using sector-relative comparisons. The system dynamically computes sector medians for P/E, ROE, and Debt-to-Equity from the current universe plus screener.in peer data. All market cap and financial figures are in **INR Crores**.
+Evaluates financial quality using sector-relative comparisons. The system dynamically computes sector medians for P/E, ROE, and Debt-to-Equity from the current universe plus screener.in peer data. Market cap and financial figures are stored in **absolute INR** internally; display fields use **Billions of INR**.
 
 | Metric | Max Points | Logic |
 |--------|------------|-------|
@@ -140,7 +140,32 @@ The composite score blends all three dimensions with configurable weights. Each 
 | **Long-Term** | 0.10 | 0.40 | 0.50 | Value/quality investing, low turnover |
 | **Momentum** | 0.20 | 0.10 | 0.70 | Research-driven momentum plays |
 
-Cross-sectional percentile ranking: Instead of absolute thresholds, fund_score and research_composite are ranked against the full universe and mapped to a 0-10 scale via percentile-based piecewise functions. This ensures "good" scores adapt to market conditions rather than relying on fixed thresholds.
+Cross-sectional percentile ranking: Instead of absolute thresholds, fund_score and research_composite are ranked against the full universe and mapped to a 0-10 scale via **linear interpolation** across anchor points (p=0→1.5, p=25→4.0, p=50→6.0, p=75→8.0, p=100→9.5). This provides smooth differentiation between stocks and ensures "good" scores adapt to market conditions rather than relying on fixed thresholds.
+
+### Absolute Quality Gates
+
+Percentile ranking alone will always recommend *something*, even if every stock in the universe is overvalued or overbought. To prevent this, absolute quality gates impose hard ceilings on the composite score when a stock fails critical thresholds:
+
+| Gate | Condition | Ceiling |
+|------|-----------|---------|
+| Overvalued | P/E > 60 | 6.0 |
+| Extremely Overbought | Z-Score 60 > 2.5 | 5.5 |
+| Overbought (Reversion) | Mean Reversion Signal = -1 | 6.5 |
+| Unprofitable | ROE <= 0 | 4.0 |
+| Excessive Leverage | D/E > 200 | 6.0 |
+
+The lowest triggered ceiling is applied. A stock that triggers multiple gates (e.g., P/E > 60 AND overbought) receives the most restrictive ceiling.
+
+### Overbought Penalty
+
+An additional direct penalty is subtracted from the composite score for overbought conditions:
+
+| Condition | Penalty |
+|-----------|---------|
+| Z-Score 60 > 2.0 OR Reversion Signal = -1 | -0.3 |
+| Z-Score 60 > 2.5 (extreme) | -0.8 |
+
+This ensures that even stocks with strong fundamentals and technicals are penalized when they show signs of being overextended.
 
 Stocks are ranked by composite percentile across the universe. Conviction labels are assigned and adjusted for market regime:
 
@@ -189,12 +214,12 @@ All data sources are evaluated for India-market correctness:
 |------|---------|-------|
 | Universe selection | NSE Bhav Copy (official) | Direct NSE download - authoritative |
 | OHLCV prices | yfinance (`.NS` tickers) | INR-denominated, correct for NSE |
-| Market cap | yfinance -> screener.in fallback | Stored as **INR Crores** (`/1e7`). Screener.in returns Crores directly; yfinance returns INR |
+| Market cap | yfinance -> screener.in fallback | Stored as **absolute INR**. Screener.in values (Crores) are converted via `×10⁷`. yfinance returns absolute INR directly. Displayed as **Billions of INR** (`÷1e9`). |
 | P/E, ROE, D/E | yfinance -> screener.in fallback | Screener.in preferred - more reliable for Indian companies |
 | Forward P/E | yfinance info -> screener.in analysis section | Used for SUE analyst revision proxy |
 | Return on Assets | yfinance info -> yfinance balance_sheet -> screener.in #ratios | Three-layer fallback |
 | Current Ratio | yfinance info -> screener.in #ratios | Used for Piotroski F-Score |
-| Operating Cashflow | yfinance info -> yfinance cashflow statement -> screener.in P&L/Cash Flow | Three-layer fallback; critical for Value Factor CF/P |
+| Operating Cashflow | yfinance info -> yfinance cashflow statement -> screener.in cash-flow section | Three-layer fallback; used for Value Factor CF/P and Piotroski F-Score. P&L "operating profit" (EBITDA) is NOT used as a fallback to avoid conflating accruals-based EBITDA with cash-based CFO. |
 | Revenue Growth | yfinance info -> yfinance quarterly_financials -> screener.in quarterly results | Three-layer fallback; critical for Investment Factor |
 | Earnings Growth | yfinance info -> yfinance quarterly_financials -> screener.in quarterly results | Three-layer fallback; critical for Piotroski and SUE Factor |
 | Gross Profits | yfinance info -> screener.in profit-loss table | Used for Gross Profitability factor |

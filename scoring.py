@@ -109,8 +109,14 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
         norm_tech = (score + 1) * 5
         sentiment = _safe_float(info.get("news_sentiment"))
+        z_score = _safe_float(research.get("z_score_60", 0), default=0)
+        reversion_sig = research.get("reversion_signal", 0)
+        overbought = z_score > 1.5 or reversion_sig == -1
         if sentiment > 0.15:
-            norm_tech = min(10.0, norm_tech + 1.0)
+            boost = 1.0
+            if overbought:
+                boost = 0.3
+            norm_tech = min(10.0, norm_tech + boost)
         elif sentiment < -0.15:
             norm_tech = max(0.0, norm_tech - 1.0)
 
@@ -126,36 +132,30 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         final_rows.append(item)
 
     # ── Cross-Sectional Percentile Ranking ──────────────────────────────────
-    # Instead of absolute thresholds, map raw scores to their percentile rank
-    # within the universe. This is academically correct because:
-    #   - "Good" ROE depends on the sector and market conditions
-    #   - Percentile ranking adapts to the distribution of the current universe
-    #   - Eliminates arbitrary threshold selection bias
+    # Percentile ranking maps raw scores to their relative position in the
+    # universe. Combined with absolute quality gates to prevent recommending
+    # overvalued/overbought stocks even if they rank well relative to peers.
     #
-    # Mapping: percentile 0-100 → score 0-10 via piecewise linear function
-    #   p >= 90 → 9.5, p >= 75 → 8.0, p >= 50 → 6.0, p >= 25 → 4.0, p < 25 → 2.0
+    # Linear interpolation across anchor points for smooth differentiation:
+    #   p=0→1.5, p=25→4.0, p=50→6.0, p=75→8.0, p=100→9.5
 
     if len(final_rows) > 2:
         raw_funds = pd.Series([x["fund_score"] for x in final_rows])
         raw_research = pd.Series([x["research"]["research_composite"] for x in final_rows])
 
+        _PCTILE_ANCHORS = [
+            (0, 1.5), (25, 4.0), (50, 6.0), (75, 8.0), (100, 9.5)
+        ]
+
         def _pctile_to_score(pctile: float) -> float:
-            if pctile >= 90:
-                return 9.5
-            elif pctile >= 75:
-                return 8.0
-            elif pctile >= 60:
-                return 7.0
-            elif pctile >= 50:
-                return 6.0
-            elif pctile >= 40:
-                return 5.0
-            elif pctile >= 25:
-                return 4.0
-            elif pctile >= 10:
-                return 2.5
-            else:
-                return 1.5
+            pctile = max(0.0, min(100.0, pctile))
+            for i in range(len(_PCTILE_ANCHORS) - 1):
+                p0, s0 = _PCTILE_ANCHORS[i]
+                p1, s1 = _PCTILE_ANCHORS[i + 1]
+                if pctile <= p1:
+                    t = (pctile - p0) / (p1 - p0) if p1 != p0 else 0
+                    return s0 + t * (s1 - s0)
+            return _PCTILE_ANCHORS[-1][1]
 
         for item in final_rows:
             if item.get("is_etf"):
@@ -171,16 +171,93 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
             item["research_pctile"] = res_pctile
             item["research_composite_ranked"] = _pctile_to_score(res_pctile)
 
+    # ── Absolute Quality Gates ──────────────────────────────────────────────
+    # Percentile ranking alone will always recommend something, even if every
+    # stock is overvalued. Absolute gates ensure that fundamentally flawed or
+    # extremely overbought stocks cannot achieve top-tier composite scores.
+    # A gate caps the ranked score to a ceiling if the stock fails thresholds.
+
+    _QUALITY_CEILINGS = {
+        "pe_too_high":      6.0,   # P/E > 60: highly overvalued
+        "zscore_extreme":   5.5,   # Z-Score > 2.5: extremely overbought
+        "reversion_sell":   6.5,   # Reversion signal = -1: overbought
+        "negative_roe":     4.0,   # ROE <= 0: unprofitable
+        "high_debt":        6.0,   # D/E > 200: excessive leverage
+    }
+
+    for item in final_rows:
+        if item.get("is_etf"):
+            continue
+
+        info = item["info"]
+        research = item["research"]
+        pe = _safe_float(info.get("trailingPE"))
+        z_score = _safe_float(research.get("z_score_60", 0), default=0)
+        reversion_sig = research.get("reversion_signal", 0)
+        roe = _safe_float(info.get("returnOnEquity"), default=0)
+        debt_eq = _safe_float(info.get("debtToEquity"), default=0)
+
+        ceiling = 10.0
+        reasons = []
+
+        if not np.isnan(pe) and pe > 60:
+            ceiling = min(ceiling, _QUALITY_CEILINGS["pe_too_high"])
+            reasons.append(f"P/E={pe:.1f}>60")
+        if z_score > 2.5:
+            ceiling = min(ceiling, _QUALITY_CEILINGS["zscore_extreme"])
+            reasons.append(f"Z={z_score:.2f}>2.5")
+        if reversion_sig == -1:
+            ceiling = min(ceiling, _QUALITY_CEILINGS["reversion_sell"])
+            reasons.append("overbought_reversion")
+        if roe <= 0:
+            ceiling = min(ceiling, _QUALITY_CEILINGS["negative_roe"])
+            reasons.append(f"ROE={roe:.1f}%<=0")
+        if debt_eq > 200:
+            ceiling = min(ceiling, _QUALITY_CEILINGS["high_debt"])
+            reasons.append(f"D/E={debt_eq:.1f}>200")
+
+        if reasons:
+            item["quality_gated"] = True
+            item["quality_ceiling"] = ceiling
+            item["quality_reasons"] = reasons
+        else:
+            item["quality_gated"] = False
+
     # ── Compute composite scores using ranked values ────────────────────────
     for item in final_rows:
         norm_tech = item["norm_tech"]
         ranked_fund = item.get("fund_score_ranked", item["fund_score"])
         ranked_research = item.get("research_composite_ranked", item["research"]["research_composite"])
 
-        item["composite_score"]       = (norm_tech * 0.35) + (ranked_fund * 0.30) + (ranked_research * 0.35)
-        item["composite_score_tech"]  = (norm_tech * 0.50) + (ranked_fund * 0.15) + (ranked_research * 0.35)
-        item["composite_score_fund"]  = (norm_tech * 0.10) + (ranked_fund * 0.40) + (ranked_research * 0.50)
-        item["composite_score_mom"]   = (ranked_research * 0.70) + (norm_tech * 0.20) + (ranked_fund * 0.10)
+        raw_composite       = (norm_tech * 0.35) + (ranked_fund * 0.30) + (ranked_research * 0.35)
+        raw_composite_tech  = (norm_tech * 0.50) + (ranked_fund * 0.15) + (ranked_research * 0.35)
+        raw_composite_fund  = (norm_tech * 0.10) + (ranked_fund * 0.40) + (ranked_research * 0.50)
+        raw_composite_mom   = (ranked_research * 0.70) + (norm_tech * 0.20) + (ranked_fund * 0.10)
+
+        # Apply overbought penalty: -0.3 for overbought, -0.8 for extreme
+        research = item["research"]
+        z_score = _safe_float(research.get("z_score_60", 0), default=0)
+        reversion_sig = research.get("reversion_signal", 0)
+        overbought_penalty = 0.0
+        if z_score > 2.0 or reversion_sig == -1:
+            overbought_penalty = 0.3
+        if z_score > 2.5:
+            overbought_penalty = 0.8
+
+        penalized_composite = max(0.0, raw_composite - overbought_penalty)
+
+        # Apply quality gate ceiling
+        if item.get("quality_gated"):
+            ceiling = item["quality_ceiling"]
+            penalized_composite = min(penalized_composite, ceiling)
+            raw_composite_tech = min(raw_composite_tech, ceiling)
+            raw_composite_fund = min(raw_composite_fund, ceiling)
+            raw_composite_mom = min(raw_composite_mom, ceiling)
+
+        item["composite_score"]       = penalized_composite
+        item["composite_score_tech"]  = raw_composite_tech
+        item["composite_score_fund"]  = raw_composite_fund
+        item["composite_score_mom"]   = raw_composite_mom
 
     all_comp_scores = pd.Series([x["composite_score"] for x in final_rows])
     for item in final_rows:
