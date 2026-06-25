@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/Alpha_v2_Final-Light.svg" alt="Alpha Research" width="280" />
   <br /><br />
-  <p><strong>A research-backed quantitative stock recommendation system for the National Stock Exchange of India.</strong></p>
+  <p><strong>A multi-factor quantitative research and analysis platform for the National Stock Exchange of India.</strong></p>
   <p>Engineered for the Alpha Research and Investment Club, FMS Delhi.</p>
 
   <br />
@@ -29,9 +29,11 @@
 
 ## Goal and Impact
 
-Alpha is a fully automated stock screening and recommendation platform that evaluates the top 150 liquid equities on the National Stock Exchange of India (NSE) using a multi-factor model grounded in published academic research. The system eliminates emotional bias from equity research by applying systematic, rules-based scoring across three dimensions: technical momentum, fundamental quality, and research-backed quantitative factors.
+Alpha is a fully automated quantitative stock research and analysis platform that evaluates the top 150 liquid equities on the National Stock Exchange of India (NSE) using a multi-factor model grounded in published academic research. The system eliminates emotional bias from equity research by applying systematic, rules-based scoring across three dimensions: technical momentum, fundamental quality, and research-backed quantitative factors.
 
-The platform generates daily recommendations with conviction ratings (Strong Buy, Buy, Hold, Caution, Avoid) and stores all data in a growing SQLite database that accumulates daily feature vectors and forward return outcomes, forming the foundation for future machine learning model training.
+The platform generates daily analytical scores with classification labels and stores all data in a growing SQLite database that accumulates daily feature vectors and forward return outcomes, forming the foundation for future machine learning model training.
+
+> **Access Note:** Certain analytical features (composite scores, classification labels, and the Signals and Factor Lab tabs) are restricted to authenticated club members. The Screen, Charts, and Heatmap tabs are publicly accessible with raw data and technical indicators.
 
 ## How It Works
 
@@ -41,7 +43,7 @@ The system operates as a dual-mode pipeline: a heavy batch scan runs three times
 
 | Layer | Frequency | What Updates | Trigger |
 |-------|-----------|--------------|---------|
-| **Full Scan** | 3x daily (Mon-Fri) | All scores, signals, fundamentals, recommendations, market regime | GitHub Actions cron |
+| **Full Scan** | 3x daily (Mon-Fri) | All scores, signals, fundamentals, classifications, market regime | GitHub Actions cron |
 | **Live Prices** | Every 3 min (market hours) | LTP and 1D% change only | Browser polling `/api/live_data` |
 
 The footer displays both timestamps independently: **Signals** (last scanner run) and **Prices** (last live overlay), so the freshness of each data layer is always visible.
@@ -54,7 +56,7 @@ The footer displays both timestamps independently: **Signals** (last scanner run
 4. **Fundamental Data Collection** (`data_fetcher.py`): Fetches P/E, ROE, Debt-to-Equity, market cap, and other fundamentals from yfinance (primary), yfinance financial statements (secondary fallback), screener.in (tertiary fallback), and BSE India (last resort). Computes sector-relative medians for peer comparison. All financial figures are in INR.
 5. **Research Factor Computation** (`research_factors.py`): Calculates ten academic research factors: Piotroski F-Score, Gross Profitability, Value Factor, Investment Factor, Earnings Momentum (SUE), Multi-Horizon Momentum, Low Volatility, Betting Against Beta, Mean Reversion, and Earnings Quality.
 6. **News Sentiment** (`data_fetcher.py`): Fetches headlines from Google News RSS (India-locale: `hl=en-IN&gl=IN&ceid=IN:en`, no API key required) and runs VADER sentiment analysis on up to 10 headlines per ticker. The average compound score is the news sentiment signal. Scores are cached for 24 hours.
-7. **Scoring and Conviction** (`scoring.py`): Combines all factors into a composite score, ranks stocks by percentile, and assigns conviction labels adjusted for market regime.
+7. **Scoring and Classification** (`scoring.py`): Combines all factors into a composite score, ranks stocks by percentile, and assigns classification labels adjusted for market regime.
 8. **Data Storage** (`data_pipeline.py`): Writes results to `market_data.json` (frontend), `market_scans.db` (ML pipeline), and archives to SQLite.
 9. **Outcome Tracking** (`data_pipeline.py`): Backfills forward returns (5d, 10d, 21d, 63d, 126d, 252d) for all past scans using stored OHLCV data.
 
@@ -129,22 +131,22 @@ Ten academic factors, each normalized to 0-10 and combined with weights calibrat
 
 The Value Factor is a multi-metric composite of Book-to-Market (Fama-French 1992), Earnings-to-Price (Basu 1977), Cash Flow-to-Price (Lakonishok et al. 1994), and Dividend Yield (Fama & French 1988). The Investment Factor rewards conservative capital allocation per Titman, Wei & Xie (2004) and the Fama-French 5-factor model.
 
-### Composite Score and Conviction
+### Composite Score and Classification
 
 The composite score blends all three dimensions with configurable weights. Each horizon uses a different blend - **Short-Term** emphasizes technical signals for timing, while **Long-Term** emphasizes value and quality factors:
 
 | Variant | Tech | Fund | Research | Use Case |
 |---------|------|------|----------|----------|
 | **Balanced** | 0.35 | 0.30 | 0.35 | Default composite ranking |
-| **Short-Term** | 0.50 | 0.15 | 0.35 | Technical timing, momentum trades |
-| **Long-Term** | 0.10 | 0.40 | 0.50 | Value/quality investing, low turnover |
-| **Momentum** | 0.20 | 0.10 | 0.70 | Research-driven momentum plays |
+| **Short-Term** | 0.50 | 0.15 | 0.35 | Technical timing, momentum analysis |
+| **Long-Term** | 0.10 | 0.40 | 0.50 | Value/quality analysis, low turnover |
+| **Momentum** | 0.20 | 0.10 | 0.70 | Research-driven momentum analysis |
 
 Cross-sectional percentile ranking: Instead of absolute thresholds, fund_score and research_composite are ranked against the full universe and mapped to a 0-10 scale via **linear interpolation** across anchor points (p=0→1.5, p=25→4.0, p=50→6.0, p=75→8.0, p=100→9.5). This provides smooth differentiation between stocks and ensures "good" scores adapt to market conditions rather than relying on fixed thresholds.
 
 ### Absolute Quality Gates
 
-Percentile ranking alone will always recommend *something*, even if every stock in the universe is overvalued or overbought. To prevent this, absolute quality gates impose hard ceilings on the composite score when a stock fails critical thresholds:
+Percentile ranking alone will always produce high scores for *something*, even if every stock in the universe is overvalued or overbought. To prevent this, absolute quality gates impose hard ceilings on the composite score when a stock fails critical thresholds:
 
 | Gate | Condition | Ceiling |
 |------|-----------|---------|
@@ -167,7 +169,7 @@ An additional direct penalty is subtracted from the composite score for overboug
 
 This ensures that even stocks with strong fundamentals and technicals are penalized when they show signs of being overextended.
 
-Stocks are ranked by composite percentile across the universe. Conviction labels are assigned and adjusted for market regime:
+Stocks are ranked by composite percentile across the universe. Classification labels are assigned and adjusted for market regime:
 
 - Strong Buy: >= 90th percentile (or >= 85th in bullish regime)
 - Buy: >= 70th percentile
@@ -175,7 +177,7 @@ Stocks are ranked by composite percentile across the universe. Conviction labels
 - Caution: >= 20th percentile
 - Avoid: < 20th percentile
 
-Market regime adjustments downgrade conviction levels when the regime score is <= -2 (deep bear) or mildly bearish (-1).
+Market regime adjustments downgrade classification levels when the regime score is <= -2 (deep bear) or mildly bearish (-1).
 
 ## Market Regime Detection
 
@@ -284,7 +286,7 @@ The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 |         |    Weekly Supertrend resampled to W-FRI (NSE calendar)        |
 |         |                                                               |
 |         +-> [scoring.py]                                                |
-|         |    Composite scoring, sector medians, conviction rating       |
+|         |    Composite scoring, sector medians, classification labels   |
 |         |                                                               |
 |         +-> [recommendation.py]                                         |
 |         |    Tech Score (-1 to +1), Fund Score (0-10)                   |
@@ -315,19 +317,19 @@ The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 
 ## Dashboard Features
 
-The React frontend is a five-tab analytical dashboard:
+The React frontend is a five-tab analytical dashboard. Some tabs require club member authentication:
 
-| Tab | Description |
-|-----|-------------|
-| **Signals** | Top 3 high-conviction picks for Short-Term (momentum) or Long-Term (value/quality) horizon. Each card shows a horizon-specific composite score, Tech/Fund/Research sub-scores, key metrics (P/E, Mkt Cap, ROE, D/E, Sharpe, Beta), signal badges, and compact score bars (Piotroski, 12M Mom, Value, Vol 60D). |
-| **Screen** | Full universe screener with sortable columns (Ticker, Sector, LTP, 1D%, Composite, Tech, Fund, Research, F-Score, 12M Mom, Value, Beta, P/E, Conviction). Dynamic filters for composite, Piotroski, Value Score, Beta, sector, conviction, market cap, and D/E. Expandable row shows 14 technical signals and all 10 research factors. |
-| **Charts** | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14), MACD (12,26,9). Left panel shows company profile, technicals, 10 research factors (Piotroski, Gross Profit, Earnings Quality, Value, Investment, SUE, Beta, Z-Score), momentum, fundamentals, and risk metrics (Vol, Sharpe, Max DD, Beta, Alpha). Sector peer comparison table with Value and Beta columns. |
-| **Heatmap** | Color-coded sector heatmap where each tile represents a stock, colored from red (low composite) to green (high composite). Sectors sorted alphabetically. |
-| **Factor Lab** | Conviction accuracy tracker showing historical win rates and average forward returns (21D and 63D) by conviction level, with a bar chart and summary cards. Data accumulates as scans age. |
+| Tab | Access | Description |
+|-----|--------|-------------|
+| **Signals** | Members only | Top 3 high-scoring equities for Short-Term (momentum) or Long-Term (value/quality) horizon. Each card shows a horizon-specific composite score, Tech/Fund/Research sub-scores, key metrics (P/E, Mkt Cap, ROE, D/E, Sharpe, Beta), signal badges, and compact score bars (Piotroski, 12M Mom, Value, Vol 60D). |
+| **Screen** | Public (raw data) | Full universe screener with sortable columns (Ticker, Sector, LTP, 1D%, Tech, Fund, Research, F-Score, 12M Mom, Value, Beta, P/E). Composite scores and classification labels visible to authenticated members only. Dynamic filters for Piotroski, Value Score, Beta, sector, market cap, and D/E. Expandable row shows 14 technical signals and all 10 research factors. |
+| **Charts** | Public | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14), MACD (12,26,9). Left panel shows company profile, technicals, 10 research factors (Piotroski, Gross Profit, Earnings Quality, Value, Investment, SUE, Beta, Z-Score), momentum, fundamentals, and risk metrics (Vol, Sharpe, Max DD, Beta, Alpha). Sector peer comparison table with Value and Beta columns. |
+| **Heatmap** | Public | Color-coded sector heatmap where each tile represents a stock, colored from red (low composite) to green (high composite). Sectors sorted alphabetically. |
+| **Factor Lab** | Members only | Classification accuracy tracker showing historical win rates and average forward returns (21D and 63D) by classification level, with a bar chart and summary cards. Data accumulates as scans age. |
 
 ### Header Bar
 
-The header contains eight persistent indicators:
+The header contains persistent market indicators and controls:
 
 | Element | Description |
 |---------|-------------|
@@ -339,6 +341,7 @@ The header contains eight persistent indicators:
 | Coverage chip | % of the 150-stock universe successfully scanned |
 | Regime chip | Market regime (Bullish/Neutral/Bearish) with score, color-coded |
 | Dark mode toggle | Switches between light and dark themes |
+| Login button | Club member authentication (restricts access to scores and classifications) |
 
 ## Tech Stack
 
@@ -355,14 +358,14 @@ The header contains eight persistent indicators:
 
 ```text
 frontend/src/
-├── App.tsx               # Global state, routing, data fetch, tab orchestration
+├── App.tsx               # Global state, routing, data fetch, tab orchestration, auth
 │                         # Two separate timestamps: scanUpdated + pricesUpdated
 ├── types.ts              # TypeScript interfaces (DashboardData, MarketData, etc.)
 ├── index.css             # Design tokens, dark mode, glassmorphism, card system
 └── components/
     ├── shared.tsx         # num(), colorCode(), scoreBar(), SortHeader()
     ├── SignalsTab.tsx      # High conviction signal cards with radar chart
-    ├── ScreenerTab.tsx     # Full universe screener with filters + expandable rows
+    ├── ScreenerTab.tsx     # Full universe screener with filters + expandable rows (auth-aware)
     ├── ChartingTab.tsx     # Price/RSI/MACD charts + company profile panel
     ├── HeatmapTab.tsx      # Sector heatmap with color legend
     └── FactorLabTab.tsx    # Conviction accuracy tracker with forward return charts
@@ -560,7 +563,7 @@ If you use Alpha's data, methodology, or code in academic work, please cite:
 ```bibtex
 @software{kumar2024alpha,
   author    = {Kumar, Abhishek},
-  title     = {Alpha: A Multi-Factor Quantitative Stock Recommendation System for the NSE},
+  title     = {Alpha: A Multi-Factor Quantitative Stock Research and Analysis Platform for the NSE},
   year      = {2026},
   url       = {https://github.com/abhy-kumar/quant-alpha},
   note      = {Alpha Research and Investment Club, Faculty of Management Studies, University of Delhi}

@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo, memo, lazy, Suspense } from 'react'
+import React, { useEffect, useState, useMemo, memo, lazy, Suspense, useRef, useCallback } from 'react'
 import axios from 'axios'
-import { TrendUp, ChartBar, StackSimple, Moon, Sun, WarningCircle, Database, Pulse } from '@phosphor-icons/react'
+import { TrendUp, ChartBar, StackSimple, Moon, Sun, WarningCircle, Database, Pulse, SignOut, LockSimple } from '@phosphor-icons/react'
 import { Analytics } from '@vercel/analytics/react'
 import type { DashboardData } from './types'
 
@@ -111,6 +111,15 @@ export default function App() {
     try { return localStorage.getItem('qa_dark') === 'true' } catch {}
     return window.matchMedia('(prefers-color-scheme: dark)').matches
   })
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    try { return localStorage.getItem('qa_auth') === 'true' } catch {}
+    return false
+  })
+  const [showLogin, setShowLogin] = useState(false)
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+  const [loginError, setLoginError] = useState('')
+  const loginRef = useRef<HTMLDivElement>(null)
   const [horizon, setHorizon] = useState<'short'|'long'>('short')
   const [selectedTicker, setSelectedTicker] = useState('')
   const [chartPeriod, setChartPeriod] = useState('1y')
@@ -238,6 +247,37 @@ export default function App() {
 
   const sectorMap = useMemo(() => { const m:Record<string,DashboardData[]>={}; data.forEach(d=>{const s=d.Sector||'Unknown';(m[s]=m[s]||[]).push(d)}); return m }, [data])
   const selectedAsset = useMemo(() => data.find(d=>d.Ticker===selectedTicker)||null, [data, selectedTicker])
+  const ALL_TABS = TABS
+  const visibleTabs = isLoggedIn ? ALL_TABS : ALL_TABS.filter(t => t.id === 'fundamentals' || t.id === 'charting' || t.id === 'heatmap')
+
+  const handleLogin = useCallback(() => {
+    if (loginEmail === 'alpha@fms.edu' && loginPassword === 'alphakishakti') {
+      setIsLoggedIn(true)
+      setShowLogin(false)
+      setLoginEmail('')
+      setLoginPassword('')
+      setLoginError('')
+      try { localStorage.setItem('qa_auth', 'true') } catch {}
+    } else {
+      setLoginError('Invalid credentials')
+    }
+  }, [loginEmail, loginPassword])
+
+  const handleLogout = useCallback(() => {
+    setIsLoggedIn(false)
+    try { localStorage.removeItem('qa_auth') } catch {}
+    if (activeTab === 'picks' || activeTab === 'factorlab') setActiveTab('fundamentals')
+  }, [activeTab])
+
+  useEffect(() => {
+    if (!showLogin) return
+    const handleClick = (e: MouseEvent) => {
+      if (loginRef.current && !loginRef.current.contains(e.target as Node)) setShowLogin(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showLogin])
+
   const peerGroup = useMemo(() => {
     if (!selectedAsset?.Sector||selectedAsset.Sector==='Unknown') return []
     return [selectedAsset,...data.filter(d=>d.Sector===selectedAsset.Sector&&d.Ticker!==selectedAsset.Ticker).sort((a,b)=>Number(b.Market_Cap_B||0)-Number(a.Market_Cap_B||0)).slice(0,5)]
@@ -258,7 +298,7 @@ export default function App() {
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
             {/* Left: nav */}
             <nav className="hidden md:flex items-center gap-1">
-              {TABS.map(tab => (
+              {visibleTabs.map(tab => (
                 <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
                   style={{
@@ -275,25 +315,78 @@ export default function App() {
             <div className="flex-1" />
 
             {/* Center: logo */}
-            <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
+            <button onClick={()=>setActiveTab(isLoggedIn ? 'picks' : 'fundamentals')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
               <img src='/logo-dark.svg' alt="Alpha" className="h-[41px] md:h-[48px] w-auto" />
             </button>
 
             <div className="flex-1" />
 
-            <button onClick={()=>setIsDark(!isDark)} aria-label="Switch to light mode"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
-              style={{
-                color: 'var(--text-3)',
-                background: 'var(--glass-bg-subtle)',
-                border: '1px solid var(--glass-border)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                boxShadow: 'var(--glass-shadow)',
-                cursor: 'pointer',
-              }}>
-              <Sun size={13} weight="duotone"/>Light
-            </button>
+            <div className="flex items-center gap-1.5" ref={loginRef} style={{ position: 'relative' }}>
+              <button onClick={()=>setIsDark(!isDark)} aria-label="Switch to light mode"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+                style={{
+                  color: 'var(--text-3)',
+                  background: 'var(--glass-bg-subtle)',
+                  border: '1px solid var(--glass-border)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  boxShadow: 'var(--glass-shadow)',
+                  cursor: 'pointer',
+                }}>
+                <Sun size={13} weight="duotone"/>Light
+              </button>
+              {isLoggedIn ? (
+                <button onClick={handleLogout} aria-label="Logout"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+                  style={{
+                    color: 'var(--text-3)',
+                    background: 'var(--glass-bg-subtle)',
+                    border: '1px solid var(--glass-border)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    boxShadow: 'var(--glass-shadow)',
+                    cursor: 'pointer',
+                  }}>
+                  <SignOut size={13} weight="duotone"/>Logout
+                </button>
+              ) : (
+                <button onClick={()=>setShowLogin(!showLogin)} aria-label="Login"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+                  style={{
+                    color: 'var(--text-3)',
+                    background: 'var(--glass-bg-subtle)',
+                    border: '1px solid var(--glass-border)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    boxShadow: 'var(--glass-shadow)',
+                    cursor: 'pointer',
+                  }}>
+                  <LockSimple size={13} weight="duotone"/>Login
+                </button>
+              )}
+              {showLogin && !isLoggedIn && (
+                <div className="glass-strong" style={{
+                  position: 'absolute', top: '100%', right: 0, marginTop: 8, padding: 16, borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--glass-border)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', zIndex: 100, minWidth: 240,
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Club Member Login</div>
+                  <input type="email" placeholder="Email" value={loginEmail}
+                    onChange={e => { setLoginEmail(e.target.value); setLoginError('') }}
+                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                    className="glass-input" style={{ width: '100%', marginBottom: 8, fontSize: 12 }} />
+                  <input type="password" placeholder="Password" value={loginPassword}
+                    onChange={e => { setLoginPassword(e.target.value); setLoginError('') }}
+                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                    className="glass-input" style={{ width: '100%', marginBottom: 8, fontSize: 12 }} />
+                  {loginError && <div style={{ fontSize: 11, color: 'var(--red)', marginBottom: 8 }}>{loginError}</div>}
+                  <button onClick={handleLogin} className="w-full py-1.5 text-[12px] font-medium rounded-lg transition-all duration-200"
+                    style={{
+                      background: 'var(--brand)', color: '#fff', border: 'none', cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(110, 168, 254, 0.3)',
+                    }}>Sign In</button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
@@ -382,7 +475,7 @@ export default function App() {
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
             {/* Left: nav */}
             <nav className="hidden md:flex items-center gap-1">
-              {TABS.map(tab => (
+              {visibleTabs.map(tab => (
                 <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
                   style={{
@@ -399,25 +492,78 @@ export default function App() {
             <div className="flex-1" />
 
             {/* Center: logo */}
-            <button onClick={()=>setActiveTab('picks')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
+            <button onClick={()=>setActiveTab(isLoggedIn ? 'picks' : 'fundamentals')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
               <img src='/logo-light.svg' alt="Alpha" className="h-[41px] md:h-[48px] w-auto" />
             </button>
 
             <div className="flex-1" />
 
-            <button onClick={()=>setIsDark(!isDark)} aria-label="Switch to dark mode"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
-              style={{
-                color: 'var(--text-3)',
-                background: 'var(--glass-bg-subtle)',
-                border: '1px solid var(--glass-border)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                boxShadow: 'var(--glass-shadow)',
-                cursor: 'pointer',
-              }}>
-              <Moon size={13} weight="duotone"/>Dark
-            </button>
+            <div className="flex items-center gap-1.5" style={{ position: 'relative' }}>
+              <button onClick={()=>setIsDark(!isDark)} aria-label="Switch to dark mode"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+                style={{
+                  color: 'var(--text-3)',
+                  background: 'var(--glass-bg-subtle)',
+                  border: '1px solid var(--glass-border)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  boxShadow: 'var(--glass-shadow)',
+                  cursor: 'pointer',
+                }}>
+                <Moon size={13} weight="duotone"/>Dark
+              </button>
+              {isLoggedIn ? (
+                <button onClick={handleLogout} aria-label="Logout"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+                  style={{
+                    color: 'var(--text-3)',
+                    background: 'var(--glass-bg-subtle)',
+                    border: '1px solid var(--glass-border)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    boxShadow: 'var(--glass-shadow)',
+                    cursor: 'pointer',
+                  }}>
+                  <SignOut size={13} weight="duotone"/>Logout
+                </button>
+              ) : (
+                <button onClick={()=>setShowLogin(!showLogin)} aria-label="Login"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+                  style={{
+                    color: 'var(--text-3)',
+                    background: 'var(--glass-bg-subtle)',
+                    border: '1px solid var(--glass-border)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    boxShadow: 'var(--glass-shadow)',
+                    cursor: 'pointer',
+                  }}>
+                  <LockSimple size={13} weight="duotone"/>Login
+                </button>
+              )}
+              {showLogin && !isLoggedIn && (
+                <div className="glass-strong" style={{
+                  position: 'absolute', top: '100%', right: 0, marginTop: 8, padding: 16, borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--glass-border)', boxShadow: '0 8px 32px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 240,
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Club Member Login</div>
+                  <input type="email" placeholder="Email" value={loginEmail}
+                    onChange={e => { setLoginEmail(e.target.value); setLoginError('') }}
+                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                    className="glass-input" style={{ width: '100%', marginBottom: 8, fontSize: 12 }} />
+                  <input type="password" placeholder="Password" value={loginPassword}
+                    onChange={e => { setLoginPassword(e.target.value); setLoginError('') }}
+                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                    className="glass-input" style={{ width: '100%', marginBottom: 8, fontSize: 12 }} />
+                  {loginError && <div style={{ fontSize: 11, color: 'var(--red)', marginBottom: 8 }}>{loginError}</div>}
+                  <button onClick={handleLogin} className="w-full py-1.5 text-[12px] font-medium rounded-lg transition-all duration-200"
+                    style={{
+                      background: 'var(--brand)', color: '#fff', border: 'none', cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(110, 168, 254, 0.3)',
+                    }}>Sign In</button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
@@ -504,7 +650,7 @@ export default function App() {
       {/* Mobile tab bar */}
       <nav className="md:hidden overflow-x-auto glass" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
         <div className="flex items-center gap-1 px-3 py-2">
-          {TABS.map(tab => (
+          {visibleTabs.map(tab => (
             <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium whitespace-nowrap shrink-0 rounded-lg transition-all duration-200"
               style={{
@@ -544,7 +690,7 @@ export default function App() {
             <Suspense fallback={null}>
               <div className="tab-fade-in">
                 {activeTab==='picks' && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
-                {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers}/>}
+                {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>}
                 {activeTab==='charting' && <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon}/>}
                 {activeTab==='heatmap' && <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>}
                 {activeTab==='factorlab' && <FactorLabTab outcomeAccuracy={outcomeAccuracy} firstScanDate={firstScanDate} isDark={isDark}/>}

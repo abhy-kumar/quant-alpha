@@ -12,11 +12,12 @@ interface Props {
   toggleWatchlist: (ticker: string) => void
   scoreHistory: Record<string, {date: string; composite: number}[]>
   flashTickers?: Record<string, 'up'|'down'>
+  isLoggedIn?: boolean
 }
 
 const CONVICTION_OPTIONS = ['Strong Buy', 'Buy', 'Hold', 'Caution', 'Avoid']
 
-export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRow, watchlist, toggleWatchlist, scoreHistory, flashTickers = {} }: Props) {
+export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRow, watchlist, toggleWatchlist, scoreHistory, flashTickers = {}, isLoggedIn = true }: Props) {
   const [sortKey, setSortKey] = useState<string>('Composite_Score')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [showFilters, setShowFilters] = useState(false)
@@ -201,6 +202,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 ))}
               </div>
             </div>
+            {isLoggedIn && (
             <div>
               <label className="text-xs mb-2 block" style={{ color: 'var(--text-2)' }}>Conviction</label>
               <div className="flex flex-wrap gap-1.5">
@@ -219,6 +221,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 ))}
               </div>
             </div>
+            )}
           </div>
         </div>
       </div>
@@ -241,7 +244,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline">Sector</span></SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Price</SortHeader>
               <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>1D</SortHeader>
-              <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Score</SortHeader>
+              {isLoggedIn && <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Score</SortHeader>}
               <th className="py-2 px-2 font-medium text-[10px] text-center" style={{ color: 'var(--text-2)' }}>Trend</th>
               <SortHeader field="Tech_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline">Tech</span></SortHeader>
               <SortHeader field="Fund_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">Fund</span></SortHeader>
@@ -251,7 +254,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <SortHeader field="Value_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">Value</span></SortHeader>
               <SortHeader field="Beta" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">Beta</span></SortHeader>
               <SortHeader field="P/E" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">P/E</span></SortHeader>
-              <SortHeader field="Conviction" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Conv</SortHeader>
+              {isLoggedIn && <SortHeader field="Conviction" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Conv</SortHeader>}
               <th className="py-2 px-2"></th>
             </tr>
           </thead>
@@ -280,7 +283,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className={`py-2 px-2 text-right font-medium font-mono ${colorCode(row['1d_Chg_%'])}`}>
                     {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
                   </td>
-                  <td className={`py-2 px-2 text-right font-medium font-mono ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
+                  {isLoggedIn && <td className={`py-2 px-2 text-right font-medium font-mono ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>}
                   <td className="py-2 px-2 text-center">
                     <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} ticker={row.Ticker} />
                   </td>
@@ -294,11 +297,13 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{num(row.Value_Score)}</td>
                   <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{row.Beta != null ? row.Beta.toFixed(2) : '-'}</td>
                   <td className="py-2 px-2 text-right font-mono hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
+                  {isLoggedIn && (
                   <td className="py-2 px-2 font-medium whitespace-nowrap">
                     <span className={`badge ${row.Conviction === 'Strong Buy' ? 'badge-strong-buy' : row.Conviction === 'Buy' ? 'badge-buy' : row.Conviction === 'Caution' ? 'badge-caution' : row.Conviction === 'Avoid' ? 'badge-avoid' : 'badge-hold'}`}>
                       {row.Conviction || '-'}
                     </span>
                   </td>
+                  )}
                   <td className="py-2 px-2">
                     <div className="flex items-center gap-1">
                       <button onClick={(e) => { e.stopPropagation(); toggleWatchlist(row.Ticker) }}
@@ -434,12 +439,14 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 <button onClick={() => onSelect(row.Ticker)} className="text-sm font-bold" style={{ color: 'var(--text)' }}>
                   {row.Ticker.replace('.NS', '')}
                 </button>
+                {isLoggedIn && (
                 <span className={`badge ${row.Conviction === 'Strong Buy' ? 'badge-strong-buy' : row.Conviction === 'Buy' ? 'badge-buy' : row.Conviction === 'Caution' ? 'badge-caution' : row.Conviction === 'Avoid' ? 'badge-avoid' : 'badge-hold'}`}>
                   {row.Conviction || '-'}
                 </span>
+                )}
               </div>
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-mono font-medium ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</span>
+                {isLoggedIn && <span className={`text-sm font-mono font-medium ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</span>}
                 <button onClick={() => toggleWatchlist(row.Ticker)}
                   onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.75)')}
                   onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
