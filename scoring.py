@@ -174,11 +174,18 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
     # smoothly — a stock at 9.5 and 7.2 both differentiate even if they
     # breach the same threshold, unlike the old min(score, ceiling) approach.
     #
+    # No artificial floors: multipliers compound freely. The only floor is
+    # max(0.0,...) where the underlying function can go negative (mathematical
+    # safety only — a negative multiplier would invert the signal).
+    # A stock that is expensive, unprofitable, over-leveraged, AND overbought
+    # can legitimately score very close to zero.
+    #
     # Penalty calibration (examples):
-    #   P/E: pe=35→×1.00, pe=60→×0.72, pe=100→×0.38, pe=150→×0.20
-    #   Z-score: z=1.5→×1.00, z=2.0→×0.94, z=2.5→×0.88, z=3.5→×0.76
-    #   ROE: roe=0→×1.00, roe=-10→×0.80, roe=-25→×0.50
-    #   D/E: de=150→×1.00, de=250→×0.80, de=400→×0.50
+    #   P/E: pe=35→×1.00, pe=60→×0.72, pe=100→×0.38, pe=200→×0.09
+    #   Z-score: z=1.5→×1.00, z=2.5→×0.88, z=4.0→×0.70, z=10→×0.04 (floored at 0)
+    #   ROE: roe=0→×1.00, roe=-20→×0.60, roe=-50→×0.01 (floored at 0)
+    #   D/E: de=150→×1.00, de=400→×0.50, de=650→×0.01 (floored at 0)
+    #   Combined (P/E=120, z=3, ROE=-15, D/E=300): ×0.29×0.82×0.70×0.70 ≈ ×0.12
 
     for item in final_rows:
         if item.get("is_etf"):
@@ -200,37 +207,41 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
         # P/E penalty: exponential decay above 35 (growth premium is real,
         # but extreme multiples consistently underperform — Fama & French 1992)
+        # Exponential never goes negative, so no floor needed.
         if not np.isnan(pe) and pe > 0:
-            pe_mult = max(0.20, np.exp(-0.013 * max(0.0, pe - 35)))
+            pe_mult = np.exp(-0.013 * max(0.0, pe - 35))
             if pe_mult < 0.95:
                 reasons.append(f"P/E={pe:.1f}")
             mult *= pe_mult
 
-        # Z-score overbought: smooth penalty starting at z=1.5
+        # Z-score overbought: linear penalty starting at z=1.5.
+        # Function: 1 - 0.12*(z-1.5) goes negative above z≈10, floor at 0.0.
         if z_score > 1.5:
-            z_mult = max(0.55, 1.0 - 0.12 * (z_score - 1.5))
+            z_mult = max(0.0, 1.0 - 0.12 * (z_score - 1.5))
             reasons.append(f"Z={z_score:.2f}")
             mult *= z_mult
 
-        # Reversion sell signal: soft additional 7% reduction
+        # Reversion sell signal: additional 7% reduction, uncapped.
         if reversion_sig == -1:
             mult *= 0.93
             if not any("overbought" in r for r in reasons):
                 reasons.append("overbought_reversion")
 
-        # Negative ROE: penalty scales with depth of loss
+        # Negative ROE: linear penalty, floored at 0 (avoids sign inversion).
+        # 1 + 0.02*roe goes negative below roe=-50.
         if roe <= 0:
-            roe_mult = max(0.50, 1.0 + 0.02 * roe)
+            roe_mult = max(0.0, 1.0 + 0.02 * roe)
             reasons.append(f"ROE={roe:.1f}%")
             mult *= roe_mult
 
-        # Extreme leverage: penalty above D/E=150
+        # Extreme leverage: linear penalty above D/E=150, floored at 0.
+        # 1 - 0.002*(de-150) goes negative above de=650.
         if debt_eq > 150:
-            de_mult = max(0.50, 1.0 - 0.002 * (debt_eq - 150))
+            de_mult = max(0.0, 1.0 - 0.002 * (debt_eq - 150))
             reasons.append(f"D/E={debt_eq:.1f}")
             mult *= de_mult
 
-        item["quality_penalty"] = max(0.20, float(mult))
+        item["quality_penalty"] = float(mult)
         item["quality_gated"]   = len(reasons) > 0
         item["quality_reasons"] = reasons
 
@@ -259,15 +270,16 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
             raw_composite_fund  = max(0.0, raw_composite_fund  * (1.0 + rs_adj * 0.5))
 
         # ── Overbought Penalty Multiplier ─────────────────────────────────────
-        # Smooth, z-score-scaled penalty applied uniformly to ALL composites.
-        # Replaces old flat additive deduction (−0.3/−0.8) on balanced only.
-        # z=1.5→×1.00, z=2.0→×0.94, z=2.5→×0.88, z=3.5→×0.76
+        # Linear z-score penalty applied uniformly to ALL composites.
+        # No floor — a stock that is extremely overbought (z>10) genuinely
+        # deserves a near-zero multiplier. Floor at 0.0 only to prevent
+        # sign inversion.
         research = item["research"]
         z_score = _safe_float(research.get("z_score_60", 0), default=0)
         reversion_sig = research.get("reversion_signal", 0)
         overbought_mult = 1.0
         if z_score > 1.5:
-            overbought_mult = max(0.70, 1.0 - 0.12 * (z_score - 1.5))
+            overbought_mult = max(0.0, 1.0 - 0.12 * (z_score - 1.5))
         if reversion_sig == -1:
             overbought_mult = min(overbought_mult, 0.93)
 
