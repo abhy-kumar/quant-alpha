@@ -365,9 +365,14 @@ export default function App() {
                 </button>
               )}
               {showLogin && !isLoggedIn && (
-                <div className="glass-strong" style={{
-                  position: 'absolute', top: '100%', right: 0, marginTop: 8, padding: 16, borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--glass-border)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', zIndex: 100, minWidth: 240,
+                <div style={{
+                  position: 'absolute', top: '100%', right: 0, marginTop: 8, padding: 16,
+                  borderRadius: 'var(--radius-lg)', zIndex: 100, minWidth: 240,
+                  background: 'var(--glass-bg-strong)',
+                  backdropFilter: 'blur(40px) saturate(1.2)',
+                  WebkitBackdropFilter: 'blur(40px) saturate(1.2)',
+                  border: '1px solid var(--glass-border-strong)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
                 }}>
                   <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Club Member Login</div>
                   <input type="email" placeholder="Email" value={loginEmail}
@@ -542,9 +547,14 @@ export default function App() {
                 </button>
               )}
               {showLogin && !isLoggedIn && (
-                <div className="glass-strong" style={{
-                  position: 'absolute', top: '100%', right: 0, marginTop: 8, padding: 16, borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--glass-border)', boxShadow: '0 8px 32px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 240,
+                <div style={{
+                  position: 'absolute', top: '100%', right: 0, marginTop: 8, padding: 16,
+                  borderRadius: 'var(--radius-lg)', zIndex: 100, minWidth: 240,
+                  background: 'var(--glass-bg-strong)',
+                  backdropFilter: 'blur(40px) saturate(1.2)',
+                  WebkitBackdropFilter: 'blur(40px) saturate(1.2)',
+                  border: '1px solid var(--glass-border-strong)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
                 }}>
                   <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Club Member Login</div>
                   <input type="email" placeholder="Email" value={loginEmail}
