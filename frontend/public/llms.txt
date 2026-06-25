@@ -1,8 +1,8 @@
-﻿# Alpha - Quantitative NSE Stock Research
+# Alpha - Quantitative NSE Stock Research
 # llms.txt - Machine-readable site summary for AI assistants and LLM crawlers
 # Standard: https://llmstxt.org
 
-> Alpha is a fully automated, research-backed quantitative stock screening and recommendation
+> Alpha is a fully automated, research-backed quantitative stock analysis and research
 > platform for the National Stock Exchange of India (NSE). It evaluates the top 150 liquid
 > NSE equities daily using a multi-factor model grounded in published academic research,
 > and publishes the results as a free, open-access dashboard.
@@ -11,7 +11,7 @@
 
 - Screens 150 NSE stocks three times daily (pre-open, mid-day, post-market) via GitHub Actions
 - Computes 14 technical signals, 10 fundamental metrics, and 10 academic research factors per stock
-- Assigns conviction ratings: Strong Buy, Buy, Hold, Caution, Avoid
+- Classifies stocks by research-backed composite scoring: Strong Buy, Buy, Hold, Caution, Avoid
 - Detects Indian market regime (bullish / neutral / bearish) using 5 India-specific signals
 - Stores all data in a growing SQLite database for machine learning training
 - Provides live intraday price overlays via Vercel serverless functions (every 3 min, market hours)

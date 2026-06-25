@@ -129,8 +129,8 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
     # ── Cross-Sectional Percentile Ranking ──────────────────────────────────
     # Percentile ranking maps raw scores to their relative position in the
-    # universe. Combined with absolute quality gates to prevent recommending
-    # overvalued/overbought stocks even if they rank well relative to peers.
+    # universe. Combined with absolute quality gates to prevent scoring
+    # overvalued/overbought stocks highly even if they rank well relative to peers.
     #
     # Linear interpolation across anchor points for smooth differentiation:
     #   p=0→1.5, p=25→4.0, p=50→6.0, p=75→8.0, p=100→9.5

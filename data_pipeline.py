@@ -1,7 +1,7 @@
 """
 data_pipeline.py
 ----------------
-ML-ready data storage for the stock recommendation system.
+ML-ready data storage for the stock analysis and research system.
 
 Tables:
   - daily_ohlcv:       Raw OHLCV data per stock per day (for backtesting)
@@ -511,7 +511,7 @@ def get_regime_timeseries(min_date: str = None) -> pd.DataFrame:
 
 def get_outcome_accuracy(min_date: str = None) -> pd.DataFrame:
     """
-    Compute recommendation accuracy: how often each conviction level
+    Compute scoring accuracy: how often each conviction level
     led to positive forward returns.
     """
     ensure_schema()

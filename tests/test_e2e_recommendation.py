@@ -1,5 +1,5 @@
 """
-E2E verification of the stock recommendation pipeline.
+E2E verification of the stock analysis and research pipeline.
 
 Creates synthetic 'good' and 'bad' stocks and verifies the engine
 ranks them correctly through the full scoring pipeline.
