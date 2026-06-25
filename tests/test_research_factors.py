@@ -61,12 +61,14 @@ class TestGrossProfitability(unittest.TestCase):
     def test_high_gp(self):
         info = {"grossProfits": 50e9, "totalAssets": 80e9}
         score = compute_gross_profitability(info)
-        self.assertEqual(score, 10.0)  # 50/80 = 0.625 >= 0.50
+        # 50/80 = 0.625 >> center (0.25) → score > 9.0
+        self.assertGreater(score, 9.0)
 
     def test_low_gp(self):
         info = {"grossProfits": 2e9, "totalAssets": 80e9}
         score = compute_gross_profitability(info)
-        self.assertEqual(score, 0.0)
+        # 2/80 = 0.025, well below center → score < 2.0
+        self.assertLess(score, 2.0)
 
     def test_missing_data(self):
         info = {}

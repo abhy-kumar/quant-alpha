@@ -9,12 +9,17 @@ Implements horizon-specific composite scores based on academic literature:
   - Long-term: Value + Quality + Low Volatility (Fama-French factor model)
   - Balanced: Equal blend for general use
 
+All scoring uses continuous sigmoid/tanh functions; no discrete step-function
+buckets or hard min/max caps. Quality penalties are smooth multiplicative
+multipliers that compound without destroying relative stock differentiation.
+
 Factor weights derived from:
-  - Fama & French (1993, 2015): Value and Investment factors
-  - Novy-Marx (2013): Gross Profitability
+  - Fama & French (1992, 1993, 2015): Value, Investment, Profitability
+  - Novy-Marx (2013): Gross Profitability (strongest accounting predictor)
   - Jegadeesh & Titman (1993): Momentum
   - Baker, Bradley & Wurgler (2011): Low Volatility
   - Frazzini & Pedersen (2014): Betting Against Beta
+  - Bernard & Thomas (1989): Post-Earnings Announcement Drift (SUE)
 """
 
 import numpy as np
@@ -78,10 +83,6 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
         if len(rs_series) > 0:
             rs_pctile = sum(rs_series <= item["rs_composite"]) / len(rs_series) * 100
-            if rs_pctile >= 75:
-                score = min(score + 0.2, 1.0)
-            elif rs_pctile <= 25:
-                score = max(score - 0.2, -1.0)
         else:
             rs_pctile = np.nan
 
@@ -109,16 +110,11 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
         norm_tech = (score + 1) * 5
         sentiment = _safe_float(info.get("news_sentiment"))
-        z_score = _safe_float(research.get("z_score_60", 0), default=0)
-        reversion_sig = research.get("reversion_signal", 0)
-        overbought = z_score > 1.5 or reversion_sig == -1
-        if sentiment > 0.15:
-            boost = 1.0
-            if overbought:
-                boost = 0.3
-            norm_tech = min(10.0, norm_tech + boost)
-        elif sentiment < -0.15:
-            norm_tech = max(0.0, norm_tech - 1.0)
+        # Sentiment: tanh-based smooth multiplier, max ±12%; no binary threshold
+        # sentiment=+0.30 → ×1.10, sentiment=0.0 → ×1.00, sentiment=-0.30 → ×0.90
+        if not np.isnan(sentiment):
+            sentiment_mult = 1.0 + 0.12 * np.tanh(sentiment / 0.15)
+            norm_tech = max(0.0, min(10.0, norm_tech * sentiment_mult))
 
         research_composite = research["research_composite"]
 
@@ -171,22 +167,24 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
             item["research_pctile"] = res_pctile
             item["research_composite_ranked"] = _pctile_to_score(res_pctile)
 
-    # ── Absolute Quality Gates ──────────────────────────────────────────────
-    # Percentile ranking alone will always recommend something, even if every
-    # stock is overvalued. Absolute gates ensure that fundamentally flawed or
-    # extremely overbought stocks cannot achieve top-tier composite scores.
-    # A gate caps the ranked score to a ceiling if the stock fails thresholds.
-
-    _QUALITY_CEILINGS = {
-        "pe_too_high":      6.0,   # P/E > 60: highly overvalued
-        "zscore_extreme":   5.5,   # Z-Score > 2.5: extremely overbought
-        "reversion_sell":   6.5,   # Reversion signal = -1: overbought
-        "negative_roe":     4.0,   # ROE <= 0: unprofitable
-        "high_debt":        6.0,   # D/E > 200: excessive leverage
-    }
+    # ── Smooth Quality Penalty Multipliers ──────────────────────────────────
+    # Replace hard ceiling gates with continuous multiplicative penalties.
+    # Each quality metric generates a multiplier in (0, 1]; all compound.
+    # This preserves relative ranking while penalising quality failures
+    # smoothly — a stock at 9.5 and 7.2 both differentiate even if they
+    # breach the same threshold, unlike the old min(score, ceiling) approach.
+    #
+    # Penalty calibration (examples):
+    #   P/E: pe=35→×1.00, pe=60→×0.72, pe=100→×0.38, pe=150→×0.20
+    #   Z-score: z=1.5→×1.00, z=2.0→×0.94, z=2.5→×0.88, z=3.5→×0.76
+    #   ROE: roe=0→×1.00, roe=-10→×0.80, roe=-25→×0.50
+    #   D/E: de=150→×1.00, de=250→×0.80, de=400→×0.50
 
     for item in final_rows:
         if item.get("is_etf"):
+            item["quality_gated"] = False
+            item["quality_penalty"] = 1.0
+            item["quality_reasons"] = []
             continue
 
         info = item["info"]
@@ -197,67 +195,100 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         roe = _safe_float(info.get("returnOnEquity"), default=0)
         debt_eq = _safe_float(info.get("debtToEquity"), default=0)
 
-        ceiling = 10.0
+        mult = 1.0
         reasons = []
 
-        if not np.isnan(pe) and pe > 60:
-            ceiling = min(ceiling, _QUALITY_CEILINGS["pe_too_high"])
-            reasons.append(f"P/E={pe:.1f}>60")
-        if z_score > 2.5:
-            ceiling = min(ceiling, _QUALITY_CEILINGS["zscore_extreme"])
-            reasons.append(f"Z={z_score:.2f}>2.5")
-        if reversion_sig == -1:
-            ceiling = min(ceiling, _QUALITY_CEILINGS["reversion_sell"])
-            reasons.append("overbought_reversion")
-        if roe <= 0:
-            ceiling = min(ceiling, _QUALITY_CEILINGS["negative_roe"])
-            reasons.append(f"ROE={roe:.1f}%<=0")
-        if debt_eq > 200:
-            ceiling = min(ceiling, _QUALITY_CEILINGS["high_debt"])
-            reasons.append(f"D/E={debt_eq:.1f}>200")
+        # P/E penalty: exponential decay above 35 (growth premium is real,
+        # but extreme multiples consistently underperform — Fama & French 1992)
+        if not np.isnan(pe) and pe > 0:
+            pe_mult = max(0.20, np.exp(-0.013 * max(0.0, pe - 35)))
+            if pe_mult < 0.95:
+                reasons.append(f"P/E={pe:.1f}")
+            mult *= pe_mult
 
-        if reasons:
-            item["quality_gated"] = True
-            item["quality_ceiling"] = ceiling
-            item["quality_reasons"] = reasons
-        else:
-            item["quality_gated"] = False
+        # Z-score overbought: smooth penalty starting at z=1.5
+        if z_score > 1.5:
+            z_mult = max(0.55, 1.0 - 0.12 * (z_score - 1.5))
+            reasons.append(f"Z={z_score:.2f}")
+            mult *= z_mult
+
+        # Reversion sell signal: soft additional 7% reduction
+        if reversion_sig == -1:
+            mult *= 0.93
+            if not any("overbought" in r for r in reasons):
+                reasons.append("overbought_reversion")
+
+        # Negative ROE: penalty scales with depth of loss
+        if roe <= 0:
+            roe_mult = max(0.50, 1.0 + 0.02 * roe)
+            reasons.append(f"ROE={roe:.1f}%")
+            mult *= roe_mult
+
+        # Extreme leverage: penalty above D/E=150
+        if debt_eq > 150:
+            de_mult = max(0.50, 1.0 - 0.002 * (debt_eq - 150))
+            reasons.append(f"D/E={debt_eq:.1f}")
+            mult *= de_mult
+
+        item["quality_penalty"] = max(0.20, float(mult))
+        item["quality_gated"]   = len(reasons) > 0
+        item["quality_reasons"] = reasons
 
     # ── Compute composite scores using ranked values ────────────────────────
     for item in final_rows:
         norm_tech = item["norm_tech"]
-        ranked_fund = item.get("fund_score_ranked", item["fund_score"])
-        ranked_research = item.get("research_composite_ranked", item["research"]["research_composite"])
+        ranked_fund     = item.get("fund_score_ranked",             item["fund_score"])
+        ranked_research = item.get("research_composite_ranked",     item["research"]["research_composite"])
 
         raw_composite       = (norm_tech * 0.35) + (ranked_fund * 0.30) + (ranked_research * 0.35)
         raw_composite_tech  = (norm_tech * 0.50) + (ranked_fund * 0.15) + (ranked_research * 0.35)
         raw_composite_fund  = (norm_tech * 0.10) + (ranked_fund * 0.40) + (ranked_research * 0.50)
         raw_composite_mom   = (ranked_research * 0.70) + (norm_tech * 0.20) + (ranked_fund * 0.10)
 
-        # Apply overbought penalty: -0.3 for overbought, -0.8 for extreme
+        # ── RS Percentile Multiplier ──────────────────────────────────────────
+        # Smooth ±8% composite adjustment based on relative strength vs universe.
+        # Replaces old pre-normalization ±0.2 raw-score adjustment which was
+        # applied before mapping to 0-10, making its impact unpredictable.
+        # Momentum composite is more RS-sensitive; fund composite less so.
+        rs_pctile = item.get("rs_pctile", np.nan)
+        if not np.isnan(rs_pctile):
+            rs_adj = 0.08 * (rs_pctile - 50.0) / 50.0   # ±8% range
+            raw_composite       = max(0.0, raw_composite       * (1.0 + rs_adj))
+            raw_composite_tech  = max(0.0, raw_composite_tech  * (1.0 + rs_adj))
+            raw_composite_mom   = max(0.0, raw_composite_mom   * (1.0 + rs_adj))
+            raw_composite_fund  = max(0.0, raw_composite_fund  * (1.0 + rs_adj * 0.5))
+
+        # ── Overbought Penalty Multiplier ─────────────────────────────────────
+        # Smooth, z-score-scaled penalty applied uniformly to ALL composites.
+        # Replaces old flat additive deduction (−0.3/−0.8) on balanced only.
+        # z=1.5→×1.00, z=2.0→×0.94, z=2.5→×0.88, z=3.5→×0.76
         research = item["research"]
         z_score = _safe_float(research.get("z_score_60", 0), default=0)
         reversion_sig = research.get("reversion_signal", 0)
-        overbought_penalty = 0.0
-        if z_score > 2.0 or reversion_sig == -1:
-            overbought_penalty = 0.3
-        if z_score > 2.5:
-            overbought_penalty = 0.8
+        overbought_mult = 1.0
+        if z_score > 1.5:
+            overbought_mult = max(0.70, 1.0 - 0.12 * (z_score - 1.5))
+        if reversion_sig == -1:
+            overbought_mult = min(overbought_mult, 0.93)
 
-        penalized_composite = max(0.0, raw_composite - overbought_penalty)
+        raw_composite       = max(0.0, raw_composite       * overbought_mult)
+        raw_composite_tech  = max(0.0, raw_composite_tech  * overbought_mult)
+        raw_composite_fund  = max(0.0, raw_composite_fund  * overbought_mult)
+        raw_composite_mom   = max(0.0, raw_composite_mom   * overbought_mult)
 
-        # Apply quality gate ceiling
-        if item.get("quality_gated"):
-            ceiling = item["quality_ceiling"]
-            penalized_composite = min(penalized_composite, ceiling)
-            raw_composite_tech = min(raw_composite_tech, ceiling)
-            raw_composite_fund = min(raw_composite_fund, ceiling)
-            raw_composite_mom = min(raw_composite_mom, ceiling)
+        # ── Quality Penalty Multiplier ────────────────────────────────────────
+        # Smooth multiplicative penalty (computed in section above).
+        # Replaces hard min(score, ceiling) gates — preserves relative ranking.
+        quality_mult = item.get("quality_penalty", 1.0)
+        raw_composite       = max(0.0, raw_composite       * quality_mult)
+        raw_composite_tech  = max(0.0, raw_composite_tech  * quality_mult)
+        raw_composite_fund  = max(0.0, raw_composite_fund  * quality_mult)
+        raw_composite_mom   = max(0.0, raw_composite_mom   * quality_mult)
 
-        item["composite_score"]       = penalized_composite
-        item["composite_score_tech"]  = raw_composite_tech
-        item["composite_score_fund"]  = raw_composite_fund
-        item["composite_score_mom"]   = raw_composite_mom
+        item["composite_score"]       = min(10.0, raw_composite)
+        item["composite_score_tech"]  = min(10.0, raw_composite_tech)
+        item["composite_score_fund"]  = min(10.0, raw_composite_fund)
+        item["composite_score_mom"]   = min(10.0, raw_composite_mom)
 
     all_comp_scores = pd.Series([x["composite_score"] for x in final_rows])
     for item in final_rows:

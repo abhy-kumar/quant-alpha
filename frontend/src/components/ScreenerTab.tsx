@@ -86,20 +86,19 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
       <div className="card p-4" style={{ borderRadius: 'var(--radius-xl)' }}>
         <div className="flex items-center justify-between mb-3">
           <span className="section-label" style={{ color: 'var(--brand)' }}>Scoring Model</span>
-          <span className="text-xs" style={{ color: 'var(--text-3)' }}>10 Factors · Cross-Sectional Ranking</span>
+          <span className="text-xs" style={{ color: 'var(--text-3)' }}>9 Factors · Cross-Sectional Ranking · Continuous Sigmoid Scoring</span>
         </div>
-        <div className="grid grid-cols-5 sm:grid-cols-10 gap-3 text-center">
+        <div className="grid grid-cols-5 sm:grid-cols-9 gap-3 text-center">
           {[
-            ['Piotroski', '0.10', 'var(--green)'],
-            ['Profitability', '0.10', 'var(--green)'],
+            ['Piotroski', '0.08', 'var(--green)'],
+            ['Profitability', '0.15', 'var(--green)'],
             ['Earnings Q', '0.10', 'var(--green)'],
             ['Momentum', '0.20', 'var(--brand)'],
             ['Value', '0.15', 'var(--blue)'],
-            ['Low Vol', '0.10', 'var(--text-2)'],
-            ['Beta', '0.10', 'var(--text-2)'],
+            ['Low Vol', '0.07', 'var(--text-2)'],
+            ['Beta', '0.05', 'var(--text-2)'],
             ['Investment', '0.10', 'var(--text-2)'],
             ['SUE', '0.10', 'var(--text-2)'],
-            ['Reversion', '0.05', 'var(--text-3)'],
           ].map(([label, weight, color]) => (
             <div key={label} className="flex flex-col items-center">
               <span className="text-sm font-mono font-medium" style={{ color }}>{weight}</span>
@@ -112,6 +111,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           <span className="hidden sm:inline">|</span>
           <span className="hidden sm:inline">Long-Term: Tech 10% · Fund 40% · Research 50%</span>
         </div>
+
       </div>
 
       {/* Search + Filter bar */}

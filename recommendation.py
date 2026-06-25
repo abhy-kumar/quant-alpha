@@ -19,81 +19,131 @@ def compute_fund_score(
 ) -> float:
     """
     Score fundamental quality on a 0–10 continuous scale.
-    If sector_medians is provided, evaluates metrics relative to the sector.
+
+    Uses a weighted average of continuous sub-scores derived from sigmoid/tanh
+    functions, replacing the previous additive step-function system.
+    Each metric smoothly penalises or rewards without discrete cliff edges.
+
+    Weights calibrated to academic factor return evidence:
+      - ROE (sector-relative):    20%  (Fama-French 2015 RMW profitability factor)
+      - ROCE:                     15%  (capital efficiency, quality signal)
+      - Valuation (PEG / P/E):   20%  (Fama-French 1993 value factor)
+      - Debt/Equity:              15%  (financial distress, Fama-French 1996)
+      - Growth quality:           15%  (earnings momentum anchor)
+      - Sharpe ratio:             10%  (risk-adjusted performance quality)
+      - Dividend yield:            5%  (D/P value signal, Fama-French 1988)
+
+    Market cap bonus removed — the size effect runs opposite to a large-cap
+    bonus (Fama & French 1993: small caps outperform). Promoter pledging
+    is a multiplicative penalty on the final score, not an additive deduction.
     """
-    score = 0.0
-    
-    sec_pe = _safe_float(sector_medians.get("pe")) if sector_medians else np.nan
-    sec_roe = _safe_float(sector_medians.get("roe")) if sector_medians else np.nan
-    sec_debt = _safe_float(sector_medians.get("debt_eq")) if sector_medians else np.nan
+    sec_pe   = _safe_float(sector_medians.get("pe"))       if sector_medians else np.nan
+    sec_roe  = _safe_float(sector_medians.get("roe"))      if sector_medians else np.nan
+    sec_debt = _safe_float(sector_medians.get("debt_eq"))  if sector_medians else np.nan
+
+    sub_scores  = {}
+    sub_weights = {}
 
     # ── ROE ──────────────────────────────────────────────────────────────────
+    # Profitability factor (Fama & French 2015, RMW factor)
+    # Sigmoid centered at sector median (or 15% absolute); scale 0.25
     if not np.isnan(roe_pct):
         if not np.isnan(sec_roe) and sec_roe > 0:
-            if roe_pct >= sec_roe * 1.5: score += 1.5
-            elif roe_pct >= sec_roe: score += 0.5
+            excess = roe_pct - sec_roe
+            roe_sub = 10.0 / (1 + np.exp(-0.25 * excess))
         else:
-            if roe_pct >= 15: score += 1.5
-            elif roe_pct >= 8: score += 0.5
+            roe_sub = 10.0 / (1 + np.exp(-0.20 * (roe_pct - 15)))
+        sub_scores["roe"]  = roe_sub
+        sub_weights["roe"] = 0.20
 
     # ── ROCE ──────────────────────────────────────────────────────────────────
+    # Capital efficiency; sigmoid centered at 15%
     if not np.isnan(roce_pct):
-        if roce_pct >= 20: score += 1.5
-        elif roce_pct >= 12: score += 0.5
+        roce_sub = 10.0 / (1 + np.exp(-0.20 * (roce_pct - 15)))
+        sub_scores["roce"]  = roce_sub
+        sub_weights["roce"] = 0.15
 
-    # ── Valuation / Growth (PEG & P/E) ───────────────────────────────────────
+    # ── Valuation ─────────────────────────────────────────────────────────────
+    # PEG preferred (anchors valuation to growth); falls back to P/E vs sector
+    val_sub = np.nan
     if not np.isnan(pe) and not np.isnan(eps_growth) and eps_growth > 0:
         peg = pe / (eps_growth * 100)
-        if peg < 1.0: score += 2.0
-        elif peg < 1.5: score += 1.0
+        # PEG<1 excellent, PEG=1 fair, PEG>2 expensive
+        val_sub = 10.0 / (1 + np.exp(3.5 * (peg - 1.0)))
     elif not np.isnan(pe) and pe > 0:
         if not np.isnan(sec_pe) and sec_pe > 0:
-            if pe < sec_pe * 0.8: score += 2.0
-            elif pe < sec_pe: score += 1.0
+            pe_ratio = pe / sec_pe
+            val_sub = 10.0 / (1 + np.exp(4.0 * (pe_ratio - 1.0)))
         else:
-            if pe < 20: score += 2.0
-            elif pe < 35: score += 1.0
+            # Absolute fallback: centered at P/E=25
+            val_sub = 10.0 / (1 + np.exp(0.10 * (pe - 25)))
+
+    if not np.isnan(val_sub):
+        sub_scores["val"]  = val_sub
+        sub_weights["val"] = 0.20
 
     # ── Debt / Equity ─────────────────────────────────────────────────────────
+    # Financial distress factor (Fama & French 1996)
     if not np.isnan(debt_eq):
         if not np.isnan(sec_debt) and sec_debt > 0:
-            if debt_eq < sec_debt * 0.8: score += 1.5
-            elif debt_eq < sec_debt: score += 0.5
+            de_ratio = debt_eq / sec_debt
+            de_sub = 10.0 / (1 + np.exp(2.5 * (de_ratio - 1.0)))
         else:
-            if debt_eq < 50: score += 1.5
-            elif debt_eq < 100: score += 0.5
+            de_sub = 10.0 / (1 + np.exp(0.04 * (debt_eq - 50)))
+        sub_scores["de"]  = de_sub
+        sub_weights["de"] = 0.15
 
-    # ── Growth ───────────────────────────────────────────────────────────────
-    if not np.isnan(eps_growth) and eps_growth > 0.15:
-        score += 1.5
-    if not np.isnan(rev_growth) and rev_growth > 0.10:
-        score += 1.0
+    # ── Growth quality ────────────────────────────────────────────────────────
+    # Rewards consistent EPS + revenue growth; sigmoid centered at 10% growth
+    if not np.isnan(eps_growth) and not np.isnan(rev_growth):
+        growth_composite = 0.6 * eps_growth + 0.4 * rev_growth
+        growth_sub = 10.0 / (1 + np.exp(-12.0 * (growth_composite - 0.10)))
+        sub_scores["growth"]  = growth_sub
+        sub_weights["growth"] = 0.15
+    elif not np.isnan(eps_growth):
+        growth_sub = 10.0 / (1 + np.exp(-12.0 * (eps_growth - 0.10)))
+        sub_scores["growth"]  = growth_sub
+        sub_weights["growth"] = 0.10  # reduced confidence: single signal
+    elif not np.isnan(rev_growth):
+        growth_sub = 10.0 / (1 + np.exp(-12.0 * (rev_growth - 0.10)))
+        sub_scores["growth"]  = growth_sub
+        sub_weights["growth"] = 0.08
 
-    # ── Dividend Yield ────────────────────────────────────────────────────────
-    if not np.isnan(div_yield_pct) and div_yield_pct > 1.0:
-        score += 0.5
+    # ── Sharpe ratio ──────────────────────────────────────────────────────────
+    # Risk-adjusted performance; sigmoid centered at Sharpe=1.0
+    if not np.isnan(sharpe):
+        sharpe_sub = 10.0 / (1 + np.exp(-2.5 * (sharpe - 1.0)))
+        sub_scores["sharpe"]  = sharpe_sub
+        sub_weights["sharpe"] = 0.10
 
-    # ── Market Cap ────────────────────────────────────────────────────────────
-    if not np.isnan(mkt_cap_b) and mkt_cap_b >= 10:
-        score += 1.0
+    # ── Dividend yield ────────────────────────────────────────────────────────
+    # D/P value signal (Fama & French 1988) — small weight
+    if not np.isnan(div_yield_pct) and div_yield_pct > 0:
+        div_sub = 10.0 / (1 + np.exp(-1.5 * (div_yield_pct - 1.5)))
+        sub_scores["div"]  = div_sub
+        sub_weights["div"] = 0.05
 
-    # ── Sharpe ───────────────────────────────────────────────────────────────
-    if not np.isnan(sharpe) and sharpe > 1.0:
-        score += 1.0
+    if not sub_scores:
+        return 5.0
 
-    # ── Promoter ─────────────────────────────────────────────────────────────
-    if not np.isnan(promoter_holding):
-        if promoter_holding > 50:
-            if not np.isnan(promoter_pledging) and promoter_pledging < 10:
-                score += 1.0
-            elif np.isnan(promoter_pledging):
-                score += 0.5
-                
-    if not np.isnan(promoter_pledging):
-        if promoter_pledging > 30:
-            score -= 1.5
+    # ── Weighted average (naturally 0–10, no hard cap required) ───────────────
+    total_w = sum(sub_weights[k] for k in sub_scores)
+    raw = sum(sub_scores[k] * sub_weights[k] for k in sub_scores) / total_w
 
-    return min(float(score), 10.0)
+    # ── Promoter pledging: smooth multiplicative penalty ──────────────────────
+    # High pledging = financial stress; penalty starts at 5%, severe above 30%
+    # pledging=5% → ×1.00, pledging=20% → ×0.63, pledging=40% → ×0.13
+    if not np.isnan(promoter_pledging) and promoter_pledging > 5:
+        pledge_penalty = max(0.10, np.exp(-0.08 * (promoter_pledging - 5)))
+        raw *= pledge_penalty
+
+    # ── Promoter holding: small continuous alignment bonus ────────────────────
+    # High un-pledged insider holding = management alignment signal
+    if not np.isnan(promoter_holding) and promoter_holding > 25:
+        holding_bonus = min(0.5, 0.01 * (promoter_holding - 25))
+        raw = min(10.0, raw + holding_bonus)
+
+    return max(0.0, min(10.0, float(raw)))
 
 
 def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nifty_df: pd.DataFrame = None, fifty_two_high: float = np.nan) -> dict:

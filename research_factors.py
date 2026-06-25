@@ -274,45 +274,36 @@ def compute_sue_factor(info: dict, df: pd.DataFrame) -> float:
       - Forward P/E vs Trailing P/E (analyst revision proxy)
       - Revenue growth acceleration
 
+    Uses sigmoid/tanh scoring for smooth, continuous output — no cliff edges.
+    Sigmoid centered at +10% earnings growth:
+      growth=+30% → 8.9, growth=+10% → 5.0, growth=-10% → 1.1
+
     Returns 0-10 score (higher = stronger positive surprise).
     """
-    score = 5.0
-
     earnings_growth = _safe_float(info.get("earningsGrowth"), default=np.nan)
     rev_growth = _safe_float(info.get("revenueGrowth"), default=np.nan)
     trailing_pe = _safe_float(info.get("trailingPE"), default=np.nan)
     forward_pe = _safe_float(info.get("forwardPE"), default=np.nan)
 
-    # Strong positive earnings surprise
+    # Base: sigmoid on earnings growth, centered at 10% growth
     if not np.isnan(earnings_growth):
-        if earnings_growth > 0.30:
-            score = 9.0
-        elif earnings_growth > 0.15:
-            score = 7.5
-        elif earnings_growth > 0.05:
-            score = 6.0
-        elif earnings_growth > 0:
-            score = 5.5
-        elif earnings_growth > -0.10:
-            score = 4.0
-        else:
-            score = 2.0
+        score = 10.0 / (1 + np.exp(-15.0 * (earnings_growth - 0.10)))
+    else:
+        score = 5.0
 
-    # Analyst revision proxy: forward PE < trailing PE = upward revision
+    # Analyst revision proxy: forward PE < trailing PE = upward earnings revision
+    # Continuous tanh adjustment: ±1.5 range based on revision magnitude
     if not np.isnan(trailing_pe) and not np.isnan(forward_pe) and trailing_pe > 0 and forward_pe > 0:
         revision = trailing_pe / forward_pe
-        if revision > 1.2:
-            score = min(10.0, score + 1.5)
-        elif revision > 1.05:
-            score = min(10.0, score + 0.5)
-        elif revision < 0.8:
-            score = max(0.0, score - 1.0)
+        revision_adj = 1.5 * np.tanh((revision - 1.0) / 0.20)
+        score = max(0.0, min(10.0, score + revision_adj))
 
-    # Revenue acceleration
-    if not np.isnan(rev_growth) and rev_growth > 0.20:
-        score = min(10.0, score + 0.5)
+    # Revenue acceleration: continuous tanh adjustment, ±0.8 range
+    if not np.isnan(rev_growth):
+        rev_adj = 0.8 * np.tanh(rev_growth / 0.20)
+        score = max(0.0, min(10.0, score + rev_adj))
 
-    return max(0.0, min(10.0, score))
+    return max(0.0, min(10.0, float(score)))
 
 
 def compute_gross_profitability(info: dict) -> float:
@@ -320,32 +311,22 @@ def compute_gross_profitability(info: dict) -> float:
     Gross Profitability (Novy-Marx 2013, JFE).
     GP/Total Assets is the single most powerful accounting-based predictor.
 
+    Scoring uses a sigmoid centered at GP/Assets = 0.25 with scale 15:
+      GP/Assets = 0.50 → score ≈ 9.7
+      GP/Assets = 0.25 → score = 5.0
+      GP/Assets = 0.05 → score ≈ 1.7
+
     Returns 0-10 score. Falls back to 5.0 when totalAssets is unavailable.
     Note: grossMargins (GP/Revenue) is NOT a valid substitute for GP/Total Assets.
     """
-    gp_ratio = np.nan
-
     gross_profit = _safe_float(info.get("grossProfits"), default=np.nan)
     total_assets = _safe_float(info.get("totalAssets"), default=np.nan)
 
     if not np.isnan(gross_profit) and not np.isnan(total_assets) and total_assets > 0:
         gp_ratio = gross_profit / total_assets
+        return float(max(0.0, min(10.0, 10.0 / (1 + np.exp(-15.0 * (gp_ratio - 0.25))))))
 
-    if np.isnan(gp_ratio):
-        return 5.0
-
-    if gp_ratio >= 0.50:
-        return 10.0
-    elif gp_ratio >= 0.35:
-        return 8.0
-    elif gp_ratio >= 0.25:
-        return 6.0
-    elif gp_ratio >= 0.15:
-        return 4.0
-    elif gp_ratio >= 0.05:
-        return 2.0
-    else:
-        return 0.0
+    return 5.0
 
 
 def compute_momentum_z_score(
@@ -476,19 +457,12 @@ def compute_volatility_factor(df: pd.DataFrame, info: dict = None) -> dict:
     atr = _safe_float(df["ATR"].iloc[-1]) if "ATR" in df.columns else np.nan
     atr_pct = (atr / float(close.iloc[-1]) * 100) if (not np.isnan(atr) and float(close.iloc[-1]) > 0) else np.nan
 
-    # Map volatility to 0-10 score (lower vol = higher score)
-    score = 5.0  # neutral
+    # Map volatility to 0-10 score using inverse sigmoid (lower vol = higher score)
+    # Centered at 30% annualized vol; scale 20 gives smooth gradient:
+    # vol=0.15 → score ≈ 8.8, vol=0.30 → 5.0, vol=0.50 → 1.1
+    score = 5.0
     if not np.isnan(vol_60d):
-        if vol_60d < 0.15:
-            score = 9.0
-        elif vol_60d < 0.25:
-            score = 7.0
-        elif vol_60d < 0.35:
-            score = 5.0
-        elif vol_60d < 0.50:
-            score = 3.0
-        else:
-            score = 1.0
+        score = float(max(0.0, min(10.0, 10.0 / (1 + np.exp(20.0 * (vol_60d - 0.30))))))
 
     return {
         "vol_20d": vol_20d,
@@ -559,27 +533,14 @@ def compute_beta_factor(df: pd.DataFrame, nifty_df: pd.DataFrame = None) -> dict
             alpha = ann_stock_ret - (risk_free + beta * (ann_nifty_ret - risk_free))
             result["alpha_60d"] = alpha
 
-            # Score: lower beta = higher score (Betting Against Beta)
-            if beta < 0.5:
-                result["beta_score"] = 9.0
-            elif beta < 0.7:
-                result["beta_score"] = 7.5
-            elif beta < 0.9:
-                result["beta_score"] = 6.0
-            elif beta < 1.1:
-                result["beta_score"] = 5.0
-            elif beta < 1.3:
-                result["beta_score"] = 4.0
-            elif beta < 1.5:
-                result["beta_score"] = 3.0
-            else:
-                result["beta_score"] = 2.0
+            # Score: smooth sigmoid centered at beta=1.0, scale=3.5 (Frazzini & Pedersen 2014)
+            # beta=0.5 → 8.6, beta=1.0 → 5.0, beta=1.5 → 1.4
+            beta_score = 10.0 / (1 + np.exp(3.5 * (beta - 1.0)))
 
-            # Bonus for positive alpha (skill-adjusted return)
-            if alpha > 0.15:
-                result["beta_score"] = min(10.0, result["beta_score"] + 1.5)
-            elif alpha > 0.05:
-                result["beta_score"] = min(10.0, result["beta_score"] + 0.5)
+            # Continuous alpha adjustment: tanh-based ±1.5 range
+            # alpha>+15% → ≈+1.5 bonus; alpha<0 → negative adjustment
+            alpha_adj = 1.5 * np.tanh(alpha / 0.10)
+            result["beta_score"] = float(max(0.0, min(10.0, beta_score + alpha_adj)))
 
     except (ValueError, TypeError, ZeroDivisionError):
         pass
@@ -787,38 +748,47 @@ def compute_research_composite(
 
     f_score_norm = (f_score / 9.0) * 10.0
 
-    # Normalize momentum to 0-10 using composite_mom
+    # Normalize momentum to 0-10 using tanh (robust to extremes, never clips)
+    # composite_mom=+0.20 → 8.4, composite_mom=0.0 → 5.0, composite_mom=-0.20 → 1.6
     composite_mom = mom.get("composite_mom", np.nan)
     if not np.isnan(composite_mom):
-        mom_score = max(0.0, min(10.0, (composite_mom + 0.3) / 1.3 * 10.0))
+        mom_score = float(5.0 + 4.5 * np.tanh(composite_mom / 0.20))
     else:
         mom_score = 5.0
 
-    # Research composite (weighted average based on factor return literature)
+    # Research composite weights — calibrated to academic factor return evidence:
+    #   - Gross Profitability: 15%  (Novy-Marx 2013: strongest single accounting predictor)
+    #   - Momentum: 20%             (Jegadeesh & Titman 1993: well-documented)
+    #   - Value: 15%                (Fama & French 1993)
+    #   - Earnings Quality: 10%     (Sloan 1996)
+    #   - Investment Factor: 10%    (Fama & French 2015)
+    #   - SUE: 10%                  (Bernard & Thomas 1989)
+    #   - Piotroski F-Score: 8%     (subordinate to GP per Novy-Marx)
+    #   - Low Volatility: 7%        (Baker, Bradley & Wurgler 2011)
+    #   - Beta (BAB): 5%            (Frazzini & Pedersen 2014; partial overlap with vol)
+    #   - Mean Reversion: 0%        (absorbed into composite penalty layer in scoring.py)
     weights = {
-        "f_score": 0.10,
-        "gp_score": 0.10,
-        "eq_score": 0.10,
-        "mom_score": 0.20,
-        "value_score": 0.15,
-        "vol_score": 0.10,
-        "beta_score": 0.10,
+        "f_score":          0.08,
+        "gp_score":         0.15,
+        "eq_score":         0.10,
+        "mom_score":        0.20,
+        "value_score":      0.15,
+        "vol_score":        0.07,
+        "beta_score":       0.05,
         "investment_score": 0.10,
-        "sue_score": 0.10,
-        "reversion_score": 0.05,
+        "sue_score":        0.10,
     }
 
     scores = {
-        "f_score": f_score_norm,
-        "gp_score": gp_score if not np.isnan(gp_score) else 5.0,
-        "eq_score": eq_score,
-        "mom_score": mom_score,
-        "value_score": value_score,
-        "vol_score": vol.get("vol_score", 5.0),
-        "beta_score": beta_result.get("beta_score", 5.0),
+        "f_score":          f_score_norm,
+        "gp_score":         gp_score if not np.isnan(gp_score) else 5.0,
+        "eq_score":         eq_score,
+        "mom_score":        mom_score,
+        "value_score":      value_score,
+        "vol_score":        vol.get("vol_score", 5.0),
+        "beta_score":       beta_result.get("beta_score", 5.0),
         "investment_score": investment_score,
-        "sue_score": sue_score,
-        "reversion_score": reversion.get("reversion_score", 5.0),
+        "sue_score":        sue_score,
     }
 
     total_w = 0

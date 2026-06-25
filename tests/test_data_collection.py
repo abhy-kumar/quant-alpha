@@ -285,14 +285,14 @@ class TestGrossProfitabilityFallback(unittest.TestCase):
     def test_correct_gp_ratio(self):
         info = {"grossProfits": 25e9, "totalAssets": 100e9}
         score = compute_gross_profitability(info)
-        # 25/100 = 0.25 → score 6.0
-        self.assertEqual(score, 6.0)
+        # 25/100 = 0.25 → sigmoid center → score ≈ 5.0
+        self.assertAlmostEqual(score, 5.0, delta=0.5)
 
     def test_high_gp_ratio(self):
         info = {"grossProfits": 60e9, "totalAssets": 100e9}
         score = compute_gross_profitability(info)
-        # 60/100 = 0.60 → score 10.0
-        self.assertEqual(score, 10.0)
+        # 60/100 = 0.60 → well above center → score > 9.0
+        self.assertGreater(score, 9.0)
 
 
 class TestInvestmentFactorAssetGrowth(unittest.TestCase):
