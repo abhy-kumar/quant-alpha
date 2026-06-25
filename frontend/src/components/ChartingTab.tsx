@@ -22,6 +22,7 @@ interface Props {
   selectedAsset: DashboardData | null
   scoreHistory: Record<string, {date: string; composite: number; composite_tech?: number; composite_fund?: number; tech: number; fund: number; research: number}[]>
   horizon: 'short'|'long'
+  isLoggedIn?: boolean
 }
 
 function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]; selectedTicker: string; onSelect: (t: string) => void }) {
@@ -139,7 +140,7 @@ const InfoBlock = ({ label, value, accent, tooltipId }: { label: string; value: 
 export default function ChartingTab({
   data, selectedTicker, setSelectedTicker, chartData, chartLoading,
   chartPeriod, setChartPeriod, chartInterval, setChartInterval,
-  isDark, peerGroup, selectedAsset, scoreHistory, horizon
+  isDark, peerGroup, selectedAsset, scoreHistory, horizon, isLoggedIn = true
 }: Props) {
   const rawTickerScores = scoreHistory[selectedTicker] || []
   const tickerScores = rawTickerScores.map(s => ({
@@ -198,7 +199,7 @@ export default function ChartingTab({
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Technical Snapshot</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} tooltipId="chart.tech-score" />
-            <InfoBlock label="Conviction" value={selectedAsset?.Conviction || '-'} tooltipId="chart.conviction" />
+            {isLoggedIn && <InfoBlock label="Conviction" value={selectedAsset?.Conviction || '-'} tooltipId="chart.conviction" />}
             <InfoBlock label="RSI(14)" value={num(selectedAsset?.RSI_Value)} tooltipId="chart.rsi" />
             <InfoBlock label="ADX(14)" value={num(selectedAsset?.ADX_Value)} tooltipId="chart.adx" />
             <InfoBlock label="MACD" value={num(selectedAsset?.MACD_Value)} tooltipId="chart.macd" />
@@ -446,7 +447,7 @@ export default function ChartingTab({
                   <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.fscore">F-Score</InfoTooltip></th>
                   <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.value">Value</InfoTooltip></th>
                   <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.beta">Beta</InfoTooltip></th>
-                  <th className="py-3 px-4 text-xs font-medium text-right" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.conv">Conv</InfoTooltip></th>
+                  {isLoggedIn && <th className="py-3 px-4 text-xs font-medium text-right" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.conv">Conv</InfoTooltip></th>}
                 </tr>
               </thead>
               <tbody>
@@ -474,7 +475,7 @@ export default function ChartingTab({
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden xl:table-cell`}>{row.Piotroski_F ?? '-'}</td>
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden xl:table-cell ${Number(row.Value_Score) >= 7 ? 'text-green' : Number(row.Value_Score) < 4 ? 'text-red' : ''}`}>{num(row.Value_Score)}</td>
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden xl:table-cell ${row.Beta != null && row.Beta < 0.8 ? 'text-green' : row.Beta != null && row.Beta > 1.2 ? 'text-red' : ''}`}>{row.Beta != null ? row.Beta.toFixed(2) : '-'}</td>
-                    <td className="py-3 px-4 text-right text-sm font-medium" style={{ color: 'var(--text)' }}>{row.Conviction || '-'}</td>
+                    {isLoggedIn && <td className="py-3 px-4 text-right text-sm font-medium" style={{ color: 'var(--text)' }}>{row.Conviction || '-'}</td>}
                   </tr>
                 )) : (
                   <tr><td colSpan={11} className="py-4 text-center text-sm" style={{ color: 'var(--text-3)' }}>No peers in {selectedAsset?.Sector}</td></tr>
