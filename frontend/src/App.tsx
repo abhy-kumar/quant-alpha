@@ -85,9 +85,9 @@ function TapeInner({ data }: { data: DashboardData[] }) {
 const Tape = memo(TapeInner)
 
 const TABS = [
+  { id: 'charting', label: 'Charts', icon: ChartBar },
   { id: 'picks', label: 'Signals', icon: TrendUp },
   { id: 'fundamentals', label: 'Screen', icon: Database },
-  { id: 'charting', label: 'Charts', icon: ChartBar },
   { id: 'heatmap', label: 'Heatmap', icon: StackSimple },
   { id: 'factorlab', label: 'Factor Lab', icon: Pulse },
 ] as const
@@ -103,7 +103,7 @@ export default function App() {
   const [loadError, setLoadError] = useState<string|null>(null)
   const [marketRegimeScore, setMarketRegimeScore] = useState<number|null>(null)
   const [isDynamic, setIsDynamic] = useState(false)
-  const [activeTab, setActiveTab] = useState<'picks'|'fundamentals'|'charting'|'heatmap'|'factorlab'>('picks')
+  const [activeTab, setActiveTab] = useState<'picks'|'fundamentals'|'charting'|'heatmap'|'factorlab'>('charting')
   const [fiiNet, setFiiNet] = useState<number|null>(null)
   const [diiNet, setDiiNet] = useState<number|null>(null)
   const [pcr, setPcr] = useState<number|null>(null)
@@ -266,7 +266,7 @@ export default function App() {
   const handleLogout = useCallback(() => {
     setIsLoggedIn(false)
     try { localStorage.removeItem('qa_auth') } catch {}
-    if (activeTab === 'picks' || activeTab === 'factorlab') setActiveTab('fundamentals')
+    if (activeTab === 'picks' || activeTab === 'factorlab') setActiveTab('charting')
   }, [activeTab])
 
   useEffect(() => {
@@ -315,7 +315,7 @@ export default function App() {
             <div className="flex-1" />
 
             {/* Center: logo */}
-            <button onClick={()=>setActiveTab(isLoggedIn ? 'picks' : 'fundamentals')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
+            <button onClick={()=>setActiveTab('charting')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
               <img src='/logo-dark.svg' alt="Alpha" className="h-[41px] md:h-[48px] w-auto" />
             </button>
 
@@ -497,7 +497,7 @@ export default function App() {
             <div className="flex-1" />
 
             {/* Center: logo */}
-            <button onClick={()=>setActiveTab(isLoggedIn ? 'picks' : 'fundamentals')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
+            <button onClick={()=>setActiveTab('charting')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
               <img src='/logo-light.svg' alt="Alpha" className="h-[41px] md:h-[48px] w-auto" />
             </button>
 
