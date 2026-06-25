@@ -1,4 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
+import * as Tooltip from '@radix-ui/react-tooltip'
+import { Question } from '@phosphor-icons/react'
+import { tooltips } from '../data/tooltipContent'
 
 export const num = (v: any) => !isNaN(Number(v)) && v!=="" && v!==null ? Number(v).toFixed(2) : 'N/A'
 
@@ -9,14 +12,16 @@ export const scoreColor = (v: any) => {
   return n >= 7 ? 'text-[var(--green)]' : n >= 4 ? 'text-[var(--brand)]' : 'text-[var(--red)]'
 }
 
-export const scoreBar = (label: string, value: number, min: number = 0, max: number = 10, color?: string) => {
+export const scoreBar = (label: string, value: number, min: number = 0, max: number = 10, color?: string, tooltipId?: string) => {
   const range = max - min
   const normalized = range > 0 ? ((value - min) / range) * 100 : 0
   const pct = Math.max(0, Math.min(normalized, 100))
   const barColor = color || (pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--brand)' : 'var(--red)')
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs w-20 shrink-0" style={{color:'var(--text-2)'}}>{label}</span>
+      <span className="text-xs w-20 shrink-0" style={{color:'var(--text-2)'}}>
+        {tooltipId ? <InfoTooltip id={tooltipId}>{label}</InfoTooltip> : label}
+      </span>
       <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{background:'var(--border)'}}>
         <div className="h-full rounded-full" style={{width:`${pct}%`,background:barColor,transition:'width 500ms var(--ease-out)'}} />
       </div>
@@ -117,3 +122,50 @@ export function SegmentedControl({ options, value, onChange, className = '' }: {
     </div>
   )
 }
+
+export function InfoTooltip({ id, children }: { id: string; children?: React.ReactNode }) {
+  const entry = tooltips[id]
+  if (!entry) return children ? <>{children}</> : null
+  return (
+    <Tooltip.Provider delayDuration={200}>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild>
+          {children ? (
+            <span className="inline-flex items-center gap-1 cursor-help">{children}</span>
+          ) : (
+            <span className="inline-flex items-center gap-1 cursor-help">
+              <Question size={11} weight="light" style={{ color: 'var(--text-3)', opacity: 0.6 }} />
+            </span>
+          )}
+        </Tooltip.Trigger>
+        <Tooltip.Portal>
+          <Tooltip.Content
+            className="tooltip-content"
+            sideOffset={6}
+            side="top"
+            style={{
+              background: 'var(--glass-bg-strong)',
+              backdropFilter: 'blur(var(--glass-blur))',
+              WebkitBackdropFilter: 'blur(var(--glass-blur))',
+              border: '1px solid var(--glass-border-strong)',
+              borderRadius: 'var(--radius)',
+              boxShadow: 'var(--glass-shadow-lg)',
+              padding: '8px 12px',
+              maxWidth: 280,
+              zIndex: 9999,
+            }}
+          >
+            <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text)', margin: 0 }}>
+              {entry.text}
+            </p>
+            <p style={{ fontSize: 10, color: 'var(--text-3)', margin: '4px 0 0', fontStyle: 'italic' }}>
+              Source: {entry.source}
+            </p>
+            <Tooltip.Arrow style={{ fill: 'var(--glass-bg-strong)' }} />
+          </Tooltip.Content>
+        </Tooltip.Portal>
+      </Tooltip.Root>
+    </Tooltip.Provider>
+  )
+}
+

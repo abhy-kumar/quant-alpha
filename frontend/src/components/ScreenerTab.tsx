@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import type { DashboardData } from '../types'
-import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline } from './shared'
+import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline, InfoTooltip } from './shared'
 import { Info, Funnel, X, Star } from '@phosphor-icons/react'
 
 interface Props {
@@ -239,22 +239,22 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
               <th className="py-2 px-2 text-[10px] font-medium cursor-pointer select-none uppercase tracking-wider" style={{color:'var(--text-3)',textAlign:'left',position:'sticky',left:0,background:'var(--surface)',zIndex:1}} onClick={()=>handleSort('Ticker')}>
-                <span className="inline-flex items-center gap-1">Ticker{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}</span>
+                <span className="inline-flex items-center gap-1"><InfoTooltip id="screener.ticker">Ticker</InfoTooltip>{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}</span>
               </th>
-              <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline">Sector</span></SortHeader>
-              <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Price</SortHeader>
-              <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>1D</SortHeader>
-              {isLoggedIn && <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Score</SortHeader>}
-              <th className="py-2 px-2 font-medium text-[10px] text-center" style={{ color: 'var(--text-2)' }}>Trend</th>
-              <SortHeader field="Tech_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline">Tech</span></SortHeader>
-              <SortHeader field="Fund_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">Fund</span></SortHeader>
-              <SortHeader field="Research_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">Research</span></SortHeader>
-              <SortHeader field="Piotroski_F" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline">F-Score</span></SortHeader>
-              <SortHeader field="Momentum_12M" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">12M Mom</span></SortHeader>
-              <SortHeader field="Value_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">Value</span></SortHeader>
-              <SortHeader field="Beta" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">Beta</span></SortHeader>
-              <SortHeader field="P/E" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline">P/E</span></SortHeader>
-              {isLoggedIn && <SortHeader field="Conviction" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Conv</SortHeader>}
+              <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline"><InfoTooltip id="screener.sector">Sector</InfoTooltip></span></SortHeader>
+              <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.price">Price</InfoTooltip></SortHeader>
+              <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.1d">1D</InfoTooltip></SortHeader>
+              {isLoggedIn && <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.score">Score</InfoTooltip></SortHeader>}
+              <th className="py-2 px-2 font-medium text-[10px] text-center" style={{ color: 'var(--text-2)' }}><InfoTooltip id="screener.trend">Trend</InfoTooltip></th>
+              <SortHeader field="Tech_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline"><InfoTooltip id="screener.tech">Tech</InfoTooltip></span></SortHeader>
+              <SortHeader field="Fund_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline"><InfoTooltip id="screener.fund">Fund</InfoTooltip></span></SortHeader>
+              <SortHeader field="Research_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline"><InfoTooltip id="screener.research">Research</InfoTooltip></span></SortHeader>
+              <SortHeader field="Piotroski_F" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline"><InfoTooltip id="screener.fscore">F-Score</InfoTooltip></span></SortHeader>
+              <SortHeader field="Momentum_12M" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline"><InfoTooltip id="screener.12m-mom">12M Mom</InfoTooltip></span></SortHeader>
+              <SortHeader field="Value_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline"><InfoTooltip id="screener.value">Value</InfoTooltip></span></SortHeader>
+              <SortHeader field="Beta" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline"><InfoTooltip id="screener.beta">Beta</InfoTooltip></span></SortHeader>
+              <SortHeader field="P/E" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline"><InfoTooltip id="screener.pe">P/E</InfoTooltip></span></SortHeader>
+              {isLoggedIn && <SortHeader field="Conviction" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.conv">Conv</InfoTooltip></SortHeader>}
               <th className="py-2 px-2"></th>
             </tr>
           </thead>
@@ -331,16 +331,16 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                             <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Technical Signals</h4>
                             <div className="space-y-1.5 text-[11px]">
                               {[
-                                ['Price vs SMA50', row.Sig_Price_vs_SMA50], ['Price vs SMA200', row.Sig_Price_vs_SMA200],
-                                ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200], ['RSI', row.Sig_RSI],
-                                ['MACD Cross', row.Sig_MACD_Cross], ['MACD Hist', row.Sig_MACD_Hist],
-                                ['Stochastic', row.Sig_Stoch], ['Bollinger Bands', row.Sig_BB],
-                                ['CCI', row.Sig_CCI], ['Volume Spike', row.Sig_Volume],
-                                ['ADX Trend', row.Sig_ADX], ['Supertrend', row.Sig_Supertrend],
-                                ['Vol Price Trend', row.Sig_VPT], ['Ichimoku Cloud', row.Sig_Ichimoku],
-                              ].map(([label, val]) => (
+                                ['Price vs SMA50', row.Sig_Price_vs_SMA50, 'sig.price-sma50'], ['Price vs SMA200', row.Sig_Price_vs_SMA200, 'sig.price-sma200'],
+                                ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200, 'sig.sma-cross'], ['RSI', row.Sig_RSI, 'sig.rsi'],
+                                ['MACD Cross', row.Sig_MACD_Cross, 'sig.macd-cross'], ['MACD Hist', row.Sig_MACD_Hist, 'sig.macd-hist'],
+                                ['Stochastic', row.Sig_Stoch, 'sig.stoch'], ['Bollinger Bands', row.Sig_BB, 'sig.bb'],
+                                ['CCI', row.Sig_CCI, 'sig.cci'], ['Volume Spike', row.Sig_Volume, 'sig.vol-spike'],
+                                ['ADX Trend', row.Sig_ADX, 'sig.adx'], ['Supertrend', row.Sig_Supertrend, 'sig.supertrend'],
+                                ['Vol Price Trend', row.Sig_VPT, 'sig.vpt'], ['Ichimoku Cloud', row.Sig_Ichimoku, 'sig.ichimoku'],
+                              ].map(([label, val, tooltipId]) => (
                                 <div key={label as string} className="flex items-center justify-between py-0.5">
-                                  <span style={{ color: 'var(--text-2)' }}>{label}</span>
+                                  <span style={{ color: 'var(--text-2)' }}><InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip></span>
                                   {getSignalLabel(val)}
                                 </div>
                               ))}
@@ -350,22 +350,22 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                             <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Research Factors</h4>
                             <div className="space-y-1.5 text-[11px]">
                               {[
-                                ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`],
-                                ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`],
-                                ['Earnings Quality', `${num(row.Earnings_Quality)}/10`],
-                                ['Value Factor', `${num(row.Value_Score)}/10`],
-                                ['Investment Factor', `${num(row.Investment_Score)}/10`],
-                                ['SUE / Earnings Mom', `${num(row.SUE_Score)}/10`],
-                                ['Low Volatility', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : '-'],
-                                ['Betting Against Beta', row.Beta != null ? `${row.Beta.toFixed(2)} β` : '-'],
-                                ['Alpha (60D)', row.Alpha_60D != null ? `${row.Alpha_60D.toFixed(1)}%` : '-'],
-                                ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '-'],
-                                ['Risk-Adj Mom', num(row.Risk_Adj_Mom)],
-                                ['Z-Score (60D)', num(row.Z_Score_60)],
-                              ].map(([label, val]) => (
+                                ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`, 'research.piotroski'],
+                                ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`, 'research.gross-profit'],
+                                ['Earnings Quality', `${num(row.Earnings_Quality)}/10`, 'research.earnings-quality'],
+                                ['Value Factor', `${num(row.Value_Score)}/10`, 'research.value'],
+                                ['Investment Factor', `${num(row.Investment_Score)}/10`, 'research.investment'],
+                                ['SUE / Earnings Mom', `${num(row.SUE_Score)}/10`, 'research.sue'],
+                                ['Low Volatility', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : '-', 'research.low-vol'],
+                                ['Betting Against Beta', row.Beta != null ? `${row.Beta.toFixed(2)} β` : '-', 'research.bab'],
+                                ['Alpha (60D)', row.Alpha_60D != null ? `${row.Alpha_60D.toFixed(1)}%` : '-', 'research.alpha-60d'],
+                                ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '-', 'research.12m-mom'],
+                                ['Risk-Adj Mom', num(row.Risk_Adj_Mom), 'research.risk-adj-mom'],
+                                ['Z-Score (60D)', num(row.Z_Score_60), 'research.z-score-60d'],
+                              ].map(([label, val, tooltipId]) => (
                                 <div key={label as string} className="flex items-center justify-between py-0.5">
-                                  <span style={{ color: 'var(--text-2)' }}>{label}</span>
-                                  <span className="font-mono" style={{color:'var(--text)'}}>{val}</span>
+                                  <span style={{ color: 'var(--text-2)' }}><InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip></span>
+                                  <span className="font-mono" style={{color:'var(--text)'}}>{val as React.ReactNode}</span>
                                 </div>
                               ))}
                             </div>
@@ -374,20 +374,20 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                             <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Key Metrics</h4>
                             <div className="space-y-1.5 text-[11px]">
                               {[
-                                ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E'])],
-                                ['Forward P/E', num(row['Forward_P/E'])],
-                                ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-'],
-                                ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-'],
-                                ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-'],
-                                ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-'],
-                                ['Div Yield', row['Div_Yield_%'] != null ? `${row['Div_Yield_%'].toFixed(2)}%` : '-'],
-                                ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-'],
-                                ['Sharpe', num(row.Sharpe)],
-                                ['Max DD', num(row['Max_Drawdown_%'])],
-                              ].map(([label, val]) => (
+                                ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E']), 'metrics.pe'],
+                                ['Forward P/E', num(row['Forward_P/E']), 'metrics.forward-pe'],
+                                ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-', 'metrics.roe'],
+                                ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-', 'metrics.roce'],
+                                ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-', 'metrics.de'],
+                                ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
+                                ['Div Yield', row['Div_Yield_%'] != null ? `${row['Div_Yield_%'].toFixed(2)}%` : '-', 'metrics.div-yield'],
+                                ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-', 'metrics.promoter'],
+                                ['Sharpe', num(row.Sharpe), 'metrics.sharpe'],
+                                ['Max DD', num(row['Max_Drawdown_%']), 'metrics.max-dd'],
+                              ].map(([label, val, tooltipId]) => (
                                 <div key={label as string} className="flex items-center justify-between py-0.5">
-                                  <span style={{ color: 'var(--text-2)' }}>{label}</span>
-                                  <span className="font-mono" style={{color:'var(--text)'}}>{val}</span>
+                                  <span style={{ color: 'var(--text-2)' }}><InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip></span>
+                                  <span className="font-mono" style={{color:'var(--text)'}}>{val as React.ReactNode}</span>
                                 </div>
                               ))}
                             </div>
@@ -395,7 +395,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                         </div>
                         <div className="mt-4 pt-3 grid grid-cols-3 gap-4 text-xs" style={{ borderTop: '1px solid var(--glass-border)' }}>
                           <div className="flex items-center gap-2">
-                            <span style={{ color: 'var(--text-3)' }}>Bull</span>
+                            <span style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.bull-bear">Bull</InfoTooltip></span>
                             <span className="font-medium font-mono" style={{color:'var(--green)'}}>{row.Bull_Count ?? '-'}</span>
                             <span style={{ color: 'var(--text-3)' }}>/</span>
                             <span style={{ color: 'var(--text-3)' }}>Neutral</span>
@@ -405,11 +405,11 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                             <span className="font-medium font-mono" style={{color:'var(--red)'}}>{row.Bear_Count ?? '-'}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span style={{ color: 'var(--text-3)' }}>RS Percentile</span>
+                            <span style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.rs-percentile">RS Percentile</InfoTooltip></span>
                             <span className="font-medium font-mono" style={{color:'var(--text)'}}>{num(row.RS_Percentile)}%</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span style={{ color: 'var(--text-3)' }}>Vol vs Avg</span>
+                            <span style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.vol-vs-avg">Vol vs Avg</InfoTooltip></span>
                             <span className="font-medium font-mono" style={{color:'var(--text)'}}>{row['Vol_vs_Avg_%'] != null ? `${row['Vol_vs_Avg_%'].toFixed(1)}%` : '-'}</span>
                           </div>
                         </div>
@@ -468,11 +468,11 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
 
             {/* Row 3: Tech, Fund, Research, F-Score, Value */}
             <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--text-3)' }}>
-              <span>T <span className={`font-mono font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</span></span>
-              <span>F <span className="font-mono font-medium">{num(row.Fund_Score)}</span></span>
-              <span>R <span className="font-mono font-medium">{num(row.Research_Score)}</span></span>
-              <span>P <span className="font-mono font-medium">{row.Piotroski_F ?? '-'}/9</span></span>
-              {row.Value_Score != null && <span>V <span className="font-mono font-medium">{num(row.Value_Score)}</span></span>}
+              <span><InfoTooltip id="screener.tech">T</InfoTooltip> <span className={`font-mono font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</span></span>
+              <span><InfoTooltip id="screener.fund">F</InfoTooltip> <span className="font-mono font-medium">{num(row.Fund_Score)}</span></span>
+              <span><InfoTooltip id="screener.research">R</InfoTooltip> <span className="font-mono font-medium">{num(row.Research_Score)}</span></span>
+              <span><InfoTooltip id="screener.fscore">P</InfoTooltip> <span className="font-mono font-medium">{row.Piotroski_F ?? '-'}/9</span></span>
+              {row.Value_Score != null && <span><InfoTooltip id="screener.value">V</InfoTooltip> <span className="font-mono font-medium">{num(row.Value_Score)}</span></span>}
               <span className="ml-auto">
                 <button onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)} style={{ color: 'var(--text-3)' }}>
                   <Info size={13} weight="duotone" />
@@ -489,16 +489,16 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 <div className="mt-2.5 pt-2.5 space-y-3" style={{ borderTop: '1px solid var(--glass-border)' }}>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
                     {[
-                      ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E'])],
-                      ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-'],
-                      ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-'],
-                      ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-'],
-                      ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-'],
-                      ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-'],
-                    ].map(([label, val]) => (
+                      ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E']), 'metrics.pe'],
+                      ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-', 'metrics.roe'],
+                      ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-', 'metrics.roce'],
+                      ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-', 'metrics.de'],
+                      ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
+                      ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-', 'metrics.promoter'],
+                    ].map(([label, val, tooltipId]) => (
                       <div key={label as string} className="flex justify-between py-0.5">
-                        <span style={{ color: 'var(--text-3)' }}>{label}</span>
-                        <span className="font-mono font-medium" style={{color:'var(--text)'}}>{val}</span>
+                        <span style={{ color: 'var(--text-3)' }}><InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip></span>
+                        <span className="font-mono font-medium" style={{color:'var(--text)'}}>{val as React.ReactNode}</span>
                       </div>
                     ))}
                   </div>
@@ -506,13 +506,13 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                     <h4 className="section-label mb-1.5" style={{ color: 'var(--brand)' }}>Signals</h4>
                     <div className="space-y-1 text-[11px]">
                       {[
-                        ['Price vs SMA50', row.Sig_Price_vs_SMA50], ['Price vs SMA200', row.Sig_Price_vs_SMA200],
-                        ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200], ['RSI', row.Sig_RSI],
-                        ['MACD Cross', row.Sig_MACD_Cross], ['Supertrend', row.Sig_Supertrend],
-                        ['Bollinger Bands', row.Sig_BB], ['ADX Trend', row.Sig_ADX],
-                      ].map(([label, val]) => (
+                        ['Price vs SMA50', row.Sig_Price_vs_SMA50, 'sig.price-sma50'], ['Price vs SMA200', row.Sig_Price_vs_SMA200, 'sig.price-sma200'],
+                        ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200, 'sig.sma-cross'], ['RSI', row.Sig_RSI, 'sig.rsi'],
+                        ['MACD Cross', row.Sig_MACD_Cross, 'sig.macd-cross'], ['Supertrend', row.Sig_Supertrend, 'sig.supertrend'],
+                        ['Bollinger Bands', row.Sig_BB, 'sig.bb'], ['ADX Trend', row.Sig_ADX, 'sig.adx'],
+                      ].map(([label, val, tooltipId]) => (
                         <div key={label as string} className="flex items-center justify-between">
-                          <span style={{ color: 'var(--text-2)' }}>{label}</span>
+                          <span style={{ color: 'var(--text-2)' }}><InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip></span>
                           {getSignalLabel(val)}
                         </div>
                       ))}
@@ -522,15 +522,15 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                     <h4 className="section-label mb-1.5" style={{ color: 'var(--brand)' }}>Factor Scores</h4>
                     <div className="grid grid-cols-2 gap-1 text-[11px]">
                       {[
-                        ['Value', row.Value_Score],
-                        ['Investment', row.Investment_Score],
-                        ['SUE', row.SUE_Score],
-                        ['Piotroski', row.Piotroski_F != null ? Number(row.Piotroski_F) / 0.9 : null],
-                        ['Gross Profit', row.Gross_Profit_Score],
-                        ['Earnings Q', row.Earnings_Quality],
-                      ].map(([label, val]) => (
+                        ['Value', row.Value_Score, 'research.value'],
+                        ['Investment', row.Investment_Score, 'research.investment'],
+                        ['SUE', row.SUE_Score, 'research.sue'],
+                        ['Piotroski', row.Piotroski_F != null ? Number(row.Piotroski_F) / 0.9 : null, 'research.piotroski'],
+                        ['Gross Profit', row.Gross_Profit_Score, 'research.gross-profit'],
+                        ['Earnings Q', row.Earnings_Quality, 'research.earnings-quality'],
+                      ].map(([label, val, tooltipId]) => (
                         <div key={label as string} className="flex justify-between">
-                          <span style={{ color: 'var(--text-2)' }}>{label}</span>
+                          <span style={{ color: 'var(--text-2)' }}><InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip></span>
                           <span className="font-mono">{`${num(val)}/10`}</span>
                         </div>
                       ))}

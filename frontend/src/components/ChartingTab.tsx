@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import type { DashboardData } from '../types'
-import { num, colorCode, scoreColor, scoreBar, SegmentedControl } from './shared'
+import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip } from './shared'
 import { MagnifyingGlass } from '@phosphor-icons/react'
 import {
   ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine
@@ -118,7 +118,7 @@ const ChartTooltip = ({ active, payload, label }: any) => {
   )
 }
 
-const Panel = ({ title, children }: { title: string; children: React.ReactNode }) => (
+const Panel = ({ title, children }: { title: React.ReactNode; children: React.ReactNode }) => (
   <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
     <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
       {title}
@@ -127,9 +127,11 @@ const Panel = ({ title, children }: { title: string; children: React.ReactNode }
   </div>
 )
 
-const InfoBlock = ({ label, value, accent }: { label: string; value: React.ReactNode; accent?: string }) => (
+const InfoBlock = ({ label, value, accent, tooltipId }: { label: string; value: React.ReactNode; accent?: string; tooltipId?: string }) => (
   <div>
-    <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}>{label}</div>
+    <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}>
+      {tooltipId ? <InfoTooltip id={tooltipId}>{label}</InfoTooltip> : label}
+    </div>
     <div className="text-sm font-medium" style={{ color: accent || 'var(--text)' }}>{value}</div>
   </div>
 )
@@ -168,25 +170,26 @@ export default function ChartingTab({
             <div className="text-sm font-medium truncate" style={{ color: 'var(--text)' }} title={selectedAsset?.Long_Name || '-'}>{selectedAsset?.Long_Name?.replace(' Limited', ' Ltd').replace(' Industries', ' Ind.') || '-'}</div>
           </div>
           <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-            <InfoBlock label="Price" value={`₹${num(selectedAsset?.Price)}`} />
+            <InfoBlock label="Price" value={`₹${num(selectedAsset?.Price)}`} tooltipId="chart.price" />
             <InfoBlock
               label="1D Change"
               value={selectedAsset?.["1d_Chg_%"] ? `${selectedAsset["1d_Chg_%"] > 0 ? '+' : ''}${selectedAsset["1d_Chg_%"].toFixed(2)}%` : '-'}
               accent={selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] > 0 ? 'var(--green)' : selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] < 0 ? 'var(--red)' : undefined}
+              tooltipId="chart.1d-change"
             />
-            <InfoBlock label="CEO" value={selectedAsset?.CEO || '-'} />
-            <InfoBlock label="Market Cap" value={selectedAsset?.Market_Cap_B ? `₹${num(selectedAsset?.Market_Cap_B)}B` : '-'} />
-            <InfoBlock label="Revenue" value={selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue)}B` : '-'} />
-            <InfoBlock label="Profit" value={selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income)}B` : '-'} />
-            <InfoBlock label="EBITDA" value={selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA)}B` : '-'} />
-            <InfoBlock label="Div Yield" value={selectedAsset?.["Div_Yield_%"] ? `${num(selectedAsset?.["Div_Yield_%"])}%` : '-'} />
-            <InfoBlock label="52W High" value={selectedAsset?.["52W_High"] ? `₹${num(selectedAsset?.["52W_High"])}` : '-'} />
-            <InfoBlock label="52W Low" value={selectedAsset?.["52W_Low"] ? `₹${num(selectedAsset?.["52W_Low"])}` : '-'} />
+            <InfoBlock label="CEO" value={selectedAsset?.CEO || '-'} tooltipId="chart.ceo" />
+            <InfoBlock label="Market Cap" value={selectedAsset?.Market_Cap_B ? `₹${num(selectedAsset?.Market_Cap_B)}B` : '-'} tooltipId="chart.market-cap" />
+            <InfoBlock label="Revenue" value={selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue)}B` : '-'} tooltipId="chart.revenue" />
+            <InfoBlock label="Profit" value={selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income)}B` : '-'} tooltipId="chart.profit" />
+            <InfoBlock label="EBITDA" value={selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA)}B` : '-'} tooltipId="chart.ebitda" />
+            <InfoBlock label="Div Yield" value={selectedAsset?.["Div_Yield_%"] ? `${num(selectedAsset?.["Div_Yield_%"])}%` : '-'} tooltipId="chart.div-yield" />
+            <InfoBlock label="52W High" value={selectedAsset?.["52W_High"] ? `₹${num(selectedAsset?.["52W_High"])}` : '-'} tooltipId="chart.52w-high" />
+            <InfoBlock label="52W Low" value={selectedAsset?.["52W_Low"] ? `₹${num(selectedAsset?.["52W_Low"])}` : '-'} tooltipId="chart.52w-low" />
             {ath && price > 0 && (
-              <InfoBlock label="vs ATH" value={`${(((price / ath) - 1) * 100).toFixed(1)}%`} accent={(price / ath) > 0.95 ? 'var(--green)' : 'var(--amber)'} />
+              <InfoBlock label="vs ATH" value={`${(((price / ath) - 1) * 100).toFixed(1)}%`} accent={(price / ath) > 0.95 ? 'var(--green)' : 'var(--amber)'} tooltipId="chart.vs-ath" />
             )}
-            <InfoBlock label="ATH" value={ath ? `₹${num(ath)}` : '-'} />
-            <InfoBlock label="ATL" value={selectedAsset?.All_Time_Low ? `₹${num(selectedAsset?.All_Time_Low)}` : '-'} />
+            <InfoBlock label="ATH" value={ath ? `₹${num(ath)}` : '-'} tooltipId="chart.ath" />
+            <InfoBlock label="ATL" value={selectedAsset?.All_Time_Low ? `₹${num(selectedAsset?.All_Time_Low)}` : '-'} tooltipId="chart.atl" />
           </div>
         </div>
 
@@ -194,14 +197,14 @@ export default function ChartingTab({
         <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Technical Snapshot</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} />
-            <InfoBlock label="Conviction" value={selectedAsset?.Conviction || '-'} />
-            <InfoBlock label="RSI(14)" value={num(selectedAsset?.RSI_Value)} />
-            <InfoBlock label="ADX(14)" value={num(selectedAsset?.ADX_Value)} />
-            <InfoBlock label="MACD" value={num(selectedAsset?.MACD_Value)} />
-            <InfoBlock label="Supertrend" value={selectedAsset?.ST_Signal || '-'} />
+            <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} tooltipId="chart.tech-score" />
+            <InfoBlock label="Conviction" value={selectedAsset?.Conviction || '-'} tooltipId="chart.conviction" />
+            <InfoBlock label="RSI(14)" value={num(selectedAsset?.RSI_Value)} tooltipId="chart.rsi" />
+            <InfoBlock label="ADX(14)" value={num(selectedAsset?.ADX_Value)} tooltipId="chart.adx" />
+            <InfoBlock label="MACD" value={num(selectedAsset?.MACD_Value)} tooltipId="chart.macd" />
+            <InfoBlock label="Supertrend" value={selectedAsset?.ST_Signal || '-'} tooltipId="chart.supertrend" />
             <div className="col-span-2">
-              <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}>Bull / Neutral / Bear</div>
+              <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.bull-bear">Bull / Neutral / Bear</InfoTooltip></div>
               <span style={{color:'var(--green)'}}>{selectedAsset?.Bull_Count ?? '-'}</span>
               <span className="mx-1" style={{color:'var(--text-3)'}}>/</span>
               <span style={{color:'var(--text-2)'}}>{selectedAsset?.Bull_Count != null && selectedAsset?.Bear_Count != null ? 15 - selectedAsset.Bull_Count - selectedAsset.Bear_Count : '-'}</span>
@@ -220,14 +223,14 @@ export default function ChartingTab({
             </span>
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="Piotroski" value={`${selectedAsset?.Piotroski_F ?? '-'}/9`} accent={Number(selectedAsset?.Piotroski_F) >= 7 ? 'var(--green)' : Number(selectedAsset?.Piotroski_F) <= 3 ? 'var(--red)' : undefined} />
-            <InfoBlock label="Gross Profit" value={num(selectedAsset?.Gross_Profit_Score)} />
-            <InfoBlock label="Earnings Quality" value={num(selectedAsset?.Earnings_Quality)} />
-            <InfoBlock label="Z-Score" value={num(selectedAsset?.Z_Score_60)} accent={Number(selectedAsset?.Z_Score_60) > 2 ? 'var(--red)' : Number(selectedAsset?.Z_Score_60) < -2 ? 'var(--green)' : undefined} />
-            <InfoBlock label="Value Score" value={num(selectedAsset?.Value_Score)} accent={Number(selectedAsset?.Value_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Value_Score) < 4 ? 'var(--red)' : undefined} />
-            <InfoBlock label="Investment" value={num(selectedAsset?.Investment_Score)} />
-            <InfoBlock label="SUE" value={num(selectedAsset?.SUE_Score)} />
-            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '-'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} />
+            <InfoBlock label="Piotroski" value={`${selectedAsset?.Piotroski_F ?? '-'}/9`} accent={Number(selectedAsset?.Piotroski_F) >= 7 ? 'var(--green)' : Number(selectedAsset?.Piotroski_F) <= 3 ? 'var(--red)' : undefined} tooltipId="chart.piotroski" />
+            <InfoBlock label="Gross Profit" value={num(selectedAsset?.Gross_Profit_Score)} tooltipId="chart.gross-profit" />
+            <InfoBlock label="Earnings Quality" value={num(selectedAsset?.Earnings_Quality)} tooltipId="chart.earnings-quality" />
+            <InfoBlock label="Z-Score" value={num(selectedAsset?.Z_Score_60)} accent={Number(selectedAsset?.Z_Score_60) > 2 ? 'var(--red)' : Number(selectedAsset?.Z_Score_60) < -2 ? 'var(--green)' : undefined} tooltipId="chart.z-score" />
+            <InfoBlock label="Value Score" value={num(selectedAsset?.Value_Score)} accent={Number(selectedAsset?.Value_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Value_Score) < 4 ? 'var(--red)' : undefined} tooltipId="chart.value-score" />
+            <InfoBlock label="Investment" value={num(selectedAsset?.Investment_Score)} tooltipId="chart.investment" />
+            <InfoBlock label="SUE" value={num(selectedAsset?.SUE_Score)} tooltipId="chart.sue" />
+            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '-'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} tooltipId="chart.beta" />
           </div>
         </div>
 
@@ -235,12 +238,12 @@ export default function ChartingTab({
         <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Momentum</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="1 Month" value={selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_1M)} />
-            <InfoBlock label="3 Month" value={selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_3M)} />
-            <InfoBlock label="6 Month" value={selectedAsset?.Momentum_6M != null ? `${(selectedAsset.Momentum_6M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_6M)} />
-            <InfoBlock label="12 Month" value={selectedAsset?.Momentum_12M != null ? `${(selectedAsset.Momentum_12M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_12M)} />
+            <InfoBlock label="1 Month" value={selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_1M)} tooltipId="chart.mom-1m" />
+            <InfoBlock label="3 Month" value={selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_3M)} tooltipId="chart.mom-3m" />
+            <InfoBlock label="6 Month" value={selectedAsset?.Momentum_6M != null ? `${(selectedAsset.Momentum_6M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_6M)} tooltipId="chart.mom-6m" />
+            <InfoBlock label="12 Month" value={selectedAsset?.Momentum_12M != null ? `${(selectedAsset.Momentum_12M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_12M)} tooltipId="chart.mom-12m" />
             <div className="col-span-2 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
-              <InfoBlock label="Risk-Adjusted" value={num(selectedAsset?.Risk_Adj_Mom)} accent={colorCode(selectedAsset?.Risk_Adj_Mom)} />
+              <InfoBlock label="Risk-Adjusted" value={num(selectedAsset?.Risk_Adj_Mom)} accent={colorCode(selectedAsset?.Risk_Adj_Mom)} tooltipId="chart.risk-adj-mom" />
             </div>
           </div>
         </div>
@@ -249,12 +252,12 @@ export default function ChartingTab({
         <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Fundamentals</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="Fund Score" value={num(selectedAsset?.Fund_Score)} accent={Number(selectedAsset?.Fund_Score) >= 5 ? 'var(--green)' : undefined} />
-            <InfoBlock label="Forward P/E" value={num(selectedAsset?.['Forward_P/E'])} />
-            <InfoBlock label="D/E" value={num(selectedAsset?.['Debt_to_Equity'])} />
-            <InfoBlock label="ROE" value={`${num(selectedAsset?.['ROE_%'])}%`} />
-            <InfoBlock label="ROCE" value={`${num(selectedAsset?.['ROCE_%'])}%`} />
-            <InfoBlock label="Promoter" value={`${num(selectedAsset?.['Promoter_Holding_%'])}%`} />
+            <InfoBlock label="Fund Score" value={num(selectedAsset?.Fund_Score)} accent={Number(selectedAsset?.Fund_Score) >= 5 ? 'var(--green)' : undefined} tooltipId="chart.fund-score" />
+            <InfoBlock label="Forward P/E" value={num(selectedAsset?.['Forward_P/E'])} tooltipId="chart.forward-pe" />
+            <InfoBlock label="D/E" value={num(selectedAsset?.['Debt_to_Equity'])} tooltipId="chart.de" />
+            <InfoBlock label="ROE" value={`${num(selectedAsset?.['ROE_%'])}%`} tooltipId="chart.roe" />
+            <InfoBlock label="ROCE" value={`${num(selectedAsset?.['ROCE_%'])}%`} tooltipId="chart.roce" />
+            <InfoBlock label="Promoter" value={`${num(selectedAsset?.['Promoter_Holding_%'])}%`} tooltipId="chart.promoter" />
           </div>
         </div>
 
@@ -262,12 +265,12 @@ export default function ChartingTab({
         <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Risk Metrics</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="Volatility (60D)" value={`${num(selectedAsset?.Vol_60D)}%`} accent={Number(selectedAsset?.Vol_60D) < 25 ? 'var(--green)' : Number(selectedAsset?.Vol_60D) > 40 ? 'var(--red)' : undefined} />
-            <InfoBlock label="Sharpe" value={num(selectedAsset?.Sharpe)} accent={colorCode(selectedAsset?.Sharpe)} />
-            <InfoBlock label="Max Drawdown" value={`${num(selectedAsset?.['Max_Drawdown_%'])}%`} accent="var(--red)" />
-            <InfoBlock label="Total Return" value={`${num(selectedAsset?.['Total_Return_%'])}%`} accent={colorCode(selectedAsset?.['Total_Return_%'])} />
-            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '-'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} />
-            <InfoBlock label="Alpha (60D)" value={selectedAsset?.Alpha_60D != null ? `${selectedAsset.Alpha_60D.toFixed(1)}%` : '-'} accent={selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D > 0 ? 'var(--green)' : selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D < 0 ? 'var(--red)' : undefined} />
+            <InfoBlock label="Volatility (60D)" value={`${num(selectedAsset?.Vol_60D)}%`} accent={Number(selectedAsset?.Vol_60D) < 25 ? 'var(--green)' : Number(selectedAsset?.Vol_60D) > 40 ? 'var(--red)' : undefined} tooltipId="chart.vol-60d" />
+            <InfoBlock label="Sharpe" value={num(selectedAsset?.Sharpe)} accent={colorCode(selectedAsset?.Sharpe)} tooltipId="chart.sharpe" />
+            <InfoBlock label="Max Drawdown" value={`${num(selectedAsset?.['Max_Drawdown_%'])}%`} accent="var(--red)" tooltipId="chart.max-dd" />
+            <InfoBlock label="Total Return" value={`${num(selectedAsset?.['Total_Return_%'])}%`} accent={colorCode(selectedAsset?.['Total_Return_%'])} tooltipId="chart.total-return" />
+            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '-'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} tooltipId="chart.beta" />
+            <InfoBlock label="Alpha (60D)" value={selectedAsset?.Alpha_60D != null ? `${selectedAsset.Alpha_60D.toFixed(1)}%` : '-'} accent={selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D > 0 ? 'var(--green)' : selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D < 0 ? 'var(--red)' : undefined} tooltipId="chart.alpha-60d" />
           </div>
         </div>
       </div>
@@ -295,7 +298,7 @@ export default function ChartingTab({
         </div>
 
         {/* Main chart */}
-        <Panel title={`${selectedTicker.replace('.NS', '')} - Price · SMA 50 · SMA 200 · Supertrend`}>
+        <Panel title={<InfoTooltip id="chart.panel.price">{`${selectedTicker.replace('.NS', '')} - Price · SMA 50 · SMA 200 · Supertrend`}</InfoTooltip>}>
           <div className="chart-main" role="img" aria-label={`${selectedTicker} price chart`}>
             {chartLoading ? (
               <div className="flex items-center justify-center h-full text-sm animate-pulse" style={{ color: 'var(--text-3)' }}>Loading…</div>
@@ -328,7 +331,7 @@ export default function ChartingTab({
         </Panel>
 
         {/* RSI with reference lines */}
-        <Panel title="RSI(14) - 30 oversold · 70 overbought">
+        <Panel title={<InfoTooltip id="chart.panel.rsi">RSI(14) - 30 oversold · 70 overbought</InfoTooltip>}>
           <div className="chart-sub" role="img" aria-label={`${selectedTicker} RSI chart`}>
             {chartData.length > 0 && !chartLoading && (
               <ResponsiveContainer width="100%" height="100%">
@@ -350,7 +353,7 @@ export default function ChartingTab({
         </Panel>
 
         {/* MACD with zero line */}
-        <Panel title="MACD (12, 26, 9) - histogram · signal line">
+        <Panel title={<InfoTooltip id="chart.panel.macd">MACD (12, 26, 9) - histogram · signal line</InfoTooltip>}>
           <div className="chart-sub" role="img" aria-label={`${selectedTicker} MACD chart`}>
             {chartData.length > 0 && !chartLoading && (
               <ResponsiveContainer width="100%" height="100%">
@@ -382,7 +385,7 @@ export default function ChartingTab({
 
         {/* Score History */}
         {tickerScores.length > 1 && (
-          <Panel title={`Composite Score History - ${tickerScores.length} scans`}>
+          <Panel title={<InfoTooltip id="chart.panel.score-history">{`Composite Score History - ${tickerScores.length} scans`}</InfoTooltip>}>
             <div className="chart-score">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={tickerScores}>
@@ -406,18 +409,18 @@ export default function ChartingTab({
         <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
             <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Score Breakdown</h3>
             <div className="space-y-2.5">
-              {scoreBar('Composite', Number(selectedAsset.Composite_Score) || 0, 0, 10)}
-              {scoreBar('Tech', Number(selectedAsset.Tech_Score) || 0, -1, 1)}
-              {scoreBar('Fund', Number(selectedAsset.Fund_Score) || 0, 0, 10)}
-              {scoreBar('Research', Number(selectedAsset.Research_Score) || 0, 0, 10)}
+              {scoreBar('Composite', Number(selectedAsset.Composite_Score) || 0, 0, 10, undefined, 'chart.score.composite')}
+              {scoreBar('Tech', Number(selectedAsset.Tech_Score) || 0, -1, 1, undefined, 'chart.score.tech')}
+              {scoreBar('Fund', Number(selectedAsset.Fund_Score) || 0, 0, 10, undefined, 'chart.score.fund')}
+              {scoreBar('Research', Number(selectedAsset.Research_Score) || 0, 0, 10, undefined, 'chart.score.research')}
               <div className="pt-2 space-y-2.5" style={{ borderTop: '1px solid var(--border)' }}>
-                {scoreBar('Piotroski', Number(selectedAsset.Piotroski_F) || 0, 0, 9)}
-                {scoreBar('Gross Profit', Number(selectedAsset.Gross_Profit_Score) || 0, 0, 10)}
-                {scoreBar('Earnings Q', Number(selectedAsset.Earnings_Quality) || 0, 0, 10)}
-                {scoreBar('Value', Number(selectedAsset.Value_Score) || 0, 0, 10)}
-                {scoreBar('Investment', Number(selectedAsset.Investment_Score) || 0, 0, 10)}
-                {scoreBar('SUE', Number(selectedAsset.SUE_Score) || 0, 0, 10)}
-                {scoreBar('Volatility', Number(selectedAsset.Vol_60D) || 0, 0, 60)}
+                {scoreBar('Piotroski', Number(selectedAsset.Piotroski_F) || 0, 0, 9, undefined, 'chart.score.piotroski')}
+                {scoreBar('Gross Profit', Number(selectedAsset.Gross_Profit_Score) || 0, 0, 10, undefined, 'chart.score.gross-profit')}
+                {scoreBar('Earnings Q', Number(selectedAsset.Earnings_Quality) || 0, 0, 10, undefined, 'chart.score.earnings-quality')}
+                {scoreBar('Value', Number(selectedAsset.Value_Score) || 0, 0, 10, undefined, 'chart.score.value')}
+                {scoreBar('Investment', Number(selectedAsset.Investment_Score) || 0, 0, 10, undefined, 'chart.score.investment')}
+                {scoreBar('SUE', Number(selectedAsset.SUE_Score) || 0, 0, 10, undefined, 'chart.score.sue')}
+                {scoreBar('Volatility', Number(selectedAsset.Vol_60D) || 0, 0, 60, undefined, 'chart.score.volatility')}
               </div>
             </div>
           </div>
@@ -433,17 +436,17 @@ export default function ChartingTab({
             <table className="w-full text-left">
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <th className="py-3 px-4 text-xs font-medium" style={{ color: 'var(--text-2)' }}>Ticker</th>
-                  <th className="py-3 px-4 text-xs font-medium text-right hidden sm:table-cell" style={{ color: 'var(--text-2)' }}>Mkt Cap</th>
-                  <th className="py-3 px-4 text-xs font-medium text-right" style={{ color: 'var(--text-2)' }}>Score</th>
-                  <th className="py-3 px-4 text-xs font-medium text-right hidden md:table-cell" style={{ color: 'var(--text-2)' }}>Tech</th>
-                  <th className="py-3 px-4 text-xs font-medium text-right hidden lg:table-cell" style={{ color: 'var(--text-2)' }}>Fund</th>
-                  <th className="py-3 px-4 text-xs font-medium text-right hidden lg:table-cell" style={{ color: 'var(--text-2)' }}>Research</th>
-                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>P/E</th>
-                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>F-Score</th>
-                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>Value</th>
-                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>Beta</th>
-                  <th className="py-3 px-4 text-xs font-medium text-right" style={{ color: 'var(--text-2)' }}>Conv</th>
+                  <th className="py-3 px-4 text-xs font-medium" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.ticker">Ticker</InfoTooltip></th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden sm:table-cell" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.mkt-cap">Mkt Cap</InfoTooltip></th>
+                  <th className="py-3 px-4 text-xs font-medium text-right" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.score">Score</InfoTooltip></th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden md:table-cell" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.tech">Tech</InfoTooltip></th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden lg:table-cell" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.fund">Fund</InfoTooltip></th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden lg:table-cell" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.research">Research</InfoTooltip></th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.pe">P/E</InfoTooltip></th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.fscore">F-Score</InfoTooltip></th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.value">Value</InfoTooltip></th>
+                  <th className="py-3 px-4 text-xs font-medium text-right hidden xl:table-cell" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.beta">Beta</InfoTooltip></th>
+                  <th className="py-3 px-4 text-xs font-medium text-right" style={{ color: 'var(--text-2)' }}><InfoTooltip id="chart.peer.conv">Conv</InfoTooltip></th>
                 </tr>
               </thead>
               <tbody>
