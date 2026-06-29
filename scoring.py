@@ -127,6 +127,42 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
         final_rows.append(item)
 
+    # ── Cross-Sectional Momentum Normalization ──────────────────────────────────
+    # Replace the original absolute tanh normalization:
+    #   mom_score = 5.0 + 4.5 * tanh(composite_mom / 0.20)
+    # with a cross-sectional Z-score relative to the scanned universe.
+    # Motivation: RSI/momentum has the highest empirical correlation with
+    # 5-day returns (+0.264). A stock that is top-decile for momentum in
+    # a sideways market should score higher than one that is top-decile
+    # in a 50%-up market where everything is running.
+    # Weight of momentum in research_composite = 0.20; delta is exact.
+    _mom_raw = [
+        x["research"].get("momentum_composite", np.nan)
+        for x in final_rows
+        if not x.get("is_etf") and not np.isnan(x["research"].get("momentum_composite", np.nan))
+    ]
+    if len(_mom_raw) >= 5:
+        _mom_mean = float(np.mean(_mom_raw))
+        _mom_std  = float(np.std(_mom_raw))
+        _mom_std  = max(_mom_std, 0.02)   # floor to avoid division-by-zero in flat markets
+        for item in final_rows:
+            if item.get("is_etf"):
+                continue
+            raw_mom = item["research"].get("momentum_composite", np.nan)
+            if np.isnan(raw_mom):
+                continue
+            old_mom_score = item["research"].get("momentum_score", 5.0)
+            # Z-score of this stock vs universe, mapped to 0-10 via tanh
+            # tanh saturates at z ±1.5 ≈ score 0.5 / 9.5 — same range as before
+            z = (raw_mom - _mom_mean) / _mom_std
+            new_mom_score = float(5.0 + 4.5 * np.tanh(z / 1.5))
+            # Update research_composite by adjusting only the momentum slice
+            delta = (new_mom_score - old_mom_score) * 0.20
+            item["research"]["momentum_score"]     = new_mom_score
+            item["research"]["research_composite"] = max(
+                0.0, min(10.0, item["research"]["research_composite"] + delta)
+            )
+
     # ── Cross-Sectional Percentile Ranking ──────────────────────────────────
     # Percentile ranking maps raw scores to their relative position in the
     # universe. Combined with absolute quality gates to prevent scoring
@@ -251,16 +287,18 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         ranked_fund     = item.get("fund_score_ranked",             item["fund_score"])
         ranked_research = item.get("research_composite_ranked",     item["research"]["research_composite"])
 
-        raw_composite       = (norm_tech * 0.35) + (ranked_fund * 0.30) + (ranked_research * 0.35)
-        raw_composite_tech  = (norm_tech * 0.50) + (ranked_fund * 0.15) + (ranked_research * 0.35)
+        # ── Composite Score Weights ────────────────────────────────────────────────
+        # Fund weight reduced 0.30→0.25; Research increased 0.35→0.40 (default/tech).
+        # Evidence: Fund score corr=-0.118 with 5d returns; Research (momentum-heavy)
+        # corr=+0.103. Fundamentals predict 1-3y returns, not 5-day returns.
+        # Fund-oriented composite keeps full Fund weight for long-term users.
+        raw_composite       = (norm_tech * 0.35) + (ranked_fund * 0.25) + (ranked_research * 0.40)
+        raw_composite_tech  = (norm_tech * 0.50) + (ranked_fund * 0.10) + (ranked_research * 0.40)
         raw_composite_fund  = (norm_tech * 0.10) + (ranked_fund * 0.40) + (ranked_research * 0.50)
         raw_composite_mom   = (ranked_research * 0.70) + (norm_tech * 0.20) + (ranked_fund * 0.10)
 
         # ── RS Percentile Multiplier ──────────────────────────────────────────
         # Smooth ±8% composite adjustment based on relative strength vs universe.
-        # Replaces old pre-normalization ±0.2 raw-score adjustment which was
-        # applied before mapping to 0-10, making its impact unpredictable.
-        # Momentum composite is more RS-sensitive; fund composite less so.
         rs_pctile = item.get("rs_pctile", np.nan)
         if not np.isnan(rs_pctile):
             rs_adj = 0.08 * (rs_pctile - 50.0) / 50.0   # ±8% range
@@ -269,24 +307,6 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
             raw_composite_mom   = max(0.0, raw_composite_mom   * (1.0 + rs_adj))
             raw_composite_fund  = max(0.0, raw_composite_fund  * (1.0 + rs_adj * 0.5))
 
-        # ── Overbought Penalty Multiplier ─────────────────────────────────────
-        # Linear z-score penalty applied uniformly to ALL composites.
-        # No floor — a stock that is extremely overbought (z>10) genuinely
-        # deserves a near-zero multiplier. Floor at 0.0 only to prevent
-        # sign inversion.
-        research = item["research"]
-        z_score = _safe_float(research.get("z_score_60", 0), default=0)
-        reversion_sig = research.get("reversion_signal", 0)
-        overbought_mult = 1.0
-        if z_score > 1.5:
-            overbought_mult = max(0.0, 1.0 - 0.12 * (z_score - 1.5))
-        if reversion_sig == -1:
-            overbought_mult = min(overbought_mult, 0.93)
-
-        raw_composite       = max(0.0, raw_composite       * overbought_mult)
-        raw_composite_tech  = max(0.0, raw_composite_tech  * overbought_mult)
-        raw_composite_fund  = max(0.0, raw_composite_fund  * overbought_mult)
-        raw_composite_mom   = max(0.0, raw_composite_mom   * overbought_mult)
 
         # ── Quality Penalty Multiplier ────────────────────────────────────────
         # Smooth multiplicative penalty (computed in section above).
@@ -312,7 +332,12 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         weekly_st_dir = _safe_float(item["latest"].get("Weekly_ST_Direction", np.nan))
         weekly_bullish = weekly_st_dir == -1
 
-        conviction = get_conviction_rating(comp_pctile, regime_score, weekly_bullish)
+        conviction = get_conviction_rating(
+            comp_pctile, regime_score, weekly_bullish,
+            norm_tech=item.get("norm_tech"),
+            fund_score=item.get("fund_score"),
+            research_composite=item["research"].get("research_composite"),
+        )
         item["conviction"] = conviction
 
     return final_rows

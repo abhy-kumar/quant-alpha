@@ -46,11 +46,15 @@ RESEARCH_FACTOR_WEIGHTS = {
 }
 
 # Composite Score Weights
+# NOTE: These are documentation references. Actual values used in scoring.py.
+# Updated based on empirical evidence: Fund score corr=-0.118 with 5d returns;
+# Research (momentum-heavy) is more predictive for near-term. Fund-oriented
+# composite retains full Fund weight for users with a long-term horizon.
 COMPOSITE_WEIGHTS = {
-    "default":  {"tech": 0.35, "fund": 0.30, "research": 0.35},
-    "tech":     {"tech": 0.50, "fund": 0.15, "research": 0.35},
-    "fund":     {"tech": 0.10, "fund": 0.40, "research": 0.50},
-    "momentum": {"tech": 0.20, "fund": 0.10, "research": 0.70},
+    "default":  {"tech": 0.35, "fund": 0.25, "research": 0.40},  # was fund=0.30, research=0.35
+    "tech":     {"tech": 0.50, "fund": 0.10, "research": 0.40},  # was fund=0.15, research=0.35
+    "fund":     {"tech": 0.10, "fund": 0.40, "research": 0.50},  # unchanged
+    "momentum": {"tech": 0.20, "fund": 0.10, "research": 0.70},  # unchanged
 }
 
 # Risk-free rate for Sharpe ratio (India 10Y G-Sec yield)

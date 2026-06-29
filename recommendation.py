@@ -286,13 +286,33 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
         "sig_52w_high": sig_52w_high
     }
 
-def get_conviction_rating(percentile: float, regime_score: int, weekly_bullish: bool) -> str:
-    """Map composite percentile across universe -> qualitative conviction label."""
+def get_conviction_rating(
+    percentile: float,
+    regime_score: int,
+    weekly_bullish: bool,
+    norm_tech: float = None,
+    fund_score: float = None,
+    research_composite: float = None,
+) -> str:
+    """
+    Map composite percentile across universe -> qualitative conviction label.
+
+    Pillar agreement gate (data-driven):
+      Prevents Strong Buy / Buy when one pillar is severely lagging.
+      Evidence: GROWW (Fund=10, Tech=0.39 → -4.7%), BSE (Fund=10, Tech=0.63 → -5.3%)
+      were labelled Strong Buy but lost money because Tech said price wasn't ready.
+
+      If any pillar (norm_tech, fund_score, research_composite) < PILLAR_FLOOR:
+        Strong Buy → Buy
+        Buy        → Hold
+    """
+    PILLAR_FLOOR = 3.5  # 0-10 scale; below this = one pillar severely weak
+
     sb_threshold = 85 if regime_score >= 2 else 90
-    
+
     if np.isnan(percentile):
         return "Unknown"
-        
+
     if percentile >= sb_threshold:
         rating = "Strong Buy"
     elif percentile >= 70:
@@ -307,13 +327,25 @@ def get_conviction_rating(percentile: float, regime_score: int, weekly_bullish: 
     if rating == "Strong Buy" and not weekly_bullish:
         rating = "Buy"
 
-    # Market regime adjustment (-3 to +3)
+    # Market regime adjustment
     if regime_score <= -2:
-        if rating == "Strong Buy": rating = "Buy"
-        elif rating == "Buy": rating = "Hold"
-        elif rating == "Hold": rating = "Caution"
-        elif rating == "Caution": rating = "Avoid"
+        if rating == "Strong Buy":  rating = "Buy"
+        elif rating == "Buy":       rating = "Hold"
+        elif rating == "Hold":      rating = "Caution"
+        elif rating == "Caution":   rating = "Avoid"
     elif regime_score == -1:
-        if rating == "Strong Buy": rating = "Buy"
+        if rating == "Strong Buy":  rating = "Buy"
+
+    # ── Pillar Agreement Gate ─────────────────────────────────────────────────
+    # Only applied to actionable ratings (Strong Buy, Buy).
+    # A stock should not be labelled Strong Buy if technicals or fundamentals
+    # are severely weak — that combination produces the worst losses.
+    if rating in ("Strong Buy", "Buy"):
+        pillar_scores = [
+            x for x in [norm_tech, fund_score, research_composite]
+            if x is not None and not np.isnan(x)
+        ]
+        if pillar_scores and min(pillar_scores) < PILLAR_FLOOR:
+            rating = "Buy" if rating == "Strong Buy" else "Hold"
 
     return rating
