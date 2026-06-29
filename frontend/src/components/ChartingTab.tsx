@@ -74,10 +74,11 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
         <kbd className="text-[10px] px-1.5 py-0.5 hidden sm:block rounded-md" style={{ color: 'var(--text-3)', background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'}K</kbd>
       </div>
       {open && query && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 overflow-hidden max-h-60 overflow-y-auto card glass-strong" style={{ borderRadius: 'var(--radius-lg)', boxShadow: 'var(--glass-shadow-lg)' }}>
-          {filtered.length === 0 ? (
-            <div className="p-3 text-xs text-center" style={{ color: 'var(--text-3)' }}>No results</div>
-          ) : filtered.map(d => (
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 overflow-hidden card glass-strong" style={{ borderRadius: 'var(--radius-lg)', boxShadow: 'var(--glass-shadow-lg)' }}>
+          <div className="max-h-60 overflow-y-auto">
+            {filtered.length === 0 ? (
+              <div className="p-3 text-xs text-center" style={{ color: 'var(--text-3)' }}>No results</div>
+            ) : filtered.map(d => (
             <button
               key={d.Ticker}
               onClick={() => { onSelect(d.Ticker); setOpen(false); setQuery('') }}
@@ -93,6 +94,7 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
               <span className="text-xs" style={{ color: 'var(--text-3)' }}>{d.Sector}</span>
             </button>
           ))}
+          </div>
         </div>
       )}
     </div>
