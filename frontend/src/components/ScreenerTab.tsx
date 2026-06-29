@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+﻿import React, { useState, useMemo } from 'react'
 import type { DashboardData } from '../types'
 import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline, InfoTooltip } from './shared'
 import { Info, Funnel, X, Star } from '@phosphor-icons/react'
@@ -87,7 +87,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
       <div className="card p-4" style={{ borderRadius: 'var(--radius-xl)' }}>
         <div className="flex items-center justify-between mb-3">
           <span className="section-label" style={{ color: 'var(--brand)' }}>Scoring Model</span>
-          <span className="text-xs" style={{ color: 'var(--text-3)' }}>9 Factors · Cross-Sectional Ranking · Continuous Sigmoid Scoring</span>
+          <span className="text-xs" style={{ color: 'var(--text-3)' }}>9 Factors Â· Cross-Sectional Ranking Â· Continuous Sigmoid Scoring</span>
         </div>
         <div className="grid grid-cols-5 sm:grid-cols-9 gap-3 text-center">
           {[
@@ -108,9 +108,9 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           ))}
         </div>
         <div className="mt-3 pt-2 flex flex-wrap gap-3 text-[11px]" style={{ borderTop: '1px solid var(--glass-border)', color: 'var(--text-3)' }}>
-          <span>Composite: Tech 35% · Fund 30% · Research 35%</span>
+          <span>Composite: Tech 35% Â· Fund 30% Â· Research 35%</span>
           <span className="hidden sm:inline">|</span>
-          <span className="hidden sm:inline">Long-Term: Tech 10% · Fund 40% · Research 50%</span>
+          <span className="hidden sm:inline">Long-Term: Tech 10% Â· Fund 40% Â· Research 50%</span>
         </div>
 
       </div>
@@ -169,7 +169,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <input type="range" min="0" max="9" step="1" value={minPiotroski} onChange={e => setMinPiotroski(Number(e.target.value))} className="w-full" aria-label="Minimum Piotroski score" />
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min market cap: ₹{minMarketCap >= 1000 ? `${(minMarketCap/1000).toFixed(1)}T` : `${minMarketCap}B`}</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min market cap: â‚¹{minMarketCap >= 1000 ? `${(minMarketCap/1000).toFixed(1)}T` : `${minMarketCap}B`}</label>
               <input type="range" min="0" max="500" step="5" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" aria-label="Minimum market cap" />
             </div>
             <div>
@@ -239,7 +239,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
               <th className="py-2 px-2 text-[10px] font-medium cursor-pointer select-none uppercase tracking-wider" style={{color:'var(--text-3)',textAlign:'left',position:'sticky',left:0,background:'var(--surface)',zIndex:1}} onClick={()=>handleSort('Ticker')}>
-                <span className="inline-flex items-center gap-1"><InfoTooltip id="screener.ticker">Ticker</InfoTooltip>{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}</span>
+                <span className="inline-flex items-center gap-1"><InfoTooltip id="screener.ticker">Ticker</InfoTooltip>{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'â†‘':'â†“'}</span>}</span>
               </th>
               <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline"><InfoTooltip id="screener.sector">Sector</InfoTooltip></span></SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.price">Price</InfoTooltip></SortHeader>
@@ -357,7 +357,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                                 ['Investment Factor', `${num(row.Investment_Score)}/10`, 'research.investment'],
                                 ['SUE / Earnings Mom', `${num(row.SUE_Score)}/10`, 'research.sue'],
                                 ['Low Volatility', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : '-', 'research.low-vol'],
-                                ['Betting Against Beta', row.Beta != null ? `${row.Beta.toFixed(2)} β` : '-', 'research.bab'],
+                                ['Betting Against Beta', row.Beta != null ? `${row.Beta.toFixed(2)} Î²` : '-', 'research.bab'],
                                 ['Alpha (60D)', row.Alpha_60D != null ? `${row.Alpha_60D.toFixed(1)}%` : '-', 'research.alpha-60d'],
                                 ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '-', 'research.12m-mom'],
                                 ['Risk-Adj Mom', num(row.Risk_Adj_Mom), 'research.risk-adj-mom'],
@@ -379,7 +379,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                                 ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-', 'metrics.roe'],
                                 ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-', 'metrics.roce'],
                                 ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-', 'metrics.de'],
-                                ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
+                                ['Mkt Cap', row.Market_Cap_B != null ? `â‚¹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
                                 ['Div Yield', row['Div_Yield_%'] != null ? `${row['Div_Yield_%'].toFixed(2)}%` : '-', 'metrics.div-yield'],
                                 ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-', 'metrics.promoter'],
                                 ['Sharpe', num(row.Sharpe), 'metrics.sharpe'],
@@ -428,112 +428,169 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
       {/* Mobile card view */}
       <div className="sm:hidden space-y-2">
         {filteredData.map((row) => (
-          <div key={row.Ticker} className="px-3 py-2.5 card" style={{
+          <div key={row.Ticker} className="card" style={{
             borderRadius: 'var(--radius-lg)',
-            borderLeft: expandedRow === row.Ticker ? '3px solid var(--brand)' : '3px solid transparent',
-            background: flashTickers[row.Ticker] === 'up' ? 'rgba(74, 222, 128, 0.08)' : flashTickers[row.Ticker] === 'down' ? 'rgba(248, 113, 113, 0.08)' : undefined,
+            overflow: 'hidden',
+            background: expandedRow === row.Ticker
+              ? 'var(--glass-bg-strong)'
+              : flashTickers[row.Ticker] === 'up' ? 'rgba(74, 222, 128, 0.06)'
+              : flashTickers[row.Ticker] === 'down' ? 'rgba(248, 113, 113, 0.06)'
+              : undefined,
+            boxShadow: expandedRow === row.Ticker ? 'var(--glass-shadow-lg)' : undefined,
           }}>
-            {/* Row 1: Ticker, Score, Conviction, Watch */}
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="flex items-center gap-2">
-                <button onClick={() => onSelect(row.Ticker)} className="text-sm font-bold" style={{ color: 'var(--text)' }}>
-                  {row.Ticker.replace('.NS', '')}
-                </button>
-                {isLoggedIn && (
-                <span className={`badge ${row.Conviction === 'Strong Buy' ? 'badge-strong-buy' : row.Conviction === 'Buy' ? 'badge-buy' : row.Conviction === 'Caution' ? 'badge-caution' : row.Conviction === 'Avoid' ? 'badge-avoid' : 'badge-hold'}`}>
-                  {row.Conviction || '-'}
+            {/* Conviction accent line â€” top, not left */}
+            {expandedRow === row.Ticker && (
+              <div style={{ height: 2, background: 'linear-gradient(90deg, var(--brand), transparent)', borderRadius: '2px 2px 0 0' }} />
+            )}
+
+            {/* Main card content */}
+            <div className="px-3 py-2.5">
+              {/* Row 1: Ticker, Score, Conviction, Watch */}
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-2">
+                  <button onClick={() => onSelect(row.Ticker)} className="text-sm font-bold" style={{ color: 'var(--text)' }}>
+                    {row.Ticker.replace('.NS', '')}
+                  </button>
+                  {isLoggedIn && (
+                  <span className={`badge ${row.Conviction === 'Strong Buy' ? 'badge-strong-buy' : row.Conviction === 'Buy' ? 'badge-buy' : row.Conviction === 'Caution' ? 'badge-caution' : row.Conviction === 'Avoid' ? 'badge-avoid' : 'badge-hold'}`}>
+                    {row.Conviction || '-'}
+                  </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {isLoggedIn && <span className={`text-sm font-mono font-medium ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</span>}
+                  <button onClick={() => toggleWatchlist(row.Ticker)}
+                    onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.75)')}
+                    onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+                    style={{ transition: 'transform var(--dur-fast) var(--ease-out)', border: 'none', background: 'none', cursor: 'pointer', color: watchlist.includes(row.Ticker) ? 'var(--amber)' : 'var(--text-3)' }}>
+                    <Star size={13} weight="fill" color={watchlist.includes(row.Ticker) ? 'var(--amber)' : 'var(--text-3)'} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Row 2: Price, 1D, Sector */}
+              <div className="flex items-center gap-3 mb-1.5 text-[11px]">
+                <span className="font-mono font-medium" style={{ color: 'var(--text)' }}>{num(row.Price)}</span>
+                <span className={`font-mono font-medium ${colorCode(row['1d_Chg_%'])}`}>
+                  {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
                 </span>
-                )}
+                <span className="hidden xs:inline" style={{ color: 'var(--text-3)' }}>{row.Sector || '-'}</span>
+                <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} width={48} height={16} ticker={row.Ticker} />
               </div>
-              <div className="flex items-center gap-2">
-                {isLoggedIn && <span className={`text-sm font-mono font-medium ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</span>}
-                <button onClick={() => toggleWatchlist(row.Ticker)}
-                  onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.75)')}
-                  onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-                  style={{ transition: 'transform var(--dur-fast) var(--ease-out)', border: 'none', background: 'none', cursor: 'pointer', color: watchlist.includes(row.Ticker) ? 'var(--amber)' : 'var(--text-3)' }}>
-                  <Star size={13} weight="fill" color={watchlist.includes(row.Ticker) ? 'var(--amber)' : 'var(--text-3)'} />
-                </button>
+
+              {/* Row 3: Tech, Fund, Research, F-Score, Value + expand */}
+              <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--text-3)' }}>
+                <span><InfoTooltip id="screener.tech">T</InfoTooltip> <span className={`font-mono font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</span></span>
+                <span><InfoTooltip id="screener.fund">F</InfoTooltip> <span className="font-mono font-medium">{num(row.Fund_Score)}</span></span>
+                <span><InfoTooltip id="screener.research">R</InfoTooltip> <span className="font-mono font-medium">{num(row.Research_Score)}</span></span>
+                <span><InfoTooltip id="screener.fscore">P</InfoTooltip> <span className="font-mono font-medium">{row.Piotroski_F ?? '-'}/9</span></span>
+                {row.Value_Score != null && <span><InfoTooltip id="screener.value">V</InfoTooltip> <span className="font-mono font-medium">{num(row.Value_Score)}</span></span>}
+                <span className="ml-auto">
+                  <button
+                    onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors text-[10px] font-medium"
+                    style={{
+                      color: expandedRow === row.Ticker ? 'var(--brand)' : 'var(--text-3)',
+                      background: expandedRow === row.Ticker ? 'var(--brand-soft)' : 'transparent',
+                    }}>
+                    <Info size={12} weight="duotone" />
+                    {expandedRow === row.Ticker ? 'Close' : 'Details'}
+                  </button>
+                </span>
               </div>
             </div>
 
-            {/* Row 2: Price, 1D, Sector */}
-            <div className="flex items-center gap-3 mb-1.5 text-[11px]">
-              <span className="font-mono font-medium" style={{ color: 'var(--text)' }}>{num(row.Price)}</span>
-              <span className={`font-mono font-medium ${colorCode(row['1d_Chg_%'])}`}>
-                {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
-              </span>
-              <span className="hidden xs:inline" style={{ color: 'var(--text-3)' }}>{row.Sector || '-'}</span>
-              <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} width={48} height={16} ticker={row.Ticker} />
-            </div>
-
-            {/* Row 3: Tech, Fund, Research, F-Score, Value */}
-            <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--text-3)' }}>
-              <span><InfoTooltip id="screener.tech">T</InfoTooltip> <span className={`font-mono font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</span></span>
-              <span><InfoTooltip id="screener.fund">F</InfoTooltip> <span className="font-mono font-medium">{num(row.Fund_Score)}</span></span>
-              <span><InfoTooltip id="screener.research">R</InfoTooltip> <span className="font-mono font-medium">{num(row.Research_Score)}</span></span>
-              <span><InfoTooltip id="screener.fscore">P</InfoTooltip> <span className="font-mono font-medium">{row.Piotroski_F ?? '-'}/9</span></span>
-              {row.Value_Score != null && <span><InfoTooltip id="screener.value">V</InfoTooltip> <span className="font-mono font-medium">{num(row.Value_Score)}</span></span>}
-              <span className="ml-auto">
-                <button onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)} style={{ color: 'var(--text-3)' }}>
-                  <Info size={13} weight="duotone" />
-                </button>
-              </span>
-            </div>
-
+            {/* Expanded info â€” slides in below */}
             <div style={{
-              maxHeight: expandedRow === row.Ticker ? 800 : 0,
+              maxHeight: expandedRow === row.Ticker ? 700 : 0,
               overflow: 'hidden',
               transition: 'max-height var(--dur-slow) var(--ease-out)',
             }}>
               {expandedRow === row.Ticker && (
-                <div className="mt-2.5 pt-2.5 space-y-3" style={{ borderTop: '1px solid var(--glass-border)' }}>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+                <div style={{ borderTop: '1px solid var(--glass-border)' }}>
+                  {/* Metrics grid */}
+                  <div className="px-3 py-2.5 grid grid-cols-3 gap-x-3 gap-y-2.5 text-[11px]">
                     {[
                       ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E']), 'metrics.pe'],
                       ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-', 'metrics.roe'],
                       ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-', 'metrics.roce'],
                       ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-', 'metrics.de'],
-                      ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
+                      ['Mkt Cap', row.Market_Cap_B != null ? `â‚¹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
                       ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-', 'metrics.promoter'],
                     ].map(([label, val, tooltipId]) => (
-                      <div key={label as string} className="flex justify-between py-0.5">
-                        <span style={{ color: 'var(--text-3)' }}><InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip></span>
-                        <span className="font-mono font-medium" style={{color:'var(--text)'}}>{val as React.ReactNode}</span>
+                      <div key={label as string} className="flex flex-col gap-0.5">
+                        <span className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
+                          <InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip>
+                        </span>
+                        <span className="font-mono font-medium text-[12px]" style={{ color: 'var(--text)' }}>{val as React.ReactNode}</span>
                       </div>
                     ))}
                   </div>
-                  <div>
-                    <h4 className="section-label mb-1.5" style={{ color: 'var(--brand)' }}>Signals</h4>
-                    <div className="space-y-1 text-[11px]">
+
+                  {/* Signals */}
+                  <div className="px-3 pb-2 pt-1" style={{ borderTop: '1px solid var(--glass-border)' }}>
+                    <p className="text-[9px] uppercase tracking-wider mb-2" style={{ color: 'var(--text-3)' }}>Technical Signals</p>
+                    <div className="flex flex-wrap gap-1.5">
                       {[
-                        ['Price vs SMA50', row.Sig_Price_vs_SMA50, 'sig.price-sma50'], ['Price vs SMA200', row.Sig_Price_vs_SMA200, 'sig.price-sma200'],
-                        ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200, 'sig.sma-cross'], ['RSI', row.Sig_RSI, 'sig.rsi'],
-                        ['MACD Cross', row.Sig_MACD_Cross, 'sig.macd-cross'], ['Supertrend', row.Sig_Supertrend, 'sig.supertrend'],
-                        ['Bollinger Bands', row.Sig_BB, 'sig.bb'], ['ADX Trend', row.Sig_ADX, 'sig.adx'],
-                      ].map(([label, val, tooltipId]) => (
-                        <div key={label as string} className="flex items-center justify-between">
-                          <span style={{ color: 'var(--text-2)' }}><InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip></span>
-                          {getSignalLabel(val)}
-                        </div>
-                      ))}
+                        ['SMA50', row.Sig_Price_vs_SMA50, 'sig.price-sma50'],
+                        ['SMA200', row.Sig_Price_vs_SMA200, 'sig.price-sma200'],
+                        ['GC/DC', row.Sig_SMA50_vs_SMA200, 'sig.sma-cross'],
+                        ['RSI', row.Sig_RSI, 'sig.rsi'],
+                        ['MACD', row.Sig_MACD_Cross, 'sig.macd-cross'],
+                        ['ST', row.Sig_Supertrend, 'sig.supertrend'],
+                        ['BB', row.Sig_BB, 'sig.bb'],
+                        ['ADX', row.Sig_ADX, 'sig.adx'],
+                      ].map(([label, val, tooltipId]) => {
+                        const bullish = val === 1
+                        const bearish = val === -1
+                        return (
+                          <span
+                            key={label as string}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium"
+                            style={{
+                              background: bullish ? 'rgba(74,222,128,0.10)' : bearish ? 'rgba(248,113,113,0.10)' : 'var(--glass-bg-subtle)',
+                              color: bullish ? 'var(--green)' : bearish ? 'var(--red)' : 'var(--text-3)',
+                              border: `1px solid ${bullish ? 'rgba(74,222,128,0.18)' : bearish ? 'rgba(248,113,113,0.18)' : 'var(--glass-border)'}`,
+                            }}
+                          >
+                            <InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip>
+                            <span>{bullish ? 'â†‘' : bearish ? 'â†“' : 'â€“'}</span>
+                          </span>
+                        )
+                      })}
                     </div>
                   </div>
-                  <div>
-                    <h4 className="section-label mb-1.5" style={{ color: 'var(--brand)' }}>Factor Scores</h4>
-                    <div className="grid grid-cols-2 gap-1 text-[11px]">
+
+                  {/* Factor scores â€” compact horizontal bars */}
+                  <div className="px-3 pb-3 pt-1" style={{ borderTop: '1px solid var(--glass-border)' }}>
+                    <p className="text-[9px] uppercase tracking-wider mb-2" style={{ color: 'var(--text-3)' }}>Factor Scores</p>
+                    <div className="space-y-1.5">
                       {[
-                        ['Value', row.Value_Score, 'research.value'],
-                        ['Investment', row.Investment_Score, 'research.investment'],
-                        ['SUE', row.SUE_Score, 'research.sue'],
-                        ['Piotroski', row.Piotroski_F != null ? Number(row.Piotroski_F) / 0.9 : null, 'research.piotroski'],
-                        ['Gross Profit', row.Gross_Profit_Score, 'research.gross-profit'],
-                        ['Earnings Q', row.Earnings_Quality, 'research.earnings-quality'],
-                      ].map(([label, val, tooltipId]) => (
-                        <div key={label as string} className="flex justify-between">
-                          <span style={{ color: 'var(--text-2)' }}><InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip></span>
-                          <span className="font-mono">{`${num(val)}/10`}</span>
-                        </div>
-                      ))}
+                        ['Value', row.Value_Score],
+                        ['Investment', row.Investment_Score],
+                        ['SUE', row.SUE_Score],
+                        ['Gross Profit', row.Gross_Profit_Score],
+                        ['Earnings Q', row.Earnings_Quality],
+                      ].map(([label, val]) => {
+                        const v = Number(val) || 0
+                        const pct = Math.min(100, (v / 10) * 100)
+                        return (
+                          <div key={label as string} className="flex items-center gap-2">
+                            <span className="text-[10px] w-20 shrink-0" style={{ color: 'var(--text-3)' }}>{label as string}</span>
+                            <div className="flex-1 h-1 rounded-full" style={{ background: 'var(--glass-border)' }}>
+                              <div
+                                className="h-1 rounded-full"
+                                style={{
+                                  width: `${pct}%`,
+                                  background: v >= 7 ? 'var(--green)' : v >= 5 ? 'var(--brand)' : v >= 3 ? 'var(--amber)' : 'var(--red)',
+                                  transition: 'width 400ms var(--ease-out)',
+                                }}
+                              />
+                            </div>
+                            <span className="font-mono text-[10px] w-5 text-right" style={{ color: 'var(--text-2)' }}>{num(val)}</span>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 </div>
