@@ -17,7 +17,7 @@ def fetch_latest_top_picks(limit=15):
     """Fetch the top stocks from the latest scan based on Composite_Score."""
     conn = _get_conn()
     query = """
-    SELECT Ticker, Composite_Score, Piotroski_F, Momentum_6M, Vol_60D, P_E, ROE_Pct
+    SELECT Ticker, Sector, Composite_Score, Piotroski_F, Momentum_6M, Vol_60D, P_E, ROE_Pct
     FROM factor_history
     WHERE Scan_Date = (SELECT MAX(Scan_Date) FROM factor_history)
     ORDER BY Composite_Score DESC
@@ -162,11 +162,54 @@ def run_backtest():
     conn.close()
     
     if not backtest_data:
-        return []
+        return {"chart": [], "stats": {}}
         
     # Ensure unique dates (take last value if duplicates)
     df = pd.DataFrame(backtest_data).drop_duplicates(subset=['date'], keep='last')
-    return df.to_dict('records')
+    chart_data = df.to_dict('records')
+    
+    # Compute advanced stats
+    daily_port_returns = df['portfolio'].pct_change().dropna()
+    daily_bench_returns = df['benchmark'].pct_change().dropna()
+    
+    if daily_port_returns.empty:
+        return {"chart": chart_data, "stats": {}}
+        
+    days = max((pd.to_datetime(df['date'].iloc[-1]) - pd.to_datetime(df['date'].iloc[0])).days, 1)
+    years = max(days / 365.25, 0.01) # Avoid div by zero
+    
+    total_ret = (df['portfolio'].iloc[-1] / df['portfolio'].iloc[0]) - 1
+    cagr = ((1 + total_ret) ** (1 / years)) - 1
+    
+    bench_ret = (df['benchmark'].iloc[-1] / df['benchmark'].iloc[0]) - 1
+    bench_cagr = ((1 + bench_ret) ** (1 / years)) - 1
+    
+    ann_vol = daily_port_returns.std() * np.sqrt(252)
+    
+    sharpe = (cagr - RISK_FREE_RATE) / ann_vol if ann_vol > 0 else 0
+    
+    # Max Drawdown
+    cum_max = df['portfolio'].cummax()
+    drawdown = (df['portfolio'] / cum_max) - 1
+    max_dd = drawdown.min()
+    
+    # Information Ratio
+    tracking_error = (daily_port_returns - daily_bench_returns).std() * np.sqrt(252)
+    info_ratio = (cagr - bench_cagr) / tracking_error if tracking_error > 0 else 0
+    
+    win_rate = (daily_port_returns > 0).mean()
+    
+    stats = {
+        "total_return": round(total_ret * 100, 2),
+        "cagr": round(cagr * 100, 2),
+        "volatility": round(ann_vol * 100, 2),
+        "sharpe": round(sharpe, 2),
+        "max_drawdown": round(max_dd * 100, 2),
+        "info_ratio": round(info_ratio, 2),
+        "win_rate": round(win_rate * 100, 1)
+    }
+    
+    return {"chart": chart_data, "stats": stats}
 
 def compute_factor_exposures(top_picks_df):
     """Aggregate factor exposures for the top picks."""
@@ -192,6 +235,55 @@ def compute_factor_exposures(top_picks_df):
         "Momentum": round(momentum, 1),
         "Quality": round((quality + piotroski) / 2, 1),
         "Low_Volatility": round(low_vol, 1)
+    }
+
+def fetch_latest_regime():
+    """Fetch the latest market regime metrics."""
+    conn = _get_conn()
+    query = """
+    SELECT Regime_Score, Nifty_Close, Nifty_SMA_200, VIX, Breadth_Pct
+    FROM regime_history
+    ORDER BY Scan_Date DESC
+    LIMIT 1
+    """
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    if df.empty:
+        return {}
+    row = df.iloc[0]
+    return {
+        "score": int(row['Regime_Score']) if pd.notnull(row['Regime_Score']) else 0,
+        "nifty_trend": "bullish" if pd.notnull(row['Nifty_Close']) and pd.notnull(row['Nifty_SMA_200']) and row['Nifty_Close'] > row['Nifty_SMA_200'] else "bearish",
+        "vix": float(row['VIX']) if pd.notnull(row['VIX']) else 0.0,
+        "breadth": float(row['Breadth_Pct']) if pd.notnull(row['Breadth_Pct']) else 0.0
+    }
+
+def compute_sector_allocation(top_picks_df):
+    """Aggregate sector weights for equal-weight top picks."""
+    if 'Sector' not in top_picks_df.columns or top_picks_df.empty:
+        return {}
+    df = top_picks_df.dropna(subset=['Sector'])
+    if df.empty: return {}
+    counts = df['Sector'].value_counts(normalize=True) * 100
+    return {k: round(float(v), 1) for k, v in counts.items()}
+
+def compute_correlation_matrix(price_history):
+    """Compute Pearson correlation matrix of daily returns (last 63 days) for Top 10."""
+    if price_history.empty or len(price_history.columns) < 2:
+        return {"labels": [], "matrix": []}
+    
+    # Use top 10 tickers to avoid massive heatmaps
+    cols = price_history.columns.tolist()[:10]
+    recent_prices = price_history[cols].tail(63)
+    returns = recent_prices.pct_change().dropna()
+    corr_matrix = returns.corr().round(2)
+    
+    # Replace NaN with 0 for safety
+    corr_matrix = corr_matrix.fillna(0)
+    
+    return {
+        "labels": [c.replace('.NS', '') for c in corr_matrix.columns],
+        "matrix": corr_matrix.values.tolist()
     }
 
 def generate_quant_data():
@@ -226,6 +318,11 @@ def generate_quant_data():
         # Backtest
         backtest_results = run_backtest()
         
+        # New Quant Lab Models
+        regime = fetch_latest_regime()
+        sectors = compute_sector_allocation(top_picks_df)
+        correlation = compute_correlation_matrix(price_history)
+        
         output = {
             "last_updated": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
             "model_portfolios": {
@@ -233,7 +330,10 @@ def generate_quant_data():
                 "min_volatility": min_vol
             },
             "factor_exposures": exposures,
-            "backtest": backtest_results
+            "backtest": backtest_results,
+            "market_regime": regime,
+            "sector_allocation": sectors,
+            "correlation_matrix": correlation
         }
         
         os.makedirs("frontend/public", exist_ok=True)

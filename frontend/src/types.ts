@@ -141,7 +141,37 @@ export interface FactorExposure {
 
 export interface QuantData {
   last_updated: string
-  model_portfolios: ModelPortfolios
-  factor_exposures: FactorExposure
-  backtest: BacktestResult[]
+  model_portfolios: {
+    max_sharpe: Record<string, number>
+    min_volatility: Record<string, number>
+  }
+  factor_exposures: {
+    Value: number
+    Momentum: number
+    Quality: number
+    Low_Volatility: number
+  }
+  market_regime?: {
+    score: number
+    nifty_trend: string
+    vix: number
+    breadth: number
+  }
+  sector_allocation?: Record<string, number>
+  correlation_matrix?: {
+    labels: string[]
+    matrix: number[][]
+  }
+  backtest: {
+    chart: { date: string; portfolio: number; benchmark: number }[]
+    stats: {
+      total_return: number
+      cagr: number
+      volatility: number
+      sharpe: number
+      max_drawdown: number
+      info_ratio: number
+      win_rate: number
+    }
+  }
 }

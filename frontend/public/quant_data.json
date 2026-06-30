@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-30 23:15:05",
+  "last_updated": "2026-07-01 02:10:57",
   "model_portfolios": {
     "max_sharpe": {
       "FEDERALBNK.NS": 0.4075,
@@ -21,66 +21,230 @@
     "Quality": 56.7,
     "Low_Volatility": 46.7
   },
-  "backtest": [
-    {
-      "date": "2026-06-12",
-      "portfolio": 99.3,
-      "benchmark": 100.0
-    },
-    {
-      "date": "2026-06-15",
-      "portfolio": 100.01,
-      "benchmark": 100.0
-    },
-    {
-      "date": "2026-06-16",
-      "portfolio": 100.74,
-      "benchmark": 100.0
-    },
-    {
-      "date": "2026-06-17",
-      "portfolio": 101.07,
-      "benchmark": 100.0
-    },
-    {
-      "date": "2026-06-18",
-      "portfolio": 103.04,
-      "benchmark": 100.0
-    },
-    {
-      "date": "2026-06-19",
-      "portfolio": 103.29,
-      "benchmark": 100.0
-    },
-    {
-      "date": "2026-06-22",
-      "portfolio": 102.3,
-      "benchmark": 100.0
-    },
-    {
-      "date": "2026-06-23",
-      "portfolio": 102.85,
-      "benchmark": 100.0
-    },
-    {
-      "date": "2026-06-24",
-      "portfolio": 103.14,
-      "benchmark": 100.0
-    },
-    {
-      "date": "2026-06-25",
-      "portfolio": 103.14,
-      "benchmark": 100.0
-    },
-    {
-      "date": "2026-06-26",
-      "portfolio": 103.15,
-      "benchmark": 100.0
-    },
-    {
-      "date": "2026-06-29",
-      "portfolio": 103.01,
-      "benchmark": 100.0
+  "backtest": {
+    "chart": [
+      {
+        "date": "2026-06-12",
+        "portfolio": 99.3,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-15",
+        "portfolio": 100.01,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-16",
+        "portfolio": 100.74,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-17",
+        "portfolio": 101.07,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-18",
+        "portfolio": 103.04,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-19",
+        "portfolio": 103.29,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-22",
+        "portfolio": 102.3,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-23",
+        "portfolio": 102.85,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-24",
+        "portfolio": 103.14,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-25",
+        "portfolio": 103.14,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-26",
+        "portfolio": 103.15,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-29",
+        "portfolio": 103.01,
+        "benchmark": 100.0
+      }
+    ],
+    "stats": {
+      "total_return": 3.74,
+      "cagr": 119.92,
+      "volatility": 11.3,
+      "sharpe": 10.03,
+      "max_drawdown": -0.96,
+      "info_ratio": 10.61,
+      "win_rate": 72.7
     }
-  ]
+  },
+  "market_regime": {
+    "score": -2,
+    "nifty_trend": "bearish",
+    "vix": 0.0,
+    "breadth": 0.34840871021775544
+  },
+  "sector_allocation": {
+    "Financial Services": 20.0,
+    "Basic Materials": 13.3,
+    "Healthcare": 13.3,
+    "Energy": 13.3,
+    "Consumer Cyclical": 13.3,
+    "Technology": 6.7,
+    "Communication Services": 6.7,
+    "Utilities": 6.7,
+    "Industrials": 6.7
+  },
+  "correlation_matrix": {
+    "labels": [
+      "ADANIPOWER",
+      "BOSCHLTD",
+      "COALINDIA",
+      "FEDERALBNK",
+      "HINDPETRO",
+      "IDEA",
+      "LUPIN",
+      "MAHABANK",
+      "MOTHERSON",
+      "NMDC"
+    ],
+    "matrix": [
+      [
+        1.0,
+        0.33,
+        -0.1,
+        0.22,
+        0.27,
+        0.24,
+        0.17,
+        0.21,
+        0.32,
+        0.37
+      ],
+      [
+        0.33,
+        1.0,
+        -0.27,
+        0.55,
+        0.37,
+        0.16,
+        0.26,
+        0.37,
+        0.47,
+        0.27
+      ],
+      [
+        -0.1,
+        -0.27,
+        1.0,
+        -0.23,
+        -0.16,
+        0.05,
+        -0.11,
+        -0.01,
+        -0.29,
+        0.26
+      ],
+      [
+        0.22,
+        0.55,
+        -0.23,
+        1.0,
+        0.31,
+        0.08,
+        0.24,
+        0.44,
+        0.4,
+        0.16
+      ],
+      [
+        0.27,
+        0.37,
+        -0.16,
+        0.31,
+        1.0,
+        0.45,
+        0.2,
+        0.5,
+        0.56,
+        0.28
+      ],
+      [
+        0.24,
+        0.16,
+        0.05,
+        0.08,
+        0.45,
+        1.0,
+        -0.01,
+        0.29,
+        0.27,
+        0.35
+      ],
+      [
+        0.17,
+        0.26,
+        -0.11,
+        0.24,
+        0.2,
+        -0.01,
+        1.0,
+        0.26,
+        0.18,
+        0.13
+      ],
+      [
+        0.21,
+        0.37,
+        -0.01,
+        0.44,
+        0.5,
+        0.29,
+        0.26,
+        1.0,
+        0.46,
+        0.28
+      ],
+      [
+        0.32,
+        0.47,
+        -0.29,
+        0.4,
+        0.56,
+        0.27,
+        0.18,
+        0.46,
+        1.0,
+        0.15
+      ],
+      [
+        0.37,
+        0.27,
+        0.26,
+        0.16,
+        0.28,
+        0.35,
+        0.13,
+        0.28,
+        0.15,
+        1.0
+      ]
+    ]
+  }
 }
