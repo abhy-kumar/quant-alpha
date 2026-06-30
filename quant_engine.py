@@ -290,7 +290,7 @@ def generate_quant_data():
     """Main function to generate quant_data.json."""
     logger.info("Generating Quant Lab data...")
     try:
-        top_picks_df = fetch_latest_top_picks(15)
+        top_picks_df = fetch_latest_top_picks(10)
         
         # Portfolio Optimization
         tickers = top_picks_df['Ticker'].tolist()
