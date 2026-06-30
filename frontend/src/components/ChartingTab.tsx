@@ -74,7 +74,7 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
         <kbd className="text-[10px] px-1.5 py-0.5 hidden sm:block rounded-md" style={{ color: 'var(--text-3)', background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'}K</kbd>
       </div>
       {open && query && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 card glass-strong" style={{ borderRadius: 'var(--radius-lg)', boxShadow: 'var(--glass-shadow-lg)', transform: 'translateZ(0)' }}>
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white/60 dark:bg-black/60 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-lg" style={{ borderRadius: 'var(--radius-lg)' }}>
           <div className="max-h-60 overflow-y-auto scrollbar-none" style={{ borderRadius: 'var(--radius-lg)' }}>
             {filtered.length === 0 ? (
               <div className="p-3 text-xs text-center" style={{ color: 'var(--text-3)' }}>No results</div>
