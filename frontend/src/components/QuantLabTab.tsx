@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import type { QuantData } from '../types'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from 'recharts'
 import { Flask, ChartLineUp, Target, Scales, Crosshair } from '@phosphor-icons/react'
 
 interface Props {
@@ -156,13 +156,13 @@ export default function QuantLabTab({ isDark }: Props) {
           </div>
           <div style={{ height: 260, width: '100%', display: 'flex', justifyContent: 'center' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                <PolarGrid stroke="var(--border)" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-2)', fontSize: 11 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tickFormatter={() => ''} axisLine={false} />
-                <Tooltip contentStyle={tooltipStyle(isDark)} />
-                <Radar name="Portfolio" dataKey="A" stroke="var(--green)" fill="var(--green)" fillOpacity={0.4} />
-              </RadarChart>
+              <BarChart data={radarData} layout="vertical" margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={true} vertical={false} />
+                <XAxis type="number" domain={[0, 100]} stroke="var(--text-3)" tick={{ fontSize: 10 }} />
+                <YAxis dataKey="subject" type="category" stroke="var(--text-3)" tick={{ fontSize: 11, fill: 'var(--text-2)' }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={tooltipStyle(isDark)} cursor={{ fill: 'var(--border)' }} />
+                <Bar dataKey="A" name="Portfolio Exposure" fill="var(--green)" radius={[0, 4, 4, 0]} barSize={24} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
           <p className="text-[11px] text-center mt-4 leading-relaxed" style={{ color: 'var(--text-3)' }}>
