@@ -71,6 +71,11 @@ function liveDataApiDevPlugin(): Plugin {
 export default defineConfig({
   plugins: [react(), chartApiDevPlugin(), liveDataApiDevPlugin()],
   build: {
-    minify: 'esbuild',
+    minify: 'terser',
   },
+  resolve: {
+    alias: {
+      'lodash': 'lodash-es'
+    }
+  }
 })
