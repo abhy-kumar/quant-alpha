@@ -35,7 +35,7 @@ const SignalsTab   = lazy(() => import('./components/SignalsTab').then(m => { co
 const ScreenerTab  = lazy(() => import('./components/ScreenerTab').then(m => { console.log('[Alpha] ScreenerTab chunk loaded'); return m }))
 const ChartingTab  = lazy(() => import('./components/ChartingTab').then(m => { console.log('[Alpha] ChartingTab chunk loaded'); return m }))
 const HeatmapTab   = lazy(() => import('./components/HeatmapTab').then(m => { console.log('[Alpha] HeatmapTab chunk loaded'); return m }))
-const FactorLabTab = lazy(() => import('./components/FactorLabTab').then(m => { console.log('[Alpha] FactorLabTab chunk loaded'); return m }))
+const QuantLabTab = lazy(() => import('./components/QuantLabTab').then(m => { console.log('[Alpha] QuantLabTab chunk loaded'); return m }))
 
 function TabSkeleton() {
   return (
@@ -89,7 +89,7 @@ const TABS = [
   { id: 'picks', label: 'Signals', icon: TrendUp },
   { id: 'fundamentals', label: 'Screen', icon: Database },
   { id: 'heatmap', label: 'Heatmap', icon: StackSimple },
-  { id: 'factorlab', label: 'Factor Lab', icon: Pulse },
+  { id: 'quantlab', label: 'Quant Lab', icon: Pulse },
 ] as const
 
 export default function App() {
@@ -103,7 +103,7 @@ export default function App() {
   const [loadError, setLoadError] = useState<string|null>(null)
   const [marketRegimeScore, setMarketRegimeScore] = useState<number|null>(null)
   const [isDynamic, setIsDynamic] = useState(false)
-  const [activeTab, setActiveTab] = useState<'picks'|'fundamentals'|'charting'|'heatmap'|'factorlab'>('charting')
+  const [activeTab, setActiveTab] = useState<'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab'>('charting')
   const [fiiNet, setFiiNet] = useState<number|null>(null)
   const [diiNet, setDiiNet] = useState<number|null>(null)
   const [pcr, setPcr] = useState<number|null>(null)
@@ -266,7 +266,7 @@ export default function App() {
   const handleLogout = useCallback(() => {
     setIsLoggedIn(false)
     try { localStorage.removeItem('qa_auth') } catch {}
-    if (activeTab === 'picks' || activeTab === 'factorlab') setActiveTab('charting')
+    if (activeTab === 'picks' || activeTab === 'quantlab') setActiveTab('charting')
   }, [activeTab])
 
   useEffect(() => {
@@ -703,7 +703,7 @@ export default function App() {
                 {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>}
                 {activeTab==='charting' && <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon} isLoggedIn={isLoggedIn}/>}
                 {activeTab==='heatmap' && <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>}
-                {activeTab==='factorlab' && <FactorLabTab outcomeAccuracy={outcomeAccuracy} firstScanDate={firstScanDate} isDark={isDark}/>}
+                {activeTab==='quantlab' && <QuantLabTab isDark={isDark}/>}
               </div>
             </Suspense>
           </ErrorBoundary>

@@ -29,6 +29,7 @@ from data_pipeline import (
     update_outcome_tracking, store_regime_history, store_scan_summary,
 )
 from generate_score_history import generate as generate_score_history
+import quant_engine
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -452,6 +453,9 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pct,
                        len(tickers), len(ohlcv_results), len(info_results), len(final_rows),
                        regime_score, scan_time, time.time() - scan_start)
+        
+        log.info("Running quant engine...")
+        quant_engine.generate_quant_data()
 
     return result_df
 

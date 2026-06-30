@@ -120,3 +120,28 @@ export interface OutcomeAccuracy {
   win_rate_63d: number | null
   avg_return_63d: number | null
 }
+
+export interface BacktestResult {
+  date: string
+  portfolio: number
+  benchmark: number
+}
+
+export interface ModelPortfolios {
+  max_sharpe: Record<string, number>
+  min_volatility: Record<string, number>
+}
+
+export interface FactorExposure {
+  Value: number
+  Momentum: number
+  Quality: number
+  Low_Volatility: number
+}
+
+export interface QuantData {
+  last_updated: string
+  model_portfolios: ModelPortfolios
+  factor_exposures: FactorExposure
+  backtest: BacktestResult[]
+}

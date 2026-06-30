@@ -1,0 +1,86 @@
+{
+  "last_updated": "2026-06-30 23:15:05",
+  "model_portfolios": {
+    "max_sharpe": {
+      "FEDERALBNK.NS": 0.4075,
+      "WELCORP.NS": 0.3974,
+      "LUPIN.NS": 0.1522,
+      "ADANIPOWER.NS": 0.043
+    },
+    "min_volatility": {
+      "SUNPHARMA.NS": 0.4099,
+      "COALINDIA.NS": 0.2144,
+      "FEDERALBNK.NS": 0.2127,
+      "BOSCHLTD.NS": 0.1205,
+      "LUPIN.NS": 0.0283
+    }
+  },
+  "factor_exposures": {
+    "Value": 46.7,
+    "Momentum": 53.3,
+    "Quality": 56.7,
+    "Low_Volatility": 46.7
+  },
+  "backtest": [
+    {
+      "date": "2026-06-12",
+      "portfolio": 99.3,
+      "benchmark": 100.0
+    },
+    {
+      "date": "2026-06-15",
+      "portfolio": 100.01,
+      "benchmark": 100.0
+    },
+    {
+      "date": "2026-06-16",
+      "portfolio": 100.74,
+      "benchmark": 100.0
+    },
+    {
+      "date": "2026-06-17",
+      "portfolio": 101.07,
+      "benchmark": 100.0
+    },
+    {
+      "date": "2026-06-18",
+      "portfolio": 103.04,
+      "benchmark": 100.0
+    },
+    {
+      "date": "2026-06-19",
+      "portfolio": 103.29,
+      "benchmark": 100.0
+    },
+    {
+      "date": "2026-06-22",
+      "portfolio": 102.3,
+      "benchmark": 100.0
+    },
+    {
+      "date": "2026-06-23",
+      "portfolio": 102.85,
+      "benchmark": 100.0
+    },
+    {
+      "date": "2026-06-24",
+      "portfolio": 103.14,
+      "benchmark": 100.0
+    },
+    {
+      "date": "2026-06-25",
+      "portfolio": 103.14,
+      "benchmark": 100.0
+    },
+    {
+      "date": "2026-06-26",
+      "portfolio": 103.15,
+      "benchmark": 100.0
+    },
+    {
+      "date": "2026-06-29",
+      "portfolio": 103.01,
+      "benchmark": 100.0
+    }
+  ]
+}
