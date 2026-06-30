@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import type { QuantData } from '../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from 'recharts'
-import { Flask, ChartLineUp, Target, Scales, Crosshair } from '@phosphor-icons/react'
+import { Flask, ChartLineUp, Target, Scales, Crosshair, TrendUp, Activity, ChartDonut } from '@phosphor-icons/react'
 
 interface Props {
   isDark: boolean
@@ -46,6 +46,32 @@ export default function QuantLabTab({ isDark }: Props) {
     ]
   }, [quantData])
 
+  const backtestStats = useMemo(() => {
+    if (!quantData?.backtest || quantData.backtest.length === 0) return null
+    const bt = quantData.backtest
+    const initial = bt[0].portfolio
+    const final = bt[bt.length - 1].portfolio
+    const totalReturn = (final / initial - 1) * 100
+    
+    let max = initial
+    let maxDd = 0
+    let wins = 0
+    let totalDays = bt.length - 1
+
+    for (let i = 1; i < bt.length; i++) {
+      if (bt[i].portfolio > bt[i-1].portfolio) wins++
+      if (bt[i].portfolio > max) max = bt[i].portfolio
+      const dd = (bt[i].portfolio / max - 1) * 100
+      if (dd < maxDd) maxDd = dd
+    }
+    
+    return {
+      totalReturn,
+      winRate: totalDays > 0 ? (wins / totalDays) * 100 : 0,
+      maxDrawdown: maxDd
+    }
+  }, [quantData])
+
   if (loading) {
     return <div className="p-8 text-center" style={{ color: 'var(--text-3)' }}>Loading Quant Lab...</div>
   }
@@ -79,6 +105,29 @@ export default function QuantLabTab({ isDark }: Props) {
           </div>
         </div>
       </div>
+
+      {backtestStats && (
+        <div className="grid grid-cols-3 gap-5">
+          <div className="card p-5 flex flex-col justify-center" style={{ borderRadius: 'var(--radius-xl)' }}>
+            <div className="text-[11px] mb-1 flex items-center gap-1" style={{ color: 'var(--text-3)' }}><TrendUp size={14} /> Total Return (Alpha Picks)</div>
+            <div className="text-xl font-bold" style={{ color: backtestStats.totalReturn >= 0 ? 'var(--green)' : 'var(--red)' }}>
+              {backtestStats.totalReturn > 0 ? '+' : ''}{backtestStats.totalReturn.toFixed(2)}%
+            </div>
+          </div>
+          <div className="card p-5 flex flex-col justify-center" style={{ borderRadius: 'var(--radius-xl)' }}>
+            <div className="text-[11px] mb-1 flex items-center gap-1" style={{ color: 'var(--text-3)' }}><ChartDonut size={14} /> Daily Win Rate</div>
+            <div className="text-xl font-bold" style={{ color: backtestStats.winRate >= 50 ? 'var(--green)' : 'var(--amber)' }}>
+              {backtestStats.winRate.toFixed(1)}%
+            </div>
+          </div>
+          <div className="card p-5 flex flex-col justify-center" style={{ borderRadius: 'var(--radius-xl)' }}>
+            <div className="text-[11px] mb-1 flex items-center gap-1" style={{ color: 'var(--text-3)' }}><Activity size={14} /> Max Drawdown</div>
+            <div className="text-xl font-bold" style={{ color: 'var(--red)' }}>
+              {backtestStats.maxDrawdown.toFixed(2)}%
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         
@@ -156,7 +205,7 @@ export default function QuantLabTab({ isDark }: Props) {
           </div>
           <div style={{ height: 260, width: '100%', display: 'flex', justifyContent: 'center' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={radarData} layout="vertical" margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
+              <BarChart data={radarData} layout="vertical" margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={true} vertical={false} />
                 <XAxis type="number" domain={[0, 100]} stroke="var(--text-3)" tick={{ fontSize: 10 }} />
                 <YAxis dataKey="subject" type="category" stroke="var(--text-3)" tick={{ fontSize: 11, fill: 'var(--text-2)' }} axisLine={false} tickLine={false} />

@@ -160,7 +160,7 @@ export default function ChartingTab({
       {/* On xl+: true two-column layout */}
       <div className="flex flex-col xl:flex-row gap-6 xl:gap-8">
       {/* Left: Controls & Info */}
-      <div className="w-full xl:w-72 flex flex-col gap-3 order-2 xl:order-1 shrink-0">
+      <div className="w-full xl:w-72 flex flex-col gap-3 shrink-0">
         <StockSearch data={data} selectedTicker={selectedTicker} onSelect={setSelectedTicker} />
 
         {/* Mobile: horizontal tab strip to switch between info panels */}
@@ -409,7 +409,7 @@ export default function ChartingTab({
       </div>
 
       {/* Right: Charts */}
-      <div className="w-full xl:flex-1 flex flex-col gap-5 order-1 xl:order-2 min-w-0">
+      <div className="w-full xl:flex-1 flex flex-col gap-5 min-w-0">
         {/* Period + Interval - segmented controls */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <SegmentedControl
