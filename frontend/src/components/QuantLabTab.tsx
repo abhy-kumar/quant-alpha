@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import type { QuantData } from '../types'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts'
 import { Flask, ChartLineUp, Target, Scales, Crosshair } from '@phosphor-icons/react'
 
 interface Props {
@@ -59,7 +59,8 @@ export default function QuantLabTab({ isDark }: Props) {
     )
   }
 
-  const { max_sharpe, min_volatility } = quantData.model_portfolios
+  const max_sharpe = quantData.model_portfolios?.max_sharpe || {}
+  const min_volatility = quantData.model_portfolios?.min_volatility || {}
 
   return (
     <div className="space-y-5">
@@ -93,8 +94,8 @@ export default function QuantLabTab({ isDark }: Props) {
                 <LineChart data={quantData.backtest} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                   <XAxis dataKey="date" stroke="var(--text-3)" tick={{ fontSize: 10 }} tickMargin={10} />
-                  <YAxis stroke="var(--text-3)" tick={{ fontSize: 10 }} domain={['auto', 'auto']} tickFormatter={(v) => v.toFixed(1)} />
-                  <RechartsTooltip contentStyle={tooltipStyle(isDark)} />
+                  <YAxis stroke="var(--text-3)" tick={{ fontSize: 10 }} domain={['auto', 'auto']} tickFormatter={(v) => typeof v === 'number' ? v.toFixed(1) : v} />
+                  <Tooltip contentStyle={tooltipStyle(isDark)} />
                   <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
                   <Line type="monotone" dataKey="portfolio" name="Alpha Picks" stroke="var(--brand)" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
                   <Line type="monotone" dataKey="benchmark" name="NIFTY 50" stroke="var(--text-3)" strokeWidth={2} dot={false} strokeDasharray="5 5" />
@@ -158,8 +159,8 @@ export default function QuantLabTab({ isDark }: Props) {
               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
                 <PolarGrid stroke="var(--border)" />
                 <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-2)', fontSize: 11 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                <RechartsTooltip contentStyle={tooltipStyle(isDark)} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tickFormatter={() => ''} axisLine={false} />
+                <Tooltip contentStyle={tooltipStyle(isDark)} />
                 <Radar name="Portfolio" dataKey="A" stroke="var(--green)" fill="var(--green)" fillOpacity={0.4} />
               </RadarChart>
             </ResponsiveContainer>
