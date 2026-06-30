@@ -438,7 +438,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               : undefined,
             boxShadow: expandedRow === row.Ticker ? 'var(--glass-shadow-lg)' : undefined,
           }}>
-            {/* Conviction accent line — top, not left */}
+            {/* Conviction accent line - top, not left */}
             {expandedRow === row.Ticker && (
               <div style={{ height: 2, background: 'linear-gradient(90deg, var(--brand), transparent)', borderRadius: '2px 2px 0 0' }} />
             )}
@@ -500,7 +500,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               </div>
             </div>
 
-            {/* Expanded info — slides in below */}
+            {/* Expanded info - slides in below */}
             <div style={{
               maxHeight: expandedRow === row.Ticker ? 700 : 0,
               overflow: 'hidden',
@@ -554,14 +554,14 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                             }}
                           >
                             <InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip>
-                            <span>{bullish ? '↑' : bearish ? '↓' : '–'}</span>
+                            <span>{bullish ? '↑' : bearish ? '↓' : '-'}</span>
                           </span>
                         )
                       })}
                     </div>
                   </div>
 
-                  {/* Factor scores — compact horizontal bars */}
+                  {/* Factor scores - compact horizontal bars */}
                   <div className="px-3 pb-3 pt-1" style={{ borderTop: '1px solid var(--glass-border)' }}>
                     <p className="text-[9px] uppercase tracking-wider mb-2" style={{ color: 'var(--text-3)' }}>Factor Scores</p>
                     <div className="space-y-1.5">
