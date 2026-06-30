@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import type { QuantData } from '../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from 'recharts'
-import { Flask, ChartLineUp, Target, Scales, Crosshair, TrendUp, Activity, ChartDonut } from '@phosphor-icons/react'
+import { Flask, ChartLineUp, Target, Scales, Crosshair, TrendUp, ChartLineDown, ChartDonut } from '@phosphor-icons/react'
 
 interface Props {
   isDark: boolean
@@ -121,7 +121,7 @@ export default function QuantLabTab({ isDark }: Props) {
             </div>
           </div>
           <div className="card p-5 flex flex-col justify-center" style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="text-[11px] mb-1 flex items-center gap-1" style={{ color: 'var(--text-3)' }}><Activity size={14} /> Max Drawdown</div>
+            <div className="text-[11px] mb-1 flex items-center gap-1" style={{ color: 'var(--text-3)' }}><ChartLineDown size={14} /> Max Drawdown</div>
             <div className="text-xl font-bold" style={{ color: 'var(--red)' }}>
               {backtestStats.maxDrawdown.toFixed(2)}%
             </div>
