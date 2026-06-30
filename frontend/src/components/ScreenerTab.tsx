@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import type { DashboardData } from '../types'
 import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline, InfoTooltip } from './shared'
 import { Info, Funnel, X, Star } from '@phosphor-icons/react'
@@ -87,7 +87,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
       <div className="card p-4" style={{ borderRadius: 'var(--radius-xl)' }}>
         <div className="flex items-center justify-between mb-3">
           <span className="section-label" style={{ color: 'var(--brand)' }}>Scoring Model</span>
-          <span className="text-xs" style={{ color: 'var(--text-3)' }}>9 Factors Â· Cross-Sectional Ranking Â· Continuous Sigmoid Scoring</span>
+          <span className="text-xs" style={{ color: 'var(--text-3)' }}>9 Factors · Cross-Sectional Ranking · Continuous Sigmoid Scoring</span>
         </div>
         <div className="grid grid-cols-5 sm:grid-cols-9 gap-3 text-center">
           {[
@@ -108,9 +108,9 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           ))}
         </div>
         <div className="mt-3 pt-2 flex flex-wrap gap-3 text-[11px]" style={{ borderTop: '1px solid var(--glass-border)', color: 'var(--text-3)' }}>
-          <span>Composite: Tech 35% Â· Fund 30% Â· Research 35%</span>
+          <span>Composite: Tech 35% · Fund 30% · Research 35%</span>
           <span className="hidden sm:inline">|</span>
-          <span className="hidden sm:inline">Long-Term: Tech 10% Â· Fund 40% Â· Research 50%</span>
+          <span className="hidden sm:inline">Long-Term: Tech 10% · Fund 40% · Research 50%</span>
         </div>
 
       </div>
@@ -169,7 +169,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <input type="range" min="0" max="9" step="1" value={minPiotroski} onChange={e => setMinPiotroski(Number(e.target.value))} className="w-full" aria-label="Minimum Piotroski score" />
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min market cap: â‚¹{minMarketCap >= 1000 ? `${(minMarketCap/1000).toFixed(1)}T` : `${minMarketCap}B`}</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min market cap: ₹{minMarketCap >= 1000 ? `${(minMarketCap/1000).toFixed(1)}T` : `${minMarketCap}B`}</label>
               <input type="range" min="0" max="500" step="5" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" aria-label="Minimum market cap" />
             </div>
             <div>
@@ -239,7 +239,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
               <th className="py-2 px-2 text-[10px] font-medium cursor-pointer select-none uppercase tracking-wider" style={{color:'var(--text-3)',textAlign:'left',position:'sticky',left:0,background:'var(--surface)',zIndex:1}} onClick={()=>handleSort('Ticker')}>
-                <span className="inline-flex items-center gap-1"><InfoTooltip id="screener.ticker">Ticker</InfoTooltip>{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'â†‘':'â†“'}</span>}</span>
+                <span className="inline-flex items-center gap-1"><InfoTooltip id="screener.ticker">Ticker</InfoTooltip>{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}</span>
               </th>
               <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline"><InfoTooltip id="screener.sector">Sector</InfoTooltip></span></SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.price">Price</InfoTooltip></SortHeader>
@@ -379,7 +379,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                                 ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-', 'metrics.roe'],
                                 ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-', 'metrics.roce'],
                                 ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-', 'metrics.de'],
-                                ['Mkt Cap', row.Market_Cap_B != null ? `â‚¹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
+                                ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
                                 ['Div Yield', row['Div_Yield_%'] != null ? `${row['Div_Yield_%'].toFixed(2)}%` : '-', 'metrics.div-yield'],
                                 ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-', 'metrics.promoter'],
                                 ['Sharpe', num(row.Sharpe), 'metrics.sharpe'],
@@ -438,7 +438,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               : undefined,
             boxShadow: expandedRow === row.Ticker ? 'var(--glass-shadow-lg)' : undefined,
           }}>
-            {/* Conviction accent line â€” top, not left */}
+            {/* Conviction accent line — top, not left */}
             {expandedRow === row.Ticker && (
               <div style={{ height: 2, background: 'linear-gradient(90deg, var(--brand), transparent)', borderRadius: '2px 2px 0 0' }} />
             )}
@@ -500,7 +500,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               </div>
             </div>
 
-            {/* Expanded info â€” slides in below */}
+            {/* Expanded info — slides in below */}
             <div style={{
               maxHeight: expandedRow === row.Ticker ? 700 : 0,
               overflow: 'hidden',
@@ -515,7 +515,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                       ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-', 'metrics.roe'],
                       ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-', 'metrics.roce'],
                       ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-', 'metrics.de'],
-                      ['Mkt Cap', row.Market_Cap_B != null ? `â‚¹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
+                      ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
                       ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-', 'metrics.promoter'],
                     ].map(([label, val, tooltipId]) => (
                       <div key={label as string} className="flex flex-col gap-0.5">
@@ -554,14 +554,14 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                             }}
                           >
                             <InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip>
-                            <span>{bullish ? 'â†‘' : bearish ? 'â†“' : 'â€“'}</span>
+                            <span>{bullish ? '↑' : bearish ? '↓' : '–'}</span>
                           </span>
                         )
                       })}
                     </div>
                   </div>
 
-                  {/* Factor scores â€” compact horizontal bars */}
+                  {/* Factor scores — compact horizontal bars */}
                   <div className="px-3 pb-3 pt-1" style={{ borderTop: '1px solid var(--glass-border)' }}>
                     <p className="text-[9px] uppercase tracking-wider mb-2" style={{ color: 'var(--text-3)' }}>Factor Scores</p>
                     <div className="space-y-1.5">
