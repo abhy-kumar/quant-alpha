@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import type { QuantData } from '../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts'
-import { Flask, ChartLineUp, Target, Scales } from '@phosphor-icons/react'
+import { Flask, ChartLineUp, Target, Scales, Crosshair } from '@phosphor-icons/react'
 
 interface Props {
   isDark: boolean
@@ -150,7 +150,7 @@ export default function QuantLabTab({ isDark }: Props) {
         {/* Right Column: Factor Exposures */}
         <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
           <div className="flex items-center gap-2 mb-6">
-            <Radar size={18} weight="duotone" style={{ color: 'var(--green)' }} />
+            <Crosshair size={18} weight="duotone" style={{ color: 'var(--green)' }} />
             <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Portfolio Factor Exposure</h3>
           </div>
           <div style={{ height: 260, width: '100%', display: 'flex', justifyContent: 'center' }}>

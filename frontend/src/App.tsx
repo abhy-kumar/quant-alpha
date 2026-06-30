@@ -127,8 +127,7 @@ export default function App() {
   const [chartData, setChartData] = useState<any[]>([])
   const [chartLoading, setChartLoading] = useState(false)
   const [expandedRow, setExpandedRow] = useState<string|null>(null)
-  const [outcomeAccuracy, setOutcomeAccuracy] = useState<Record<string,any>>({})
-  const [firstScanDate, setFirstScanDate] = useState('')
+
   const [watchlist, setWatchlist] = useState<string[]>(() => {
     try { const s = localStorage.getItem('qa_watchlist'); if (s) return JSON.parse(s) } catch {}
     const wl = new URLSearchParams(window.location.search).get('watchlist')
@@ -208,7 +207,7 @@ export default function App() {
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
         setCoveragePct(res.data.coverage_pct??null); setMarketRegimeScore(res.data.market_regime_score??null)
         setFiiNet(res.data.fii_net??null); setDiiNet(res.data.dii_net??null); setPcr(res.data.pcr??null)
-        setOutcomeAccuracy(res.data.outcome_accuracy||{}); setFirstScanDate(res.data.first_scan_date||'')
+
         setIsDynamic(res.data.is_dynamic||false); if (!selectedTicker) setSelectedTicker(d[0].Ticker)
         setLoading(false); return true
       }
