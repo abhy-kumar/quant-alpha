@@ -5,6 +5,7 @@ import { Flask, ChartLineUp, Target, Scales, Crosshair, TrendUp, ChartLineDown, 
 
 interface Props {
   isDark: boolean
+  scanUpdated?: string
 }
 
 const tooltipStyle = (isDark: boolean) => ({
@@ -18,7 +19,7 @@ const tooltipStyle = (isDark: boolean) => ({
   padding: '10px 14px',
 })
 
-export default function QuantLabTab({ isDark }: Props) {
+export default function QuantLabTab({ isDark, scanUpdated }: Props) {
   const [quantData, setQuantData] = useState<QuantData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -33,7 +34,7 @@ export default function QuantLabTab({ isDark }: Props) {
         console.error('Failed to load quant data', e)
         setLoading(false)
       })
-  }, [])
+  }, [scanUpdated])
 
   const radarData = useMemo(() => {
     if (!quantData?.factor_exposures) return []

@@ -216,16 +216,25 @@ export default function App() {
   }
 
   useEffect(() => {
-    let id: ReturnType<typeof setInterval>
+    let liveId: ReturnType<typeof setInterval>
+    let dataId: ReturnType<typeof setInterval>
     ;(async () => {
       if (await fetchData()) {
         setTimeout(async () => {
           const s = await fetchLive()
-          if (s !== 'closed') id = setInterval(async () => { if (await fetchLive()==='closed') clearInterval(id) }, 3*60*1000)
+          if (s !== 'closed') liveId = setInterval(async () => { if (await fetchLive()==='closed') clearInterval(liveId) }, 3*60*1000)
         }, 1000)
+
+        // Poll for major market scan updates every 15 minutes
+        dataId = setInterval(async () => {
+          await fetchData()
+        }, 15*60*1000)
       }
     })()
-    return () => clearInterval(id)
+    return () => {
+      clearInterval(liveId)
+      clearInterval(dataId)
+    }
   }, [])
 
   useEffect(() => {
@@ -702,7 +711,7 @@ export default function App() {
                 {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>}
                 {activeTab==='charting' && <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon} isLoggedIn={isLoggedIn}/>}
                 {activeTab==='heatmap' && <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>}
-                {activeTab==='quantlab' && <QuantLabTab isDark={isDark}/>}
+                {activeTab==='quantlab' && <QuantLabTab isDark={isDark} scanUpdated={scanUpdated}/>}
               </div>
             </Suspense>
           </ErrorBoundary>
