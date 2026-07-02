@@ -104,7 +104,7 @@ def run_backtest():
     ohlcv_df = pd.read_sql_query("SELECT Date, Ticker, Close FROM daily_ohlcv ORDER BY Date", conn)
     ohlcv_df['Date'] = pd.to_datetime(ohlcv_df['Date'])
     pivot_df = ohlcv_df.pivot(index='Date', columns='Ticker', values='Close')
-    returns_df = pivot_df.pct_change().shift(-1) # return for holding from day T to T+1
+    returns_df = pivot_df.pct_change() # return on day T
     
     # Nifty data for benchmark (if available in daily_ohlcv)
     benchmark_returns = pd.Series(0.0, index=returns_df.index)
@@ -114,7 +114,11 @@ def run_backtest():
     portfolio_value = 100.0
     benchmark_value = 100.0
     
-    backtest_data = []
+    backtest_data = [{
+        "date": scan_dates[0][:10] if isinstance(scan_dates[0], str) else str(scan_dates[0])[:10],
+        "portfolio": 100.0,
+        "benchmark": 100.0
+    }]
     
     for i in range(len(scan_dates)):
         current_date = scan_dates[i]
@@ -138,7 +142,7 @@ def run_backtest():
         else:
             end_date = returns_df.index[-1]
             
-        period_returns = returns_df.loc[(returns_df.index >= start_date) & (returns_df.index < end_date)]
+        period_returns = returns_df.loc[(returns_df.index > start_date) & (returns_df.index <= end_date)]
         
         for date, row in period_returns.iterrows():
             # Equal weight the available top picks
