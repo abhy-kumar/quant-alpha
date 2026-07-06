@@ -1,27 +1,23 @@
 {
-  "last_updated": "2026-07-03 19:24:20",
+  "last_updated": "2026-07-06 23:47:41",
   "model_portfolios": {
     "max_sharpe": {
-      "AEGISLOG.NS": 0.2476,
-      "IDEA.NS": 0.2035,
-      "LUPIN.NS": 0.1884,
-      "WABAG.NS": 0.153,
-      "EICHERMOT.NS": 0.1117,
-      "OFSS.NS": 0.0959
+      "WELCORP.NS": 0.4184,
+      "EICHERMOT.NS": 0.2244,
+      "AUBANK.NS": 0.2144,
+      "SUPRIYA.NS": 0.1428
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.3761,
-      "LUPIN.NS": 0.2613,
-      "EICHERMOT.NS": 0.2016,
-      "OFSS.NS": 0.0729,
-      "WABAG.NS": 0.049,
-      "AEGISLOG.NS": 0.0332
+      "SUNPHARMA.NS": 0.4215,
+      "COALINDIA.NS": 0.2672,
+      "EICHERMOT.NS": 0.1619,
+      "AUBANK.NS": 0.1493
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 59.2,
+    "Quality": 54.2,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -93,178 +89,180 @@
       },
       {
         "date": "2026-07-01",
-        "portfolio": 102.26,
+        "portfolio": 101.95,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-02",
-        "portfolio": 102.01,
+        "portfolio": 101.7,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-03",
-        "portfolio": 102.9,
+        "portfolio": 102.05,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-06",
+        "portfolio": 101.85,
         "benchmark": 100.0
       }
     ],
     "stats": {
-      "total_return": 2.9,
-      "cagr": 64.41,
-      "volatility": 11.33,
-      "sharpe": 5.11,
-      "max_drawdown": -1.0,
-      "info_ratio": 5.69,
-      "win_rate": 46.7
+      "total_return": 1.85,
+      "cagr": 32.18,
+      "volatility": 10.91,
+      "sharpe": 2.35,
+      "max_drawdown": -1.3,
+      "info_ratio": 2.95,
+      "win_rate": 43.8
     }
   },
   "market_regime": {
     "score": 1,
     "nifty_trend": "bearish",
     "vix": 0.0,
-    "breadth": 0.522127659574468
+    "breadth": 0.458863443596268
   },
   "sector_allocation": {
+    "Financial Services": 30.0,
     "Healthcare": 20.0,
-    "Information Technology": 10.0,
-    "Utilities": 10.0,
-    "Telecommunication": 10.0,
-    "Real Estate": 10.0,
-    "Financial Services": 10.0,
-    "Technology": 10.0,
-    "Consumer Discretionary": 10.0,
+    "Consumer Cyclical": 20.0,
+    "Basic Materials": 10.0,
+    "Communication Services": 10.0,
     "Energy": 10.0
   },
   "correlation_matrix": {
     "labels": [
-      "AEGISLOG",
-      "ANGELONE",
+      "AUBANK",
+      "BANDHANBNK",
+      "COALINDIA",
       "EICHERMOT",
       "IDEA",
-      "LUPIN",
-      "OFSS",
-      "RAYMONDREL",
-      "SAKSOFT",
+      "MOTHERSON",
+      "RBLBANK",
       "SUNPHARMA",
-      "WABAG"
+      "SUPRIYA",
+      "WELCORP"
     ],
     "matrix": [
       [
         1.0,
-        0.3,
-        0.26,
-        -0.02,
-        0.27,
-        0.07,
-        0.11,
-        0.14,
-        -0.03,
-        0.11
-      ],
-      [
-        0.3,
-        1.0,
-        0.43,
-        0.26,
-        0.14,
-        0.13,
-        0.27,
-        0.19,
-        0.04,
-        0.18
-      ],
-      [
-        0.26,
-        0.43,
-        1.0,
-        0.18,
-        0.16,
-        0.09,
+        0.36,
+        -0.18,
         0.37,
-        0.03,
-        0.01,
-        0.31
-      ],
-      [
-        -0.02,
-        0.26,
-        0.18,
-        1.0,
-        -0.04,
-        -0.11,
-        0.23,
-        0.27,
-        0.12,
+        0.08,
+        0.19,
+        0.44,
+        -0.15,
+        -0.1,
         0.04
       ],
       [
-        0.27,
-        0.14,
+        0.36,
+        1.0,
+        0.1,
+        0.36,
+        0.22,
         0.16,
-        -0.04,
-        1.0,
-        0.14,
-        0.46,
-        0.17,
+        0.44,
         0.2,
-        -0.02
-      ],
-      [
-        0.07,
         0.13,
-        0.09,
-        -0.11,
-        0.14,
-        1.0,
-        -0.0,
-        0.14,
-        0.29,
-        0.14
+        0.2
       ],
       [
-        0.11,
-        0.27,
+        -0.18,
+        0.1,
+        1.0,
+        -0.15,
+        0.14,
+        -0.21,
+        0.09,
+        0.14,
+        0.06,
+        0.18
+      ],
+      [
         0.37,
-        0.23,
-        0.46,
-        -0.0,
+        0.36,
+        -0.15,
         1.0,
-        0.21,
-        0.09,
-        0.17
-      ],
-      [
-        0.14,
-        0.19,
+        0.02,
+        0.32,
+        0.39,
         0.03,
-        0.27,
-        0.17,
-        0.14,
-        0.21,
-        1.0,
-        0.1,
-        0.0
+        -0.26,
+        -0.12
       ],
       [
-        -0.03,
-        0.04,
-        0.01,
-        0.12,
-        0.2,
-        0.29,
-        0.09,
+        0.08,
+        0.22,
+        0.14,
+        0.02,
+        1.0,
+        0.17,
+        0.15,
+        0.13,
         0.1,
+        0.22
+      ],
+      [
+        0.19,
+        0.16,
+        -0.21,
+        0.32,
+        0.17,
+        1.0,
+        0.25,
+        -0.02,
+        0.21,
+        0.18
+      ],
+      [
+        0.44,
+        0.44,
+        0.09,
+        0.39,
+        0.15,
+        0.25,
+        1.0,
+        -0.14,
+        -0.12,
+        0.2
+      ],
+      [
+        -0.15,
+        0.2,
+        0.14,
+        0.03,
+        0.13,
+        -0.02,
+        -0.14,
+        1.0,
+        -0.0,
+        0.07
+      ],
+      [
+        -0.1,
+        0.13,
+        0.06,
+        -0.26,
+        0.1,
+        0.21,
+        -0.12,
+        -0.0,
         1.0,
         -0.06
       ],
       [
-        0.11,
-        0.18,
-        0.31,
         0.04,
-        -0.02,
-        0.14,
-        0.17,
-        0.0,
+        0.2,
+        0.18,
+        -0.12,
+        0.22,
+        0.18,
+        0.2,
+        0.07,
         -0.06,
         1.0
       ]
