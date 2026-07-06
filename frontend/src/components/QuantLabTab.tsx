@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import type { QuantData } from '../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
-import { Flask, ChartLineUp, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, CalendarBlank } from '@phosphor-icons/react'
+import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, CalendarBlank } from '@phosphor-icons/react'
 import { SegmentedControl } from './shared'
 
 interface Props {
