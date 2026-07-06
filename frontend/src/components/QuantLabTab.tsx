@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from 'react'
 import type { QuantData } from '../types'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
-import { Flask, ChartLineUp, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour } from '@phosphor-icons/react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
+import { Flask, ChartLineUp, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, CalendarBlank } from '@phosphor-icons/react'
+import { SegmentedControl } from './shared'
 
 interface Props {
   isDark: boolean
@@ -19,9 +20,59 @@ const tooltipStyle = (isDark: boolean) => ({
   padding: '10px 14px',
 })
 
+// Recompute backtest stats from a windowed slice of chart data
+function computeStats(chart: { date: string; portfolio: number; benchmark: number }[]) {
+  if (chart.length < 2) return null
+  const first = chart[0].portfolio
+  const last = chart[chart.length - 1].portfolio
+  const days = Math.max(
+    (new Date(chart[chart.length - 1].date).getTime() - new Date(chart[0].date).getTime()) / 86400000,
+    1
+  )
+  const years = Math.max(days / 365.25, 0.01)
+  const totalRet = (last / first) - 1
+  const cagr = Math.pow(1 + totalRet, 1 / years) - 1
+
+  const dailyReturns = chart.slice(1).map((d, i) => d.portfolio / chart[i].portfolio - 1)
+  const benchReturns = chart.slice(1).map((d, i) => d.benchmark / chart[i].benchmark - 1)
+  const mean = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length
+  const variance = dailyReturns.reduce((a, b) => a + (b - mean) ** 2, 0) / dailyReturns.length
+  const annVol = Math.sqrt(variance * 252)
+  const sharpe = annVol > 0 ? (cagr - 0.065) / annVol : 0
+
+  let peak = chart[0].portfolio
+  let maxDd = 0
+  for (const pt of chart) {
+    if (pt.portfolio > peak) peak = pt.portfolio
+    const dd = (pt.portfolio / peak) - 1
+    if (dd < maxDd) maxDd = dd
+  }
+
+  const benchFirst = chart[0].benchmark
+  const benchLast = chart[chart.length - 1].benchmark
+  const benchRet = (benchLast / benchFirst) - 1
+  const benchCagr = Math.pow(1 + benchRet, 1 / years) - 1
+  const trackingErr = Math.sqrt(
+    dailyReturns.map((r, i) => (r - benchReturns[i]) ** 2).reduce((a, b) => a + b, 0) / dailyReturns.length * 252
+  )
+  const infoRatio = trackingErr > 0 ? (cagr - benchCagr) / trackingErr : 0
+  const winRate = dailyReturns.filter(r => r > 0).length / dailyReturns.length * 100
+
+  return {
+    total_return: +(totalRet * 100).toFixed(2),
+    cagr: +(cagr * 100).toFixed(2),
+    volatility: +(annVol * 100).toFixed(2),
+    sharpe: +sharpe.toFixed(2),
+    max_drawdown: +(maxDd * 100).toFixed(2),
+    info_ratio: +infoRatio.toFixed(2),
+    win_rate: +winRate.toFixed(1),
+  }
+}
+
 export default function QuantLabTab({ isDark, scanUpdated }: Props) {
   const [quantData, setQuantData] = useState<QuantData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [startDate, setStartDate] = useState<string>('')
 
   useEffect(() => {
     fetch('/quant_data.json?t=' + Date.now())
@@ -47,7 +98,35 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
     ]
   }, [quantData])
 
-  const backtestStats = quantData?.backtest?.stats
+  const allChartData = quantData?.backtest?.chart ?? []
+  const firstDate = allChartData[0]?.date ?? ''
+
+  // Determine the effective start date (default = first available date)
+  const effectiveStart = startDate || firstDate
+
+  // Slice and rebase chart data from the chosen start date
+  const windowedChart = useMemo(() => {
+    if (!allChartData.length) return []
+    const idx = allChartData.findIndex(d => d.date >= effectiveStart)
+    const slice = idx >= 0 ? allChartData.slice(idx) : allChartData
+    if (slice.length === 0) return []
+    const basePort = slice[0].portfolio
+    const baseBench = slice[0].benchmark
+    return slice.map(d => ({
+      ...d,
+      portfolio: +((d.portfolio / basePort) * 100).toFixed(2),
+      benchmark: +((d.benchmark / baseBench) * 100).toFixed(2),
+    }))
+  }, [allChartData, effectiveStart])
+
+  const computedStats = useMemo(() => {
+    if (!allChartData.length) return null
+    const idx = allChartData.findIndex(d => d.date >= effectiveStart)
+    const slice = idx >= 0 ? allChartData.slice(idx) : allChartData
+    return computeStats(slice)
+  }, [allChartData, effectiveStart])
+
+  const backtestStats = computedStats
 
   if (loading) {
     return <div className="p-8 text-center" style={{ color: 'var(--text-3)' }}>Loading Quant Lab...</div>
@@ -142,18 +221,52 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
         {/* Left Column: Backtest */}
         <div className="lg:col-span-2 space-y-5">
           <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="flex items-center gap-2 mb-4">
-              <ChartLineUp size={18} weight="duotone" style={{ color: 'var(--brand)' }} />
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Strategy Backtest (Top 10 Equal Weight)</h3>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2">
+                <ChartLineUp size={18} weight="duotone" style={{ color: 'var(--brand)' }} />
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Strategy Backtest (Top 10 Equal Weight)</h3>
+              </div>
+              {/* Date-range controls — same pattern as ChartingTab */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <SegmentedControl
+                  options={[
+                    { key: firstDate, label: 'All' },
+                    { key: allChartData.length ? new Date(new Date(allChartData[allChartData.length-1].date).getTime() - 30*86400000).toISOString().slice(0,10) : firstDate, label: '1M' },
+                    { key: allChartData.length ? new Date(new Date(allChartData[allChartData.length-1].date).getTime() - 14*86400000).toISOString().slice(0,10) : firstDate, label: '2W' },
+                  ]}
+                  value={effectiveStart}
+                  onChange={setStartDate}
+                />
+                <div className="flex items-center gap-1.5" style={{ color: 'var(--text-3)' }}>
+                  <CalendarBlank size={13} />
+                  <input
+                    type="date"
+                    value={effectiveStart}
+                    min={firstDate}
+                    max={allChartData[allChartData.length - 1]?.date ?? ''}
+                    onChange={e => setStartDate(e.target.value)}
+                    className="text-[10px] px-2 py-1 rounded-md outline-none"
+                    style={{
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-2)',
+                      colorScheme: isDark ? 'dark' : 'light',
+                      fontFamily: 'Inter, system-ui, sans-serif',
+                    }}
+                  />
+                </div>
+              </div>
             </div>
+            {/* Rebased chart: portfolio and benchmark both start at 100 from selected date */}
             <div style={{ height: 300, width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={quantData.backtest.chart} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                <LineChart data={windowedChart} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                   <XAxis dataKey="date" stroke="var(--text-3)" tick={{ fontSize: 10 }} tickMargin={10} />
                   <YAxis stroke="var(--text-3)" tick={{ fontSize: 10 }} domain={['auto', 'auto']} tickFormatter={(v) => typeof v === 'number' ? v.toFixed(1) : v} />
-                  <Tooltip contentStyle={tooltipStyle(isDark)} />
+                  <Tooltip contentStyle={tooltipStyle(isDark)} formatter={(v: any) => [typeof v === 'number' ? v.toFixed(2) : v]} />
                   <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
+                  <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
                   <Line type="monotone" dataKey="portfolio" name="Alpha Picks" stroke="var(--brand)" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
                   <Line type="monotone" dataKey="benchmark" name="NIFTY 50" stroke="var(--text-3)" strokeWidth={2} dot={false} strokeDasharray="5 5" />
                 </LineChart>
