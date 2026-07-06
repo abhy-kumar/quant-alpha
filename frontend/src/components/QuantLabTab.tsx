@@ -146,87 +146,85 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
 
   return (
     <div className="space-y-5">
-      {/* Header & Regime */}
+      {/* Header row: description + regime */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="p-6 sm:p-8 card lg:col-span-2 flex flex-col justify-center" style={{ borderRadius: 'var(--radius-xl)' }}>
-          <div className="flex items-start gap-4">
-            <div className="p-3" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
-              <Flask size={20} weight="duotone" style={{ color: 'var(--brand)' }} />
+        <div className="overflow-hidden card lg:col-span-2" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+          <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
+            Quant Lab · Last calculated: {quantData.last_updated}
+          </div>
+          <div className="p-5 flex items-start gap-4">
+            <div className="p-2.5 shrink-0" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
+              <Flask size={18} weight="duotone" style={{ color: 'var(--brand)' }} />
             </div>
-            <div>
-              <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--text)' }}>Quant Lab</h2>
-              <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--text-2)' }}>
-                Institutional-grade portfolio tools. Analyzes top screening picks to optimize portfolio weights, tracks aggregate factor exposures, and visualizes historical backtested performance.
-              </p>
-              <p className="text-[11px] mt-2" style={{ color: 'var(--text-3)' }}>Last calculated: {quantData.last_updated}</p>
-            </div>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-2)' }}>
+              Institutional-grade portfolio tools. Analyzes top screening picks to optimize portfolio weights, tracks aggregate factor exposures, and visualizes historical backtested performance.
+            </p>
           </div>
         </div>
-        
+
         {quantData.market_regime && (
-          <div className="p-6 sm:p-8 card flex flex-col justify-center items-center text-center" style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="mb-2">
-              {quantData.market_regime.score >= 70 ? (
-                <ShieldCheck size={32} weight="duotone" style={{ color: 'var(--green)' }} />
-              ) : quantData.market_regime.score <= 30 ? (
-                <Warning size={32} weight="duotone" style={{ color: 'var(--red)' }} />
-              ) : (
-                <Scales size={32} weight="duotone" style={{ color: 'var(--amber)' }} />
-              )}
+          <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+            <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
+              Market Regime
             </div>
-            <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--text)' }}>
-              {quantData.market_regime.score >= 70 ? 'Risk-On (Bull)' : quantData.market_regime.score <= 30 ? 'Risk-Off (Bear)' : 'Neutral Regime'}
-            </h3>
-            <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-              Regime Score: <span style={{ color: 'var(--text)' }}>{quantData.market_regime.score}/100</span>
-            </p>
-            <p className="text-[11px] mt-1" style={{ color: 'var(--text-3)' }}>
-              Breadth: {quantData.market_regime.breadth.toFixed(1)}% • VIX: {quantData.market_regime.vix.toFixed(1)}
-            </p>
+            <div className="p-5 flex flex-col items-center text-center gap-2">
+              {quantData.market_regime.score >= 70 ? (
+                <ShieldCheck size={28} weight="duotone" style={{ color: 'var(--green)' }} />
+              ) : quantData.market_regime.score <= 30 ? (
+                <Warning size={28} weight="duotone" style={{ color: 'var(--red)' }} />
+              ) : (
+                <Scales size={28} weight="duotone" style={{ color: 'var(--amber)' }} />
+              )}
+              <div className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                {quantData.market_regime.score >= 70 ? 'Risk-On (Bull)' : quantData.market_regime.score <= 30 ? 'Risk-Off (Bear)' : 'Neutral Regime'}
+              </div>
+              <div className="grid grid-cols-3 gap-3 w-full mt-1">
+                <div>
+                  <div className="text-[11px]" style={{ color: 'var(--text-3)' }}>Score</div>
+                  <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>{quantData.market_regime.score}/100</div>
+                </div>
+                <div>
+                  <div className="text-[11px]" style={{ color: 'var(--text-3)' }}>Breadth</div>
+                  <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>{quantData.market_regime.breadth.toFixed(1)}%</div>
+                </div>
+                <div>
+                  <div className="text-[11px]" style={{ color: 'var(--text-3)' }}>VIX</div>
+                  <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>{quantData.market_regime.vix.toFixed(1)}</div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
+      {/* Stat cards */}
       {backtestStats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
-          <div className="card p-4 flex flex-col justify-center" style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="text-[11px] mb-1 flex items-center gap-1" style={{ color: 'var(--text-3)' }}><TrendUp size={14} /> CAGR (Alpha Picks)</div>
-            <div className="text-xl font-bold" style={{ color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' }}>
-              {backtestStats.cagr > 0 ? '+' : ''}{backtestStats.cagr.toFixed(2)}%
+          {[
+            { icon: <TrendUp size={13} />, label: 'CAGR (Alpha Picks)', value: `${backtestStats.cagr > 0 ? '+' : ''}${backtestStats.cagr.toFixed(2)}%`, color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
+            { icon: <ChartLineDown size={13} />, label: 'Ann. Volatility', value: `${backtestStats.volatility.toFixed(1)}%`, color: backtestStats.volatility <= 20 ? 'var(--green)' : 'var(--amber)' },
+            { icon: <Target size={13} />, label: 'Sharpe Ratio', value: backtestStats.sharpe.toFixed(2), color: backtestStats.sharpe >= 1 ? 'var(--green)' : 'var(--text)' },
+            { icon: <Warning size={13} />, label: 'Max Drawdown', value: `${backtestStats.max_drawdown.toFixed(2)}%`, color: 'var(--red)' },
+          ].map(stat => (
+            <div key={stat.label} className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+              <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
+                {stat.icon}{stat.label}
+              </div>
+              <div className="px-4 py-3 text-xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
             </div>
-          </div>
-          <div className="card p-4 flex flex-col justify-center" style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="text-[11px] mb-1 flex items-center gap-1" style={{ color: 'var(--text-3)' }}><ChartLineDown size={14} /> Ann. Volatility</div>
-            <div className="text-xl font-bold" style={{ color: backtestStats.volatility <= 20 ? 'var(--green)' : 'var(--amber)' }}>
-              {backtestStats.volatility.toFixed(1)}%
-            </div>
-          </div>
-          <div className="card p-4 flex flex-col justify-center" style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="text-[11px] mb-1 flex items-center gap-1" style={{ color: 'var(--text-3)' }}><Target size={14} /> Sharpe Ratio</div>
-            <div className="text-xl font-bold" style={{ color: backtestStats.sharpe >= 1 ? 'var(--green)' : 'var(--text)' }}>
-              {backtestStats.sharpe.toFixed(2)}
-            </div>
-          </div>
-          <div className="card p-4 flex flex-col justify-center" style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="text-[11px] mb-1 flex items-center gap-1" style={{ color: 'var(--text-3)' }}><Warning size={14} /> Max Drawdown</div>
-            <div className="text-xl font-bold" style={{ color: 'var(--red)' }}>
-              {backtestStats.max_drawdown.toFixed(2)}%
-            </div>
-          </div>
+          ))}
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        
-        {/* Left Column: Backtest */}
+
+        {/* Left: Backtest + Portfolios */}
         <div className="lg:col-span-2 space-y-5">
-          <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div className="flex items-center gap-2">
-                <ChartLineUp size={18} weight="duotone" style={{ color: 'var(--brand)' }} />
-                <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Strategy Backtest (Top 10 Equal Weight)</h3>
-              </div>
-              {/* Date-range controls — same pattern as ChartingTab */}
+
+          {/* Backtest chart */}
+          <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+            <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+              <span className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>Strategy Backtest · Top 10 Equal Weight</span>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <SegmentedControl
                   options={[
@@ -257,18 +255,17 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
                 </div>
               </div>
             </div>
-            {/* Rebased chart: portfolio and benchmark both start at 100 from selected date */}
-            <div style={{ height: 300, width: '100%' }}>
+            <div className="p-5" style={{ height: 320 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={windowedChart} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="date" stroke="var(--text-3)" tick={{ fontSize: 10 }} tickMargin={10} />
-                  <YAxis stroke="var(--text-3)" tick={{ fontSize: 10 }} domain={['auto', 'auto']} tickFormatter={(v) => typeof v === 'number' ? v.toFixed(1) : v} />
+                  <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} tickMargin={10} minTickGap={30} />
+                  <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} domain={['auto', 'auto']} tickFormatter={(v) => typeof v === 'number' ? v.toFixed(1) : v} />
                   <Tooltip contentStyle={tooltipStyle(isDark)} formatter={(v: any) => [typeof v === 'number' ? v.toFixed(2) : v]} />
-                  <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
+                  <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '10px', color: 'var(--text-3)' }} />
                   <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
-                  <Line type="monotone" dataKey="portfolio" name="Alpha Picks" stroke="var(--brand)" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="benchmark" name="NIFTY 50" stroke="var(--text-3)" strokeWidth={2} dot={false} strokeDasharray="5 5" />
+                  <Line type="monotone" dataKey="portfolio" name="Alpha Picks" stroke="var(--brand)" strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="benchmark" name="NIFTY 50" stroke="var(--text-3)" strokeWidth={1.5} dot={false} strokeDasharray="5 5" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -276,90 +273,70 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
 
           {/* Model Portfolios */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-              <div className="flex items-center gap-2 mb-4">
-                <Target size={18} weight="duotone" style={{ color: 'var(--brand)' }} />
-                <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Max Sharpe Portfolio</h3>
-              </div>
-              <div className="space-y-3 max-h-60 overflow-y-auto scrollbar-none">
-                {Object.entries(max_sharpe).map(([ticker, weight]) => (
-                  <div key={ticker}>
-                    <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-2)' }}>
-                      <span className="font-medium">{ticker.replace('.NS', '')}</span>
-                      <span>{(Number(weight) * 100).toFixed(1)}%</span>
+            {[
+              { title: 'Max Sharpe Portfolio', icon: <Target size={13} weight="duotone" style={{ color: 'var(--brand)' }} />, data: max_sharpe, accent: 'var(--brand)' },
+              { title: 'Min Volatility Portfolio', icon: <Scales size={13} weight="duotone" style={{ color: 'var(--amber)' }} />, data: min_volatility, accent: 'var(--amber)' },
+            ].map(port => (
+              <div key={port.title} className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+                <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
+                  {port.icon}{port.title}
+                </div>
+                <div className="p-5 space-y-3 max-h-56 overflow-y-auto scrollbar-none">
+                  {Object.entries(port.data).map(([ticker, weight]) => (
+                    <div key={ticker}>
+                      <div className="flex justify-between text-xs mb-1.5" style={{ color: 'var(--text-2)' }}>
+                        <span className="font-medium" style={{ color: 'var(--text)' }}>{ticker.replace('.NS', '')}</span>
+                        <span>{(Number(weight) * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="h-1 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                        <div className="h-full rounded-full" style={{ width: `${Number(weight) * 100}%`, background: port.accent }} />
+                      </div>
                     </div>
-                    <div className="h-1.5 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                      <div className="h-full" style={{ width: `${Number(weight) * 100}%`, background: 'var(--brand)' }}></div>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-
-            <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-              <div className="flex items-center gap-2 mb-4">
-                <Scales size={18} weight="duotone" style={{ color: 'var(--amber)' }} />
-                <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Minimum Volatility Portfolio</h3>
-              </div>
-              <div className="space-y-3 max-h-60 overflow-y-auto scrollbar-none">
-                {Object.entries(min_volatility).map(([ticker, weight]) => (
-                  <div key={ticker}>
-                    <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-2)' }}>
-                      <span className="font-medium">{ticker.replace('.NS', '')}</span>
-                      <span>{(Number(weight) * 100).toFixed(1)}%</span>
-                    </div>
-                    <div className="h-1.5 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                      <div className="h-full" style={{ width: `${Number(weight) * 100}%`, background: 'var(--amber)' }}></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Right Column */}
+        {/* Right column */}
         <div className="space-y-5">
+
           {/* Factor Exposures */}
-          <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="flex items-center gap-2 mb-6">
-              <Crosshair size={18} weight="duotone" style={{ color: 'var(--green)' }} />
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Portfolio Factor Exposure</h3>
+          <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+            <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
+              <Crosshair size={13} weight="duotone" style={{ color: 'var(--green)' }} />Portfolio Factor Exposure
             </div>
-            <div style={{ height: 260, width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <div className="p-5" style={{ height: 240 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={radarData} layout="vertical" margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={true} vertical={false} />
-                  <XAxis type="number" domain={[0, 100]} stroke="var(--text-3)" tick={{ fontSize: 10 }} />
-                  <YAxis dataKey="subject" type="category" stroke="var(--text-3)" tick={{ fontSize: 11, fill: 'var(--text-2)' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={tooltipStyle(isDark)} cursor={{ fill: 'var(--border)' }} />
-                  <Bar dataKey="A" name="Portfolio Exposure" fill="var(--green)" radius={[0, 4, 4, 0]} barSize={24} />
+                  <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" horizontal={false} vertical={true} />
+                  <XAxis type="number" domain={[0, 100]} stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} />
+                  <YAxis dataKey="subject" type="category" stroke="var(--border)" tick={{ fontSize: 11, fill: 'var(--text-2)', fontFamily: 'Inter, system-ui, sans-serif' }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={tooltipStyle(isDark)} cursor={{ fill: 'var(--surface-2)' }} />
+                  <Bar dataKey="A" name="Exposure" fill="var(--green)" radius={[0, 4, 4, 0]} barSize={20} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <p className="text-[11px] text-center mt-4 leading-relaxed" style={{ color: 'var(--text-3)' }}>
-              Shows the aggregate exposure of the top picks to academic factors (percentile rank against the screened universe).
+            <p className="text-[11px] text-center px-4 pb-4 leading-relaxed" style={{ color: 'var(--text-3)' }}>
+              Percentile rank of top picks against screened universe.
             </p>
           </div>
 
           {/* Sector Allocation */}
           {quantData.sector_allocation && (
-            <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-              <div className="flex items-center gap-2 mb-4">
-                <ChartPieSlice size={18} weight="duotone" style={{ color: 'var(--blue)' }} />
-                <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sector Allocation</h3>
+            <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+              <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
+                <ChartPieSlice size={13} weight="duotone" style={{ color: 'var(--blue)' }} />Sector Allocation
               </div>
-              <div style={{ height: 220, width: '100%' }}>
+              <div className="px-5 pt-3" style={{ height: 200 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={Object.entries(quantData.sector_allocation).map(([name, value]) => ({ name, value }))}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={2}
-                      dataKey="value"
+                      cx="50%" cy="50%"
+                      innerRadius={55} outerRadius={75}
+                      paddingAngle={2} dataKey="value"
                     >
                       {Object.entries(quantData.sector_allocation).map((_entry, index) => {
                         const colors = ['#0D9488', '#2563EB', '#7C3AED', '#DB2777', '#EA580C', '#65A30D', '#0891B2', '#4F46E5', '#C026D3', '#E11D48']
@@ -370,12 +347,12 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex flex-wrap gap-2 justify-center mt-2">
+              <div className="flex flex-wrap gap-x-3 gap-y-1.5 justify-center px-4 pb-4">
                 {Object.entries(quantData.sector_allocation).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([name, val], i) => {
                   const colors = ['#0D9488', '#2563EB', '#7C3AED', '#DB2777', '#EA580C', '#65A30D', '#0891B2', '#4F46E5', '#C026D3', '#E11D48']
                   return (
                     <div key={name} className="flex items-center gap-1.5 text-[10px]" style={{ color: 'var(--text-2)' }}>
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[i % colors.length] }}></div>
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: colors[i % colors.length] }} />
                       {name} ({val}%)
                     </div>
                   )
@@ -386,18 +363,17 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
 
           {/* Correlation Matrix */}
           {quantData.correlation_matrix && quantData.correlation_matrix.labels.length > 0 && (
-            <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-              <div className="flex items-center gap-2 mb-4">
-                <GridFour size={18} weight="duotone" style={{ color: 'var(--amber)' }} />
-                <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Asset Correlation</h3>
+            <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+              <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
+                <GridFour size={13} weight="duotone" style={{ color: 'var(--amber)' }} />Asset Correlation
               </div>
-              <div className="overflow-x-auto scrollbar-none">
+              <div className="p-5 overflow-x-auto scrollbar-none">
                 <table className="w-full" style={{ borderSpacing: '2px', borderCollapse: 'separate' }}>
                   <thead>
                     <tr>
-                      <th className="p-1 text-[10px] font-medium" style={{ color: 'var(--text-3)', width: 40 }}></th>
+                      <th className="p-1 text-[10px] font-medium" style={{ color: 'var(--text-3)', width: 40 }} />
                       {quantData.correlation_matrix.labels.map(l => (
-                        <th key={l} className="p-1 text-[9px] font-medium" style={{ color: 'var(--text-3)', height: 30, width: 24, textAlign: 'center' }}>
+                        <th key={l} className="p-1 text-[9px] font-medium" style={{ color: 'var(--text-3)', height: 28, width: 24, textAlign: 'center' }}>
                           {l.substring(0, 4)}
                         </th>
                       ))}
@@ -412,22 +388,11 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
                         {row.map((val, j) => {
                           let bg = 'transparent'
                           let color = 'var(--text)'
-                          if (val === 1) {
-                            bg = isDark ? '#1F2937' : '#F3F4F6'
-                            color = 'var(--text-3)'
-                          } else if (val > 0.5) {
-                            bg = `rgba(16, 185, 129, ${val * 0.8})`
-                            color = '#fff'
-                          } else if (val > 0) {
-                            bg = `rgba(16, 185, 129, ${val * 0.4})`
-                            color = isDark ? '#fff' : '#000'
-                          } else if (val < -0.5) {
-                            bg = `rgba(239, 68, 68, ${Math.abs(val) * 0.8})`
-                            color = '#fff'
-                          } else if (val < 0) {
-                            bg = `rgba(239, 68, 68, ${Math.abs(val) * 0.4})`
-                            color = isDark ? '#fff' : '#000'
-                          }
+                          if (val === 1) { bg = isDark ? '#1F2937' : '#F3F4F6'; color = 'var(--text-3)' }
+                          else if (val > 0.5) { bg = `rgba(16, 185, 129, ${val * 0.8})`; color = '#fff' }
+                          else if (val > 0) { bg = `rgba(16, 185, 129, ${val * 0.4})`; color = isDark ? '#fff' : '#000' }
+                          else if (val < -0.5) { bg = `rgba(239, 68, 68, ${Math.abs(val) * 0.8})`; color = '#fff' }
+                          else if (val < 0) { bg = `rgba(239, 68, 68, ${Math.abs(val) * 0.4})`; color = isDark ? '#fff' : '#000' }
                           return (
                             <td key={j} className="p-1 text-[9px] text-center rounded-sm transition-colors" style={{ backgroundColor: bg, color }}>
                               {val.toFixed(2)}
