@@ -44,12 +44,13 @@
     --glass-bg-strong: rgba(255, 255, 255, 0.55);
     --glass-bg-subtle: rgba(255, 255, 255, 0.28);
     --glass-border: rgba(255, 255, 255, 0.6);
-    --glass-border-strong: rgba(255, 255, 255, 0.75);
+    --glass-border-strong: rgba(200, 210, 230, 0.7);
     --glass-blur: 32px;
     --glass-shadow: 0 8px 32px hsla(218, 20%, 14%, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
     --glass-shadow-lg: 0 16px 48px hsla(218, 20%, 14%, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.4);
     --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6);
     --glass-highlight-strong: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -1px 0 rgba(0, 0, 0, 0.02);
+    --dropdown-bg: #ffffff;
   }
   .dark {
     --bg: #000000;
@@ -89,6 +90,7 @@
     --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03);
     --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     --glass-highlight-strong: inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+    --dropdown-bg: #18181b;
   }
   html, body {
     background: var(--bg);
