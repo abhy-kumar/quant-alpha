@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import type { QuantData } from '../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
 import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, CalendarBlank } from '@phosphor-icons/react'
-import { SegmentedControl } from './shared'
+import { SegmentedControl, InfoTooltip } from './shared'
 
 interface Props {
   isDark: boolean
@@ -164,8 +164,8 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
 
         {quantData.market_regime && (
           <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-              Market Regime
+            <div className="px-4 py-3 text-xs font-medium flex items-center gap-1" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
+              Market Regime<InfoTooltip id="quant.regime" />
             </div>
             <div className="p-5 flex flex-col items-center text-center gap-2">
               {quantData.market_regime.score >= 70 ? (
@@ -180,15 +180,15 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
               </div>
               <div className="grid grid-cols-3 gap-3 w-full mt-1">
                 <div>
-                  <div className="text-[11px]" style={{ color: 'var(--text-3)' }}>Score</div>
+                  <div className="text-[11px] flex items-center justify-center gap-0.5" style={{ color: 'var(--text-3)' }}>Score<InfoTooltip id="quant.regime" /></div>
                   <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>{quantData.market_regime.score}/100</div>
                 </div>
                 <div>
-                  <div className="text-[11px]" style={{ color: 'var(--text-3)' }}>Breadth</div>
+                  <div className="text-[11px] flex items-center justify-center gap-0.5" style={{ color: 'var(--text-3)' }}>Breadth<InfoTooltip id="quant.breadth" /></div>
                   <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>{quantData.market_regime.breadth.toFixed(1)}%</div>
                 </div>
                 <div>
-                  <div className="text-[11px]" style={{ color: 'var(--text-3)' }}>VIX</div>
+                  <div className="text-[11px] flex items-center justify-center gap-0.5" style={{ color: 'var(--text-3)' }}>VIX<InfoTooltip id="quant.vix" /></div>
                   <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>{quantData.market_regime.vix.toFixed(1)}</div>
                 </div>
               </div>
@@ -201,14 +201,14 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
       {backtestStats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
           {[
-            { icon: <TrendUp size={13} />, label: 'CAGR (Alpha Picks)', value: `${backtestStats.cagr > 0 ? '+' : ''}${backtestStats.cagr.toFixed(2)}%`, color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
-            { icon: <ChartLineDown size={13} />, label: 'Ann. Volatility', value: `${backtestStats.volatility.toFixed(1)}%`, color: backtestStats.volatility <= 20 ? 'var(--green)' : 'var(--amber)' },
-            { icon: <Target size={13} />, label: 'Sharpe Ratio', value: backtestStats.sharpe.toFixed(2), color: backtestStats.sharpe >= 1 ? 'var(--green)' : 'var(--text)' },
-            { icon: <Warning size={13} />, label: 'Max Drawdown', value: `${backtestStats.max_drawdown.toFixed(2)}%`, color: 'var(--red)' },
+            { icon: <TrendUp size={13} />, label: 'CAGR (Alpha Picks)', tooltipId: 'quant.cagr', value: `${backtestStats.cagr > 0 ? '+' : ''}${backtestStats.cagr.toFixed(2)}%`, color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
+            { icon: <ChartLineDown size={13} />, label: 'Ann. Volatility', tooltipId: 'quant.volatility', value: `${backtestStats.volatility.toFixed(1)}%`, color: backtestStats.volatility <= 20 ? 'var(--green)' : 'var(--amber)' },
+            { icon: <Target size={13} />, label: 'Sharpe Ratio', tooltipId: 'quant.sharpe', value: backtestStats.sharpe.toFixed(2), color: backtestStats.sharpe >= 1 ? 'var(--green)' : 'var(--text)' },
+            { icon: <Warning size={13} />, label: 'Max Drawdown', tooltipId: 'quant.maxdd', value: `${backtestStats.max_drawdown.toFixed(2)}%`, color: 'var(--red)' },
           ].map(stat => (
             <div key={stat.label} className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
               <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-                {stat.icon}{stat.label}
+                {stat.icon}{stat.label}<InfoTooltip id={stat.tooltipId} />
               </div>
               <div className="px-4 py-3 text-xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
             </div>
@@ -224,7 +224,7 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
           {/* Backtest chart */}
           <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
             <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--glass-border)' }}>
-              <span className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>Strategy Backtest · Top 10 Equal Weight</span>
+              <span className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--text-2)' }}>Strategy Backtest · Top 10 Equal Weight<InfoTooltip id="quant.backtest" /></span>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <SegmentedControl
                   options={[
@@ -274,12 +274,12 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
           {/* Model Portfolios */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {[
-              { title: 'Max Sharpe Portfolio', icon: <Target size={13} weight="duotone" style={{ color: 'var(--brand)' }} />, data: max_sharpe, accent: 'var(--brand)' },
-              { title: 'Min Volatility Portfolio', icon: <Scales size={13} weight="duotone" style={{ color: 'var(--amber)' }} />, data: min_volatility, accent: 'var(--amber)' },
+              { title: 'Max Sharpe Portfolio', tooltipId: 'quant.max-sharpe', icon: <Target size={13} weight="duotone" style={{ color: 'var(--brand)' }} />, data: max_sharpe, accent: 'var(--brand)' },
+              { title: 'Min Volatility Portfolio', tooltipId: 'quant.min-vol', icon: <Scales size={13} weight="duotone" style={{ color: 'var(--amber)' }} />, data: min_volatility, accent: 'var(--amber)' },
             ].map(port => (
               <div key={port.title} className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
                 <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-                  {port.icon}{port.title}
+                  {port.icon}{port.title}<InfoTooltip id={port.tooltipId} />
                 </div>
                 <div className="p-5 space-y-3 max-h-56 overflow-y-auto scrollbar-none">
                   {Object.entries(port.data).map(([ticker, weight]) => (
@@ -305,7 +305,7 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
           {/* Factor Exposures */}
           <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
             <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-              <Crosshair size={13} weight="duotone" style={{ color: 'var(--green)' }} />Portfolio Factor Exposure
+              <Crosshair size={13} weight="duotone" style={{ color: 'var(--green)' }} />Portfolio Factor Exposure<InfoTooltip id="quant.factor.value" />
             </div>
             <div className="p-5" style={{ height: 240 }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -327,7 +327,7 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
           {quantData.sector_allocation && (
             <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
               <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-                <ChartPieSlice size={13} weight="duotone" style={{ color: 'var(--blue)' }} />Sector Allocation
+                <ChartPieSlice size={13} weight="duotone" style={{ color: 'var(--blue)' }} />Sector Allocation<InfoTooltip id="quant.sector" />
               </div>
               <div className="px-5 pt-3" style={{ height: 200 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -365,7 +365,7 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
           {quantData.correlation_matrix && quantData.correlation_matrix.labels.length > 0 && (
             <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
               <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-                <GridFour size={13} weight="duotone" style={{ color: 'var(--amber)' }} />Asset Correlation
+                <GridFour size={13} weight="duotone" style={{ color: 'var(--amber)' }} />Asset Correlation<InfoTooltip id="quant.correlation" />
               </div>
               <div className="p-5 overflow-x-auto scrollbar-none">
                 <table className="w-full" style={{ borderSpacing: '2px', borderCollapse: 'separate' }}>
