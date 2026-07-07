@@ -1,23 +1,24 @@
 {
-  "last_updated": "2026-07-06 23:47:41",
+  "last_updated": "2026-07-07 07:55:27",
   "model_portfolios": {
     "max_sharpe": {
-      "WELCORP.NS": 0.4184,
-      "EICHERMOT.NS": 0.2244,
-      "AUBANK.NS": 0.2144,
-      "SUPRIYA.NS": 0.1428
+      "WELCORP.NS": 0.4838,
+      "EICHERMOT.NS": 0.3408,
+      "SUPRIYA.NS": 0.1544,
+      "RBLBANK.NS": 0.021
     },
     "min_volatility": {
       "SUNPHARMA.NS": 0.4215,
-      "COALINDIA.NS": 0.2672,
-      "EICHERMOT.NS": 0.1619,
-      "AUBANK.NS": 0.1493
+      "COALINDIA.NS": 0.2637,
+      "EICHERMOT.NS": 0.1705,
+      "BAJAJ-AUTO.NS": 0.1139,
+      "RBLBANK.NS": 0.0304
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 54.2,
+    "Quality": 53.6,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -106,35 +107,40 @@
         "date": "2026-07-06",
         "portfolio": 101.85,
         "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-07",
+        "portfolio": 101.27,
+        "benchmark": 100.0
       }
     ],
     "stats": {
-      "total_return": 1.85,
-      "cagr": 32.18,
-      "volatility": 10.91,
-      "sharpe": 2.35,
-      "max_drawdown": -1.3,
-      "info_ratio": 2.95,
-      "win_rate": 43.8
+      "total_return": 1.27,
+      "cagr": 20.25,
+      "volatility": 10.89,
+      "sharpe": 1.26,
+      "max_drawdown": -1.72,
+      "info_ratio": 1.86,
+      "win_rate": 41.2
     }
   },
   "market_regime": {
-    "score": 1,
+    "score": 0,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.458863443596268
   },
   "sector_allocation": {
-    "Financial Services": 30.0,
+    "Consumer Cyclical": 30.0,
     "Healthcare": 20.0,
-    "Consumer Cyclical": 20.0,
+    "Financial Services": 20.0,
     "Basic Materials": 10.0,
     "Communication Services": 10.0,
     "Energy": 10.0
   },
   "correlation_matrix": {
     "labels": [
-      "AUBANK",
+      "BAJAJ-AUTO",
       "BANDHANBNK",
       "COALINDIA",
       "EICHERMOT",
@@ -148,90 +154,90 @@
     "matrix": [
       [
         1.0,
-        0.36,
-        -0.18,
-        0.37,
-        0.08,
         0.19,
-        0.44,
+        -0.22,
+        0.2,
+        -0.01,
+        0.21,
+        0.19,
+        0.12,
         -0.15,
-        -0.1,
-        0.04
+        0.16
       ],
       [
-        0.36,
+        0.19,
         1.0,
-        0.1,
+        0.11,
         0.36,
-        0.22,
-        0.16,
-        0.44,
+        0.23,
+        0.17,
+        0.45,
         0.2,
         0.13,
         0.2
       ],
       [
-        -0.18,
-        0.1,
+        -0.22,
+        0.11,
         1.0,
-        -0.15,
+        -0.16,
+        0.16,
+        -0.2,
+        0.1,
         0.14,
-        -0.21,
-        0.09,
-        0.14,
-        0.06,
+        0.07,
         0.18
       ],
       [
-        0.37,
+        0.2,
         0.36,
-        -0.15,
+        -0.16,
         1.0,
-        0.02,
+        0.01,
         0.32,
         0.39,
         0.03,
         -0.26,
-        -0.12
+        -0.13
       ],
       [
-        0.08,
-        0.22,
-        0.14,
-        0.02,
+        -0.01,
+        0.23,
+        0.16,
+        0.01,
         1.0,
         0.17,
-        0.15,
+        0.14,
         0.13,
-        0.1,
+        0.11,
         0.22
       ],
       [
-        0.19,
-        0.16,
-        -0.21,
+        0.21,
+        0.17,
+        -0.2,
         0.32,
         0.17,
         1.0,
-        0.25,
+        0.24,
         -0.02,
         0.21,
-        0.18
+        0.19
       ],
       [
-        0.44,
-        0.44,
-        0.09,
+        0.19,
+        0.45,
+        0.1,
         0.39,
-        0.15,
-        0.25,
+        0.14,
+        0.24,
         1.0,
         -0.14,
-        -0.12,
+        -0.13,
         0.2
       ],
       [
-        -0.15,
+        0.12,
         0.2,
         0.14,
         0.03,
@@ -243,27 +249,27 @@
         0.07
       ],
       [
-        -0.1,
+        -0.15,
         0.13,
-        0.06,
+        0.07,
         -0.26,
-        0.1,
+        0.11,
         0.21,
-        -0.12,
+        -0.13,
         -0.0,
         1.0,
-        -0.06
+        -0.05
       ],
       [
-        0.04,
+        0.16,
         0.2,
         0.18,
-        -0.12,
+        -0.13,
         0.22,
-        0.18,
+        0.19,
         0.2,
         0.07,
-        -0.06,
+        -0.05,
         1.0
       ]
     ]
