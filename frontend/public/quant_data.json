@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-08 12:13:25",
+  "last_updated": "2026-07-08 18:08:04",
   "model_portfolios": {
     "max_sharpe": {
       "CEMPRO.NS": 0.4957,
@@ -132,7 +132,7 @@
     }
   },
   "market_regime": {
-    "score": -2,
+    "score": -1,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.1362098138747885
@@ -141,8 +141,8 @@
     "Healthcare": 40.0,
     "Industrials": 20.0,
     "Energy": 10.0,
-    "Consumer Cyclical": 10.0,
     "Communication Services": 10.0,
+    "Consumer Cyclical": 10.0,
     "Basic Materials": 10.0
   },
   "correlation_matrix": {
