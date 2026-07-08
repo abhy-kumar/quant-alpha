@@ -1,25 +1,26 @@
 {
-  "last_updated": "2026-07-08 09:38:19",
+  "last_updated": "2026-07-08 12:13:25",
   "model_portfolios": {
     "max_sharpe": {
-      "CEMPRO.NS": 0.4269,
-      "EICHERMOT.NS": 0.3676,
-      "IOLCP.NS": 0.1488,
-      "WABAG.NS": 0.0299,
-      "GLAND.NS": 0.0269
+      "CEMPRO.NS": 0.4957,
+      "IOLCP.NS": 0.2035,
+      "LUPIN.NS": 0.1801,
+      "WABAG.NS": 0.0728,
+      "GLAND.NS": 0.0479
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.3839,
-      "COALINDIA.NS": 0.1935,
-      "EICHERMOT.NS": 0.1887,
-      "ONGC.NS": 0.1189,
-      "GLAND.NS": 0.0998
+      "SUNPHARMA.NS": 0.3701,
+      "COALINDIA.NS": 0.2505,
+      "BAJAJ-AUTO.NS": 0.1663,
+      "GLAND.NS": 0.1082,
+      "LUPIN.NS": 0.0796,
+      "WABAG.NS": 0.016
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 61.4,
+    "Quality": 59.7,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -81,52 +82,52 @@
       },
       {
         "date": "2026-06-29",
-        "portfolio": 102.61,
+        "portfolio": 102.49,
         "benchmark": 100.0
       },
       {
         "date": "2026-06-30",
-        "portfolio": 102.47,
+        "portfolio": 102.35,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-01",
-        "portfolio": 101.95,
+        "portfolio": 102.11,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-02",
-        "portfolio": 101.64,
+        "portfolio": 101.8,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-03",
-        "portfolio": 101.77,
+        "portfolio": 101.92,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-06",
-        "portfolio": 101.57,
+        "portfolio": 101.77,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-07",
-        "portfolio": 100.98,
+        "portfolio": 101.25,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-08",
-        "portfolio": 98.51,
+        "portfolio": 99.33,
         "benchmark": 100.0
       }
     ],
     "stats": {
-      "total_return": -1.49,
-      "cagr": -19.01,
-      "volatility": 14.11,
-      "sharpe": -1.81,
-      "max_drawdown": -4.4,
-      "info_ratio": -1.35,
+      "total_return": -0.67,
+      "cagr": -9.01,
+      "volatility": 12.72,
+      "sharpe": -1.22,
+      "max_drawdown": -3.6,
+      "info_ratio": -0.71,
       "win_rate": 38.9
     }
   },
@@ -134,146 +135,147 @@
     "score": -2,
     "nifty_trend": "bearish",
     "vix": 0.0,
-    "breadth": 0.3232409381663113
+    "breadth": 0.1362098138747885
   },
   "sector_allocation": {
-    "Healthcare": 30.0,
-    "Energy": 20.0,
+    "Healthcare": 40.0,
     "Industrials": 20.0,
-    "Consumer Cyclical": 20.0,
-    "Communication Services": 10.0
+    "Energy": 10.0,
+    "Consumer Cyclical": 10.0,
+    "Communication Services": 10.0,
+    "Basic Materials": 10.0
   },
   "correlation_matrix": {
     "labels": [
+      "BAJAJ-AUTO",
+      "BALAMINES",
       "CEMPRO",
       "COALINDIA",
-      "EICHERMOT",
       "GLAND",
       "IDEA",
       "IOLCP",
-      "MOTHERSON",
-      "ONGC",
+      "LUPIN",
       "SUNPHARMA",
       "WABAG"
     ],
     "matrix": [
       [
         1.0,
-        0.05,
+        0.21,
+        0.45,
+        -0.13,
+        0.04,
+        -0.02,
+        0.1,
+        0.14,
+        0.22,
+        0.22
+      ],
+      [
+        0.21,
+        1.0,
         0.18,
+        -0.03,
+        0.08,
+        0.11,
+        0.1,
+        0.19,
+        0.19,
+        0.06
+      ],
+      [
+        0.45,
+        0.18,
+        1.0,
         0.05,
-        -0.12,
-        0.01,
-        0.15,
-        -0.16,
+        0.05,
+        -0.13,
+        0.0,
+        0.19,
         0.14,
         0.16
       ],
       [
+        -0.13,
+        -0.03,
         0.05,
         1.0,
-        -0.05,
         -0.11,
         0.19,
         0.09,
-        -0.11,
-        0.28,
+        -0.07,
         0.01,
         0.02
       ],
       [
-        0.18,
-        -0.05,
-        1.0,
-        -0.07,
-        0.01,
-        0.09,
-        0.28,
-        -0.24,
-        0.14,
-        0.24
-      ],
-      [
+        0.04,
+        0.08,
         0.05,
         -0.11,
-        -0.07,
         1.0,
-        -0.02,
+        -0.03,
         0.21,
-        0.07,
-        -0.09,
+        0.2,
         0.32,
-        -0.03
+        -0.04
       ],
       [
-        -0.12,
-        0.19,
-        0.01,
         -0.02,
+        0.11,
+        -0.13,
+        0.19,
+        -0.03,
         1.0,
         0.33,
-        0.17,
-        -0.0,
+        -0.04,
         0.16,
         -0.06
       ],
       [
-        0.01,
-        0.09,
+        0.1,
+        0.1,
+        0.0,
         0.09,
         0.21,
         0.33,
         1.0,
-        0.11,
-        0.06,
+        -0.15,
+        0.13,
+        0.13
+      ],
+      [
         0.14,
-        0.14
-      ],
-      [
-        0.15,
-        -0.11,
-        0.28,
-        0.07,
-        0.17,
-        0.11,
+        0.19,
+        0.19,
+        -0.07,
+        0.2,
+        -0.04,
+        -0.15,
         1.0,
-        -0.47,
-        0.08,
-        0.22
+        0.27,
+        0.0
       ],
       [
-        -0.16,
-        0.28,
-        -0.24,
-        -0.09,
-        -0.0,
-        0.06,
-        -0.47,
-        1.0,
-        0.05,
-        -0.18
-      ],
-      [
+        0.22,
+        0.19,
         0.14,
         0.01,
-        0.14,
         0.32,
         0.16,
-        0.14,
-        0.08,
-        0.05,
+        0.13,
+        0.27,
         1.0,
         -0.01
       ],
       [
+        0.22,
+        0.06,
         0.16,
         0.02,
-        0.24,
-        -0.03,
+        -0.04,
         -0.06,
-        0.14,
-        0.22,
-        -0.18,
+        0.13,
+        0.0,
         -0.01,
         1.0
       ]
