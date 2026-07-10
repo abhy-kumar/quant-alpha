@@ -389,7 +389,8 @@ def compute_momentum_z_score(
         if nn > 252 and n > 252:
             rs_12m = _ret(252) - (float(nifty_close.iloc[-1]) / float(nifty_close.iloc[-252]) - 1)
 
-    # Composite momentum score (weighted average of skip-month horizons)
+    # ── Short-term composite (default): 12-1M leads, 1M included
+    # Weights: mom_12m_skip1 × 0.40 + mom_6m × 0.25 + mom_3m × 0.20 + mom_1m × 0.15
     components = []
     weights = []
     if not np.isnan(mom_12m_skip1):
@@ -410,6 +411,26 @@ def compute_momentum_z_score(
         total_w = sum(weights)
         composite_mom = sum(c * (w / total_w) for c, w in zip(components, weights))
 
+    # ── Long-term composite (1m-6m horizon): 6M dominates; 1M excluded
+    # Evidence: IC@126d — mom_6m=+0.076, mom_1m=−0.004 (this universe)
+    # Weights: mom_6m × 0.55 + mom_12m_skip1 × 0.30 + mom_3m × 0.15
+    long_components = []
+    long_weights = []
+    if not np.isnan(mom_6m):
+        long_components.append(mom_6m)
+        long_weights.append(0.55)
+    if not np.isnan(mom_12m_skip1):
+        long_components.append(mom_12m_skip1)
+        long_weights.append(0.30)
+    if not np.isnan(mom_3m):
+        long_components.append(mom_3m)
+        long_weights.append(0.15)
+
+    composite_mom_long = np.nan
+    if long_components and sum(long_weights) > 0:
+        total_lw = sum(long_weights)
+        composite_mom_long = sum(c * (w / total_lw) for c, w in zip(long_components, long_weights))
+
     return {
         "mom_1m": mom_1m,
         "mom_3m": mom_3m,
@@ -424,6 +445,7 @@ def compute_momentum_z_score(
         "rs_6m": rs_6m,
         "rs_12m": rs_12m,
         "composite_mom": composite_mom,
+        "composite_mom_long": composite_mom_long,
     }
 
 
@@ -718,9 +740,11 @@ def compute_research_composite(
     _empty = {
         "piotroski_f_score": 0, "f_score_norm": 0, "gross_profit_score": 5.0,
         "momentum_composite": np.nan, "momentum_score": 5.0, "risk_adj_mom": np.nan,
+        "momentum_composite_long": np.nan, "momentum_score_long": 5.0,
         "vol_60d": np.nan, "vol_120d": np.nan, "downside_dev": np.nan,
         "vol_score": 5.0, "reversion_signal": 0, "reversion_score": 5.0,
-        "z_score_60": 0, "earnings_quality_score": 5.0, "research_composite": 5.0,
+        "z_score_60": 0, "earnings_quality_score": 5.0,
+        "research_composite": 5.0, "research_composite_long": 5.0,
         "mom_1m": np.nan, "mom_3m": np.nan, "mom_6m": np.nan,
         "mom_12m": np.nan, "mom_12m_skip1": np.nan,
         "value_score": 5.0, "investment_score": 5.0, "sue_score": 5.0,
@@ -748,7 +772,7 @@ def compute_research_composite(
 
     f_score_norm = (f_score / 9.0) * 10.0
 
-    # Normalize momentum to 0-10 using tanh (robust to extremes, never clips)
+    # ── Short-term momentum score (0-10) ──────────────────────────────────────
     # composite_mom=+0.20 → 8.4, composite_mom=0.0 → 5.0, composite_mom=-0.20 → 1.6
     composite_mom = mom.get("composite_mom", np.nan)
     if not np.isnan(composite_mom):
@@ -756,7 +780,33 @@ def compute_research_composite(
     else:
         mom_score = 5.0
 
-    # Research composite weights — calibrated to academic factor return evidence:
+    # ── Long-term momentum score (0-10) ──────────────────────────────────────
+    # 6M-dominant composite (no 1M reversal). Plus 52W high proximity blended in.
+    # 52W Proximity: IC@126d = +0.103 — strongest single price signal in this universe.
+    # prox_52w = close / 52w_high; sigmoid centered at 0.80 (i.e. within 20% of high)
+    composite_mom_long = mom.get("composite_mom_long", np.nan)
+    raw_mom_long_score = 5.0
+    if not np.isnan(composite_mom_long):
+        raw_mom_long_score = float(5.0 + 4.5 * np.tanh(composite_mom_long / 0.20))
+
+    # 52W high proximity score
+    prox_52w_score = 5.0
+    if df is not None and len(df) >= 126:
+        try:
+            close_price = float(df["Close"].iloc[-1])
+            high_252 = float(df["Close"].rolling(min(252, len(df))).max().iloc[-1])
+            if high_252 > 0:
+                prox_52w = close_price / high_252
+                # Sigmoid: prox=1.0→10.0, prox=0.85→~8.0, prox=0.70→~4.5, prox=0.50→~1.0
+                prox_52w_score = float(10.0 / (1 + np.exp(-20.0 * (prox_52w - 0.80))))
+        except Exception:
+            pass
+
+    # Blend: 65% pure momentum, 35% 52W proximity (IC-weighted)
+    mom_score_long = float(0.65 * raw_mom_long_score + 0.35 * prox_52w_score)
+
+    # ── Short-term Research Composite ────────────────────────────────────────
+    # Weights calibrated to academic factor return evidence:
     #   - Gross Profitability: 15%  (Novy-Marx 2013: strongest single accounting predictor)
     #   - Momentum: 20%             (Jegadeesh & Titman 1993: well-documented)
     #   - Value: 15%                (Fama & French 1993)
@@ -800,12 +850,57 @@ def compute_research_composite(
 
     research_composite = (weighted_sum / total_w) if total_w > 0 else 5.0
 
+    # ── Long-term Research Composite (1m-6m horizon) ─────────────────────────
+    # Factor weights rebalanced for medium-to-long holding periods:
+    #   - Gross Profitability (Novy-Marx): 18%  strongest accounting predictor at 6m+
+    #   - Momentum (long, 6M-dominant):    20%  empirically validated in this universe
+    #   - Value (Fama-French):             18%  value factor strengthens with horizon
+    #   - Investment Factor:               12%  asset growth, 6-12m predictor
+    #   - SUE / Earnings Momentum:         10%  PEAD persists 3-6m
+    #   - Low Volatility:                  10%  low-vol anomaly works well at 6m+
+    #   - Piotroski F-Score:                7%  accounting quality, longer-horizon
+    #   - Earnings Quality:                 5%  accruals — slightly shorter horizon
+    #   - Beta (BAB):                       0%  very long-horizon effect (1y+), excluded
+    #   - Mean Reversion:                   0%  irrelevant at 6m; no z-score penalty
+    long_weights = {
+        "gp_score":         0.18,
+        "mom_score_long":   0.20,
+        "value_score":      0.18,
+        "investment_score": 0.12,
+        "sue_score":        0.10,
+        "vol_score":        0.10,
+        "f_score":          0.07,
+        "eq_score":         0.05,
+    }
+
+    long_scores = {
+        "gp_score":         gp_score if not np.isnan(gp_score) else 5.0,
+        "mom_score_long":   mom_score_long,
+        "value_score":      value_score,
+        "investment_score": investment_score,
+        "sue_score":        sue_score,
+        "vol_score":        vol.get("vol_score", 5.0),
+        "f_score":          f_score_norm,
+        "eq_score":         eq_score,
+    }
+
+    total_lw = 0
+    weighted_long_sum = 0
+    for key, weight in long_weights.items():
+        if not np.isnan(long_scores[key]):
+            weighted_long_sum += long_scores[key] * weight
+            total_lw += weight
+
+    research_composite_long = (weighted_long_sum / total_lw) if total_lw > 0 else 5.0
+
     return {
         "piotroski_f_score": f_score,
         "f_score_norm": f_score_norm,
         "gross_profit_score": gp_score,
         "momentum_composite": composite_mom,
         "momentum_score": mom_score,
+        "momentum_composite_long": composite_mom_long,
+        "momentum_score_long": mom_score_long,
         "risk_adj_mom": mom.get("risk_adj_mom", np.nan),
         "vol_60d": vol.get("vol_60d", np.nan),
         "vol_120d": vol.get("vol_120d", np.nan),
@@ -816,6 +911,7 @@ def compute_research_composite(
         "z_score_60": reversion.get("z_score_60", 0),
         "earnings_quality_score": eq_score,
         "research_composite": research_composite,
+        "research_composite_long": research_composite_long,
         "value_score": value_score,
         "investment_score": investment_score,
         "sue_score": sue_score,

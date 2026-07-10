@@ -15,7 +15,9 @@ export interface DashboardData {
   Composite_Score_Tech: number
   Composite_Score_Fund: number
   Composite_Score_Mom: number
+  Composite_Score_Long: number
   Conviction: string
+  Conviction_Long: string
   Scan_Time: string
   "1d_Chg_%"?: number
   "P/E"?: number
@@ -163,6 +165,18 @@ export interface QuantData {
     matrix: number[][]
   }
   backtest: {
+    chart: { date: string; portfolio: number; benchmark: number }[]
+    stats: {
+      total_return: number
+      cagr: number
+      volatility: number
+      sharpe: number
+      max_drawdown: number
+      info_ratio: number
+      win_rate: number
+    }
+  }
+  backtest_long?: {
     chart: { date: string; portfolio: number; benchmark: number }[]
     stats: {
       total_return: number

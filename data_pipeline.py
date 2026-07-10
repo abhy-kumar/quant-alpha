@@ -110,6 +110,7 @@ def init_schema():
             Promoter_Pledging_Pct REAL,
             News_Sentiment REAL,
             Conviction TEXT,
+            Conviction_Long TEXT,
             RS_Percentile REAL,
             Sharpe REAL,
             Total_Return_Pct REAL,
@@ -124,6 +125,7 @@ def init_schema():
             Ticker TEXT NOT NULL,
             Scan_Date TEXT NOT NULL,
             Conviction_At_Scan TEXT,
+            Conviction_Long_At_Scan TEXT,
             Composite_Score_At_Scan REAL,
             Return_5d REAL,
             Return_10d REAL,
@@ -176,7 +178,6 @@ def init_schema():
     conn.close()
     logger.info("Data pipeline schema initialized.")
 
-
 def store_daily_ohlcv(ohlcv_results: dict, scan_date: str):
     """
     Store raw OHLCV data for all stocks.
@@ -217,7 +218,7 @@ def store_factor_history(rows_data: list[dict], scan_date: str):
         "Ticker", "Scan_Date", "Sector", "Industry", "Price",
         "Pct_Change_1d", "Pct_Weekly", "Pct_Monthly", "Pct_3M", "Pct_6M", "Pct_12M",
         "Composite_Score", "Tech_Score", "Fund_Score", "Research_Score",
-        "Composite_Score_Tech", "Composite_Score_Fund", "Composite_Score_Mom",
+        "Composite_Score_Tech", "Composite_Score_Fund", "Composite_Score_Mom", "Composite_Score_Long",
         "Piotroski_F", "Gross_Profit_Score", "Earnings_Quality",
         "Momentum_1M", "Momentum_3M", "Momentum_6M", "Momentum_12M",
         "Risk_Adj_Mom", "Vol_60D", "Downside_Dev", "Reversion_Signal", "Z_Score_60",
@@ -226,7 +227,7 @@ def store_factor_history(rows_data: list[dict], scan_date: str):
         "Sig_RSI", "Sig_MACD", "Sig_ADX", "Sig_Supertrend", "Sig_VPT", "Sig_Ichimoku",
         "P_E", "Forward_PE", "ROE_Pct", "ROCE_Pct", "Debt_to_Equity", "Market_Cap_B",
         "Div_Yield_Pct", "Promoter_Holding_Pct", "Promoter_Pledging_Pct",
-        "News_Sentiment", "Conviction", "RS_Percentile",
+        "News_Sentiment", "Conviction", "Conviction_Long", "RS_Percentile",
         "Sharpe", "Total_Return_Pct", "Ann_Vol_Pct", "Max_Drawdown_Pct",
     ]
     placeholders = ",".join(["?"] * len(cols))
@@ -247,6 +248,7 @@ def store_factor_history(rows_data: list[dict], scan_date: str):
             _safe_float(r.get("Composite_Score_Tech")),
             _safe_float(r.get("Composite_Score_Fund")),
             _safe_float(r.get("Composite_Score_Mom")),
+            _safe_float(r.get("Composite_Score_Long")),
             int(_safe_float(r.get("Piotroski_F"), default=0)),
             _safe_float(r.get("Gross_Profit_Score")),
             _safe_float(r.get("Earnings_Quality")),
@@ -286,6 +288,7 @@ def store_factor_history(rows_data: list[dict], scan_date: str):
             _safe_float(r.get("Promoter_Pledging_%")),
             _safe_float(r.get("News_Sentiment")),
             r.get("Conviction"),
+            r.get("Conviction_Long"),
             _safe_float(r.get("RS_Percentile")),
             _safe_float(r.get("Sharpe")),
             _safe_float(r.get("Total_Return_%")),
@@ -396,11 +399,12 @@ def create_outcome_entries(rows_data: list[dict], scan_date: str):
         rows.append((
             ticker, scan_date,
             r.get("Conviction"),
+            r.get("Conviction_Long"),
             _safe_float(r.get("Composite_Score")),
         ))
     if rows:
         conn.executemany(
-            "INSERT OR IGNORE INTO outcome_tracking (Ticker, Scan_Date, Conviction_At_Scan, Composite_Score_At_Scan) VALUES (?,?,?,?)",
+            "INSERT OR IGNORE INTO outcome_tracking (Ticker, Scan_Date, Conviction_At_Scan, Conviction_Long_At_Scan, Composite_Score_At_Scan) VALUES (?,?,?,?,?)",
             rows
         )
         conn.commit()
@@ -540,8 +544,21 @@ _schema_initialized = False
 
 
 def ensure_schema():
-    """Initialize schema on first use (lazy initialization)."""
+    """Initialize schema and run migrations on first use (lazy initialization)."""
     global _schema_initialized
     if not _schema_initialized:
         init_schema()
+        # Run ALTER TABLE migrations for columns added after initial release
+        conn = _get_conn()
+        c = conn.cursor()
+        fh_cols = {row[1] for row in c.execute("PRAGMA table_info(factor_history)").fetchall()}
+        if "Composite_Score_Long" not in fh_cols:
+            c.execute("ALTER TABLE factor_history ADD COLUMN Composite_Score_Long REAL")
+        if "Conviction_Long" not in fh_cols:
+            c.execute("ALTER TABLE factor_history ADD COLUMN Conviction_Long TEXT")
+        ot_cols = {row[1] for row in c.execute("PRAGMA table_info(outcome_tracking)").fetchall()}
+        if "Conviction_Long_At_Scan" not in ot_cols:
+            c.execute("ALTER TABLE outcome_tracking ADD COLUMN Conviction_Long_At_Scan TEXT")
+        conn.commit()
+        conn.close()
         _schema_initialized = True

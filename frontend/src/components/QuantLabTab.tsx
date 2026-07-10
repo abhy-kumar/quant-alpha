@@ -73,6 +73,7 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
   const [quantData, setQuantData] = useState<QuantData | null>(null)
   const [loading, setLoading] = useState(true)
   const [startDate, setStartDate] = useState<string>('')
+  const [backtestMode, setBacktestMode] = useState<'short' | 'long'>('short')
 
   useEffect(() => {
     fetch('/quant_data.json?t=' + Date.now())
@@ -98,7 +99,12 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
     ]
   }, [quantData])
 
-  const allChartData = quantData?.backtest?.chart ?? []
+  // Active backtest dataset switches based on the model toggle
+  const activeBacktest = backtestMode === 'long'
+    ? (quantData?.backtest_long ?? quantData?.backtest)
+    : quantData?.backtest
+
+  const allChartData = activeBacktest?.chart ?? []
   const firstDate = allChartData[0]?.date ?? ''
 
   // Determine the effective start date (default = first available date)
@@ -201,7 +207,7 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
       {backtestStats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
           {[
-            { icon: <TrendUp size={13} />, label: 'CAGR (Alpha Picks)', tooltipId: 'quant.cagr', value: `${backtestStats.cagr > 0 ? '+' : ''}${backtestStats.cagr.toFixed(2)}%`, color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
+            { icon: <TrendUp size={13} />, label: backtestMode === 'long' ? 'CAGR (Long Picks)' : 'CAGR (Alpha Picks)', tooltipId: 'quant.cagr', value: `${backtestStats.cagr > 0 ? '+' : ''}${backtestStats.cagr.toFixed(2)}%`, color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
             { icon: <ChartLineDown size={13} />, label: 'Ann. Volatility', tooltipId: 'quant.volatility', value: `${backtestStats.volatility.toFixed(1)}%`, color: backtestStats.volatility <= 20 ? 'var(--green)' : 'var(--amber)' },
             { icon: <Target size={13} />, label: 'Sharpe Ratio', tooltipId: 'quant.sharpe', value: backtestStats.sharpe.toFixed(2), color: backtestStats.sharpe >= 1 ? 'var(--green)' : 'var(--text)' },
             { icon: <Warning size={13} />, label: 'Max Drawdown', tooltipId: 'quant.maxdd', value: `${backtestStats.max_drawdown.toFixed(2)}%`, color: 'var(--red)' },
@@ -224,7 +230,19 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
           {/* Backtest chart */}
           <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
             <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--glass-border)' }}>
-              <span className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--text-2)' }}>Strategy Backtest · Top 10 Equal Weight<InfoTooltip id="quant.backtest" /></span>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--text-2)' }}>
+                  Strategy Backtest · Top 10 Equal Weight<InfoTooltip id="quant.backtest" />
+                </span>
+                <SegmentedControl
+                  options={[
+                    { key: 'short', label: 'Short-term' },
+                    { key: 'long',  label: '1m–6m Horizon' },
+                  ]}
+                  value={backtestMode}
+                  onChange={(v) => { setBacktestMode(v as 'short' | 'long'); setStartDate('') }}
+                />
+              </div>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <SegmentedControl
                   options={[
@@ -255,6 +273,11 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
                 </div>
               </div>
             </div>
+            {backtestMode === 'long' && !quantData?.backtest_long && (
+              <div className="px-5 py-2 text-[11px]" style={{ background: 'var(--amber-bg)', borderBottom: '1px solid var(--glass-border)', color: 'var(--amber)' }}>
+                Long-term backtest data not yet generated — re-run the scanner to produce it.
+              </div>
+            )}
             <div className="p-5" style={{ height: 320 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={windowedChart} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
@@ -264,7 +287,7 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
                   <Tooltip contentStyle={tooltipStyle(isDark)} formatter={(v: any) => [typeof v === 'number' ? v.toFixed(2) : v]} />
                   <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '10px', color: 'var(--text-3)' }} />
                   <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
-                  <Line type="monotone" dataKey="portfolio" name="Alpha Picks" stroke="var(--brand)" strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="portfolio" name={backtestMode === 'long' ? 'Long Horizon Picks' : 'Alpha Picks'} stroke={backtestMode === 'long' ? 'var(--green)' : 'var(--brand)'} strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
                   <Line type="monotone" dataKey="benchmark" name="NIFTY 50" stroke="var(--text-3)" strokeWidth={1.5} dot={false} strokeDasharray="5 5" />
                 </LineChart>
               </ResponsiveContainer>

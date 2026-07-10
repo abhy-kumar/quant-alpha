@@ -88,8 +88,14 @@ def optimize_portfolio(returns_df, objective='sharpe'):
     weights = np.round(result.x, 4)
     return {returns_df.columns[i]: float(weights[i]) for i in range(num_assets)}
 
-def run_backtest():
-    """Simulate a simple backtest of buying top 10 stocks on every scan date."""
+def run_backtest(score_column: str = 'Composite_Score'):
+    """Simulate a simple backtest of buying top 10 stocks on every scan date.
+    
+    Args:
+        score_column: Column in factor_history to rank stocks by. Use
+                      'Composite_Score' for short-term or 'Composite_Score_Long'
+                      for the 1m-6m horizon-optimised model.
+    """
     conn = _get_conn()
     
     # Get all distinct scan dates
@@ -124,10 +130,10 @@ def run_backtest():
         current_date = scan_dates[i]
         
         # Get top 10 stocks for this scan date
-        query = """
+        query = f"""
         SELECT Ticker FROM factor_history
         WHERE Scan_Date = ?
-        ORDER BY Composite_Score DESC
+        ORDER BY {score_column} DESC
         LIMIT 10
         """
         top_picks = pd.read_sql_query(query, conn, params=(current_date,))['Ticker'].tolist()
@@ -320,7 +326,8 @@ def generate_quant_data():
         exposures = compute_factor_exposures(top_picks_df)
         
         # Backtest
-        backtest_results = run_backtest()
+        backtest_results = run_backtest('Composite_Score')
+        backtest_long_results = run_backtest('Composite_Score_Long')
         
         # New Quant Lab Models
         regime = fetch_latest_regime()
@@ -335,6 +342,7 @@ def generate_quant_data():
             },
             "factor_exposures": exposures,
             "backtest": backtest_results,
+            "backtest_long": backtest_long_results,
             "market_regime": regime,
             "sector_allocation": sectors,
             "correlation_matrix": correlation

@@ -124,18 +124,11 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         item["final_tech"] = score
         item["rs_pctile"] = rs_pctile
         item["research"] = research
+        item["research_composite_long_raw"] = research.get("research_composite_long", 5.0)
 
         final_rows.append(item)
 
-    # ── Cross-Sectional Momentum Normalization ──────────────────────────────────
-    # Replace the original absolute tanh normalization:
-    #   mom_score = 5.0 + 4.5 * tanh(composite_mom / 0.20)
-    # with a cross-sectional Z-score relative to the scanned universe.
-    # Motivation: RSI/momentum has the highest empirical correlation with
-    # 5-day returns (+0.264). A stock that is top-decile for momentum in
-    # a sideways market should score higher than one that is top-decile
-    # in a 50%-up market where everything is running.
-    # Weight of momentum in research_composite = 0.20; delta is exact.
+    # ── Cross-Sectional Momentum Normalization (Short-term) ─────────────────
     _mom_raw = [
         x["research"].get("momentum_composite", np.nan)
         for x in final_rows
@@ -144,7 +137,7 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
     if len(_mom_raw) >= 5:
         _mom_mean = float(np.mean(_mom_raw))
         _mom_std  = float(np.std(_mom_raw))
-        _mom_std  = max(_mom_std, 0.02)   # floor to avoid division-by-zero in flat markets
+        _mom_std  = max(_mom_std, 0.02)
         for item in final_rows:
             if item.get("is_etf"):
                 continue
@@ -152,28 +145,43 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
             if np.isnan(raw_mom):
                 continue
             old_mom_score = item["research"].get("momentum_score", 5.0)
-            # Z-score of this stock vs universe, mapped to 0-10 via tanh
-            # tanh saturates at z ±1.5 ≈ score 0.5 / 9.5 — same range as before
             z = (raw_mom - _mom_mean) / _mom_std
             new_mom_score = float(5.0 + 4.5 * np.tanh(z / 1.5))
-            # Update research_composite by adjusting only the momentum slice
             delta = (new_mom_score - old_mom_score) * 0.20
             item["research"]["momentum_score"]     = new_mom_score
             item["research"]["research_composite"] = max(
                 0.0, min(10.0, item["research"]["research_composite"] + delta)
             )
 
-    # ── Cross-Sectional Percentile Ranking ──────────────────────────────────
-    # Percentile ranking maps raw scores to their relative position in the
-    # universe. Combined with absolute quality gates to prevent scoring
-    # overvalued/overbought stocks highly even if they rank well relative to peers.
-    #
-    # Linear interpolation across anchor points for smooth differentiation:
-    #   p=0→1.5, p=25→4.0, p=50→6.0, p=75→8.0, p=100→9.5
+    # ── Cross-Sectional Momentum Normalization (Long-term) ──────────────────
+    _mom_long_raw = [
+        x["research"].get("momentum_composite_long", np.nan)
+        for x in final_rows
+        if not x.get("is_etf") and not np.isnan(x["research"].get("momentum_composite_long", np.nan))
+    ]
+    if len(_mom_long_raw) >= 5:
+        _mlm = float(np.mean(_mom_long_raw))
+        _mls = float(max(np.std(_mom_long_raw), 0.02))
+        for item in final_rows:
+            if item.get("is_etf"):
+                continue
+            raw_lmom = item["research"].get("momentum_composite_long", np.nan)
+            if np.isnan(raw_lmom):
+                continue
+            old_lmom_score = item["research"].get("momentum_score_long", 5.0)
+            z_l = (raw_lmom - _mlm) / _mls
+            new_lmom_score = float(5.0 + 4.5 * np.tanh(z_l / 1.5))
+            delta_l = (new_lmom_score - old_lmom_score) * 0.20
+            item["research"]["momentum_score_long"] = new_lmom_score
+            item["research_composite_long_raw"] = max(
+                0.0, min(10.0, item.get("research_composite_long_raw", 5.0) + delta_l)
+            )
 
+    # ── Cross-Sectional Percentile Ranking ──────────────────────────────────
     if len(final_rows) > 2:
         raw_funds = pd.Series([x["fund_score"] for x in final_rows])
         raw_research = pd.Series([x["research"]["research_composite"] for x in final_rows])
+        raw_research_long = pd.Series([x.get("research_composite_long_raw", 5.0) for x in final_rows])
 
         _PCTILE_ANCHORS = [
             (0, 1.5), (25, 4.0), (50, 6.0), (75, 8.0), (100, 9.5)
@@ -193,36 +201,19 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
             if item.get("is_etf"):
                 continue
 
-            # Percentile rank of fund_score across universe
             fund_pctile = (raw_funds <= item["fund_score"]).sum() / len(raw_funds) * 100
             item["fund_score_pctile"] = fund_pctile
             item["fund_score_ranked"] = _pctile_to_score(fund_pctile)
 
-            # Percentile rank of research_composite across universe
             res_pctile = (raw_research <= item["research"]["research_composite"]).sum() / len(raw_research) * 100
             item["research_pctile"] = res_pctile
             item["research_composite_ranked"] = _pctile_to_score(res_pctile)
 
-    # ── Smooth Quality Penalty Multipliers ──────────────────────────────────
-    # Replace hard ceiling gates with continuous multiplicative penalties.
-    # Each quality metric generates a multiplier in (0, 1]; all compound.
-    # This preserves relative ranking while penalising quality failures
-    # smoothly — a stock at 9.5 and 7.2 both differentiate even if they
-    # breach the same threshold, unlike the old min(score, ceiling) approach.
-    #
-    # No artificial floors: multipliers compound freely. The only floor is
-    # max(0.0,...) where the underlying function can go negative (mathematical
-    # safety only — a negative multiplier would invert the signal).
-    # A stock that is expensive, unprofitable, over-leveraged, AND overbought
-    # can legitimately score very close to zero.
-    #
-    # Penalty calibration (examples):
-    #   P/E: pe=35→×1.00, pe=60→×0.72, pe=100→×0.38, pe=200→×0.09
-    #   Z-score: z=1.5→×1.00, z=2.5→×0.88, z=4.0→×0.70, z=10→×0.04 (floored at 0)
-    #   ROE: roe=0→×1.00, roe=-20→×0.60, roe=-50→×0.01 (floored at 0)
-    #   D/E: de=150→×1.00, de=400→×0.50, de=650→×0.01 (floored at 0)
-    #   Combined (P/E=120, z=3, ROE=-15, D/E=300): ×0.29×0.82×0.70×0.70 ≈ ×0.12
+            res_long_pctile = (raw_research_long <= item.get("research_composite_long_raw", 5.0)).sum() / len(raw_research_long) * 100
+            item["research_long_pctile"] = res_long_pctile
+            item["research_composite_long_ranked"] = _pctile_to_score(res_long_pctile)
 
+    # ── Smooth Quality Penalty Multipliers ──────────────────────────────────
     for item in final_rows:
         if item.get("is_etf"):
             item["quality_gated"] = False
@@ -241,37 +232,27 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         mult = 1.0
         reasons = []
 
-        # P/E penalty: exponential decay above 35 (growth premium is real,
-        # but extreme multiples consistently underperform — Fama & French 1992)
-        # Exponential never goes negative, so no floor needed.
         if not np.isnan(pe) and pe > 0:
             pe_mult = np.exp(-0.013 * max(0.0, pe - 35))
             if pe_mult < 0.95:
                 reasons.append(f"P/E={pe:.1f}")
             mult *= pe_mult
 
-        # Z-score overbought: linear penalty starting at z=1.5.
-        # Function: 1 - 0.12*(z-1.5) goes negative above z≈10, floor at 0.0.
         if z_score > 1.5:
             z_mult = max(0.0, 1.0 - 0.12 * (z_score - 1.5))
             reasons.append(f"Z={z_score:.2f}")
             mult *= z_mult
 
-        # Reversion sell signal: additional 7% reduction, uncapped.
         if reversion_sig == -1:
             mult *= 0.93
             if not any("overbought" in r for r in reasons):
                 reasons.append("overbought_reversion")
 
-        # Negative ROE: linear penalty, floored at 0 (avoids sign inversion).
-        # 1 + 0.02*roe goes negative below roe=-50.
         if roe <= 0:
             roe_mult = max(0.0, 1.0 + 0.02 * roe)
             reasons.append(f"ROE={roe:.1f}%")
             mult *= roe_mult
 
-        # Extreme leverage: linear penalty above D/E=150, floored at 0.
-        # 1 - 0.002*(de-150) goes negative above de=650.
         if debt_eq > 150:
             de_mult = max(0.0, 1.0 - 0.002 * (debt_eq - 150))
             reasons.append(f"D/E={debt_eq:.1f}")
@@ -286,19 +267,15 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         norm_tech = item["norm_tech"]
         ranked_fund     = item.get("fund_score_ranked",             item["fund_score"])
         ranked_research = item.get("research_composite_ranked",     item["research"]["research_composite"])
+        ranked_research_long = item.get("research_composite_long_ranked", item.get("research_composite_long_raw", 5.0))
 
-        # ── Composite Score Weights ────────────────────────────────────────────────
-        # Fund weight reduced 0.30→0.25; Research increased 0.35→0.40 (default/tech).
-        # Evidence: Fund score corr=-0.118 with 5d returns; Research (momentum-heavy)
-        # corr=+0.103. Fundamentals predict 1-3y returns, not 5-day returns.
-        # Fund-oriented composite keeps full Fund weight for long-term users.
         raw_composite       = (norm_tech * 0.35) + (ranked_fund * 0.25) + (ranked_research * 0.40)
         raw_composite_tech  = (norm_tech * 0.50) + (ranked_fund * 0.10) + (ranked_research * 0.40)
         raw_composite_fund  = (norm_tech * 0.10) + (ranked_fund * 0.40) + (ranked_research * 0.50)
         raw_composite_mom   = (ranked_research * 0.70) + (norm_tech * 0.20) + (ranked_fund * 0.10)
+        raw_composite_long  = (norm_tech * 0.15) + (ranked_fund * 0.35) + (ranked_research_long * 0.50)
 
         # ── RS Percentile Multiplier ──────────────────────────────────────────
-        # Smooth ±8% composite adjustment based on relative strength vs universe.
         rs_pctile = item.get("rs_pctile", np.nan)
         if not np.isnan(rs_pctile):
             rs_adj = 0.08 * (rs_pctile - 50.0) / 50.0   # ±8% range
@@ -306,11 +283,9 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
             raw_composite_tech  = max(0.0, raw_composite_tech  * (1.0 + rs_adj))
             raw_composite_mom   = max(0.0, raw_composite_mom   * (1.0 + rs_adj))
             raw_composite_fund  = max(0.0, raw_composite_fund  * (1.0 + rs_adj * 0.5))
-
+            raw_composite_long  = max(0.0, raw_composite_long  * (1.0 + rs_adj * 0.5))
 
         # ── Quality Penalty Multiplier ────────────────────────────────────────
-        # Smooth multiplicative penalty (computed in section above).
-        # Replaces hard min(score, ceiling) gates — preserves relative ranking.
         quality_mult = item.get("quality_penalty", 1.0)
         raw_composite       = max(0.0, raw_composite       * quality_mult)
         raw_composite_tech  = max(0.0, raw_composite_tech  * quality_mult)
@@ -323,11 +298,17 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         item["composite_score_mom"]   = min(10.0, raw_composite_mom)
 
     all_comp_scores = pd.Series([x["composite_score"] for x in final_rows])
+    all_comp_long_scores = pd.Series([x["composite_score_long"] for x in final_rows])
     for item in final_rows:
         if len(all_comp_scores) > 0:
             comp_pctile = sum(all_comp_scores <= item["composite_score"]) / len(all_comp_scores) * 100
         else:
             comp_pctile = 50.0
+
+        if len(all_comp_long_scores) > 0:
+            comp_long_pctile = sum(all_comp_long_scores <= item["composite_score_long"]) / len(all_comp_long_scores) * 100
+        else:
+            comp_long_pctile = 50.0
 
         weekly_st_dir = _safe_float(item["latest"].get("Weekly_ST_Direction", np.nan))
         weekly_bullish = weekly_st_dir == -1
@@ -339,6 +320,15 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
             research_composite=item["research"].get("research_composite"),
         )
         item["conviction"] = conviction
+
+        # Long-horizon conviction: no weekly_bullish gate (irrelevant at 1m-6m)
+        conviction_long = get_conviction_rating(
+            comp_long_pctile, regime_score, weekly_bullish=True,
+            norm_tech=item.get("norm_tech"),
+            fund_score=item.get("fund_score"),
+            research_composite=item.get("research_composite_long_raw"),
+        )
+        item["conviction_long"] = conviction_long
 
     return final_rows
 
@@ -410,6 +400,7 @@ def build_output_row(item: dict) -> dict:
         "Composite_Score_Tech": round(item["composite_score_tech"], 2),
         "Composite_Score_Fund": round(item["composite_score_fund"], 2),
         "Composite_Score_Mom":  round(item.get("composite_score_mom", 5.0), 2),
+        "Composite_Score_Long": round(item.get("composite_score_long", 5.0), 2),
         "Piotroski_F":      research.get("piotroski_f_score", 0),
         "Gross_Profit_Score": round(research.get("gross_profit_score", 5.0), 2) if not np.isnan(research.get("gross_profit_score", np.nan)) else None,
         "Value_Score":      round(research.get("value_score", 5.0), 2),
@@ -432,6 +423,7 @@ def build_output_row(item: dict) -> dict:
         "Promoter_Holding_%": np.nan if is_etf else _safe_float(info.get("promoter_holding")),
         "Promoter_Pledging_%": np.nan if is_etf else _safe_float(info.get("promoter_pledging")),
         "Conviction":       item["conviction"],
+        "Conviction_Long":  item.get("conviction_long", item["conviction"]),
         "RS_Percentile":    round(item["rs_pctile"], 1) if not np.isnan(item.get("rs_pctile", np.nan)) else None,
         "RSI_Value":        round(_safe_float(latest.get("RSI", np.nan)), 2),
         "MACD_Value":       round(_safe_float(latest.get("MACD", np.nan)), 4),

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import type { DashboardData } from '../types'
 import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline, InfoTooltip } from './shared'
+import { SegmentedControl } from './shared'
 import { Info, Funnel, X, Star } from '@phosphor-icons/react'
 
 interface Props {
@@ -22,6 +23,11 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [showFilters, setShowFilters] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [horizonMode, setHorizonMode] = useState<'short' | 'long'>('short')
+
+  // Active score and conviction column names driven by the horizon toggle
+  const scoreCol   = horizonMode === 'long' ? 'Composite_Score_Long' : 'Composite_Score'
+  const convCol    = horizonMode === 'long' ? 'Conviction_Long'      : 'Conviction'
 
   const [minComposite, setMinComposite] = useState(0)
   const [minPiotroski, setMinPiotroski] = useState(0)
@@ -44,18 +50,18 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
   }
 
   const filteredData = useMemo(() => {
-    const stringFields = new Set(['Ticker', 'Sector', 'Conviction', 'Industry', 'Long_Name', 'ST_Signal'])
+    const stringFields = new Set(['Ticker', 'Sector', 'Conviction', 'Conviction_Long', 'Industry', 'Long_Name', 'ST_Signal'])
     let arr = data.filter(d => {
       if (searchQuery) {
         const q = searchQuery.toUpperCase()
         if (!d.Ticker.replace('.NS','').includes(q) && !(d.Long_Name||'').toUpperCase().includes(q)) return false
       }
-      if (Number(d.Composite_Score) < minComposite) return false
+      if (Number(d[scoreCol as keyof DashboardData]) < minComposite) return false
       if (Number(d.Piotroski_F) < minPiotroski) return false
       if (minValue > 0 && Number(d.Value_Score) < minValue) return false
       if (maxBeta < 3 && Number(d.Beta) > maxBeta) return false
       if (selectedSectors.length > 0 && !selectedSectors.includes(d.Sector)) return false
-      if (selectedConvictions.length > 0 && !selectedConvictions.includes(d.Conviction)) return false
+      if (selectedConvictions.length > 0 && !selectedConvictions.includes((d as any)[convCol])) return false
       if (minMarketCap > 0 && Number(d.Market_Cap_B) < minMarketCap) return false
       if (maxDE < 999 && Number(d.Debt_to_Equity) > maxDE) return false
       return true
@@ -69,7 +75,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
       return sortDir === 'asc' ? (Number(av) || 0) - (Number(bv) || 0) : (Number(bv) || 0) - (Number(av) || 0)
     })
     return arr
-  }, [data, sortKey, sortDir, minComposite, minPiotroski, selectedSectors, selectedConvictions, minMarketCap, maxDE, searchQuery, minValue, maxBeta])
+  }, [data, sortKey, sortDir, minComposite, minPiotroski, selectedSectors, selectedConvictions, minMarketCap, maxDE, searchQuery, minValue, maxBeta, scoreCol, convCol])
 
   const activeFilterCount = [minComposite > 0, minPiotroski > 0, minValue > 0, maxBeta < 3, selectedSectors.length > 0, selectedConvictions.length > 0, minMarketCap > 0, maxDE < 999, searchQuery.length > 0].filter(Boolean).length
 
@@ -83,36 +89,72 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
 
   return (
     <div className="space-y-4">
-      {/* Algorithm Info */}
+      {/* Algorithm Info + Horizon Toggle */}
       <div className="card p-4" style={{ borderRadius: 'var(--radius-xl)' }}>
         <div className="flex items-center justify-between mb-3">
           <span className="section-label" style={{ color: 'var(--brand)' }}>Scoring Model</span>
-          <span className="text-xs" style={{ color: 'var(--text-3)' }}>9 Factors · Cross-Sectional Ranking · Continuous Sigmoid Scoring</span>
+          <div className="flex items-center gap-3">
+            <SegmentedControl
+              options={[
+                { key: 'short', label: 'Short-term' },
+                { key: 'long',  label: '1m–6m Horizon' },
+              ]}
+              value={horizonMode}
+              onChange={(v) => {
+                setHorizonMode(v as 'short' | 'long')
+                // Switch default sort to the matching score column
+                setSortKey(v === 'long' ? 'Composite_Score_Long' : 'Composite_Score')
+                setSortDir('desc')
+              }}
+            />
+            <span className="text-xs hidden sm:inline" style={{ color: 'var(--text-3)' }}>9 Factors · Cross-Sectional Ranking</span>
+          </div>
         </div>
-        <div className="grid grid-cols-5 sm:grid-cols-9 gap-3 text-center">
-          {[
-            ['Piotroski', '0.08', 'var(--green)'],
-            ['Profitability', '0.15', 'var(--green)'],
-            ['Earnings Q', '0.10', 'var(--green)'],
-            ['Momentum', '0.20', 'var(--brand)'],
-            ['Value', '0.15', 'var(--blue)'],
-            ['Low Vol', '0.07', 'var(--text-2)'],
-            ['Beta', '0.05', 'var(--text-2)'],
-            ['Investment', '0.10', 'var(--text-2)'],
-            ['SUE', '0.10', 'var(--text-2)'],
-          ].map(([label, weight, color]) => (
-            <div key={label} className="flex flex-col items-center">
-              <span className="text-sm font-mono font-medium" style={{ color }}>{weight}</span>
-              <span className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
-            </div>
-          ))}
-        </div>
+        {horizonMode === 'short' ? (
+          <div className="grid grid-cols-5 sm:grid-cols-9 gap-3 text-center">
+            {[
+              ['Piotroski', '0.08', 'var(--green)'],
+              ['Profitability', '0.15', 'var(--green)'],
+              ['Earnings Q', '0.10', 'var(--green)'],
+              ['Momentum', '0.20', 'var(--brand)'],
+              ['Value', '0.15', 'var(--blue)'],
+              ['Low Vol', '0.07', 'var(--text-2)'],
+              ['Beta', '0.05', 'var(--text-2)'],
+              ['Investment', '0.10', 'var(--text-2)'],
+              ['SUE', '0.10', 'var(--text-2)'],
+            ].map(([label, weight, color]) => (
+              <div key={label} className="flex flex-col items-center">
+                <span className="text-sm font-mono font-medium" style={{ color }}>{weight}</span>
+                <span className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-5 sm:grid-cols-8 gap-3 text-center">
+            {[
+              ['Profitability', '0.18', 'var(--green)'],
+              ['Momentum+52W', '0.20', 'var(--brand)'],
+              ['Value', '0.18', 'var(--blue)'],
+              ['Investment', '0.12', 'var(--text-2)'],
+              ['SUE', '0.10', 'var(--text-2)'],
+              ['Low Vol', '0.10', 'var(--text-2)'],
+              ['Piotroski', '0.07', 'var(--green)'],
+              ['Earnings Q', '0.05', 'var(--green)'],
+            ].map(([label, weight, color]) => (
+              <div key={label} className="flex flex-col items-center">
+                <span className="text-sm font-mono font-medium" style={{ color }}>{weight}</span>
+                <span className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="mt-3 pt-2 flex flex-wrap gap-3 text-[11px]" style={{ borderTop: '1px solid var(--glass-border)', color: 'var(--text-3)' }}>
-          <span>Composite: Tech 35% · Fund 30% · Research 35%</span>
-          <span className="hidden sm:inline">|</span>
-          <span className="hidden sm:inline">Long-Term: Tech 10% · Fund 40% · Research 50%</span>
+          {horizonMode === 'short' ? (
+            <span>Composite: Tech 35% · Fund 25% · Research 40%</span>
+          ) : (
+            <span>Long Composite: Tech 15% · Fund 35% · Research (Long) 50% · 52W proximity embedded in momentum</span>
+          )}
         </div>
-
       </div>
 
       {/* Search + Filter bar */}
@@ -244,7 +286,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline"><InfoTooltip id="screener.sector">Sector</InfoTooltip></span></SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.price">Price</InfoTooltip></SortHeader>
               <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.1d">1D</InfoTooltip></SortHeader>
-              {isLoggedIn && <SortHeader field="Composite_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.score">Score</InfoTooltip></SortHeader>}
+              {isLoggedIn && <SortHeader field={scoreCol} align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.score">{horizonMode === 'long' ? 'Long Score' : 'Score'}</InfoTooltip></SortHeader>}
               <th className="py-2 px-2 font-medium text-[10px] text-center" style={{ color: 'var(--text-2)' }}><InfoTooltip id="screener.trend">Trend</InfoTooltip></th>
               <SortHeader field="Tech_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline"><InfoTooltip id="screener.tech">Tech</InfoTooltip></span></SortHeader>
               <SortHeader field="Fund_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline"><InfoTooltip id="screener.fund">Fund</InfoTooltip></span></SortHeader>
@@ -254,7 +296,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <SortHeader field="Value_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline"><InfoTooltip id="screener.value">Value</InfoTooltip></span></SortHeader>
               <SortHeader field="Beta" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline"><InfoTooltip id="screener.beta">Beta</InfoTooltip></span></SortHeader>
               <SortHeader field="P/E" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline"><InfoTooltip id="screener.pe">P/E</InfoTooltip></span></SortHeader>
-              {isLoggedIn && <SortHeader field="Conviction" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.conv">Conv</InfoTooltip></SortHeader>}
+              {isLoggedIn && <SortHeader field={convCol} sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.conv">{horizonMode === 'long' ? 'L-Conv' : 'Conv'}</InfoTooltip></SortHeader>}
               <th className="py-2 px-2"></th>
             </tr>
           </thead>
@@ -283,7 +325,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className={`py-2 px-2 text-right font-medium font-mono ${colorCode(row['1d_Chg_%'])}`}>
                     {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
                   </td>
-                  {isLoggedIn && <td className={`py-2 px-2 text-right font-medium font-mono ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>}
+                  {isLoggedIn && <td className={`py-2 px-2 text-right font-medium font-mono ${scoreColor((row as any)[scoreCol])}`}>{num((row as any)[scoreCol])}</td>}
                   <td className="py-2 px-2 text-center">
                     <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} ticker={row.Ticker} />
                   </td>
@@ -299,8 +341,13 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className="py-2 px-2 text-right font-mono hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
                   {isLoggedIn && (
                   <td className="py-2 px-2 font-medium whitespace-nowrap">
-                    <span className={`badge ${row.Conviction === 'Strong Buy' ? 'badge-strong-buy' : row.Conviction === 'Buy' ? 'badge-buy' : row.Conviction === 'Caution' ? 'badge-caution' : row.Conviction === 'Avoid' ? 'badge-avoid' : 'badge-hold'}`}>
-                      {row.Conviction || '-'}
+                    <span className={`badge ${
+                      (row as any)[convCol] === 'Strong Buy' ? 'badge-strong-buy' :
+                      (row as any)[convCol] === 'Buy'        ? 'badge-buy' :
+                      (row as any)[convCol] === 'Caution'    ? 'badge-caution' :
+                      (row as any)[convCol] === 'Avoid'      ? 'badge-avoid' : 'badge-hold'
+                    }`}>
+                      {(row as any)[convCol] || '-'}
                     </span>
                   </td>
                   )}
