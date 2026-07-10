@@ -297,16 +297,35 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         item["composite_score_fund"]  = min(10.0, raw_composite_fund)
         item["composite_score_mom"]   = min(10.0, raw_composite_mom)
 
-    all_comp_scores = pd.Series([x["composite_score"] for x in final_rows])
-    all_comp_long_scores = pd.Series([x["composite_score_long"] for x in final_rows])
+        # ── Long-Horizon Quality Penalty ─────────────────────────────────────────
+        # Omits the z-score overbought gate: at 6m, stocks near 52W highs
+        # (high z-scores) are the strongest performers (IC@126d = +0.103).
+        # Keeps: P/E, negative ROE, and extreme D/E gates.
+        quality_mult_long = 1.0
+        if not item.get("is_etf"):
+            info_l = item["info"]
+            pe_l   = _safe_float(info_l.get("trailingPE"))
+            roe_l  = _safe_float(info_l.get("returnOnEquity"), default=0)
+            de_l   = _safe_float(info_l.get("debtToEquity"), default=0)
+            if not np.isnan(pe_l) and pe_l > 0:
+                quality_mult_long *= np.exp(-0.013 * max(0.0, pe_l - 35))
+            if roe_l <= 0:
+                quality_mult_long *= max(0.0, 1.0 + 0.02 * roe_l)
+            if de_l > 150:
+                quality_mult_long *= max(0.0, 1.0 - 0.002 * (de_l - 150))
+        raw_composite_long = max(0.0, raw_composite_long * quality_mult_long)
+        item["composite_score_long"] = min(10.0, raw_composite_long)
+
+    all_comp_scores = pd.Series([x.get("composite_score", 5.0) for x in final_rows])
+    all_comp_long_scores = pd.Series([x.get("composite_score_long", 5.0) for x in final_rows])
     for item in final_rows:
         if len(all_comp_scores) > 0:
-            comp_pctile = sum(all_comp_scores <= item["composite_score"]) / len(all_comp_scores) * 100
+            comp_pctile = sum(all_comp_scores <= item.get("composite_score", 5.0)) / len(all_comp_scores) * 100
         else:
             comp_pctile = 50.0
 
         if len(all_comp_long_scores) > 0:
-            comp_long_pctile = sum(all_comp_long_scores <= item["composite_score_long"]) / len(all_comp_long_scores) * 100
+            comp_long_pctile = sum(all_comp_long_scores <= item.get("composite_score_long", 5.0)) / len(all_comp_long_scores) * 100
         else:
             comp_long_pctile = 50.0
 
