@@ -1,27 +1,26 @@
 {
-  "last_updated": "2026-07-10 07:50:41",
+  "last_updated": "2026-07-10 10:04:39",
   "model_portfolios": {
     "max_sharpe": {
-      "WELCORP.NS": 0.489,
-      "NATIONALUM.NS": 0.3806,
-      "WABAG.NS": 0.1304
+      "WELCORP.NS": 0.4937,
+      "NATIONALUM.NS": 0.3796,
+      "WABAG.NS": 0.1267
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.6257,
-      "OFSS.NS": 0.0656,
-      "COFORGE.NS": 0.0642,
-      "NATIONALUM.NS": 0.0596,
-      "JINDRILL.NS": 0.048,
-      "BALAMINES.NS": 0.0443,
-      "WABAG.NS": 0.0439,
-      "WELCORP.NS": 0.0222,
-      "PREMIERENE.NS": 0.0192
+      "SUNPHARMA.NS": 0.6446,
+      "OFSS.NS": 0.0968,
+      "NATIONALUM.NS": 0.0639,
+      "JINDRILL.NS": 0.0486,
+      "WABAG.NS": 0.0471,
+      "BALAMINES.NS": 0.0424,
+      "WELCORP.NS": 0.0274,
+      "PREMIERENE.NS": 0.0209
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 60.8,
+    "Quality": 59.7,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -128,164 +127,283 @@
       },
       {
         "date": "2026-07-10",
-        "portfolio": 102.69,
+        "portfolio": 102.7,
         "benchmark": 100.0
       }
     ],
     "stats": {
-      "total_return": 2.69,
-      "cagr": 41.38,
-      "volatility": 14.16,
-      "sharpe": 2.46,
+      "total_return": 2.7,
+      "cagr": 41.56,
+      "volatility": 14.17,
+      "sharpe": 2.47,
       "max_drawdown": -3.42,
-      "info_ratio": 2.92,
+      "info_ratio": 2.93,
       "win_rate": 45.0
     }
   },
+  "backtest_long": {
+    "chart": [
+      {
+        "date": "2026-06-12",
+        "portfolio": 100.0,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-15",
+        "portfolio": 100.2,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-16",
+        "portfolio": 101.02,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-17",
+        "portfolio": 102.26,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-18",
+        "portfolio": 102.58,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-19",
+        "portfolio": 103.26,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-22",
+        "portfolio": 103.83,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-23",
+        "portfolio": 102.72,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-24",
+        "portfolio": 103.52,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-25",
+        "portfolio": 103.44,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-26",
+        "portfolio": 103.44,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-29",
+        "portfolio": 102.6,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-06-30",
+        "portfolio": 102.65,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-01",
+        "portfolio": 102.93,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-02",
+        "portfolio": 103.23,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-03",
+        "portfolio": 102.31,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-06",
+        "portfolio": 102.5,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-07",
+        "portfolio": 102.79,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-08",
+        "portfolio": 102.4,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-09",
+        "portfolio": 103.21,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-10",
+        "portfolio": 103.21,
+        "benchmark": 100.0
+      }
+    ],
+    "stats": {
+      "total_return": 3.21,
+      "cagr": 51.01,
+      "volatility": 9.5,
+      "sharpe": 4.69,
+      "max_drawdown": -1.46,
+      "info_ratio": 5.37,
+      "win_rate": 65.0
+    }
+  },
   "market_regime": {
-    "score": 0,
+    "score": 1,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.7997454391175223
   },
   "sector_allocation": {
-    "Technology": 30.0,
     "Basic Materials": 30.0,
+    "Technology": 20.0,
     "Healthcare": 10.0,
-    "Communication Services": 10.0,
     "Energy": 10.0,
-    "Industrials": 10.0
+    "Communication Services": 10.0,
+    "Industrials": 10.0,
+    "Consumer Cyclical": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "BALAMINES",
-      "COFORGE",
       "IDEA",
       "JINDRILL",
       "NATIONALUM",
       "OFSS",
       "PREMIERENE",
       "SUNPHARMA",
+      "TBZ",
       "WABAG",
       "WELCORP"
     ],
     "matrix": [
       [
         1.0,
-        -0.09,
         0.1,
         -0.05,
-        0.11,
-        -0.0,
-        0.32,
-        0.21,
-        0.06,
+        0.12,
+        0.01,
+        0.33,
+        0.2,
+        0.14,
+        0.07,
         0.04
       ],
       [
-        -0.09,
-        1.0,
-        0.0,
-        -0.13,
-        -0.11,
-        0.17,
-        -0.0,
-        0.27,
-        0.17,
-        -0.02
-      ],
-      [
         0.1,
-        0.0,
         1.0,
         0.17,
         0.28,
         -0.1,
-        0.06,
+        0.07,
         0.14,
+        -0.07,
         -0.06,
         0.22
       ],
       [
         -0.05,
-        -0.13,
         0.17,
         1.0,
         0.23,
-        -0.07,
+        -0.08,
         -0.07,
         -0.11,
+        -0.04,
         -0.27,
         -0.04
       ],
       [
-        0.11,
-        -0.11,
+        0.12,
         0.28,
         0.23,
         1.0,
         0.1,
         0.24,
         0.04,
+        0.11,
         -0.11,
-        0.22
+        0.23
       ],
       [
-        -0.0,
-        0.17,
+        0.01,
         -0.1,
-        -0.07,
+        -0.08,
         0.1,
         1.0,
-        0.32,
-        0.25,
-        0.19,
+        0.33,
+        0.24,
+        -0.09,
+        0.2,
         0.15
       ],
       [
-        0.32,
-        -0.0,
-        0.06,
+        0.33,
+        0.07,
         -0.07,
         0.24,
-        0.32,
+        0.33,
         1.0,
         0.14,
+        0.26,
         0.15,
         0.13
       ],
       [
-        0.21,
-        0.27,
+        0.2,
         0.14,
         -0.11,
         0.04,
-        0.25,
+        0.24,
         0.14,
         1.0,
+        -0.0,
         -0.01,
         0.1
       ],
       [
-        0.06,
+        0.14,
+        -0.07,
+        -0.04,
+        0.11,
+        -0.09,
+        0.26,
+        -0.0,
+        1.0,
         0.17,
+        0.1
+      ],
+      [
+        0.07,
         -0.06,
         -0.27,
         -0.11,
-        0.19,
+        0.2,
         0.15,
         -0.01,
+        0.17,
         1.0,
         0.07
       ],
       [
         0.04,
-        -0.02,
         0.22,
         -0.04,
-        0.22,
+        0.23,
         0.15,
         0.13,
+        0.1,
         0.1,
         0.07,
         1.0
