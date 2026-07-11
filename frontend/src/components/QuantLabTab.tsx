@@ -275,7 +275,7 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
             </div>
             {backtestMode === 'long' && !quantData?.backtest_long && (
               <div className="px-5 py-2 text-[11px]" style={{ background: 'var(--amber-bg)', borderBottom: '1px solid var(--glass-border)', color: 'var(--amber)' }}>
-                Long-term backtest data not yet generated — re-run the scanner to produce it.
+                Long-term backtest data not yet generated. Re-run the scanner to produce it.
               </div>
             )}
             <div className="p-5" style={{ height: 320 }}>
