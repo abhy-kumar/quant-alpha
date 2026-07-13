@@ -1,27 +1,26 @@
 {
-  "last_updated": "2026-07-13 10:40:44",
+  "last_updated": "2026-07-13 13:08:36",
   "model_portfolios": {
     "max_sharpe": {
-      "WABAG.NS": 0.5457,
-      "GOLDIAM.NS": 0.1491,
-      "CHENNPETRO.NS": 0.1215,
-      "COFORGE.NS": 0.0972,
-      "PREMIERENE.NS": 0.0865
+      "SKMEGGPROD.NS": 0.6109,
+      "WABAG.NS": 0.3415,
+      "COFORGE.NS": 0.0248,
+      "CHENNPETRO.NS": 0.0228
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.4061,
-      "COALINDIA.NS": 0.2887,
-      "BAJAJ-AUTO.NS": 0.1865,
-      "COFORGE.NS": 0.0591,
-      "CHENNPETRO.NS": 0.0284,
-      "OFSS.NS": 0.0149,
-      "PREMIERENE.NS": 0.0116
+      "SUNPHARMA.NS": 0.389,
+      "COALINDIA.NS": 0.2662,
+      "BAJAJ-AUTO.NS": 0.1688,
+      "SHYAMMETL.NS": 0.078,
+      "COFORGE.NS": 0.0536,
+      "CHENNPETRO.NS": 0.0236,
+      "OFSS.NS": 0.0121
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 59.7,
+    "Quality": 61.9,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -527,15 +526,15 @@
         "to": "2026-07-13",
         "tickers": [
           "CHENNPETRO.NS",
+          "SHYAMMETL.NS",
           "BAJAJ-AUTO.NS",
           "SUNPHARMA.NS",
-          "IDEA.NS",
-          "PREMIERENE.NS",
+          "SKMEGGPROD.NS",
           "COFORGE.NS",
+          "PREMIERENE.NS",
           "OFSS.NS",
           "COALINDIA.NS",
-          "WABAG.NS",
-          "GOLDIAM.NS"
+          "WABAG.NS"
         ]
       }
     ],
@@ -588,77 +587,77 @@
       },
       {
         "date": "2026-06-23",
-        "portfolio": 102.52,
+        "portfolio": 102.6,
         "benchmark": 100.0
       },
       {
         "date": "2026-06-24",
-        "portfolio": 103.31,
+        "portfolio": 103.4,
         "benchmark": 100.0
       },
       {
         "date": "2026-06-25",
-        "portfolio": 103.24,
+        "portfolio": 103.32,
         "benchmark": 100.0
       },
       {
         "date": "2026-06-26",
-        "portfolio": 103.24,
+        "portfolio": 103.32,
         "benchmark": 100.0
       },
       {
         "date": "2026-06-29",
-        "portfolio": 102.39,
+        "portfolio": 102.47,
         "benchmark": 100.0
       },
       {
         "date": "2026-06-30",
-        "portfolio": 102.44,
+        "portfolio": 102.23,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-01",
-        "portfolio": 102.72,
+        "portfolio": 102.51,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-02",
-        "portfolio": 103.02,
+        "portfolio": 102.81,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-03",
-        "portfolio": 102.11,
+        "portfolio": 101.9,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-06",
-        "portfolio": 102.29,
+        "portfolio": 102.08,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-07",
-        "portfolio": 102.58,
+        "portfolio": 102.37,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-08",
-        "portfolio": 102.17,
+        "portfolio": 101.96,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-09",
-        "portfolio": 102.77,
+        "portfolio": 102.69,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-10",
-        "portfolio": 105.73,
+        "portfolio": 104.59,
         "benchmark": 100.0
       },
       {
         "date": "2026-07-13",
-        "portfolio": 105.1,
+        "portfolio": 103.97,
         "benchmark": 100.0
       }
     ],
@@ -1052,40 +1051,41 @@
         "to": "2026-07-13",
         "tickers": [
           "CHENNPETRO.NS",
+          "SKMEGGPROD.NS",
           "OFSS.NS",
           "PREMIERENE.NS",
-          "J&KBANK.NS",
+          "SHYAMMETL.NS",
           "COALINDIA.NS",
-          "BAJAJ-AUTO.NS",
-          "GOLDIAM.NS",
-          "WABAG.NS",
-          "HEROMOTOCO.NS",
-          "HINDZINC.NS"
+          "J&KBANK.NS",
+          "BFUTILITIE.NS",
+          "ONGC.NS",
+          "BAJAJCON.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": 5.1,
-      "cagr": 79.69,
-      "volatility": 13.65,
-      "sharpe": 5.36,
-      "max_drawdown": -1.47,
-      "info_ratio": 5.84,
-      "win_rate": 61.9
+      "total_return": 3.97,
+      "cagr": 58.2,
+      "volatility": 11.48,
+      "sharpe": 4.5,
+      "max_drawdown": -1.67,
+      "info_ratio": 5.07,
+      "win_rate": 57.1
     }
   },
   "market_regime": {
-    "score": 3,
+    "score": 0,
     "nifty_trend": "bearish",
     "vix": 0.0,
-    "breadth": 0.7480851063829788
+    "breadth": 0.5172267120374309
   },
   "sector_allocation": {
     "Technology": 30.0,
     "Energy": 20.0,
-    "Consumer Cyclical": 20.0,
+    "Basic Materials": 10.0,
+    "Consumer Cyclical": 10.0,
     "Healthcare": 10.0,
-    "Communication Services": 10.0,
+    "Consumer Defensive": 10.0,
     "Industrials": 10.0
   },
   "correlation_matrix": {
@@ -1094,10 +1094,10 @@
       "CHENNPETRO",
       "COALINDIA",
       "COFORGE",
-      "GOLDIAM",
-      "IDEA",
       "OFSS",
       "PREMIERENE",
+      "SHYAMMETL",
+      "SKMEGGPROD",
       "SUNPHARMA",
       "WABAG"
     ],
@@ -1107,10 +1107,10 @@
         -0.21,
         -0.13,
         0.03,
-        0.03,
-        -0.05,
         -0.04,
         0.01,
+        0.25,
+        0.14,
         0.19,
         0.21
       ],
@@ -1119,10 +1119,10 @@
         1.0,
         0.42,
         -0.04,
-        0.28,
-        0.18,
         0.11,
         0.28,
+        -0.08,
+        0.19,
         -0.08,
         -0.08
       ],
@@ -1131,10 +1131,10 @@
         0.42,
         1.0,
         -0.03,
-        -0.01,
-        0.19,
         0.29,
         0.12,
+        -0.12,
+        -0.05,
         0.0,
         0.03
       ],
@@ -1143,46 +1143,22 @@
         -0.04,
         -0.03,
         1.0,
-        0.17,
-        -0.01,
         0.16,
         -0.01,
+        0.29,
+        0.13,
         0.26,
         0.15
-      ],
-      [
-        0.03,
-        0.28,
-        -0.01,
-        0.17,
-        1.0,
-        0.21,
-        0.21,
-        0.16,
-        0.04,
-        0.24
-      ],
-      [
-        -0.05,
-        0.18,
-        0.19,
-        -0.01,
-        0.21,
-        1.0,
-        -0.1,
-        0.07,
-        0.15,
-        -0.06
       ],
       [
         -0.04,
         0.11,
         0.29,
         0.16,
-        0.21,
-        -0.1,
         1.0,
         0.33,
+        0.27,
+        0.22,
         0.25,
         0.18
       ],
@@ -1191,22 +1167,46 @@
         0.28,
         0.12,
         -0.01,
-        0.16,
-        0.07,
         0.33,
         1.0,
+        0.23,
+        0.17,
         0.14,
         0.16
+      ],
+      [
+        0.25,
+        -0.08,
+        -0.12,
+        0.29,
+        0.27,
+        0.23,
+        1.0,
+        0.36,
+        0.34,
+        0.12
+      ],
+      [
+        0.14,
+        0.19,
+        -0.05,
+        0.13,
+        0.22,
+        0.17,
+        0.36,
+        1.0,
+        0.07,
+        0.08
       ],
       [
         0.19,
         -0.08,
         0.0,
         0.26,
-        0.04,
-        0.15,
         0.25,
         0.14,
+        0.34,
+        0.07,
         1.0,
         0.0
       ],
@@ -1215,10 +1215,10 @@
         -0.08,
         0.03,
         0.15,
-        0.24,
-        -0.06,
         0.18,
         0.16,
+        0.12,
+        0.08,
         0.0,
         1.0
       ]
