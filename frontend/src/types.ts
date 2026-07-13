@@ -123,6 +123,12 @@ export interface OutcomeAccuracy {
   avg_return_63d: number | null
 }
 
+export interface BacktestHolding {
+  from: string    // "YYYY-MM-DD" — start of this holding window
+  to: string      // "YYYY-MM-DD" — exclusive end (next scan date)
+  tickers: string[]
+}
+
 export interface BacktestResult {
   date: string
   portfolio: number
@@ -166,6 +172,7 @@ export interface QuantData {
   }
   backtest: {
     chart: { date: string; portfolio: number; benchmark: number }[]
+    holdings?: BacktestHolding[]
     stats: {
       total_return: number
       cagr: number
@@ -178,6 +185,7 @@ export interface QuantData {
   }
   backtest_long?: {
     chart: { date: string; portfolio: number; benchmark: number }[]
+    holdings?: BacktestHolding[]
     stats: {
       total_return: number
       cagr: number

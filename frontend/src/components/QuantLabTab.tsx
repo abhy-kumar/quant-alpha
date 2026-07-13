@@ -7,6 +7,7 @@ import { SegmentedControl, InfoTooltip } from './shared'
 interface Props {
   isDark: boolean
   scanUpdated?: string
+  onSelect: (ticker: string) => void
 }
 
 const tooltipStyle = (isDark: boolean) => ({
@@ -69,11 +70,12 @@ function computeStats(chart: { date: string; portfolio: number; benchmark: numbe
   }
 }
 
-export default function QuantLabTab({ isDark, scanUpdated }: Props) {
+export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
   const [quantData, setQuantData] = useState<QuantData | null>(null)
   const [loading, setLoading] = useState(true)
   const [startDate, setStartDate] = useState<string>('')
   const [backtestMode, setBacktestMode] = useState<'short' | 'long'>('short')
+  const [showHoldings, setShowHoldings] = useState(false)
 
   useEffect(() => {
     fetch('/quant_data.json?t=' + Date.now())
@@ -107,6 +109,9 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
   const allChartData = activeBacktest?.chart ?? []
   const firstDate = allChartData[0]?.date ?? ''
 
+  // Holdings log for the active backtest mode
+  const holdings = activeBacktest?.holdings ?? []
+
   // Determine the effective start date (default = first available date)
   const effectiveStart = startDate || firstDate
 
@@ -134,6 +139,34 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
 
   const backtestStats = computedStats
 
+  // Custom tooltip that also shows holdings for the hovered date
+  const BacktestTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length) return null
+    const holding = holdings.find(h => label >= h.from && label < h.to)
+    return (
+      <div style={{ ...tooltipStyle(isDark), minWidth: 180 }}>
+        <p className="text-[11px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>{label}</p>
+        {payload.map((p: any) => (
+          <p key={p.dataKey} className="text-xs" style={{ color: p.color }}>
+            {p.name}: <strong>{typeof p.value === 'number' ? p.value.toFixed(2) : p.value}</strong>
+          </p>
+        ))}
+        {holding && holding.tickers.length > 0 && (
+          <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
+            <p className="text-[10px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>Holdings</p>
+            <div className="flex flex-wrap gap-1">
+              {holding.tickers.map(t => (
+                <span key={t} className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
+                  {t.replace('.NS', '')}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   if (loading) {
     return <div className="p-8 text-center" style={{ color: 'var(--text-3)' }}>Loading Quant Lab...</div>
   }
@@ -149,6 +182,17 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
 
   const max_sharpe = quantData.model_portfolios?.max_sharpe || {}
   const min_volatility = quantData.model_portfolios?.min_volatility || {}
+
+  // Inline TickerLink component — wraps a ticker string into a clickable button
+  const TickerLink = ({ ticker }: { ticker: string }) => (
+    <button
+      onClick={() => onSelect(ticker)}
+      className="ticker-link"
+      title={`View ${ticker.replace('.NS', '')} chart`}
+    >
+      {ticker.replace('.NS', '')}
+    </button>
+  )
 
   return (
     <div className="space-y-5">
@@ -284,7 +328,7 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
                   <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
                   <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} tickMargin={10} minTickGap={30} />
                   <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} domain={['auto', 'auto']} tickFormatter={(v) => typeof v === 'number' ? v.toFixed(1) : v} />
-                  <Tooltip contentStyle={tooltipStyle(isDark)} formatter={(v: any) => [typeof v === 'number' ? v.toFixed(2) : v]} />
+                  <Tooltip content={<BacktestTooltip />} />
                   <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '10px', color: 'var(--text-3)' }} />
                   <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
                   <Line type="monotone" dataKey="portfolio" name={backtestMode === 'long' ? 'Long Horizon Picks' : 'Alpha Picks'} stroke={backtestMode === 'long' ? 'var(--green)' : 'var(--brand)'} strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
@@ -292,6 +336,55 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
                 </LineChart>
               </ResponsiveContainer>
             </div>
+
+            {/* Holdings Log toggle */}
+            {holdings.length > 0 && (
+              <div style={{ borderTop: '1px solid var(--glass-border)' }}>
+                <button
+                  onClick={() => setShowHoldings(h => !h)}
+                  className="w-full px-5 py-2.5 text-[11px] font-medium flex items-center justify-between transition-colors"
+                  style={{ color: 'var(--text-3)', background: 'transparent' }}
+                >
+                  <span>Holdings Log — rebalance history</span>
+                  <span style={{ color: 'var(--text-4)' }}>{showHoldings ? '▲ Hide' : '▼ Show'}</span>
+                </button>
+                {showHoldings && (
+                  <div className="px-5 pb-4 overflow-x-auto scrollbar-none">
+                    <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                          <th className="py-2 pr-4 font-medium text-left whitespace-nowrap" style={{ color: 'var(--text-3)' }}>From</th>
+                          <th className="py-2 pr-4 font-medium text-left whitespace-nowrap" style={{ color: 'var(--text-3)' }}>To</th>
+                          <th className="py-2 font-medium text-left" style={{ color: 'var(--text-3)' }}>Top-10 Holdings (Equal Weight)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[...holdings].reverse().map(h => (
+                          <tr key={h.from} style={{ borderBottom: '1px solid var(--border)' }}>
+                            <td className="py-2 pr-4 font-mono whitespace-nowrap" style={{ color: 'var(--text-2)' }}>{h.from}</td>
+                            <td className="py-2 pr-4 font-mono whitespace-nowrap" style={{ color: 'var(--text-2)' }}>{h.to}</td>
+                            <td className="py-2">
+                              <div className="flex flex-wrap gap-1">
+                                {h.tickers.map(t => (
+                                  <button
+                                    key={t}
+                                    onClick={() => onSelect(t)}
+                                    className="ticker-chip--link text-[10px] px-1.5 py-0.5 rounded font-medium transition-opacity"
+                                    style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)', border: 'none', cursor: 'pointer' }}
+                                  >
+                                    {t.replace('.NS', '')}
+                                  </button>
+                                ))}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Model Portfolios */}
@@ -308,7 +401,7 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
                   {Object.entries(port.data).map(([ticker, weight]) => (
                     <div key={ticker}>
                       <div className="flex justify-between text-xs mb-1.5" style={{ color: 'var(--text-2)' }}>
-                        <span className="font-medium" style={{ color: 'var(--text)' }}>{ticker.replace('.NS', '')}</span>
+                        <TickerLink ticker={ticker} />
                         <span>{(Number(weight) * 100).toFixed(1)}%</span>
                       </div>
                       <div className="h-1 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>
@@ -397,7 +490,14 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
                       <th className="p-1 text-[10px] font-medium" style={{ color: 'var(--text-3)', width: 40 }} />
                       {quantData.correlation_matrix.labels.map(l => (
                         <th key={l} className="p-1 text-[9px] font-medium" style={{ color: 'var(--text-3)', height: 28, width: 24, textAlign: 'center' }}>
-                          {l.substring(0, 4)}
+                          <button
+                            onClick={() => onSelect(l)}
+                            className="ticker-link"
+                            style={{ fontSize: '9px' }}
+                            title={`View ${l.replace('.NS', '')} chart`}
+                          >
+                            {l.substring(0, 4)}
+                          </button>
                         </th>
                       ))}
                     </tr>
@@ -406,7 +506,14 @@ export default function QuantLabTab({ isDark, scanUpdated }: Props) {
                     {quantData.correlation_matrix.matrix.map((row, i) => (
                       <tr key={i}>
                         <td className="p-1 text-[10px] font-medium text-right" style={{ color: 'var(--text-3)' }}>
-                          {quantData.correlation_matrix!.labels[i].substring(0, 4)}
+                          <button
+                            onClick={() => onSelect(quantData.correlation_matrix!.labels[i])}
+                            className="ticker-link"
+                            style={{ fontSize: '10px' }}
+                            title={`View ${quantData.correlation_matrix!.labels[i].replace('.NS', '')} chart`}
+                          >
+                            {quantData.correlation_matrix!.labels[i].substring(0, 4)}
+                          </button>
                         </td>
                         {row.map((val, j) => {
                           let bg = 'transparent'

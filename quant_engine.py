@@ -125,6 +125,7 @@ def run_backtest(score_column: str = 'Composite_Score'):
         "portfolio": 100.0,
         "benchmark": 100.0
     }]
+    holdings_log = []  # NEW — one entry per scan window
     
     for i in range(len(scan_dates)):
         current_date = scan_dates[i]
@@ -140,7 +141,15 @@ def run_backtest(score_column: str = 'Composite_Score'):
         
         if not top_picks:
             continue
-            
+
+        # NEW — record which tickers were held in this scan window
+        next_scan_date = scan_dates[i+1][:10] if i < len(scan_dates) - 1 else str(returns_df.index[-1].date())
+        holdings_log.append({
+            "from": current_date[:10] if isinstance(current_date, str) else str(current_date)[:10],
+            "to":   next_scan_date,
+            "tickers": top_picks
+        })
+
         # Determine the period until the next scan date
         start_date = pd.to_datetime(current_date)
         if i < len(scan_dates) - 1:
@@ -219,7 +228,7 @@ def run_backtest(score_column: str = 'Composite_Score'):
         "win_rate": round(win_rate * 100, 1)
     }
     
-    return {"chart": chart_data, "stats": stats}
+    return {"chart": chart_data, "holdings": holdings_log, "stats": stats}
 
 def compute_factor_exposures(top_picks_df):
     """Aggregate factor exposures for the top picks."""

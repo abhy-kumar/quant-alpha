@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 
@@ -19,7 +20,9 @@ try {
 
   root.render(
     <StrictMode>
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </StrictMode>,
   )
   console.log('[Alpha] render() called')
@@ -28,3 +31,4 @@ try {
   document.body.innerHTML = '<div style="padding:40px;font-family:monospace;white-space:pre-wrap;background:#fff;color:#c00">' +
     '<h1>Alpha failed to start</h1><pre>' + (e instanceof Error ? e.stack || e.message : String(e)) + '</pre></div>'
 }
+

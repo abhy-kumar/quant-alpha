@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, memo, lazy, Suspense, useRef, useCallback } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { TrendUp, ChartBar, StackSimple, Moon, Sun, WarningCircle, Database, Pulse, SignOut, LockSimple } from '@phosphor-icons/react'
 import { Analytics } from '@vercel/analytics/react'
@@ -103,7 +104,23 @@ export default function App() {
   const [loadError, setLoadError] = useState<string|null>(null)
   const [marketRegimeScore, setMarketRegimeScore] = useState<number|null>(null)
   const [isDynamic, setIsDynamic] = useState(false)
-  const [activeTab, setActiveTab] = useState<'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab'>('charting')
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // Map tab IDs to URL paths
+  const TAB_PATHS: Record<string, string> = {
+    charting:     '/',
+    picks:        '/signals',
+    fundamentals: '/screen',
+    heatmap:      '/heatmap',
+    quantlab:     '/quant',
+  }
+  const PATH_TABS: Record<string, string> = Object.fromEntries(
+    Object.entries(TAB_PATHS).map(([id, path]) => [path, id])
+  )
+  // Derive active tab from URL, fall back to 'charting'
+  const activeTab = (PATH_TABS[location.pathname] ?? 'charting') as 'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab'
+  const setActiveTab = (id: 'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab') => navigate(TAB_PATHS[id] ?? '/')
   const [fiiNet, setFiiNet] = useState<number|null>(null)
   const [diiNet, setDiiNet] = useState<number|null>(null)
   const [pcr, setPcr] = useState<number|null>(null)
@@ -153,7 +170,7 @@ export default function App() {
     const ticker = new URLSearchParams(window.location.search).get('ticker')
     if (ticker && data.length) {
       setSelectedTicker(ticker.toUpperCase() + '.NS')
-      setActiveTab('charting')
+      navigate('/')
     }
   }, [data])
 
@@ -711,7 +728,7 @@ export default function App() {
                 {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>}
                 {activeTab==='charting' && <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon} isLoggedIn={isLoggedIn}/>}
                 {activeTab==='heatmap' && <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>}
-                {activeTab==='quantlab' && <QuantLabTab isDark={isDark} scanUpdated={scanUpdated}/>}
+                {activeTab==='quantlab' && <QuantLabTab isDark={isDark} scanUpdated={scanUpdated} onSelect={handleSelect}/>}
               </div>
             </Suspense>
           </ErrorBoundary>
