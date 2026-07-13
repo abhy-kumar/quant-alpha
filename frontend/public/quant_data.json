@@ -1,27 +1,29 @@
 {
-  "last_updated": "2026-07-13 18:25:49",
+  "last_updated": "2026-07-13 23:35:27",
   "model_portfolios": {
     "max_sharpe": {
-      "SKMEGGPROD.NS": 0.5697,
-      "INDIANB.NS": 0.3241,
-      "COFORGE.NS": 0.0612,
-      "CHENNPETRO.NS": 0.0278,
-      "PREMIERENE.NS": 0.0172
+      "BAJAJCON.NS": 0.4197,
+      "SKMEGGPROD.NS": 0.4013,
+      "COFORGE.NS": 0.0657,
+      "SHYAMMETL.NS": 0.0544,
+      "INDIANB.NS": 0.0307,
+      "SUNPHARMA.NS": 0.0282
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.3844,
-      "COALINDIA.NS": 0.2568,
-      "BAJAJ-AUTO.NS": 0.1582,
-      "SHYAMMETL.NS": 0.0662,
-      "INDIANB.NS": 0.0553,
-      "COFORGE.NS": 0.0533,
-      "CHENNPETRO.NS": 0.0192
+      "SUNPHARMA.NS": 0.4045,
+      "COALINDIA.NS": 0.2257,
+      "BAJAJ-AUTO.NS": 0.1489,
+      "SHYAMMETL.NS": 0.059,
+      "COFORGE.NS": 0.0575,
+      "INDIANB.NS": 0.0557,
+      "BAJAJCON.NS": 0.0283,
+      "CHENNPETRO.NS": 0.0146
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 61.4,
+    "Quality": 63.1,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -524,7 +526,7 @@
       },
       {
         "from": "2026-07-13",
-        "to": "2026-07-13",
+        "to": "2026-07-14",
         "tickers": [
           "CHENNPETRO.NS",
           "SHYAMMETL.NS",
@@ -536,6 +538,22 @@
           "INDIANB.NS",
           "OFSS.NS",
           "COALINDIA.NS"
+        ]
+      },
+      {
+        "from": "2026-07-14",
+        "to": "2026-07-13",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "SHYAMMETL.NS",
+          "BAJAJ-AUTO.NS",
+          "SKMEGGPROD.NS",
+          "SUNPHARMA.NS",
+          "COFORGE.NS",
+          "INDIANB.NS",
+          "OFSS.NS",
+          "COALINDIA.NS",
+          "BAJAJCON.NS"
         ]
       }
     ],
@@ -1049,7 +1067,7 @@
       },
       {
         "from": "2026-07-13",
-        "to": "2026-07-13",
+        "to": "2026-07-14",
         "tickers": [
           "CHENNPETRO.NS",
           "SKMEGGPROD.NS",
@@ -1061,6 +1079,22 @@
           "INDIANB.NS",
           "BFUTILITIE.NS",
           "ONGC.NS"
+        ]
+      },
+      {
+        "from": "2026-07-14",
+        "to": "2026-07-13",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "SKMEGGPROD.NS",
+          "OFSS.NS",
+          "COALINDIA.NS",
+          "SHYAMMETL.NS",
+          "J&KBANK.NS",
+          "INDIANB.NS",
+          "BFUTILITIE.NS",
+          "ONGC.NS",
+          "BAJAJCON.NS"
         ]
       }
     ],
@@ -1081,23 +1115,23 @@
     "breadth": 0.5172267120374309
   },
   "sector_allocation": {
-    "Technology": 30.0,
     "Energy": 20.0,
+    "Consumer Defensive": 20.0,
+    "Technology": 20.0,
     "Basic Materials": 10.0,
     "Consumer Cyclical": 10.0,
     "Healthcare": 10.0,
-    "Consumer Defensive": 10.0,
     "Financial Services": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "BAJAJ-AUTO",
+      "BAJAJCON",
       "CHENNPETRO",
       "COALINDIA",
       "COFORGE",
       "INDIANB",
       "OFSS",
-      "PREMIERENE",
       "SHYAMMETL",
       "SKMEGGPROD",
       "SUNPHARMA"
@@ -1105,120 +1139,120 @@
     "matrix": [
       [
         1.0,
+        -0.04,
         -0.21,
         -0.13,
         0.03,
         -0.02,
         -0.04,
-        0.01,
         0.25,
         0.14,
         0.19
       ],
       [
+        -0.04,
+        1.0,
+        0.24,
+        0.09,
+        0.07,
+        0.28,
+        0.04,
+        0.02,
+        0.07,
+        -0.06
+      ],
+      [
         -0.21,
+        0.24,
         1.0,
         0.42,
         -0.04,
         0.23,
         0.11,
-        0.28,
         -0.08,
         0.19,
         -0.08
       ],
       [
         -0.13,
+        0.09,
         0.42,
         1.0,
         -0.03,
         -0.2,
         0.29,
-        0.12,
         -0.12,
         -0.05,
         0.0
       ],
       [
         0.03,
+        0.07,
         -0.04,
         -0.03,
         1.0,
         0.11,
         0.16,
-        -0.01,
         0.29,
         0.13,
         0.26
       ],
       [
         -0.02,
+        0.28,
         0.23,
         -0.2,
         0.11,
         1.0,
         0.05,
-        0.35,
         0.2,
         0.17,
         -0.0
       ],
       [
         -0.04,
+        0.04,
         0.11,
         0.29,
         0.16,
         0.05,
         1.0,
-        0.33,
         0.27,
         0.22,
         0.25
       ],
       [
-        0.01,
-        0.28,
-        0.12,
-        -0.01,
-        0.35,
-        0.33,
-        1.0,
-        0.23,
-        0.17,
-        0.14
-      ],
-      [
         0.25,
+        0.02,
         -0.08,
         -0.12,
         0.29,
         0.2,
         0.27,
-        0.23,
         1.0,
         0.36,
         0.34
       ],
       [
         0.14,
+        0.07,
         0.19,
         -0.05,
         0.13,
         0.17,
         0.22,
-        0.17,
         0.36,
         1.0,
         0.07
       ],
       [
         0.19,
+        -0.06,
         -0.08,
         0.0,
         0.26,
         -0.0,
         0.25,
-        0.14,
         0.34,
         0.07,
         1.0
