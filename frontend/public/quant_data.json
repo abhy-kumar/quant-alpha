@@ -1,27 +1,27 @@
 {
-  "last_updated": "2026-07-13 07:37:01",
+  "last_updated": "2026-07-13 10:40:44",
   "model_portfolios": {
     "max_sharpe": {
-      "J&KBANK.NS": 0.4684,
-      "WABAG.NS": 0.3902,
-      "GOLDIAM.NS": 0.0553,
-      "CHENNPETRO.NS": 0.0505,
-      "PREMIERENE.NS": 0.0355
+      "WABAG.NS": 0.5457,
+      "GOLDIAM.NS": 0.1491,
+      "CHENNPETRO.NS": 0.1215,
+      "COFORGE.NS": 0.0972,
+      "PREMIERENE.NS": 0.0865
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.4218,
-      "COALINDIA.NS": 0.2848,
-      "BAJAJ-AUTO.NS": 0.1821,
-      "OFSS.NS": 0.0422,
-      "J&KBANK.NS": 0.0295,
-      "CHENNPETRO.NS": 0.0241,
+      "SUNPHARMA.NS": 0.4061,
+      "COALINDIA.NS": 0.2887,
+      "BAJAJ-AUTO.NS": 0.1865,
+      "COFORGE.NS": 0.0591,
+      "CHENNPETRO.NS": 0.0284,
+      "OFSS.NS": 0.0149,
       "PREMIERENE.NS": 0.0116
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 57.5,
+    "Quality": 59.7,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -133,17 +133,419 @@
       },
       {
         "date": "2026-07-13",
-        "portfolio": 102.09,
+        "portfolio": 102.2,
         "benchmark": 100.0
       }
     ],
+    "holdings": [
+      {
+        "from": "2026-06-12",
+        "to": "2026-06-15",
+        "tickers": [
+          "GOLDIAM.NS",
+          "GVT&D.NS",
+          "RUBICON.NS",
+          "BSE.NS",
+          "GLAND.NS",
+          "CUPID.NS",
+          "HSCL.NS",
+          "HONASA.NS",
+          "BAJAJ-AUTO.NS",
+          "NMDC.NS"
+        ]
+      },
+      {
+        "from": "2026-06-15",
+        "to": "2026-06-16",
+        "tickers": [
+          "GOLDIAM.NS",
+          "BSE.NS",
+          "HSCL.NS",
+          "GROWW.NS",
+          "CHENNPETRO.NS",
+          "CUPID.NS",
+          "GVT&D.NS",
+          "AEROFLEX.NS",
+          "MOTHERSON.NS",
+          "MMTC.NS"
+        ]
+      },
+      {
+        "from": "2026-06-16",
+        "to": "2026-06-17",
+        "tickers": [
+          "ASIANPAINT.NS",
+          "BSE.NS",
+          "CUPID.NS",
+          "NAM-INDIA.NS",
+          "GVT&D.NS",
+          "SUZLON.NS",
+          "RADICO.NS",
+          "KAJARIACER.NS",
+          "CHENNPETRO.NS",
+          "WABAG.NS"
+        ]
+      },
+      {
+        "from": "2026-06-17",
+        "to": "2026-06-18",
+        "tickers": [
+          "CUPID.NS",
+          "ASIANPAINT.NS",
+          "GVT&D.NS",
+          "WABAG.NS",
+          "MTARTECH.NS",
+          "LALPATHLAB.NS",
+          "PREMEXPLN.NS",
+          "CGPOWER.NS",
+          "NMDC.NS",
+          "AEROFLEX.NS"
+        ]
+      },
+      {
+        "from": "2026-06-18",
+        "to": "2026-06-19",
+        "tickers": [
+          "GVT&D.NS",
+          "CUPID.NS",
+          "SUNPHARMA.NS",
+          "BSE.NS",
+          "RADICO.NS",
+          "SUZLON.NS",
+          "MTARTECH.NS",
+          "CGPOWER.NS",
+          "LUPIN.NS",
+          "LICI.NS"
+        ]
+      },
+      {
+        "from": "2026-06-19",
+        "to": "2026-06-20",
+        "tickers": [
+          "GVT&D.NS",
+          "SOLARINDS.NS",
+          "CUPID.NS",
+          "HSCL.NS",
+          "SUZLON.NS",
+          "RADICO.NS",
+          "MTARTECH.NS",
+          "SUNPHARMA.NS",
+          "PANAMAPET.NS",
+          "LUPIN.NS"
+        ]
+      },
+      {
+        "from": "2026-06-20",
+        "to": "2026-06-21",
+        "tickers": [
+          "GVT&D.NS",
+          "PANAMAPET.NS",
+          "SOLARINDS.NS",
+          "FEDERALBNK.NS",
+          "RPTECH.NS",
+          "HSCL.NS",
+          "ANGELONE.NS",
+          "CUPID.NS",
+          "MOTHERSON.NS",
+          "RADICO.NS"
+        ]
+      },
+      {
+        "from": "2026-06-21",
+        "to": "2026-06-22",
+        "tickers": [
+          "GVT&D.NS",
+          "POWERINDIA.NS",
+          "SUNPHARMA.NS",
+          "RADICO.NS",
+          "HSCL.NS",
+          "POLYCAB.NS",
+          "LUPIN.NS",
+          "PANAMAPET.NS",
+          "CUPID.NS",
+          "CGPOWER.NS"
+        ]
+      },
+      {
+        "from": "2026-06-22",
+        "to": "2026-06-23",
+        "tickers": [
+          "GVT&D.NS",
+          "KIRLPNU.NS",
+          "ANANDRATHI.NS",
+          "POWERINDIA.NS",
+          "RADICO.NS",
+          "CUPID.NS",
+          "SUNPHARMA.NS",
+          "BHEL.NS",
+          "LUPIN.NS",
+          "OFSS.NS"
+        ]
+      },
+      {
+        "from": "2026-06-23",
+        "to": "2026-06-24",
+        "tickers": [
+          "SUNPHARMA.NS",
+          "OFSS.NS",
+          "ASIANPAINT.NS",
+          "ADANIPOWER.NS",
+          "MOTHERSON.NS",
+          "NMDC.NS",
+          "BEL.NS",
+          "EICHERMOT.NS",
+          "RBLBANK.NS",
+          "MANKIND.NS"
+        ]
+      },
+      {
+        "from": "2026-06-24",
+        "to": "2026-06-25",
+        "tickers": [
+          "ASIANPAINT.NS",
+          "SUNPHARMA.NS",
+          "MOTHERSON.NS",
+          "ADANIPOWER.NS",
+          "NMDC.NS",
+          "LICI.NS",
+          "POLYCAB.NS",
+          "EICHERMOT.NS",
+          "MANKIND.NS",
+          "HSCL.NS"
+        ]
+      },
+      {
+        "from": "2026-06-25",
+        "to": "2026-06-26",
+        "tickers": [
+          "OFSS.NS",
+          "SUNPHARMA.NS",
+          "WELCORP.NS",
+          "EICHERMOT.NS",
+          "GLAND.NS",
+          "LICI.NS",
+          "COALINDIA.NS",
+          "HINDPETRO.NS",
+          "STEELCAS.NS",
+          "NMDC.NS"
+        ]
+      },
+      {
+        "from": "2026-06-26",
+        "to": "2026-06-29",
+        "tickers": [
+          "OFSS.NS",
+          "SUNPHARMA.NS",
+          "WELCORP.NS",
+          "EICHERMOT.NS",
+          "LICI.NS",
+          "COALINDIA.NS",
+          "HINDPETRO.NS",
+          "SUZLON.NS",
+          "ADANIPOWER.NS",
+          "BOSCHLTD.NS"
+        ]
+      },
+      {
+        "from": "2026-06-29",
+        "to": "2026-06-30",
+        "tickers": [
+          "OFSS.NS",
+          "WELCORP.NS",
+          "SUNPHARMA.NS",
+          "LUPIN.NS",
+          "COALINDIA.NS",
+          "NMDC.NS",
+          "FEDERALBNK.NS",
+          "HINDPETRO.NS",
+          "EICHERMOT.NS",
+          "AUROPHARMA.NS"
+        ]
+      },
+      {
+        "from": "2026-06-30",
+        "to": "2026-07-01",
+        "tickers": [
+          "OFSS.NS",
+          "WELCORP.NS",
+          "LUPIN.NS",
+          "SUNPHARMA.NS",
+          "COALINDIA.NS",
+          "MOTHERSON.NS",
+          "NMDC.NS",
+          "BOSCHLTD.NS",
+          "IDEA.NS",
+          "HINDPETRO.NS"
+        ]
+      },
+      {
+        "from": "2026-07-01",
+        "to": "2026-07-02",
+        "tickers": [
+          "OFSS.NS",
+          "LUPIN.NS",
+          "SUNPHARMA.NS",
+          "GLAND.NS",
+          "MOTHERSON.NS",
+          "SIGNPOST.NS",
+          "ADANIPOWER.NS",
+          "IDEA.NS",
+          "ARVIND.NS",
+          "NMDC.NS"
+        ]
+      },
+      {
+        "from": "2026-07-02",
+        "to": "2026-07-03",
+        "tickers": [
+          "OFSS.NS",
+          "SIGNPOST.NS",
+          "IDEA.NS",
+          "SUNPHARMA.NS",
+          "ADFFOODS.NS",
+          "MOTHERSON.NS",
+          "COALINDIA.NS",
+          "HINDPETRO.NS",
+          "NMDC.NS",
+          "BPCL.NS"
+        ]
+      },
+      {
+        "from": "2026-07-03",
+        "to": "2026-07-06",
+        "tickers": [
+          "OFSS.NS",
+          "SUNPHARMA.NS",
+          "IDEA.NS",
+          "RAYMONDREL.NS",
+          "LUPIN.NS",
+          "ANGELONE.NS",
+          "EICHERMOT.NS",
+          "WABAG.NS",
+          "SAKSOFT.NS",
+          "COFORGE.NS"
+        ]
+      },
+      {
+        "from": "2026-07-06",
+        "to": "2026-07-07",
+        "tickers": [
+          "OFSS.NS",
+          "SUNPHARMA.NS",
+          "WELCORP.NS",
+          "SUPRIYA.NS",
+          "MOTHERSON.NS",
+          "RBLBANK.NS",
+          "IDEA.NS",
+          "COALINDIA.NS",
+          "LUPIN.NS",
+          "AUBANK.NS"
+        ]
+      },
+      {
+        "from": "2026-07-07",
+        "to": "2026-07-08",
+        "tickers": [
+          "WELCORP.NS",
+          "SUNPHARMA.NS",
+          "IOLCP.NS",
+          "GLAND.NS",
+          "SOUTHBANK.NS",
+          "IDEA.NS",
+          "COALINDIA.NS",
+          "BPCL.NS",
+          "HINDPETRO.NS",
+          "BAJAJ-AUTO.NS"
+        ]
+      },
+      {
+        "from": "2026-07-08",
+        "to": "2026-07-09",
+        "tickers": [
+          "IOLCP.NS",
+          "SUNPHARMA.NS",
+          "LUPIN.NS",
+          "GLAND.NS",
+          "COALINDIA.NS",
+          "CEMPRO.NS",
+          "WABAG.NS",
+          "IDEA.NS",
+          "BAJAJ-AUTO.NS",
+          "BALAMINES.NS"
+        ]
+      },
+      {
+        "from": "2026-07-09",
+        "to": "2026-07-10",
+        "tickers": [
+          "OFSS.NS",
+          "PREMIERENE.NS",
+          "GLAND.NS",
+          "IOLCP.NS",
+          "JINDRILL.NS",
+          "SUNPHARMA.NS",
+          "WELCORP.NS",
+          "LUPIN.NS",
+          "IDEA.NS",
+          "WABAG.NS"
+        ]
+      },
+      {
+        "from": "2026-07-10",
+        "to": "2026-07-12",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "IDEA.NS",
+          "OFSS.NS",
+          "SUNPHARMA.NS",
+          "JINDRILL.NS",
+          "COALINDIA.NS",
+          "PREMIERENE.NS",
+          "NATIONALUM.NS",
+          "WABAG.NS",
+          "RBLBANK.NS"
+        ]
+      },
+      {
+        "from": "2026-07-12",
+        "to": "2026-07-13",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "IDEA.NS",
+          "OFSS.NS",
+          "SUNPHARMA.NS",
+          "COALINDIA.NS",
+          "PREMIERENE.NS",
+          "WABAG.NS",
+          "NATIONALUM.NS",
+          "BAJAJ-AUTO.NS",
+          "BANDHANBNK.NS"
+        ]
+      },
+      {
+        "from": "2026-07-13",
+        "to": "2026-07-13",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "BAJAJ-AUTO.NS",
+          "SUNPHARMA.NS",
+          "IDEA.NS",
+          "PREMIERENE.NS",
+          "COFORGE.NS",
+          "OFSS.NS",
+          "COALINDIA.NS",
+          "WABAG.NS",
+          "GOLDIAM.NS"
+        ]
+      }
+    ],
     "stats": {
-      "total_return": 2.09,
-      "cagr": 27.6,
-      "volatility": 14.06,
-      "sharpe": 1.5,
+      "total_return": 2.2,
+      "cagr": 29.23,
+      "volatility": 14.03,
+      "sharpe": 1.62,
       "max_drawdown": -3.41,
-      "info_ratio": 1.96,
+      "info_ratio": 2.08,
       "win_rate": 42.9
     }
   },
@@ -260,6 +662,408 @@
         "benchmark": 100.0
       }
     ],
+    "holdings": [
+      {
+        "from": "2026-06-12",
+        "to": "2026-06-15",
+        "tickers": [
+          "UNICHEMLAB.NS",
+          "HFCL.NS",
+          "GLAND.NS",
+          "HONASA.NS",
+          "UNIECOM.NS",
+          "OFSS.NS",
+          "LENSKART.NS",
+          "POWERGRID.NS",
+          "RUBICON.NS",
+          "BLUEJET.NS"
+        ]
+      },
+      {
+        "from": "2026-06-15",
+        "to": "2026-06-16",
+        "tickers": [
+          "MMTC.NS",
+          "CLSEL.NS",
+          "AUBANK.NS",
+          "GOLDIAM.NS",
+          "IDFCFIRSTB.NS",
+          "NYKAA.NS",
+          "JBMA.NS",
+          "EPACKPEB.NS",
+          "PNB.NS",
+          "BOSCHLTD.NS"
+        ]
+      },
+      {
+        "from": "2026-06-16",
+        "to": "2026-06-17",
+        "tickers": [
+          "AEQUS.NS",
+          "FIVESTAR.NS",
+          "SCI.NS",
+          "HDFCAMC.NS",
+          "ASHOKA.NS",
+          "AIIL.NS",
+          "SPAL.NS",
+          "FORCEMOT.NS",
+          "LTF.NS",
+          "NHPC.NS"
+        ]
+      },
+      {
+        "from": "2026-06-17",
+        "to": "2026-06-18",
+        "tickers": [
+          "LALPATHLAB.NS",
+          "FACT.NS",
+          "EXICOM.NS",
+          "WABAG.NS",
+          "LAURUSLABS.NS",
+          "MOTISONS.NS",
+          "BAJAJFINSV.NS",
+          "CHOLAFIN.NS",
+          "KALYANKJIL.NS",
+          "WAAREEENER.NS"
+        ]
+      },
+      {
+        "from": "2026-06-18",
+        "to": "2026-06-19",
+        "tickers": [
+          "DOMS.NS",
+          "TARSONS.NS",
+          "DMART.NS",
+          "NEWGEN.NS",
+          "UCOBANK.NS",
+          "PINELABS.NS",
+          "BRIGADE.NS",
+          "IGARASHI.NS",
+          "ASHOKLEY.NS",
+          "MSTCLTD.NS"
+        ]
+      },
+      {
+        "from": "2026-06-19",
+        "to": "2026-06-20",
+        "tickers": [
+          "SHAILY.NS",
+          "BATAINDIA.NS",
+          "MAXHEALTH.NS",
+          "KPRMILL.NS",
+          "WOCKPHARMA.NS",
+          "IDBI.NS",
+          "PAYTM.NS",
+          "RVNL.NS",
+          "WELSPUNLIV.NS",
+          "STARHEALTH.NS"
+        ]
+      },
+      {
+        "from": "2026-06-20",
+        "to": "2026-06-21",
+        "tickers": [
+          "INFY.NS",
+          "BHARTIARTL.NS",
+          "TCS.NS",
+          "RELIANCE.NS",
+          "PARAS.NS",
+          "NIACL.NS",
+          "MTARTECH.NS",
+          "HDFCBANK.NS",
+          "LENSKART.NS",
+          "GROWW.NS"
+        ]
+      },
+      {
+        "from": "2026-06-21",
+        "to": "2026-06-22",
+        "tickers": [
+          "BHARTIARTL.NS",
+          "RELIANCE.NS",
+          "INFY.NS",
+          "TCS.NS",
+          "PARAS.NS",
+          "MTARTECH.NS",
+          "NIACL.NS",
+          "HDFCBANK.NS",
+          "LENSKART.NS",
+          "GROWW.NS"
+        ]
+      },
+      {
+        "from": "2026-06-22",
+        "to": "2026-06-23",
+        "tickers": [
+          "TATACAP.NS",
+          "TARIL.NS",
+          "ICICIAMC.NS",
+          "LGEINDIA.NS",
+          "NELCO.NS",
+          "PERSISTENT.NS",
+          "WIPRO.NS",
+          "REDINGTON.NS",
+          "DMART.NS",
+          "OLECTRA.NS"
+        ]
+      },
+      {
+        "from": "2026-06-23",
+        "to": "2026-06-24",
+        "tickers": [
+          "KIRLOSBROS.NS",
+          "IDBI.NS",
+          "EPACK.NS",
+          "KSCL.NS",
+          "DELHIVERY.NS",
+          "POLICYBZR.NS",
+          "AEGISLOG.NS",
+          "TATACOMM.NS",
+          "SCI.NS",
+          "RBA.NS"
+        ]
+      },
+      {
+        "from": "2026-06-24",
+        "to": "2026-06-25",
+        "tickers": [
+          "COHANCE.NS",
+          "EMSLIMITED.NS",
+          "SYRMA.NS",
+          "ATHERENERG.NS",
+          "CARTRADE.NS",
+          "NAUKRI.NS",
+          "GARUDA.NS",
+          "NIACL.NS",
+          "ORIENTHOT.NS",
+          "EIEL.NS"
+        ]
+      },
+      {
+        "from": "2026-06-25",
+        "to": "2026-06-26",
+        "tickers": [
+          "KPRMILL.NS",
+          "MTARTECH.NS",
+          "DELHIVERY.NS",
+          "ICIL.NS",
+          "PGIL.NS",
+          "PPLPHARMA.NS",
+          "PACEDIGITK.NS",
+          "FIRSTCRY.NS",
+          "HINDCOPPER.NS",
+          "SIS.NS"
+        ]
+      },
+      {
+        "from": "2026-06-26",
+        "to": "2026-06-29",
+        "tickers": [
+          "INDIGO.NS",
+          "HDFCBANK.NS",
+          "ICICIBANK.NS",
+          "M&M.NS",
+          "SBIN.NS",
+          "RELIANCE.NS",
+          "INFY.NS",
+          "SILVERBEES.NS",
+          "BHARTIARTL.NS",
+          "RELAXO.NS"
+        ]
+      },
+      {
+        "from": "2026-06-29",
+        "to": "2026-06-30",
+        "tickers": [
+          "RELAXO.NS",
+          "MSUMI.NS",
+          "RAMCOIND.NS",
+          "TMCV.NS",
+          "PINELABS.NS",
+          "BANDHANBNK.NS",
+          "TATACHEM.NS",
+          "PIXTRANS.NS",
+          "IRFC.NS",
+          "ULTRACEMCO.NS"
+        ]
+      },
+      {
+        "from": "2026-06-30",
+        "to": "2026-07-01",
+        "tickers": [
+          "MCX.NS",
+          "HDFCBANK.NS",
+          "PERSISTENT.NS",
+          "RAMCOSYS.NS",
+          "BHARTIARTL.NS",
+          "BAJFINANCE.NS",
+          "GVT&D.NS",
+          "ICICIBANK.NS",
+          "BHEL.NS",
+          "MARUTI.NS"
+        ]
+      },
+      {
+        "from": "2026-07-01",
+        "to": "2026-07-02",
+        "tickers": [
+          "GLAND.NS",
+          "RRKABEL.NS",
+          "ITC.NS",
+          "KEC.NS",
+          "AUROPHARMA.NS",
+          "TEJASNET.NS",
+          "COCHINSHIP.NS",
+          "APOLLOHOSP.NS",
+          "CGCL.NS",
+          "BAJAJ-AUTO.NS"
+        ]
+      },
+      {
+        "from": "2026-07-02",
+        "to": "2026-07-03",
+        "tickers": [
+          "RITES.NS",
+          "RPOWER.NS",
+          "GENUSPOWER.NS",
+          "TARIL.NS",
+          "JTEKTINDIA.NS",
+          "SIGNPOST.NS",
+          "CARTRADE.NS",
+          "SAMMAANCAP.NS",
+          "HDFCLIFE.NS",
+          "DABUR.NS"
+        ]
+      },
+      {
+        "from": "2026-07-03",
+        "to": "2026-07-06",
+        "tickers": [
+          "POLICYBZR.NS",
+          "ZENSARTECH.NS",
+          "POWERINDIA.NS",
+          "CGPOWER.NS",
+          "HDFCBANK.NS",
+          "ICICIBANK.NS",
+          "GVT&D.NS",
+          "APOLLO.NS",
+          "HCLTECH.NS",
+          "LIQUIDBEES.NS"
+        ]
+      },
+      {
+        "from": "2026-07-06",
+        "to": "2026-07-07",
+        "tickers": [
+          "SUMICHEM.NS",
+          "IKIO.NS",
+          "PPLPHARMA.NS",
+          "WIPRO.NS",
+          "MARICO.NS",
+          "TMPV.NS",
+          "APARINDS.NS",
+          "TECHM.NS",
+          "INDIANB.NS",
+          "LENSKART.NS"
+        ]
+      },
+      {
+        "from": "2026-07-07",
+        "to": "2026-07-08",
+        "tickers": [
+          "SHAKTIPUMP.NS",
+          "WELCORP.NS",
+          "DIGITIDE.NS",
+          "AUBANK.NS",
+          "MUNJALAU.NS",
+          "ZENTEC.NS",
+          "MEESHO.NS",
+          "LIQUIDCASE.NS",
+          "MANAPPURAM.NS",
+          "GODREJCP.NS"
+        ]
+      },
+      {
+        "from": "2026-07-08",
+        "to": "2026-07-09",
+        "tickers": [
+          "RITES.NS",
+          "TARC.NS",
+          "TECHM.NS",
+          "PHOENIXLTD.NS",
+          "WABAG.NS",
+          "SOLARINDS.NS",
+          "HEXT.NS",
+          "VBL.NS",
+          "AEGISVOPAK.NS",
+          "BELRISE.NS"
+        ]
+      },
+      {
+        "from": "2026-07-09",
+        "to": "2026-07-10",
+        "tickers": [
+          "HINDPETRO.NS",
+          "ANANTRAJ.NS",
+          "IOLCP.NS",
+          "SGMART.NS",
+          "BPCL.NS",
+          "IOC.NS",
+          "TVSMOTOR.NS",
+          "INDUSINDBK.NS",
+          "GEMAROMA.NS",
+          "JUBLFOOD.NS"
+        ]
+      },
+      {
+        "from": "2026-07-10",
+        "to": "2026-07-12",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "OFSS.NS",
+          "PREMIERENE.NS",
+          "COALINDIA.NS",
+          "J&KBANK.NS",
+          "TBZ.NS",
+          "WABAG.NS",
+          "HINDZINC.NS",
+          "ONGC.NS",
+          "NATIONALUM.NS"
+        ]
+      },
+      {
+        "from": "2026-07-12",
+        "to": "2026-07-13",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "OFSS.NS",
+          "PREMIERENE.NS",
+          "J&KBANK.NS",
+          "COALINDIA.NS",
+          "WABAG.NS",
+          "HINDZINC.NS",
+          "NATIONALUM.NS",
+          "HEROMOTOCO.NS",
+          "BAJAJ-AUTO.NS"
+        ]
+      },
+      {
+        "from": "2026-07-13",
+        "to": "2026-07-13",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "OFSS.NS",
+          "PREMIERENE.NS",
+          "J&KBANK.NS",
+          "COALINDIA.NS",
+          "BAJAJ-AUTO.NS",
+          "GOLDIAM.NS",
+          "WABAG.NS",
+          "HEROMOTOCO.NS",
+          "HINDZINC.NS"
+        ]
+      }
+    ],
     "stats": {
       "total_return": 5.1,
       "cagr": 79.69,
@@ -277,22 +1081,21 @@
     "breadth": 0.7480851063829788
   },
   "sector_allocation": {
+    "Technology": 30.0,
     "Energy": 20.0,
-    "Technology": 20.0,
     "Consumer Cyclical": 20.0,
-    "Communication Services": 10.0,
     "Healthcare": 10.0,
-    "Industrials": 10.0,
-    "Financial Services": 10.0
+    "Communication Services": 10.0,
+    "Industrials": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "BAJAJ-AUTO",
       "CHENNPETRO",
       "COALINDIA",
+      "COFORGE",
       "GOLDIAM",
       "IDEA",
-      "J&KBANK",
       "OFSS",
       "PREMIERENE",
       "SUNPHARMA",
@@ -301,122 +1104,122 @@
     "matrix": [
       [
         1.0,
-        -0.2,
-        -0.14,
-        0.04,
-        -0.03,
-        0.05,
+        -0.21,
+        -0.13,
+        0.03,
+        0.03,
+        -0.05,
         -0.04,
-        0.02,
-        0.21,
-        0.22
+        0.01,
+        0.19,
+        0.21
       ],
       [
-        -0.2,
+        -0.21,
         1.0,
-        0.43,
-        0.27,
+        0.42,
+        -0.04,
+        0.28,
         0.18,
-        0.38,
         0.11,
         0.28,
         -0.08,
-        -0.09
+        -0.08
       ],
       [
-        -0.14,
-        0.43,
+        -0.13,
+        0.42,
         1.0,
+        -0.03,
         -0.01,
         0.19,
-        0.06,
         0.29,
         0.12,
-        0.01,
+        0.0,
         0.03
       ],
       [
-        0.04,
-        0.27,
-        -0.01,
-        1.0,
-        0.2,
-        0.69,
-        0.21,
-        0.15,
         0.03,
-        0.23
+        -0.04,
+        -0.03,
+        1.0,
+        0.17,
+        -0.01,
+        0.16,
+        -0.01,
+        0.26,
+        0.15
       ],
       [
-        -0.03,
+        0.03,
+        0.28,
+        -0.01,
+        0.17,
+        1.0,
+        0.21,
+        0.21,
+        0.16,
+        0.04,
+        0.24
+      ],
+      [
+        -0.05,
         0.18,
         0.19,
-        0.2,
+        -0.01,
+        0.21,
         1.0,
-        0.26,
-        -0.11,
+        -0.1,
         0.07,
         0.15,
         -0.06
       ],
       [
-        0.05,
-        0.38,
-        0.06,
-        0.69,
-        0.26,
-        1.0,
-        0.08,
-        0.28,
-        0.07,
-        0.3
-      ],
-      [
         -0.04,
         0.11,
         0.29,
+        0.16,
         0.21,
-        -0.11,
-        0.08,
+        -0.1,
         1.0,
         0.33,
         0.25,
         0.18
       ],
       [
-        0.02,
+        0.01,
         0.28,
         0.12,
-        0.15,
+        -0.01,
+        0.16,
         0.07,
-        0.28,
         0.33,
         1.0,
         0.14,
         0.16
       ],
       [
-        0.21,
+        0.19,
         -0.08,
-        0.01,
-        0.03,
+        0.0,
+        0.26,
+        0.04,
         0.15,
-        0.07,
         0.25,
         0.14,
         1.0,
-        -0.0
+        0.0
       ],
       [
-        0.22,
-        -0.09,
+        0.21,
+        -0.08,
         0.03,
-        0.23,
+        0.15,
+        0.24,
         -0.06,
-        0.3,
         0.18,
         0.16,
-        -0.0,
+        0.0,
         1.0
       ]
     ]
