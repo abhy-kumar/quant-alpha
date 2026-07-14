@@ -666,9 +666,12 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                         })}
                       </tr>
                     ))}
-                  </tbody>
+                </tbody>
                 </table>
+              </div>
+            </div>
             )}
+
           </div>
         </div>
 
