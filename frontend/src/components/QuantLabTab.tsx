@@ -77,7 +77,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
   const [backtestHorizon, setBacktestHorizon] = useState<'1y' | '6m'>('1y')
   const [showHoldings, setShowHoldings] = useState(false)
 
-  // ── Custom on-demand backtest state ──────────────────────────────────
+  // - Custom on-demand backtest state -
   const [cachedRuns, setCachedRuns]       = useState<BacktestRunMeta[]>([])
   const [runsLoading, setRunsLoading]     = useState(false)
   const [selectedSlug, setSelectedSlug]   = useState<string | null>(null)
@@ -179,7 +179,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
     ]
   }, [quantData])
 
-  // ── Active dataset resolution ─────────────────────────────────────────────
+  // - Active dataset resolution -
   // Priority: walk-forward OHLCV backtests (1Y/6M) >> legacy factor_history backtests
   const activeBacktest: BacktestBundle | undefined = useMemo(() => {
     if (!quantData) return undefined
@@ -212,7 +212,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
   const computedStats = useMemo(() => computeStats(allChartData), [allChartData])
   const backtestStats = computedStats
 
-  // ── Horizon comparison data (all 4 combos) ────────────────────────────────
+  // - Horizon comparison data (all 4 combos) -
   const horizonComparison = useMemo(() => {
     if (!quantData) return null
     const get = (key: keyof QuantData): BacktestBundle | undefined => {
@@ -675,7 +675,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
           </div>
         </div>
 
-        {/* ── Expanded selected run chart ──────────────────────────────────────── */}
+        {/* - Expanded selected run chart - */}
         {selectedSlug && (
           <div style={{ borderTop: '1px solid var(--glass-border)' }}>
             <div className="px-5 py-3 flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--text-2)', borderBottom: '1px solid var(--glass-border)' }}>
@@ -728,10 +728,10 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
         )}
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          BACKTEST METHODOLOGY & RESULTS
+      {/* ===============================================================
+          BACKTEST METHODOLOGY AND RESULTS
           Full-width section at the bottom of Quant Lab
-      ═══════════════════════════════════════════════════════════════ */}
+      =============================================================== */}
       <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
 
         {/* Header */}
@@ -747,7 +747,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
 
         <div className="p-6 space-y-8">
 
-          {/* ── Results Summary grid ──────────────────────────────────────── */}
+          {/* - Results Summary grid - */}
           {horizonComparison && (
             <div>
               <p className="section-label mb-3">Backtest Results · Top-10 Equal-Weight Portfolio vs NIFTY 50</p>
@@ -814,10 +814,10 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
             </div>
           )}
 
-          {/* ── Divider */}
+          {/* - Divider */}
           <div style={{ height: 1, background: 'var(--glass-border)' }} />
 
-          {/* ── Approach ────────────────────────────────────────────────────── */}
+          {/* - Approach - */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
             <div className="space-y-5">
@@ -942,10 +942,10 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
             </div>
           </div>
 
-          {/* ── Divider */}
+          {/* - Divider */}
           <div style={{ height: 1, background: 'var(--glass-border)' }} />
 
-          {/* ── What's included vs not ───────────────────────────────────── */}
+          {/* - What's included vs not - */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <div className="flex items-center gap-2 mb-3">
@@ -994,7 +994,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
             </div>
           </div>
 
-          {/* ── Academic references ──────────────────────────────────────── */}
+          {/* - Academic references - */}
           <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: 20 }}>
             <p className="section-label mb-3">Academic Foundations</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
