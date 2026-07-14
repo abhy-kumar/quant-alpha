@@ -1,0 +1,24 @@
+{
+  "runs": [
+    {
+      "slug": "short-1y-2025-07-01",
+      "as_of_date": "2025-07-01",
+      "model": "short",
+      "horizon": "1y",
+      "created_at": "2026-07-14 12:55:12",
+      "data_start": "2024-09-06",
+      "data_end": "2025-07-01",
+      "n_chart_pts": 202,
+      "stats": {
+        "total_return": -10.99,
+        "cagr": -13.29,
+        "volatility": 31.79,
+        "sharpe": -0.62,
+        "max_drawdown": -31.58,
+        "info_ratio": -0.42,
+        "win_rate": 54.7
+      }
+    }
+  ],
+  "exported_at": "2026-07-14 12:55:12"
+}

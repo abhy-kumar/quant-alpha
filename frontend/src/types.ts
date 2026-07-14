@@ -129,6 +129,22 @@ export interface BacktestHolding {
   tickers: string[]
 }
 
+export interface BacktestStats {
+  total_return: number
+  cagr: number
+  volatility: number
+  sharpe: number
+  max_drawdown: number
+  info_ratio: number
+  win_rate: number
+}
+
+export interface BacktestBundle {
+  chart: { date: string; portfolio: number; benchmark: number }[]
+  holdings?: BacktestHolding[]
+  stats: BacktestStats
+}
+
 export interface BacktestResult {
   date: string
   portfolio: number
@@ -170,30 +186,38 @@ export interface QuantData {
     labels: string[]
     matrix: number[][]
   }
-  backtest: {
-    chart: { date: string; portfolio: number; benchmark: number }[]
-    holdings?: BacktestHolding[]
-    stats: {
-      total_return: number
-      cagr: number
-      volatility: number
-      sharpe: number
-      max_drawdown: number
-      info_ratio: number
-      win_rate: number
-    }
-  }
-  backtest_long?: {
-    chart: { date: string; portfolio: number; benchmark: number }[]
-    holdings?: BacktestHolding[]
-    stats: {
-      total_return: number
-      cagr: number
-      volatility: number
-      sharpe: number
-      max_drawdown: number
-      info_ratio: number
-      win_rate: number
-    }
-  }
+  // Legacy (factor_history-based, only ~25 data points)
+  backtest: BacktestBundle
+  backtest_long?: BacktestBundle
+  // Walk-forward OHLCV-based backtests (full 2-year history)
+  backtest_short_1y?: BacktestBundle
+  backtest_short_6m?: BacktestBundle
+  backtest_long_1y?:  BacktestBundle
+  backtest_long_6m?:  BacktestBundle
+}
+
+// ---------------------------------------------------------------------------
+// Custom on-demand backtest cache types
+// ---------------------------------------------------------------------------
+
+export interface BacktestRunMeta {
+  slug: string          // "{model}-{horizon}-{as_of_date}" — also the filename key
+  as_of_date: string   // "YYYY-MM-DD"
+  model: 'short' | 'long'
+  horizon: '1y' | '6m'
+  created_at: string   // "YYYY-MM-DD HH:MM:SS"
+  data_start: string
+  data_end: string
+  n_chart_pts: number
+  stats: BacktestStats
+}
+
+export interface BacktestRunFull extends BacktestRunMeta {
+  chart: { date: string; portfolio: number; benchmark: number }[]
+  holdings: { from: string; to: string; tickers: string[] }[]
+}
+
+export interface BacktestRunIndex {
+  runs: BacktestRunMeta[]
+  exported_at: string
 }

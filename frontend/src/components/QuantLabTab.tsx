@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from 'react'
-import type { QuantData } from '../types'
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
+import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull } from '../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
-import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, CalendarBlank } from '@phosphor-icons/react'
+import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, Terminal, ClockCounterClockwise, ArrowClockwise, CopySimple } from '@phosphor-icons/react'
 import { SegmentedControl, InfoTooltip } from './shared'
 
 interface Props {
@@ -73,9 +73,21 @@ function computeStats(chart: { date: string; portfolio: number; benchmark: numbe
 export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
   const [quantData, setQuantData] = useState<QuantData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [startDate, setStartDate] = useState<string>('')
-  const [backtestMode, setBacktestMode] = useState<'short' | 'long'>('short')
+  const [backtestModel, setBacktestModel] = useState<'short' | 'long'>('short')
+  const [backtestHorizon, setBacktestHorizon] = useState<'1y' | '6m'>('1y')
   const [showHoldings, setShowHoldings] = useState(false)
+
+  // ── Custom on-demand backtest state ──────────────────────────────────
+  const [cachedRuns, setCachedRuns]       = useState<BacktestRunMeta[]>([])
+  const [runsLoading, setRunsLoading]     = useState(false)
+  const [selectedSlug, setSelectedSlug]   = useState<string | null>(null)
+  const [selectedRunData, setSelectedRunData] = useState<BacktestRunFull | null>(null)
+  const [runDataLoading, setRunDataLoading]   = useState(false)
+  const [customAsOf, setCustomAsOf]       = useState('')
+  const [customModel, setCustomModel]     = useState<'short' | 'long'>('short')
+  const [customHorizon, setCustomHorizon] = useState<'1y' | '6m'>('1y')
+  const [copied, setCopied]               = useState(false)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     fetch('/quant_data.json?t=' + Date.now())
@@ -90,6 +102,72 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
       })
   }, [scanUpdated])
 
+  // Load cached custom backtest index
+  const loadRunIndex = useCallback((silent = false) => {
+    if (!silent) setRunsLoading(true)
+    fetch('/backtest_runs/index.json?t=' + Date.now())
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.runs) setCachedRuns(d.runs)
+      })
+      .catch(() => {})
+      .finally(() => { if (!silent) setRunsLoading(false) })
+  }, [])
+
+  useEffect(() => { loadRunIndex() }, [])
+
+  // Load full data for a selected run
+  const loadRunData = useCallback((slug: string) => {
+    setRunDataLoading(true)
+    setSelectedSlug(slug)
+    setSelectedRunData(null)
+    fetch(`/backtest_runs/${slug}.json?t=` + Date.now())
+      .then(r => r.json())
+      .then(d => setSelectedRunData(d))
+      .catch(() => setSelectedRunData(null))
+      .finally(() => setRunDataLoading(false))
+  }, [])
+
+  // Copy CLI command to clipboard
+  const cliCommand = customAsOf
+    ? `python run_custom_backtest.py --as_of ${customAsOf} --model ${customModel} --horizon ${customHorizon}`
+    : null
+
+  const handleCopy = () => {
+    if (!cliCommand) return
+    navigator.clipboard.writeText(cliCommand).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+      // Poll for the result to appear (every 5s for 3 min)
+      if (pollRef.current) clearInterval(pollRef.current)
+      let checks = 0
+      pollRef.current = setInterval(() => {
+        loadRunIndex(true)
+        checks++
+        if (checks >= 36 && pollRef.current) clearInterval(pollRef.current)
+      }, 5000)
+    })
+  }
+
+  // Stop polling when the expected slug appears
+  const expectedSlug = customAsOf ? `${customModel}-${customHorizon}-${customAsOf}` : null
+  useEffect(() => {
+    if (expectedSlug && cachedRuns.some(r => r.slug === expectedSlug)) {
+      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
+    }
+  }, [cachedRuns, expectedSlug])
+
+  // Chart data for the selected run
+  const selectedChart = useMemo(() => {
+    if (!selectedRunData?.chart?.length) return []
+    const base = selectedRunData.chart[0]
+    return selectedRunData.chart.map(d => ({
+      ...d,
+      portfolio: +((d.portfolio / base.portfolio) * 100).toFixed(2),
+      benchmark: +((d.benchmark / base.benchmark) * 100).toFixed(2),
+    }))
+  }, [selectedRunData])
+
   const radarData = useMemo(() => {
     if (!quantData?.factor_exposures) return []
     const ex = quantData.factor_exposures
@@ -101,43 +179,54 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
     ]
   }, [quantData])
 
-  // Active backtest dataset switches based on the model toggle
-  const activeBacktest = backtestMode === 'long'
-    ? (quantData?.backtest_long ?? quantData?.backtest)
-    : quantData?.backtest
+  // ── Active dataset resolution ─────────────────────────────────────────────
+  // Priority: walk-forward OHLCV backtests (1Y/6M) >> legacy factor_history backtests
+  const activeBacktest: BacktestBundle | undefined = useMemo(() => {
+    if (!quantData) return undefined
+    if (backtestModel === 'short') {
+      return backtestHorizon === '1y'
+        ? (quantData.backtest_short_1y ?? quantData.backtest)
+        : (quantData.backtest_short_6m ?? quantData.backtest)
+    } else {
+      return backtestHorizon === '1y'
+        ? (quantData.backtest_long_1y  ?? quantData.backtest_long ?? quantData.backtest)
+        : (quantData.backtest_long_6m  ?? quantData.backtest_long ?? quantData.backtest)
+    }
+  }, [quantData, backtestModel, backtestHorizon])
 
   const allChartData = activeBacktest?.chart ?? []
-  const firstDate = allChartData[0]?.date ?? ''
+  const holdings     = activeBacktest?.holdings ?? []
 
-  // Holdings log for the active backtest mode
-  const holdings = activeBacktest?.holdings ?? []
-
-  // Determine the effective start date (default = first available date)
-  const effectiveStart = startDate || firstDate
-
-  // Slice and rebase chart data from the chosen start date
+  // Rebase to 100 from start
   const windowedChart = useMemo(() => {
     if (!allChartData.length) return []
-    const idx = allChartData.findIndex(d => d.date >= effectiveStart)
-    const slice = idx >= 0 ? allChartData.slice(idx) : allChartData
-    if (slice.length === 0) return []
-    const basePort = slice[0].portfolio
-    const baseBench = slice[0].benchmark
-    return slice.map(d => ({
+    const basePort  = allChartData[0].portfolio
+    const baseBench = allChartData[0].benchmark
+    return allChartData.map(d => ({
       ...d,
-      portfolio: +((d.portfolio / basePort) * 100).toFixed(2),
+      portfolio: +((d.portfolio / basePort)  * 100).toFixed(2),
       benchmark: +((d.benchmark / baseBench) * 100).toFixed(2),
     }))
-  }, [allChartData, effectiveStart])
+  }, [allChartData])
 
-  const computedStats = useMemo(() => {
-    if (!allChartData.length) return null
-    const idx = allChartData.findIndex(d => d.date >= effectiveStart)
-    const slice = idx >= 0 ? allChartData.slice(idx) : allChartData
-    return computeStats(slice)
-  }, [allChartData, effectiveStart])
-
+  const computedStats = useMemo(() => computeStats(allChartData), [allChartData])
   const backtestStats = computedStats
+
+  // ── Horizon comparison data (all 4 combos) ────────────────────────────────
+  const horizonComparison = useMemo(() => {
+    if (!quantData) return null
+    const get = (key: keyof QuantData): BacktestBundle | undefined => {
+      const v = quantData[key]
+      if (!v || typeof v !== 'object' || !('chart' in v)) return undefined
+      return v as BacktestBundle
+    }
+    return {
+      short_1y: computeStats(get('backtest_short_1y')?.chart ?? []),
+      short_6m: computeStats(get('backtest_short_6m')?.chart ?? []),
+      long_1y:  computeStats(get('backtest_long_1y')?.chart  ?? []),
+      long_6m:  computeStats(get('backtest_long_6m')?.chart  ?? []),
+    }
+  }, [quantData])
 
   // Custom tooltip that also shows holdings for the hovered date
   const BacktestTooltip = ({ active, payload, label }: any) => {
@@ -171,7 +260,11 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
     return <div className="p-8 text-center" style={{ color: 'var(--text-3)' }}>Loading Quant Lab...</div>
   }
 
-  if (!quantData || !quantData.backtest?.chart || quantData.backtest.chart.length === 0) {
+  // Show loading state if walk-forward backtests are absent (new run needed)
+  const hasWfData = quantData?.backtest_short_1y || quantData?.backtest_short_6m ||
+    quantData?.backtest_long_1y || quantData?.backtest_long_6m
+
+  if (!quantData || (!quantData.backtest?.chart?.length && !hasWfData)) {
     return (
       <div className="p-8 text-center card" style={{ borderRadius: 'var(--radius-xl)' }}>
         <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>Quant Lab Initialization</h3>
@@ -251,7 +344,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
       {backtestStats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
           {[
-            { icon: <TrendUp size={13} />, label: backtestMode === 'long' ? 'CAGR (Long Picks)' : 'CAGR (Alpha Picks)', tooltipId: 'quant.cagr', value: `${backtestStats.cagr > 0 ? '+' : ''}${backtestStats.cagr.toFixed(2)}%`, color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
+            { icon: <TrendUp size={13} />, label: backtestModel === 'long' ? `CAGR · Long ${backtestHorizon.toUpperCase()}` : `CAGR · Short ${backtestHorizon.toUpperCase()}`, tooltipId: 'quant.cagr', value: `${backtestStats.cagr >= 0 ? '+' : ''}${backtestStats.cagr.toFixed(2)}%`, color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
             { icon: <ChartLineDown size={13} />, label: 'Ann. Volatility', tooltipId: 'quant.volatility', value: `${backtestStats.volatility.toFixed(1)}%`, color: backtestStats.volatility <= 20 ? 'var(--green)' : 'var(--amber)' },
             { icon: <Target size={13} />, label: 'Sharpe Ratio', tooltipId: 'quant.sharpe', value: backtestStats.sharpe.toFixed(2), color: backtestStats.sharpe >= 1 ? 'var(--green)' : 'var(--text)' },
             { icon: <Warning size={13} />, label: 'Max Drawdown', tooltipId: 'quant.maxdd', value: `${backtestStats.max_drawdown.toFixed(2)}%`, color: 'var(--red)' },
@@ -278,48 +371,30 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                 <span className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--text-2)' }}>
                   Strategy Backtest · Top 10 Equal Weight<InfoTooltip id="quant.backtest" />
                 </span>
+              </div>
+              {/* 2-axis controls: Model × Horizon */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                 <SegmentedControl
                   options={[
                     { key: 'short', label: 'Short-term' },
-                    { key: 'long',  label: '1m–6m Horizon' },
+                    { key: 'long',  label: 'Long Horizon' },
                   ]}
-                  value={backtestMode}
-                  onChange={(v) => { setBacktestMode(v as 'short' | 'long'); setStartDate('') }}
+                  value={backtestModel}
+                  onChange={(v) => setBacktestModel(v as 'short' | 'long')}
                 />
-              </div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <SegmentedControl
                   options={[
-                    { key: firstDate, label: 'All' },
-                    { key: allChartData.length ? new Date(new Date(allChartData[allChartData.length-1].date).getTime() - 30*86400000).toISOString().slice(0,10) : firstDate, label: '1M' },
-                    { key: allChartData.length ? new Date(new Date(allChartData[allChartData.length-1].date).getTime() - 14*86400000).toISOString().slice(0,10) : firstDate, label: '2W' },
+                    { key: '1y', label: '1 Year' },
+                    { key: '6m', label: '6 Months' },
                   ]}
-                  value={effectiveStart}
-                  onChange={setStartDate}
+                  value={backtestHorizon}
+                  onChange={(v) => setBacktestHorizon(v as '1y' | '6m')}
                 />
-                <div className="flex items-center gap-1.5" style={{ color: 'var(--text-3)' }}>
-                  <CalendarBlank size={13} />
-                  <input
-                    type="date"
-                    value={effectiveStart}
-                    min={firstDate}
-                    max={allChartData[allChartData.length - 1]?.date ?? ''}
-                    onChange={e => setStartDate(e.target.value)}
-                    className="text-[10px] px-2 py-1 rounded-md outline-none"
-                    style={{
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--text-2)',
-                      colorScheme: isDark ? 'dark' : 'light',
-                      fontFamily: 'Inter, system-ui, sans-serif',
-                    }}
-                  />
-                </div>
               </div>
             </div>
-            {backtestMode === 'long' && !quantData?.backtest_long && (
+            {!activeBacktest?.chart?.length && (
               <div className="px-5 py-2 text-[11px]" style={{ background: 'var(--amber-bg)', borderBottom: '1px solid var(--glass-border)', color: 'var(--amber)' }}>
-                Long-term backtest data not yet generated. Re-run the scanner to produce it.
+                Walk-forward backtest data not yet generated. Run <code>python quant_engine.py</code> to produce it.
               </div>
             )}
             <div className="p-5" style={{ height: 320 }}>
@@ -331,7 +406,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                   <Tooltip content={<BacktestTooltip />} />
                   <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '10px', color: 'var(--text-3)' }} />
                   <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
-                  <Line type="monotone" dataKey="portfolio" name={backtestMode === 'long' ? 'Long Horizon Picks' : 'Alpha Picks'} stroke={backtestMode === 'long' ? 'var(--green)' : 'var(--brand)'} strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="portfolio" name={backtestModel === 'long' ? 'Long Horizon Picks' : 'Alpha Picks'} stroke={backtestModel === 'long' ? 'var(--green)' : 'var(--brand)'} strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
                   <Line type="monotone" dataKey="benchmark" name="NIFTY 50" stroke="var(--text-3)" strokeWidth={1.5} dot={false} strokeDasharray="5 5" />
                 </LineChart>
               </ResponsiveContainer>
@@ -383,6 +458,66 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                     </table>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Horizon Comparison Table */}
+            {horizonComparison && (
+              <div style={{ borderTop: '1px solid var(--glass-border)' }}>
+                <div className="px-5 py-3 flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                  <ArrowsLeftRight size={13} style={{ color: 'var(--brand)' }} />
+                  Horizon Comparison
+                  <InfoTooltip id="quant.horizon-comparison" />
+                </div>
+                <div className="px-5 pb-5 overflow-x-auto scrollbar-none">
+                  <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                        <th className="py-2 pr-5 font-medium text-left" style={{ color: 'var(--text-3)' }}>Model</th>
+                        <th className="py-2 pr-4 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>1Y CAGR</th>
+                        <th className="py-2 pr-4 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>1Y Sharpe</th>
+                        <th className="py-2 pr-4 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>1Y MaxDD</th>
+                        <th className="py-2 pr-4 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>6M CAGR</th>
+                        <th className="py-2 pr-4 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>6M Sharpe</th>
+                        <th className="py-2 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>6M MaxDD</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {([
+                        { label: 'Short-term (Alpha)', s1y: horizonComparison.short_1y, s6m: horizonComparison.short_6m, accent: 'var(--brand)' },
+                        { label: 'Long Horizon', s1y: horizonComparison.long_1y, s6m: horizonComparison.long_6m, accent: 'var(--green)' },
+                      ] as const).map(row => (
+                        <tr key={row.label} style={{ borderBottom: '1px solid var(--border)' }}>
+                          <td className="py-2.5 pr-5 font-medium" style={{ color: row.accent }}>{row.label}</td>
+                          {/* 1Y */}
+                          {['cagr', 'sharpe', 'max_drawdown'].map((metric) => {
+                            const val = row.s1y ? (row.s1y as any)[metric] : null
+                            const isCAGR = metric === 'cagr'
+                            const isMDD  = metric === 'max_drawdown'
+                            const color  = val == null ? 'var(--text-3)' : isCAGR ? (val >= 0 ? 'var(--green)' : 'var(--red)') : isMDD ? 'var(--red)' : val >= 1 ? 'var(--green)' : 'var(--text)'
+                            return (
+                              <td key={metric} className="py-2.5 pr-4 text-right font-medium" style={{ color }}>
+                                {val == null ? '—' : isCAGR ? `${val >= 0 ? '+' : ''}${val.toFixed(2)}%` : isMDD ? `${val.toFixed(2)}%` : val.toFixed(2)}
+                              </td>
+                            )
+                          })}
+                          {/* 6M */}
+                          {['cagr', 'sharpe', 'max_drawdown'].map((metric) => {
+                            const val = row.s6m ? (row.s6m as any)[metric] : null
+                            const isCAGR = metric === 'cagr'
+                            const isMDD  = metric === 'max_drawdown'
+                            const color  = val == null ? 'var(--text-3)' : isCAGR ? (val >= 0 ? 'var(--green)' : 'var(--red)') : isMDD ? 'var(--red)' : val >= 1 ? 'var(--green)' : 'var(--text)'
+                            return (
+                              <td key={metric} className="py-2.5 pr-4 text-right font-medium" style={{ color }}>
+                                {val == null ? '—' : isCAGR ? `${val >= 0 ? '+' : ''}${val.toFixed(2)}%` : isMDD ? `${val.toFixed(2)}%` : val.toFixed(2)}
+                              </td>
+                            )
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
@@ -533,11 +668,355 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                     ))}
                   </tbody>
                 </table>
+            )}
+          </div>
+        </div>
+
+        {/* ── Expanded selected run chart ──────────────────────────────────────── */}
+        {selectedSlug && (
+          <div style={{ borderTop: '1px solid var(--glass-border)' }}>
+            <div className="px-5 py-3 flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--text-2)', borderBottom: '1px solid var(--glass-border)' }}>
+              <TrendUp size={13} style={{ color: 'var(--green)' }} />
+              Run Detail · <span className="font-mono" style={{ color: 'var(--text-3)' }}>{selectedSlug}</span>
+            </div>
+
+            {runDataLoading ? (
+              <div className="p-8 text-center text-[11px]" style={{ color: 'var(--text-3)' }}>Loading run data…</div>
+            ) : selectedRunData ? (
+              <div className="p-5 space-y-4">
+                {/* Stat chips */}
+                <div className="flex flex-wrap gap-3">
+                  {([
+                    { label: 'CAGR', val: selectedRunData.stats?.cagr, fmt: (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`, color: (v: number) => v >= 0 ? 'var(--green)' : 'var(--red)' },
+                    { label: 'Total Return', val: selectedRunData.stats?.total_return, fmt: (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`, color: (v: number) => v >= 0 ? 'var(--green)' : 'var(--red)' },
+                    { label: 'Sharpe', val: selectedRunData.stats?.sharpe, fmt: (v: number) => v.toFixed(2), color: (v: number) => v >= 1 ? 'var(--green)' : v >= 0.5 ? 'var(--amber)' : 'var(--text-2)' },
+                    { label: 'Volatility', val: selectedRunData.stats?.volatility, fmt: (v: number) => `${v.toFixed(1)}%`, color: () => 'var(--text-2)' },
+                    { label: 'Max Drawdown', val: selectedRunData.stats?.max_drawdown, fmt: (v: number) => `${v.toFixed(1)}%`, color: () => 'var(--red)' },
+                    { label: 'Info Ratio', val: selectedRunData.stats?.info_ratio, fmt: (v: number) => v.toFixed(2), color: (v: number) => v >= 0.5 ? 'var(--green)' : 'var(--text-2)' },
+                  ] as const).map(stat => (
+                    typeof stat.val === 'number' && (
+                      <div key={stat.label} className="px-3 py-2 rounded-lg" style={{ background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>
+                        <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>{stat.label}</p>
+                        <p className="text-sm font-semibold tabular-nums" style={{ color: stat.color(stat.val) }}>{stat.fmt(stat.val)}</p>
+                      </div>
+                    )
+                  ))}
+                </div>
+                {/* Chart */}
+                {selectedChart.length > 0 && (
+                  <div style={{ height: 260 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={selectedChart} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
+                        <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} tickMargin={8} minTickGap={30} />
+                        <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} domain={['auto', 'auto']} tickFormatter={v => typeof v === 'number' ? v.toFixed(0) : v} />
+                        <Tooltip contentStyle={tooltipStyle(isDark)} />
+                        <Legend verticalAlign="top" height={28} align="right" wrapperStyle={{ fontSize: '10px', color: 'var(--text-3)', fontFamily: 'Inter, system-ui, sans-serif' }} />
+                        <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
+                        <Line type="monotone" dataKey="portfolio" name={selectedRunData.model === 'long' ? 'Long Horizon' : 'Alpha Picks'} stroke={selectedRunData.model === 'long' ? 'var(--green)' : 'var(--brand)'} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                        <Line type="monotone" dataKey="benchmark" name="NIFTY 50" stroke="var(--text-3)" strokeWidth={1.5} dot={false} strokeDasharray="5 5" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          BACKTEST METHODOLOGY & RESULTS
+          Full-width section at the bottom of Quant Lab
+      ═══════════════════════════════════════════════════════════════ */}
+      <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+
+        {/* Header */}
+        <div className="px-6 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+          <div className="p-2 shrink-0" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
+            <BookOpen size={16} weight="duotone" style={{ color: 'var(--brand)' }} />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Walk-Forward Backtest · Methodology &amp; Results</h3>
+            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>How these backtests work, what they measure, and what the numbers actually mean</p>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-8">
+
+          {/* ── Results Summary grid ──────────────────────────────────────── */}
+          {horizonComparison && (
+            <div>
+              <p className="section-label mb-3">Backtest Results · Top-10 Equal-Weight Portfolio vs NIFTY 50</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {([
+                  {
+                    key: 'short', label: 'Short-term Model', subtitle: 'Tech + Momentum signals',
+                    color: 'var(--brand)', bg: 'var(--brand-soft)',
+                    s1y: horizonComparison.short_1y, s6m: horizonComparison.short_6m,
+                  },
+                  {
+                    key: 'long', label: 'Long-term Model', subtitle: 'Momentum + Low-Vol factors',
+                    color: 'var(--green)', bg: 'var(--green-bg)',
+                    s1y: horizonComparison.long_1y, s6m: horizonComparison.long_6m,
+                  },
+                ] as const).map(model => (
+                  <div key={model.key} className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--glass-border)', background: 'var(--glass-bg-subtle)' }}>
+                    {/* Model header */}
+                    <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                      <div className="w-2 h-2 rounded-full" style={{ background: model.color }} />
+                      <div>
+                        <span className="text-xs font-semibold" style={{ color: model.color }}>{model.label}</span>
+                        <span className="text-[10px] ml-2" style={{ color: 'var(--text-3)' }}>{model.subtitle}</span>
+                      </div>
+                    </div>
+                    {/* 1Y / 6M columns */}
+                    <div className="grid grid-cols-2 divide-x" style={{ borderColor: 'var(--glass-border)' }}>
+                      {([{ label: '1 Year', stats: model.s1y }, { label: '6 Months', stats: model.s6m }] as const).map(col => (
+                        <div key={col.label} className="p-4">
+                          <p className="text-[10px] font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>{col.label}</p>
+                          {col.stats ? (
+                            <div className="space-y-2.5">
+                              {([
+                                { label: 'CAGR', value: col.stats.cagr, fmt: (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`, color: col.stats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
+                                { label: 'Total Return', value: col.stats.total_return, fmt: (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`, color: col.stats.total_return >= 0 ? 'var(--green)' : 'var(--red)' },
+                                { label: 'Sharpe Ratio', value: col.stats.sharpe, fmt: (v: number) => v.toFixed(2), color: col.stats.sharpe >= 1 ? 'var(--green)' : col.stats.sharpe >= 0.5 ? 'var(--amber)' : 'var(--text-2)' },
+                                { label: 'Ann. Volatility', value: col.stats.volatility, fmt: (v: number) => `${v.toFixed(1)}%`, color: 'var(--text-2)' },
+                                { label: 'Max Drawdown', value: col.stats.max_drawdown, fmt: (v: number) => `${v.toFixed(1)}%`, color: 'var(--red)' },
+                                { label: 'Info. Ratio', value: col.stats.info_ratio, fmt: (v: number) => v.toFixed(2), color: col.stats.info_ratio >= 0.5 ? 'var(--green)' : 'var(--text-2)' },
+                                { label: 'Daily Win Rate', value: col.stats.win_rate, fmt: (v: number) => `${v.toFixed(1)}%`, color: col.stats.win_rate >= 52 ? 'var(--green)' : 'var(--text-2)' },
+                              ] as const).map(row => (
+                                <div key={row.label} className="flex items-center justify-between">
+                                  <span className="text-[11px]" style={{ color: 'var(--text-3)' }}>{row.label}</span>
+                                  <span className="text-[12px] font-semibold tabular-nums" style={{ color: row.color }}>{row.fmt(row.value)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-[11px]" style={{ color: 'var(--text-4)' }}>No data</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Benchmark note */}
+              <p className="text-[11px] mt-3 flex items-start gap-1.5" style={{ color: 'var(--text-3)' }}>
+                <Info size={12} className="shrink-0 mt-0.5" />
+                Benchmark is NIFTY 50 (^NSEI) from the same period. Nifty data coverage may be partial — benchmark returns are indicative.
+                All returns are gross of transaction costs and taxes.
+              </p>
             </div>
           )}
+
+          {/* ── Divider */}
+          <div style={{ height: 1, background: 'var(--glass-border)' }} />
+
+          {/* ── Approach ────────────────────────────────────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <div className="space-y-5">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Lightning size={14} weight="duotone" style={{ color: 'var(--brand)' }} />
+                  <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Why Walk-Forward?</p>
+                </div>
+                <p className="text-[12px] leading-relaxed" style={{ color: 'var(--text-2)' }}>
+                  The scanner has only been running since June 2026, so <code className="text-[11px] px-1 py-0.5 rounded" style={{ background: 'var(--surface-3)', color: 'var(--text)' }}>factor_history</code> has just ~25 scan dates — far too few to backtest meaningfully.
+                  Instead, we replay the scoring engine on <strong style={{ color: 'var(--text)' }}>2 full years</strong> of daily OHLCV data
+                  (Jun 2024 → Jul 2026, 519 trading days, 561 tickers), simulating exactly what the model would have said at each historical rebalance date.
+                </p>
+                <p className="text-[12px] leading-relaxed mt-2" style={{ color: 'var(--text-2)' }}>
+                  This is a <strong style={{ color: 'var(--text)' }}>point-in-time, look-ahead-free</strong> test: at each rebalance date, only data
+                  available up to that date is used to score stocks. No future information leaks in.
+                </p>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <ChartBar size={14} weight="duotone" style={{ color: 'var(--green)' }} />
+                  <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Protocol</p>
+                </div>
+                <div className="space-y-2">
+                  {([
+                    { label: 'Rebalance frequency', value: 'Every 20 trading days (~monthly)' },
+                    { label: 'Portfolio size', value: 'Top-10 stocks, equal-weight' },
+                    { label: 'Selection rule', value: 'Rank all tickers by composite score, take top 10' },
+                    { label: 'Universe', value: '~560 NSE-listed stocks in OHLCV database' },
+                    { label: '1-Year window', value: 'Simulates last 252 trading days of history' },
+                    { label: '6-Month window', value: 'Simulates last 126 trading days of history' },
+                    { label: 'Benchmark', value: 'NIFTY 50 (^NSEI) daily returns' },
+                    { label: 'Costs', value: 'None modelled (gross returns)' },
+                  ] as const).map(row => (
+                    <div key={row.label} className="flex items-start gap-2 text-[11px]">
+                      <span className="shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--brand)', marginTop: 5 }} />
+                      <span style={{ color: 'var(--text-3)' }}>{row.label}:</span>
+                      <span className="font-medium" style={{ color: 'var(--text-2)' }}>{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+
+              {/* Short-term signals */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 rounded-full" style={{ background: 'var(--brand)' }} />
+                  <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Short-term Model Signals</p>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>50% Tech + 50% Momentum</span>
+                </div>
+                <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
+                  <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: 'var(--glass-bg-subtle)' }}>
+                        <th className="px-3 py-2 text-left font-medium" style={{ color: 'var(--text-3)', borderBottom: '1px solid var(--glass-border)' }}>Signal</th>
+                        <th className="px-3 py-2 text-left font-medium" style={{ color: 'var(--text-3)', borderBottom: '1px solid var(--glass-border)' }}>Weight</th>
+                        <th className="px-3 py-2 text-left font-medium" style={{ color: 'var(--text-3)', borderBottom: '1px solid var(--glass-border)' }}>Academic basis</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {([
+                        ['Supertrend (10×3)', '2.0×', 'Trend-following filter'],
+                        ['Price vs SMA-200', '2.0×', 'Long-term trend (Faber 2007)'],
+                        ['SMA-50 vs SMA-200', '2.0×', 'Golden/Death cross'],
+                        ['ADX + ±DI', '2.0×', 'Directional strength'],
+                        ['Ichimoku Cloud', '1.5×', 'Kumo breakout filter'],
+                        ['MACD crossover', '1.0×', 'Momentum oscillator'],
+                        ['RSI (regime-aware)', '1.0×', 'Overbought/oversold'],
+                        ['VPT vs EMA-20', '1.0×', 'Volume-price confirmation'],
+                        ['Price vs SMA-50', '1.0×', 'Medium-term trend'],
+                        ['Momentum 1m/3m/6m/12m', 'Cross-sectional z', 'Jegadeesh & Titman (1993)'],
+                      ] as const).map(([sig, wt, basis], i) => (
+                        <tr key={sig} style={{ borderBottom: i < 9 ? '1px solid var(--glass-border)' : 'none', background: i % 2 === 0 ? 'transparent' : 'var(--glass-bg-subtle)' }}>
+                          <td className="px-3 py-1.5 font-medium" style={{ color: 'var(--text)' }}>{sig}</td>
+                          <td className="px-3 py-1.5" style={{ color: 'var(--brand-light)' }}>{wt}</td>
+                          <td className="px-3 py-1.5" style={{ color: 'var(--text-3)' }}>{basis}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Long-term signals */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 rounded-full" style={{ background: 'var(--green)' }} />
+                  <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Long-term Model Signals</p>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--green-bg)', color: 'var(--green)' }}>Cross-sectional percentile rank</span>
+                </div>
+                <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
+                  <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: 'var(--glass-bg-subtle)' }}>
+                        <th className="px-3 py-2 text-left font-medium" style={{ color: 'var(--text-3)', borderBottom: '1px solid var(--glass-border)' }}>Factor</th>
+                        <th className="px-3 py-2 text-left font-medium" style={{ color: 'var(--text-3)', borderBottom: '1px solid var(--glass-border)' }}>Weight</th>
+                        <th className="px-3 py-2 text-left font-medium" style={{ color: 'var(--text-3)', borderBottom: '1px solid var(--glass-border)' }}>Academic basis</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {([
+                        ['12–1m Momentum (JT)', '40%', 'Jegadeesh & Titman (1993)'],
+                        ['6m Momentum (skip 1m)', '30%', 'Intermediate momentum'],
+                        ['Low Volatility (63d)', '20%', 'Baker, Bradley & Wurgler (2011)'],
+                        ['RSI mean-reversion', '10%', 'Overbought penalty gate'],
+                      ] as const).map(([factor, wt, basis], i) => (
+                        <tr key={factor} style={{ borderBottom: i < 3 ? '1px solid var(--glass-border)' : 'none', background: i % 2 === 0 ? 'transparent' : 'var(--glass-bg-subtle)' }}>
+                          <td className="px-3 py-1.5 font-medium" style={{ color: 'var(--text)' }}>{factor}</td>
+                          <td className="px-3 py-1.5 font-semibold" style={{ color: 'var(--green)' }}>{wt}</td>
+                          <td className="px-3 py-1.5" style={{ color: 'var(--text-3)' }}>{basis}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* ── Divider */}
+          <div style={{ height: 1, background: 'var(--glass-border)' }} />
+
+          {/* ── What's included vs not ───────────────────────────────────── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <CheckCircle size={14} weight="duotone" style={{ color: 'var(--green)' }} />
+                <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>What this backtest includes</p>
+              </div>
+              <ul className="space-y-1.5">
+                {[
+                  'Full 2-year price history from daily_ohlcv (Jun 2024 – Jul 2026)',
+                  'Monthly rebalance, equal-weight top-10 portfolio',
+                  'Point-in-time scoring — no look-ahead bias',
+                  'NIFTY 50 as the daily benchmark',
+                  'CAGR, Sharpe, Info. Ratio, Max Drawdown, Win Rate',
+                  'Cross-sectional momentum z-score normalisation',
+                  'Regime-aware RSI thresholds in the tech score',
+                  'Volume confirmation via VPT signal',
+                ].map(item => (
+                  <li key={item} className="flex items-start gap-2 text-[11px]" style={{ color: 'var(--text-2)' }}>
+                    <span className="shrink-0" style={{ color: 'var(--green)', marginTop: 1 }}>✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Prohibit size={14} weight="duotone" style={{ color: 'var(--amber)' }} />
+                <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Known limitations</p>
+              </div>
+              <ul className="space-y-1.5">
+                {[
+                  'Fundamental data (P/E, ROE, D/E) not available at historical dates — both models are purely price-signal based in the replay',
+                  'Transaction costs, brokerage, STT, and slippage are not deducted — live returns will be lower',
+                  'Universe is fixed to the current ~560 tickers — survivorship bias is possible (delisted stocks excluded)',
+                  'NIFTY 50 benchmark data may be partial; benchmark returns are indicative only',
+                  'Small universe rebalances (< 10 valid stocks) fall back to previous holdings',
+                  'Results are in-sample for the price data window — out-of-sample performance is unknown',
+                ].map(item => (
+                  <li key={item} className="flex items-start gap-2 text-[11px]" style={{ color: 'var(--text-2)' }}>
+                    <span className="shrink-0" style={{ color: 'var(--amber)', marginTop: 1 }}>⚠</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* ── Academic references ──────────────────────────────────────── */}
+          <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: 20 }}>
+            <p className="section-label mb-3">Academic Foundations</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {([
+                { ref: 'Jegadeesh & Titman (1993)', detail: 'Returns to Buying Winners and Selling Losers — 12-1 cross-sectional momentum.' },
+                { ref: 'Fama & French (1992, 1993)', detail: 'Three-factor model: Market, SMB, HML. Foundation for value and size factor weights.' },
+                { ref: 'Fama & French (2015)', detail: 'Five-factor model: adds RMW (profitability) and CMA (investment) — underpins Fund Score.' },
+                { ref: 'Baker, Bradley & Wurgler (2011)', detail: 'Benchmarks as limits to arbitrage — the low-volatility anomaly.' },
+                { ref: 'Frazzini & Pedersen (2014)', detail: 'Betting Against Beta — risk-adjusted returns of low-beta stocks.' },
+                { ref: 'Faber (2007)', detail: 'A Quantitative Approach to Tactical Asset Allocation — SMA-200 trend filter.' },
+                { ref: 'Novy-Marx (2013)', detail: 'The Other Side of Value — gross profitability as the strongest accounting predictor.' },
+                { ref: 'Bernard & Thomas (1989)', detail: 'Post-Earnings Announcement Drift (PEAD/SUE) — earnings surprise momentum.' },
+                { ref: 'Piotroski (2000)', detail: 'Value Investing: The Use of Historical Financial Statement Information — F-Score.' },
+              ] as const).map(({ ref, detail }) => (
+                <div key={ref} className="p-3 rounded-lg" style={{ background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>
+                  <p className="text-[11px] font-semibold mb-1" style={{ color: 'var(--text)' }}>{ref}</p>
+                  <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-3)' }}>{detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
+
     </div>
   )
 }

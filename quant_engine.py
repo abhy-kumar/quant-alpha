@@ -6,6 +6,7 @@ import os
 from scipy.optimize import minimize
 from config import RISK_FREE_RATE
 import logging
+import backtest_engine
 
 logger = logging.getLogger("quant_engine")
 DB_PATH = "data/market_scans.db"
@@ -334,9 +335,13 @@ def generate_quant_data():
         # Factor Exposures
         exposures = compute_factor_exposures(top_picks_df)
         
-        # Backtest
-        backtest_results = run_backtest('Composite_Score')
+        # Backtest — legacy (factor_history-based, short live window)
+        backtest_results      = run_backtest('Composite_Score')
         backtest_long_results = run_backtest('Composite_Score_Long')
+
+        # Walk-forward backtests from 2-year OHLCV history (1Y & 6M × Short & Long)
+        logger.info("Running walk-forward OHLCV backtests...")
+        wf_results = backtest_engine.run_all_backtests()
         
         # New Quant Lab Models
         regime = fetch_latest_regime()
@@ -352,16 +357,32 @@ def generate_quant_data():
             "factor_exposures": exposures,
             "backtest": backtest_results,
             "backtest_long": backtest_long_results,
+            # Walk-forward OHLCV-based backtests (1Y & 6M × Short & Long)
+            "backtest_short_1y": wf_results.get("backtest_short_1y"),
+            "backtest_short_6m": wf_results.get("backtest_short_6m"),
+            "backtest_long_1y":  wf_results.get("backtest_long_1y"),
+            "backtest_long_6m":  wf_results.get("backtest_long_6m"),
             "market_regime": regime,
             "sector_allocation": sectors,
             "correlation_matrix": correlation
         }
+
         
         os.makedirs("frontend/public", exist_ok=True)
         with open("frontend/public/quant_data.json", "w") as f:
             json.dump(output, f, indent=2)
             
         logger.info("Successfully generated quant_data.json")
+
+        # Export cached custom backtest runs to static JSON for Vercel
+        try:
+            n_runs = backtest_engine.export_backtest_index()
+            if n_runs:
+                logger.info(f"Exported {n_runs} cached backtest run(s) to frontend/public/backtest_runs/")
+        except Exception as ex:
+            logger.warning(f"Could not export backtest index: {ex}")
+
+
     except Exception as e:
         logger.error(f"Error generating Quant data: {e}")
 
