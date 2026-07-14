@@ -1,29 +1,28 @@
 {
-  "last_updated": "2026-07-13 23:35:27",
+  "last_updated": "2026-07-14 06:26:06",
   "model_portfolios": {
     "max_sharpe": {
-      "BAJAJCON.NS": 0.4197,
-      "SKMEGGPROD.NS": 0.4013,
-      "COFORGE.NS": 0.0657,
-      "SHYAMMETL.NS": 0.0544,
-      "INDIANB.NS": 0.0307,
-      "SUNPHARMA.NS": 0.0282
+      "SKMEGGPROD.NS": 0.423,
+      "BAJAJCON.NS": 0.3523,
+      "COFORGE.NS": 0.0813,
+      "SHYAMMETL.NS": 0.0727,
+      "SUNPHARMA.NS": 0.0707
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.4045,
-      "COALINDIA.NS": 0.2257,
-      "BAJAJ-AUTO.NS": 0.1489,
-      "SHYAMMETL.NS": 0.059,
-      "COFORGE.NS": 0.0575,
-      "INDIANB.NS": 0.0557,
-      "BAJAJCON.NS": 0.0283,
-      "CHENNPETRO.NS": 0.0146
+      "SUNPHARMA.NS": 0.4106,
+      "COALINDIA.NS": 0.2368,
+      "BAJAJ-AUTO.NS": 0.1577,
+      "SHYAMMETL.NS": 0.0717,
+      "COFORGE.NS": 0.0591,
+      "BAJAJCON.NS": 0.0342,
+      "CHENNPETRO.NS": 0.018,
+      "OFSS.NS": 0.0118
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 63.1,
+    "Quality": 63.6,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -136,6 +135,11 @@
       {
         "date": "2026-07-13",
         "portfolio": 102.2,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-14",
+        "portfolio": 101.44,
         "benchmark": 100.0
       }
     ],
@@ -542,29 +546,29 @@
       },
       {
         "from": "2026-07-14",
-        "to": "2026-07-13",
+        "to": "2026-07-14",
         "tickers": [
           "CHENNPETRO.NS",
           "SHYAMMETL.NS",
-          "BAJAJ-AUTO.NS",
           "SKMEGGPROD.NS",
+          "BFUTILITIE.NS",
+          "BAJAJ-AUTO.NS",
           "SUNPHARMA.NS",
-          "COFORGE.NS",
-          "INDIANB.NS",
           "OFSS.NS",
+          "COFORGE.NS",
           "COALINDIA.NS",
           "BAJAJCON.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": 2.2,
-      "cagr": 29.23,
-      "volatility": 14.03,
-      "sharpe": 1.62,
+      "total_return": 1.44,
+      "cagr": 17.73,
+      "volatility": 13.99,
+      "sharpe": 0.8,
       "max_drawdown": -3.41,
-      "info_ratio": 2.08,
-      "win_rate": 42.9
+      "info_ratio": 1.27,
+      "win_rate": 40.9
     }
   },
   "backtest_long": {
@@ -677,6 +681,11 @@
       {
         "date": "2026-07-13",
         "portfolio": 103.97,
+        "benchmark": 100.0
+      },
+      {
+        "date": "2026-07-14",
+        "portfolio": 102.53,
         "benchmark": 100.0
       }
     ],
@@ -1083,29 +1092,29 @@
       },
       {
         "from": "2026-07-14",
-        "to": "2026-07-13",
+        "to": "2026-07-14",
         "tickers": [
-          "CHENNPETRO.NS",
           "SKMEGGPROD.NS",
+          "CHENNPETRO.NS",
           "OFSS.NS",
-          "COALINDIA.NS",
           "SHYAMMETL.NS",
+          "COALINDIA.NS",
           "J&KBANK.NS",
-          "INDIANB.NS",
           "BFUTILITIE.NS",
           "ONGC.NS",
-          "BAJAJCON.NS"
+          "INDIANB.NS",
+          "BAJAJ-AUTO.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": 3.97,
-      "cagr": 58.2,
-      "volatility": 11.48,
-      "sharpe": 4.5,
-      "max_drawdown": -1.67,
-      "info_ratio": 5.07,
-      "win_rate": 57.1
+      "total_return": 2.53,
+      "cagr": 33.0,
+      "volatility": 12.4,
+      "sharpe": 2.14,
+      "max_drawdown": -1.97,
+      "info_ratio": 2.66,
+      "win_rate": 54.5
     }
   },
   "market_regime": {
@@ -1119,18 +1128,18 @@
     "Consumer Defensive": 20.0,
     "Technology": 20.0,
     "Basic Materials": 10.0,
+    "Industrials": 10.0,
     "Consumer Cyclical": 10.0,
-    "Healthcare": 10.0,
-    "Financial Services": 10.0
+    "Healthcare": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "BAJAJ-AUTO",
       "BAJAJCON",
+      "BFUTILITIE",
       "CHENNPETRO",
       "COALINDIA",
       "COFORGE",
-      "INDIANB",
       "OFSS",
       "SHYAMMETL",
       "SKMEGGPROD",
@@ -1139,122 +1148,122 @@
     "matrix": [
       [
         1.0,
-        -0.04,
-        -0.21,
+        0.08,
+        0.16,
+        -0.16,
         -0.13,
         0.03,
-        -0.02,
         -0.04,
         0.25,
-        0.14,
-        0.19
+        0.15,
+        0.17
       ],
       [
-        -0.04,
+        0.08,
         1.0,
-        0.24,
-        0.09,
-        0.07,
-        0.28,
-        0.04,
-        0.02,
-        0.07,
-        -0.06
-      ],
-      [
-        -0.21,
-        0.24,
-        1.0,
-        0.42,
-        -0.04,
+        0.17,
         0.23,
-        0.11,
-        -0.08,
-        0.19,
-        -0.08
+        -0.0,
+        0.06,
+        -0.01,
+        0.05,
+        0.12,
+        -0.04
+      ],
+      [
+        0.16,
+        0.17,
+        1.0,
+        0.16,
+        0.13,
+        0.14,
+        0.12,
+        0.36,
+        0.33,
+        -0.02
+      ],
+      [
+        -0.16,
+        0.23,
+        0.16,
+        1.0,
+        0.38,
+        -0.04,
+        0.08,
+        -0.07,
+        0.22,
+        -0.05
       ],
       [
         -0.13,
-        0.09,
-        0.42,
+        -0.0,
+        0.13,
+        0.38,
         1.0,
         -0.03,
-        -0.2,
-        0.29,
+        0.28,
         -0.12,
         -0.05,
-        0.0
+        0.02
       ],
       [
         0.03,
-        0.07,
+        0.06,
+        0.14,
         -0.04,
         -0.03,
         1.0,
-        0.11,
         0.16,
         0.29,
         0.13,
         0.26
       ],
       [
-        -0.02,
-        0.28,
-        0.23,
-        -0.2,
-        0.11,
-        1.0,
-        0.05,
-        0.2,
-        0.17,
-        -0.0
-      ],
-      [
         -0.04,
-        0.04,
-        0.11,
-        0.29,
+        -0.01,
+        0.12,
+        0.08,
+        0.28,
         0.16,
-        0.05,
         1.0,
         0.27,
-        0.22,
-        0.25
+        0.23,
+        0.27
       ],
       [
         0.25,
-        0.02,
-        -0.08,
+        0.05,
+        0.36,
+        -0.07,
         -0.12,
         0.29,
-        0.2,
         0.27,
         1.0,
         0.36,
         0.34
       ],
       [
-        0.14,
-        0.07,
-        0.19,
+        0.15,
+        0.12,
+        0.33,
+        0.22,
         -0.05,
         0.13,
-        0.17,
-        0.22,
+        0.23,
         0.36,
         1.0,
-        0.07
+        0.06
       ],
       [
-        0.19,
-        -0.06,
-        -0.08,
-        0.0,
+        0.17,
+        -0.04,
+        -0.02,
+        -0.05,
+        0.02,
         0.26,
-        -0.0,
-        0.25,
+        0.27,
         0.34,
-        0.07,
+        0.06,
         1.0
       ]
     ]
