@@ -1,27 +1,27 @@
 {
-  "last_updated": "2026-07-15 12:13:04",
+  "last_updated": "2026-07-15 17:59:00",
   "model_portfolios": {
     "max_sharpe": {
-      "WELCORP.NS": 0.5893,
-      "BAJAJCON.NS": 0.3083,
-      "LUPIN.NS": 0.0652,
-      "J&KBANK.NS": 0.0371
+      "BAJAJCON.NS": 0.3793,
+      "LUPIN.NS": 0.2514,
+      "J&KBANK.NS": 0.2349,
+      "COFORGE.NS": 0.1057,
+      "SUNPHARMA.NS": 0.0286
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.4505,
-      "BAJAJ-AUTO.NS": 0.199,
-      "LUPIN.NS": 0.1118,
-      "COFORGE.NS": 0.0622,
-      "J&KBANK.NS": 0.0531,
-      "NMDC.NS": 0.0513,
-      "BAJAJCON.NS": 0.0391,
-      "OFSS.NS": 0.026
+      "SUNPHARMA.NS": 0.3756,
+      "COALINDIA.NS": 0.2503,
+      "BAJAJ-AUTO.NS": 0.1597,
+      "LUPIN.NS": 0.0816,
+      "COFORGE.NS": 0.0582,
+      "BAJAJCON.NS": 0.035,
+      "J&KBANK.NS": 0.0309
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 60.3,
+    "Quality": 61.4,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -572,12 +572,12 @@
           "BAJAJ-AUTO.NS",
           "HARIOMPIPE.NS",
           "OFSS.NS",
-          "J&KBANK.NS",
           "COFORGE.NS",
           "BAJAJCON.NS",
           "SUNPHARMA.NS",
+          "J&KBANK.NS",
           "NMDC.NS",
-          "WELCORP.NS"
+          "COALINDIA.NS"
         ]
       }
     ],
@@ -1138,13 +1138,13 @@
           "LUPIN.NS",
           "OFSS.NS",
           "WELCORP.NS",
-          "J&KBANK.NS",
           "TBZ.NS",
+          "J&KBANK.NS",
           "COALINDIA.NS",
           "NMDC.NS",
           "FILATEX.NS",
           "BAJAJCON.NS",
-          "INDIANB.NS"
+          "ONGC.NS"
         ]
       }
     ],
@@ -2561,8 +2561,8 @@
           "GVT&D.NS",
           "NETWEB.NS",
           "POWERINDIA.NS",
-          "INDIANB.NS",
           "ATHERENERG.NS",
+          "INDIANB.NS",
           "SBC.NS"
         ]
       },
@@ -3350,8 +3350,8 @@
           "ATHERENERG.NS",
           "AEROFLEX.NS",
           "KESORAMIND.NS",
-          "TATSILV.NS",
           "BSE.NS",
+          "TATSILV.NS",
           "SILVERBEES.NS"
         ]
       },
@@ -4721,8 +4721,8 @@
           "TVSMOTOR.NS",
           "HDFCAMC.NS",
           "BOSCHLTD.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "NUVOCO.NS"
         ]
       },
@@ -4734,8 +4734,8 @@
           "EICHERMOT.NS",
           "GOLDBEES.NS",
           "ANURAS.NS",
-          "GOLDIETF.NS",
           "BEL.NS",
+          "GOLDIETF.NS",
           "FORTIS.NS",
           "MFSL.NS",
           "GVT&D.NS",
@@ -5603,8 +5603,8 @@
           "ANANDRATHI.NS",
           "LaurusLabs.NS",
           "LAURUSLABS.NS",
-          "BHARATFORG.NS",
           "ANURAS.NS",
+          "BHARATFORG.NS",
           "POWERINDIA.NS",
           "MCX.NS",
           "BSE.NS",
@@ -5645,145 +5645,146 @@
     "breadth": 0.5584470989761092
   },
   "sector_allocation": {
-    "Basic Materials": 30.0,
     "Healthcare": 20.0,
+    "Basic Materials": 20.0,
     "Technology": 20.0,
     "Consumer Cyclical": 10.0,
+    "Consumer Defensive": 10.0,
     "Financial Services": 10.0,
-    "Consumer Defensive": 10.0
+    "Energy": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "BAJAJ-AUTO",
       "BAJAJCON",
+      "COALINDIA",
       "COFORGE",
       "HARIOMPIPE",
       "J&KBANK",
       "LUPIN",
       "NMDC",
       "OFSS",
-      "SUNPHARMA",
-      "WELCORP"
+      "SUNPHARMA"
     ],
     "matrix": [
       [
         1.0,
         0.06,
+        -0.13,
         0.04,
         0.01,
         0.05,
         0.15,
         0.01,
         -0.03,
+        0.17
+      ],
+      [
+        0.06,
+        1.0,
+        0.04,
+        0.09,
+        -0.09,
+        0.28,
+        0.16,
+        0.02,
+        0.04,
+        -0.05
+      ],
+      [
+        -0.13,
+        0.04,
+        1.0,
+        -0.02,
+        0.1,
+        0.05,
+        -0.07,
+        0.28,
+        0.28,
+        0.02
+      ],
+      [
+        0.04,
+        0.09,
+        -0.02,
+        1.0,
+        0.15,
+        0.11,
+        0.13,
+        -0.05,
         0.17,
+        0.25
+      ],
+      [
+        0.01,
+        -0.09,
+        0.1,
+        0.15,
+        1.0,
+        0.23,
+        0.03,
+        0.25,
+        0.04,
         0.1
       ],
       [
-        0.06,
-        1.0,
-        0.09,
-        -0.09,
-        0.28,
-        0.16,
-        0.02,
-        0.04,
-        -0.05,
-        -0.16
-      ],
-      [
-        0.04,
-        0.09,
-        1.0,
-        0.15,
-        0.11,
-        0.13,
-        -0.05,
-        0.17,
-        0.25,
-        -0.04
-      ],
-      [
-        0.01,
-        -0.09,
-        0.15,
-        1.0,
-        0.23,
-        0.03,
-        0.25,
-        0.04,
-        0.1,
-        0.03
-      ],
-      [
         0.05,
         0.28,
+        0.05,
         0.11,
         0.23,
         1.0,
         0.16,
         0.29,
         0.11,
-        0.06,
-        0.07
+        0.06
       ],
       [
         0.15,
         0.16,
+        -0.07,
         0.13,
         0.03,
         0.16,
         1.0,
         0.13,
         0.13,
-        0.27,
-        0.05
+        0.27
       ],
       [
         0.01,
         0.02,
+        0.28,
         -0.05,
         0.25,
         0.29,
         0.13,
         1.0,
         0.18,
-        0.05,
-        0.3
+        0.05
       ],
       [
         -0.03,
         0.04,
+        0.28,
         0.17,
         0.04,
         0.11,
         0.13,
         0.18,
         1.0,
-        0.26,
-        0.13
+        0.26
       ],
       [
         0.17,
         -0.05,
+        0.02,
         0.25,
         0.1,
         0.06,
         0.27,
         0.05,
         0.26,
-        1.0,
-        0.11
-      ],
-      [
-        0.1,
-        -0.16,
-        -0.04,
-        0.03,
-        0.07,
-        0.05,
-        0.3,
-        0.13,
-        0.11,
         1.0
       ]
     ]
