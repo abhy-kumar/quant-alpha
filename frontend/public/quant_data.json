@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-17 12:02:47",
+  "last_updated": "2026-07-17 17:50:11",
   "model_portfolios": {
     "max_sharpe": {
       "WELCORP.NS": 0.3779,
@@ -22,7 +22,7 @@
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 61.9,
+    "Quality": 61.4,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -1226,8 +1226,8 @@
           "LICI.NS",
           "COALINDIA.NS",
           "WELCORP.NS",
-          "EMMVEE.NS",
           "GLAND.NS",
+          "EMMVEE.NS",
           "IOC.NS",
           "BPCL.NS"
         ]
@@ -5724,7 +5724,7 @@
     }
   },
   "market_regime": {
-    "score": -1,
+    "score": 0,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.3511092150170648
