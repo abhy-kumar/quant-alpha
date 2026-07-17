@@ -53,7 +53,8 @@
 
 ## Static Data
 
-- GET /market_data.json - Full scan output: all scores, factors, conviction, regime (updated 3x daily)
+- GET /market_data.json - Full scan output: all scores, factors, conviction, regime (updated 5x daily)
+- GET /quant_data.json - Quantitative analysis factors and custom backtest data
 - GET /score_history.json - Historical composite scores per stock for trend charting
 
 ## Tech Stack
@@ -61,7 +62,8 @@
 - Backend: Python 3.12, pandas, numpy, yfinance, BeautifulSoup4, vaderSentiment, feedparser
 - Frontend: React 19, Vite, Tailwind CSS, Recharts, TypeScript
 - Database: SQLite (market_scans.db) - factor_history, outcome_tracking, regime_history tables
-- CI/CD: GitHub Actions (3x daily cron: 03:30, 07:00, 10:45 UTC, Mon-Fri)
+  - Note for LLMs: Due to GitHub's 50MB limit, `market_scans.db` is split into `market_scans.db.part_*` files. Run `python db_split_join.py join` locally before running backend scripts, and `python db_split_join.py split` before committing.
+- CI/CD: GitHub Actions (5x daily cron)
 - Hosting: Vercel (frontend + serverless), GitHub (data + backend)
 
 ## Machine Learning Data

@@ -37,13 +37,13 @@ The platform generates daily analytical scores with classification labels and st
 
 ## How It Works
 
-The system operates as a dual-mode pipeline: a heavy batch scan runs three times daily via GitHub Actions (recomputing all scores and signals), while a lightweight live price overlay polls current prices every 3 minutes during market hours via Vercel serverless functions.
+The system operates as a dual-mode pipeline: a heavy batch scan runs five times daily via GitHub Actions (recomputing all scores and signals), while a lightweight live price overlay polls current prices every 3 minutes during market hours via Vercel serverless functions.
 
 ### Update Architecture
 
 | Layer | Frequency | What Updates | Trigger |
 |-------|-----------|--------------|---------|
-| **Full Scan** | 3x daily (Mon-Fri) | All scores, signals, fundamentals, classifications, market regime | GitHub Actions cron |
+| **Full Scan** | 5x daily (Mon-Fri) | All scores, signals, fundamentals, classifications, market regime | GitHub Actions cron |
 | **Live Prices** | Every 3 min (market hours) | LTP and 1D% change only | Browser polling `/api/live_data` |
 
 The footer displays both timestamps independently: **Signals** (last scanner run) and **Prices** (last live overlay), so the freshness of each data layer is always visible.
@@ -57,7 +57,7 @@ The footer displays both timestamps independently: **Signals** (last scanner run
 5. **Research Factor Computation** (`research_factors.py`): Calculates ten academic research factors: Piotroski F-Score, Gross Profitability, Value Factor, Investment Factor, Earnings Momentum (SUE), Multi-Horizon Momentum, Low Volatility, Betting Against Beta, Mean Reversion, and Earnings Quality.
 6. **News Sentiment** (`data_fetcher.py`): Fetches headlines from Google News RSS (India-locale: `hl=en-IN&gl=IN&ceid=IN:en`, no API key required) and runs VADER sentiment analysis on up to 10 headlines per ticker. The average compound score is the news sentiment signal. Scores are cached for 24 hours.
 7. **Scoring and Classification** (`scoring.py`): Combines all factors into a composite score, ranks stocks by percentile, and assigns classification labels adjusted for market regime.
-8. **Data Storage** (`data_pipeline.py`): Writes results to `market_data.json` (frontend), `market_scans.db` (ML pipeline), and archives to SQLite.
+8. **Data Storage** (`data_pipeline.py`, `quant_engine.py`): Writes results to `market_data.json`, `quant_data.json`, and `score_history.json` (frontend), `market_scans.db` (ML pipeline), and archives to SQLite.
 9. **Outcome Tracking** (`data_pipeline.py`): Backfills forward returns (5d, 10d, 21d, 63d, 126d, 252d) for all past scans using stored OHLCV data.
 
 ### Live Update Pipeline (/api/live_data)
@@ -300,7 +300,9 @@ The `data_pipeline.py` module provides ready-to-use functions for ML workflows:
 |                                                                         |
 |  5. Outputs to:                                                         |
 |     - market_data.json (frontend static file)                           |
-|     - market_scans.db (ML pipeline)                                     |
+|     - quant_data.json (quantitative analysis data)                      |
+|     - score_history.json (historical tracking)                          |
+|     - market_scans.db (ML pipeline, chunked for git)                    |
 +-------------------------------------------------------------------------+
                    |
                    v (commit -> Vercel redeploy)
@@ -323,6 +325,7 @@ The React frontend is a five-tab analytical dashboard. Some tabs require club me
 |-----|--------|-------------|
 | **Signals** | Members only | Top 3 high-scoring equities for Short-Term (momentum) or Long-Term (value/quality) horizon. Each card shows a horizon-specific composite score, Tech/Fund/Research sub-scores, key metrics (P/E, Mkt Cap, ROE, D/E, Sharpe, Beta), signal badges, and compact score bars (Piotroski, 12M Mom, Value, Vol 60D). |
 | **Screen** | Public (raw data) | Full universe screener with sortable columns (Ticker, Sector, LTP, 1D%, Tech, Fund, Research, F-Score, 12M Mom, Value, Beta, P/E). Composite scores and classification labels visible to authenticated members only. Dynamic filters for Piotroski, Value Score, Beta, sector, market cap, and D/E. Expandable row shows 14 technical signals and all 10 research factors. |
+| **Quant Lab** | Members only | Deep-dive quantitative environment showcasing `quant_engine.py` outputs. Displays factor backtests, correlation matrices, and custom quant strategies using `quant_data.json`. |
 | **Charts** | Public | Interactive charting for any stock: Price + SMA 50/200 + Supertrend overlay, RSI (14), MACD (12,26,9). Left panel shows company profile, technicals, 10 research factors (Piotroski, Gross Profit, Earnings Quality, Value, Investment, SUE, Beta, Z-Score), momentum, fundamentals, and risk metrics (Vol, Sharpe, Max DD, Beta, Alpha). Sector peer comparison table with Value and Beta columns. |
 | **Heatmap** | Public | Color-coded sector heatmap where each tile represents a stock, colored from red (low composite) to green (high composite). Sectors sorted alphabetically. |
 | **Factor Lab** | Members only | Classification accuracy tracker showing historical win rates and average forward returns (21D and 63D) by classification level, with a bar chart and summary cards. Data accumulates as scans age. |
@@ -350,8 +353,8 @@ The header contains persistent market indicators and controls:
 - **News Source**: Google News RSS (`gl=IN&hl=en-IN&ceid=IN:en`) - India-locale, no API key required
 - **Serverless API**: Vercel Functions (`api/chart.ts`, `api/live_data.ts`) - yahoo-finance2 v3 (class instantiation)
 - **Analytics**: Vercel Analytics
-- **Database**: SQLite (`market_scans.db`)
-- **CI/CD**: GitHub Actions (three times daily: pre-open, mid-day, post-market scans)
+- **Database**: SQLite (`market_scans.db`, stored as parts to bypass Git limits)
+- **CI/CD**: GitHub Actions (five times daily scans)
 - **Deployment**: Vercel (frontend + serverless), GitHub (data + backend)
 
 ### Frontend Component Map
@@ -366,6 +369,7 @@ frontend/src/
     ├── shared.tsx         # num(), colorCode(), scoreBar(), SortHeader()
     ├── SignalsTab.tsx      # High conviction signal cards with radar chart
     ├── ScreenerTab.tsx     # Full universe screener with filters + expandable rows (auth-aware)
+    ├── QuantLabTab.tsx     # Deep quantitative analysis and backtesting factors
     ├── ChartingTab.tsx     # Price/RSI/MACD charts + company profile panel
     ├── HeatmapTab.tsx      # Sector heatmap with color legend
     └── FactorLabTab.tsx    # Conviction accuracy tracker with forward return charts
@@ -402,11 +406,13 @@ cd ..
 
 ### 2. Run the Scanner
 
+> **Database Note:** Before running the scanner locally for the first time, you must join the chunked SQLite database by running: `python db_split_join.py join`. When you're ready to commit changes to the DB, run `python db_split_join.py split`.
+
 ```bash
 python scanner.py
 ```
 
-This downloads data for ~150 stocks (takes 2-3 minutes), computes all indicators and scores, and generates `frontend/public/market_data.json`.
+This downloads data for ~150 stocks (takes 2-3 minutes), computes all indicators and scores, and generates `frontend/public/market_data.json` and `quant_data.json`.
 
 ### 3. Launch the Frontend
 
@@ -458,12 +464,14 @@ stock-dashboard/
 ├── indicators.py               # Technical indicator computations
 ├── recommendation.py           # Scoring models (tech score, fund score)
 ├── research_factors.py         # Academic research factor implementations
+├── quant_engine.py             # Advanced quantitative logic and backtesting
 ├── data_pipeline.py            # ML-ready data storage layer
 ├── nse_fetcher.py              # NSE data sources (Bhav Copy, live quotes, FII/DII, PCR)
 ├── bse_fetcher.py              # BSE India fallback data
 ├── live_updater.py             # Intraday price updater (local use)
 ├── scheduler.py                # APScheduler background jobs (local use)
 ├── utils.py                    # Shared utilities and caching
+├── db_split_join.py            # Utility to split/join large SQLite DB for Git
 ├── generate_score_history.py   # Score history JSON for charting
 ├── populate_cache.py           # Cache pre-population script
 ├── populate_ath.py             # All-time high pre-population
@@ -482,6 +490,7 @@ stock-dashboard/
 │   │   └── live_data.ts        # Vercel serverless: live pricing (yahoo-finance2 v3)
 │   ├── public/
 │   │   ├── market_data.json    # Generated scan output (committed by GitHub Actions)
+│   │   ├── quant_data.json     # Generated quant output (committed by GitHub Actions)
 │   │   ├── score_history.json  # Historical score data for charting
 │   │   ├── logo-dark.svg       # Alpha logo for dark theme
 │   │   └── logo-light.svg      # Alpha logo for light theme
@@ -495,7 +504,7 @@ stock-dashboard/
 │   └── vite.config.ts
 ├── .github/
 │   └── workflows/
-│       └── daily_scan.yml      # GitHub Actions: three-times-daily scan
+│       └── daily_scan.yml      # GitHub Actions: five-times-daily scan
 ├── tests/
 │   ├── test_indicators.py      # Indicator unit tests
 │   ├── test_scoring.py         # Scoring function tests
@@ -506,13 +515,15 @@ stock-dashboard/
 
 ## GitHub Actions
 
-The scanner runs automatically three times daily via GitHub Actions. All times are fixed-offset UTC+5:30 (IST has no DST).
+The scanner runs automatically five times daily via GitHub Actions. All times are fixed-offset UTC+5:30 (IST has no DST).
 
 | Cron | IST Time | Purpose |
 |------|----------|---------|
-| `30 3 * * 1-5` | 9:00 AM IST | Pre-open scan - fresh data before market opens |
-| `0 7 * * 1-5` | 12:30 PM IST | Mid-day snapshot - intraday scoring |
-| `45 10 * * 1-5` | 4:15 PM IST | Post-market scan - end-of-day signals (primary run) |
+| `37 22 * * 0-4` | 4:07 AM IST | Early Morning scan (previous day UTC) - data baseline |
+| `7 4 * * 1-5` | 9:37 AM IST | Morning scan - post-market open signals |
+| `7 7 * * 1-5` | 12:37 PM IST | Mid-day snapshot - intraday scoring |
+| `41 10 * * 1-5` | 4:11 PM IST | Afternoon scan - late day momentum |
+| `37 16 * * 1-5` | 10:07 PM IST | Night scan - end-of-day definitive signals (primary) |
 
 Each run pulls the latest database, runs the scanner, and commits the updated `market_data.json` and `market_scans.db` back to the repository with `[skip ci]` to avoid recursive triggers.
 
