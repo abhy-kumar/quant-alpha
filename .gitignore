@@ -28,3 +28,4 @@ frontend/README.md
 documentation.md
 *.sqlite
 *.sqlite3
+data/market_scans.db

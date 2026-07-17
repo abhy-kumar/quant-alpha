@@ -44,11 +44,14 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run market scanner
-        run: python scanner.py
+        run: |
+          python db_split_join.py join
+          python scanner.py
+          python db_split_join.py split
 
       - name: Commit and push updated data
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add frontend/public/market_data.json frontend/public/quant_data.json frontend/public/score_history.json data/market_scans.db
+          git add frontend/public/market_data.json frontend/public/quant_data.json frontend/public/score_history.json data/market_scans.db.part_*
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update market data [skip ci]" && git push)
