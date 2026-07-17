@@ -947,6 +947,65 @@ def export_backtest_index():
     return len(index)
 
 
+# ---------------------------------------------------------------------------
+# Scheduled auto-backtest: run all 4 combinations for a given date
+# ---------------------------------------------------------------------------
+
+def run_all_current_backtests(as_of_date: str | None = None, force: bool = False) -> dict:
+    """
+    Run (or recall from cache) all 4 backtest combinations for ``as_of_date``.
+
+    Designed to be called by the weekend scheduler job.
+
+    Args:
+        as_of_date: 'YYYY-MM-DD' string.  Defaults to today.
+        force:      Re-run even when a cached result already exists.
+
+    Returns:
+        dict mapping each slug to its result dict, e.g.:
+        {
+            'short-1y-2025-07-19': {...},
+            'short-6m-2025-07-19': {...},
+            'long-1y-2025-07-19':  {...},
+            'long-6m-2025-07-19':  {...},
+        }
+    """
+    import logging
+    logger = logging.getLogger("backtest_engine")
+
+    if as_of_date is None:
+        as_of_date = datetime.now().strftime("%Y-%m-%d")
+
+    combos = [
+        ("short", "1y"),
+        ("short", "6m"),
+        ("long",  "1y"),
+        ("long",  "6m"),
+    ]
+
+    results = {}
+    for model, horizon in combos:
+        slug = f"{model}-{horizon}-{as_of_date}"
+        logger.info(f"Auto-backtest: {slug} ...")
+        try:
+            result = run_custom_backtest(as_of_date, model, horizon, force=force)
+            results[slug] = result
+            cached_flag = "cache hit" if result.get("cached") else "computed"
+            logger.info(f"  {slug}: {cached_flag}, stats={result.get('stats', {})}")
+        except Exception as exc:
+            logger.error(f"  {slug} failed: {exc}", exc_info=True)
+            results[slug] = {"error": str(exc)}
+
+    # Re-export the full index (includes all historical runs, not just today's)
+    try:
+        n = export_backtest_index()
+        logger.info(f"Exported backtest index ({n} total runs).")
+    except Exception as exc:
+        logger.warning(f"export_backtest_index failed: {exc}")
+
+    return results
+
+
 if __name__ == "__main__":
     import logging
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")

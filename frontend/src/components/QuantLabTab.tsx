@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull } from '../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
-import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, Terminal, ClockCounterClockwise, ArrowClockwise, CopySimple } from '@phosphor-icons/react'
+import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise } from '@phosphor-icons/react'
 import { SegmentedControl, InfoTooltip } from './shared'
 
 interface Props {
@@ -77,17 +77,12 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
   const [backtestHorizon, setBacktestHorizon] = useState<'1y' | '6m'>('1y')
   const [showHoldings, setShowHoldings] = useState(false)
 
-  // - Custom on-demand backtest state -
-  const [cachedRuns, setCachedRuns]       = useState<BacktestRunMeta[]>([])
-  const [runsLoading, setRunsLoading]     = useState(false)
-  const [selectedSlug, setSelectedSlug]   = useState<string | null>(null)
+  // - Backtest archive state -
+  const [cachedRuns, setCachedRuns]           = useState<BacktestRunMeta[]>([])
+  const [runsLoading, setRunsLoading]         = useState(false)
+  const [selectedSlug, setSelectedSlug]       = useState<string | null>(null)
   const [selectedRunData, setSelectedRunData] = useState<BacktestRunFull | null>(null)
   const [runDataLoading, setRunDataLoading]   = useState(false)
-  const [customAsOf, setCustomAsOf]       = useState('')
-  const [customModel, setCustomModel]     = useState<'short' | 'long'>('short')
-  const [customHorizon, setCustomHorizon] = useState<'1y' | '6m'>('1y')
-  const [copied, setCopied]               = useState(false)
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     fetch('/quant_data.json?t=' + Date.now())
@@ -127,35 +122,6 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
       .catch(() => setSelectedRunData(null))
       .finally(() => setRunDataLoading(false))
   }, [])
-
-  // Copy CLI command to clipboard
-  const cliCommand = customAsOf
-    ? `python run_custom_backtest.py --as_of ${customAsOf} --model ${customModel} --horizon ${customHorizon}`
-    : null
-
-  const handleCopy = () => {
-    if (!cliCommand) return
-    navigator.clipboard.writeText(cliCommand).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-      // Poll for the result to appear (every 5s for 3 min)
-      if (pollRef.current) clearInterval(pollRef.current)
-      let checks = 0
-      pollRef.current = setInterval(() => {
-        loadRunIndex(true)
-        checks++
-        if (checks >= 36 && pollRef.current) clearInterval(pollRef.current)
-      }, 5000)
-    })
-  }
-
-  // Stop polling when the expected slug appears
-  const expectedSlug = customAsOf ? `${customModel}-${customHorizon}-${customAsOf}` : null
-  useEffect(() => {
-    if (expectedSlug && cachedRuns.some(r => r.slug === expectedSlug)) {
-      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
-    }
-  }, [cachedRuns, expectedSlug])
 
   // Chart data for the selected run
   const selectedChart = useMemo(() => {
@@ -676,8 +642,9 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
         </div>
 
         
+
       {/* ===============================================================
-          CUSTOM BACKTEST LAB
+          BACKTEST ARCHIVE  (auto-updated every Saturday by scheduler)
       =============================================================== */}
       <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
 
@@ -685,11 +652,13 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
         <div className="px-6 py-4 flex flex-wrap items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--glass-border)' }}>
           <div className="flex items-center gap-3">
             <div className="p-2 shrink-0" style={{ background: 'var(--green-bg)', borderRadius: 'var(--radius)' }}>
-              <Terminal size={16} weight="duotone" style={{ color: 'var(--green)' }} />
+              <ClockCounterClockwise size={16} weight="duotone" style={{ color: 'var(--green)' }} />
             </div>
             <div>
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Custom Backtest Lab</h3>
-              <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>Run a backtest for any historical date — results are cached and served to all users</p>
+              <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Backtest Archive</h3>
+              <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>
+                Auto-updated every Saturday · {cachedRuns.length} snapshot{cachedRuns.length !== 1 ? 's' : ''} stored
+              </p>
             </div>
           </div>
           <button
@@ -702,167 +671,87 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x" style={{ borderColor: 'var(--glass-border)' }}>
-
-          {/* ── Left: Command generator ─────────────────────────────────── */}
-          <div className="p-5 space-y-4">
-            <p className="section-label">Configure &amp; Trigger</p>
-
-            {/* As-of date */}
-            <div>
-              <label className="text-[11px] font-medium block mb-1.5" style={{ color: 'var(--text-2)' }}>As-of Date</label>
-              <input
-                id="custom-backtest-date"
-                type="date"
-                value={customAsOf}
-                onChange={e => setCustomAsOf(e.target.value)}
-                className="glass-input w-full text-sm"
-                style={{ colorScheme: isDark ? 'dark' : 'light' }}
-              />
-              <p className="text-[10px] mt-1" style={{ color: 'var(--text-3)' }}>
-                Backtest will use only market data up to this date (look-ahead free)
-              </p>
+        {/* Archive table / empty state */}
+        {cachedRuns.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+            <div className="p-4 rounded-full mb-4" style={{ background: 'var(--glass-bg-subtle)' }}>
+              <ClockCounterClockwise size={24} style={{ color: 'var(--text-4)' }} />
             </div>
-
-            {/* Model & Horizon */}
-            <div className="flex flex-wrap gap-3">
-              <div className="flex-1">
-                <label className="text-[11px] font-medium block mb-1.5" style={{ color: 'var(--text-2)' }}>Model</label>
-                <SegmentedControl
-                  options={[{ key: 'short', label: 'Short-term' }, { key: 'long', label: 'Long-term' }]}
-                  value={customModel}
-                  onChange={v => setCustomModel(v as 'short' | 'long')}
-                />
-              </div>
-              <div className="flex-1">
-                <label className="text-[11px] font-medium block mb-1.5" style={{ color: 'var(--text-2)' }}>Horizon</label>
-                <SegmentedControl
-                  options={[{ key: '1y', label: '1 Year' }, { key: '6m', label: '6 Months' }]}
-                  value={customHorizon}
-                  onChange={v => setCustomHorizon(v as '1y' | '6m')}
-                />
-              </div>
-            </div>
-
-            {/* Command box */}
-            <div>
-              <label className="text-[11px] font-medium block mb-1.5" style={{ color: 'var(--text-2)' }}>Command to run on your server</label>
-              <div
-                className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-mono text-[11px] overflow-x-auto scrollbar-none"
-                style={{ background: isDark ? '#0a0a0a' : '#1e1e2e', border: '1px solid var(--glass-border)' }}
-              >
-                <Terminal size={12} style={{ color: '#7c7cff', flexShrink: 0 }} />
-                <span className="flex-1 whitespace-nowrap" style={{ color: cliCommand ? '#a9dc76' : '#52525b' }}>
-                  {cliCommand ?? 'Pick a date above to generate the command'}
-                </span>
-                {cliCommand && (
-                  <button
-                    onClick={handleCopy}
-                    className="shrink-0 flex items-center gap-1 text-[10px] px-2 py-1 rounded transition-all"
-                    style={{ background: copied ? 'var(--green-bg)' : 'var(--glass-bg-subtle)', color: copied ? 'var(--green)' : 'var(--text-3)', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
-                  >
-                    <CopySimple size={10} />
-                    {copied ? 'Copied!' : 'Copy'}
-                  </button>
-                )}
-              </div>
-              {/* Pending indicator */}
-              {expectedSlug && !cachedRuns.some(r => r.slug === expectedSlug) && copied && (
-                <div className="flex items-center gap-2 mt-2 text-[11px]" style={{ color: 'var(--amber)' }}>
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--amber)' }} />
-                  Waiting for result to appear... auto-refreshing every 5s
-                </div>
-              )}
-              {expectedSlug && cachedRuns.some(r => r.slug === expectedSlug) && (
-                <div className="flex items-center gap-2 mt-2 text-[11px]" style={{ color: 'var(--green)' }}>
-                  <CheckCircle size={12} />
-                  Result is available below!
-                </div>
-              )}
-            </div>
-
-            {/* Info */}
-            <div className="rounded-lg p-3 text-[11px] space-y-1" style={{ background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>
-              <p className="font-medium" style={{ color: 'var(--text-2)' }}>How it works</p>
-              <p style={{ color: 'var(--text-3)' }}>1. Pick a date within your OHLCV history range.</p>
-              <p style={{ color: 'var(--text-3)' }}>2. Copy and run the command on the machine where the scanner runs.</p>
-              <p style={{ color: 'var(--text-3)' }}>3. Results are cached in SQLite and exported as static JSON — they appear here automatically on next refresh.</p>
-              <p style={{ color: 'var(--text-3)' }}>4. Previously run combinations are never re-computed (instant recall). Use <code style={{ color: 'var(--text)' }}>--force</code> to re-run.</p>
-            </div>
+            <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-2)' }}>No backtest snapshots yet</p>
+            <p className="text-[12px] max-w-sm leading-relaxed" style={{ color: 'var(--text-3)' }}>
+              The scheduler runs automatically every Saturday at 8 AM IST and stores a dated snapshot here.
+              The first results will appear after the next Saturday.
+            </p>
           </div>
-
-          {/* ── Right: Cached runs list ───────────────────────────────────── */}
-          <div className="p-5">
-            <div className="flex items-center justify-between mb-3">
-              <p className="section-label">Cached Runs ({cachedRuns.length})</p>
-              {cachedRuns.length > 0 && (
-                <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
-                  <ClockCounterClockwise size={10} className="inline mr-1" />Results persist across sessions
-                </span>
-              )}
-            </div>
-
-            {cachedRuns.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="p-3 rounded-full mb-3" style={{ background: 'var(--glass-bg-subtle)' }}>
-                  <ClockCounterClockwise size={20} style={{ color: 'var(--text-4)' }} />
+        ) : (
+          <div className="p-4">
+            {/* Group by date — show each date as a row of 4 model/horizon chips */}
+            {(() => {
+              const byDate = new Map<string, BacktestRunMeta[]>()
+              for (const run of [...cachedRuns].sort((a, b) => b.as_of_date.localeCompare(a.as_of_date))) {
+                const arr = byDate.get(run.as_of_date) ?? []
+                arr.push(run)
+                byDate.set(run.as_of_date, arr)
+              }
+              return Array.from(byDate.entries()).map(([date, runs]) => (
+                <div key={date} className="mb-3">
+                  <p className="text-[10px] font-mono font-semibold mb-2 px-1" style={{ color: 'var(--text-3)' }}>
+                    {date}
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {(['short-1y', 'short-6m', 'long-1y', 'long-6m'] as const).map(key => {
+                      const [model, horizon] = key.split('-') as ['short' | 'long', '1y' | '6m']
+                      const run = runs.find(r => r.model === model && r.horizon === horizon)
+                      const slug = `${model}-${horizon}-${date}`
+                      const isSelected = selectedSlug === slug
+                      const modelColor = model === 'short' ? 'var(--brand)' : 'var(--green)'
+                      const modelBg    = model === 'short' ? 'var(--brand-soft)' : 'var(--green-bg)'
+                      const cagr  = run?.stats?.cagr
+                      const sharpe = run?.stats?.sharpe
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => run && (isSelected ? setSelectedSlug(null) : loadRunData(slug))}
+                          disabled={!run}
+                          className="rounded-xl px-3 py-3 text-left transition-all"
+                          style={{
+                            background: isSelected ? 'var(--glass-bg-subtle)' : 'var(--glass-bg)',
+                            border: `1px solid ${isSelected ? 'var(--glass-border-strong)' : 'var(--glass-border)'}`,
+                            cursor: run ? 'pointer' : 'default',
+                            opacity: run ? 1 : 0.35,
+                          }}
+                        >
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: modelBg, color: modelColor }}>
+                              {model === 'short' ? 'Short' : 'Long'}
+                            </span>
+                            <span className="text-[10px] font-mono font-semibold" style={{ color: 'var(--text-3)' }}>
+                              {horizon.toUpperCase()}
+                            </span>
+                          </div>
+                          {run ? (
+                            <>
+                              <p className="text-sm font-bold tabular-nums leading-tight" style={{ color: typeof cagr === 'number' && cagr >= 0 ? 'var(--green)' : 'var(--red)' }}>
+                                {typeof cagr === 'number' ? `${cagr >= 0 ? '+' : ''}${cagr.toFixed(1)}%` : '—'}
+                              </p>
+                              <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-3)' }}>
+                                CAGR · Sharpe {typeof sharpe === 'number' ? sharpe.toFixed(2) : '—'}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-[10px]" style={{ color: 'var(--text-4)' }}>Pending</p>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
-                <p className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>No custom runs yet</p>
-                <p className="text-[11px] mt-1" style={{ color: 'var(--text-3)' }}>Configure a date above and run the command</p>
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-80 overflow-y-auto scrollbar-none">
-                {cachedRuns.map(run => {
-                  const isSelected = selectedSlug === run.slug
-                  const modelColor = run.model === 'short' ? 'var(--brand)' : 'var(--green)'
-                  const modelBg    = run.model === 'short' ? 'var(--brand-soft)' : 'var(--green-bg)'
-                  const cagr = run.stats?.cagr
-                  const sharpe = run.stats?.sharpe
-                  return (
-                    <button
-                      key={run.slug}
-                      onClick={() => isSelected ? setSelectedSlug(null) : loadRunData(run.slug)}
-                      className="w-full text-left rounded-xl px-3 py-2.5 transition-all"
-                      style={{
-                        background: isSelected ? 'var(--glass-bg-subtle)' : 'transparent',
-                        border: `1px solid ${isSelected ? 'var(--glass-border-strong)' : 'var(--glass-border)'}`,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[11px] font-semibold font-mono" style={{ color: 'var(--text)' }}>{run.as_of_date}</span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: modelBg, color: modelColor }}>
-                            {run.model === 'short' ? 'Short-term' : 'Long-term'}
-                          </span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--glass-bg-subtle)', color: 'var(--text-3)', border: '1px solid var(--glass-border)' }}>
-                            {run.horizon.toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-[11px] tabular-nums shrink-0">
-                          {typeof cagr === 'number' && (
-                            <span style={{ color: cagr >= 0 ? 'var(--green)' : 'var(--red)' }}>{cagr >= 0 ? '+' : ''}{cagr.toFixed(1)}%</span>
-                          )}
-                          {typeof sharpe === 'number' && (
-                            <span style={{ color: 'var(--text-3)' }}>S: {sharpe.toFixed(2)}</span>
-                          )}
-                        </div>
-                      </div>
-                      {run.data_start && (
-                        <p className="text-[10px] mt-1" style={{ color: 'var(--text-4)' }}>
-                          {run.data_start} &rarr; {run.data_end} | {run.n_chart_pts} pts
-                        </p>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
+              ))
+            })()}
           </div>
-        </div>
+        )}
 
-
-        {/* - Expanded selected run chart - */}
+        {/* Expanded selected run chart */}
         {selectedSlug && (
           <div style={{ borderTop: '1px solid var(--glass-border)' }}>
             <div className="px-5 py-3 flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--text-2)', borderBottom: '1px solid var(--glass-border)' }}>
