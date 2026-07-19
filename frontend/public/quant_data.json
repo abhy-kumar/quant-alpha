@@ -1,28 +1,27 @@
 {
-  "last_updated": "2026-07-17 17:50:11",
+  "last_updated": "2026-07-19 14:30:25",
   "model_portfolios": {
     "max_sharpe": {
-      "WELCORP.NS": 0.3779,
-      "OFSS.NS": 0.258,
-      "GLAND.NS": 0.182,
-      "EMMVEE.NS": 0.1009,
-      "BAJAJ-AUTO.NS": 0.0411,
-      "COALINDIA.NS": 0.04
+      "FEDERALBNK.NS": 0.4784,
+      "OFSS.NS": 0.3034,
+      "EMMVEE.NS": 0.1495,
+      "SUNPHARMA.NS": 0.0345,
+      "BAJAJ-AUTO.NS": 0.0217,
+      "CHENNPETRO.NS": 0.0126
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.2749,
-      "COALINDIA.NS": 0.234,
-      "BAJAJ-AUTO.NS": 0.2181,
-      "LICI.NS": 0.112,
-      "GLAND.NS": 0.0566,
-      "OFSS.NS": 0.055,
-      "CHENNPETRO.NS": 0.0494
+      "SUNPHARMA.NS": 0.4176,
+      "FEDERALBNK.NS": 0.1772,
+      "BAJAJ-AUTO.NS": 0.1666,
+      "LICI.NS": 0.091,
+      "CHENNPETRO.NS": 0.084,
+      "OFSS.NS": 0.0636
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 61.4,
+    "Quality": 60.3,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -609,7 +608,7 @@
       },
       {
         "from": "2026-07-17",
-        "to": "2026-07-17",
+        "to": "2026-07-19",
         "tickers": [
           "CHENNPETRO.NS",
           "GLAND.NS",
@@ -621,6 +620,22 @@
           "EMMVEE.NS",
           "COALINDIA.NS",
           "JSWSTEEL.NS"
+        ]
+      },
+      {
+        "from": "2026-07-19",
+        "to": "2026-07-17",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "BAJAJ-AUTO.NS",
+          "SUNPHARMA.NS",
+          "LICI.NS",
+          "OFSS.NS",
+          "EMMVEE.NS",
+          "MOTHERSON.NS",
+          "JSWSTEEL.NS",
+          "INDIANB.NS",
+          "FEDERALBNK.NS"
         ]
       }
     ],
@@ -1218,7 +1233,7 @@
       },
       {
         "from": "2026-07-17",
-        "to": "2026-07-17",
+        "to": "2026-07-19",
         "tickers": [
           "CHENNPETRO.NS",
           "OFSS.NS",
@@ -1230,6 +1245,22 @@
           "EMMVEE.NS",
           "IOC.NS",
           "BPCL.NS"
+        ]
+      },
+      {
+        "from": "2026-07-19",
+        "to": "2026-07-17",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "OFSS.NS",
+          "LICI.NS",
+          "EMMVEE.NS",
+          "NMDC.NS",
+          "INDIANB.NS",
+          "HINDPETRO.NS",
+          "FEDERALBNK.NS",
+          "BAJAJ-AUTO.NS",
+          "TECHM.NS"
         ]
       }
     ],
@@ -5730,145 +5761,145 @@
     "breadth": 0.3511092150170648
   },
   "sector_allocation": {
-    "Energy": 20.0,
-    "Healthcare": 20.0,
-    "Basic Materials": 20.0,
+    "Financial Services": 30.0,
+    "Consumer Cyclical": 20.0,
     "Technology": 20.0,
-    "Consumer Cyclical": 10.0,
-    "Financial Services": 10.0
+    "Energy": 10.0,
+    "Healthcare": 10.0,
+    "Basic Materials": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "BAJAJ-AUTO",
       "CHENNPETRO",
-      "COALINDIA",
       "EMMVEE",
-      "GLAND",
+      "FEDERALBNK",
+      "INDIANB",
       "JSWSTEEL",
       "LICI",
+      "MOTHERSON",
       "OFSS",
-      "SUNPHARMA",
-      "WELCORP"
+      "SUNPHARMA"
     ],
     "matrix": [
       [
         1.0,
         -0.1,
-        -0.13,
         -0.14,
+        0.15,
         0.01,
         0.16,
         0.02,
+        0.24,
         -0.01,
-        0.16,
-        0.1
+        0.16
       ],
       [
         -0.1,
         1.0,
-        0.37,
         0.39,
-        -0.09,
+        -0.01,
+        0.17,
         -0.02,
         0.05,
+        0.13,
         0.07,
-        -0.06,
-        0.19
-      ],
-      [
-        -0.13,
-        0.37,
-        1.0,
-        0.07,
-        -0.13,
-        0.03,
-        -0.07,
-        0.29,
-        0.03,
-        0.21
+        -0.06
       ],
       [
         -0.14,
         0.39,
-        0.07,
         1.0,
-        0.0,
+        0.01,
+        0.17,
         -0.09,
         0.18,
+        0.26,
         0.12,
-        0.1,
-        0.23
+        0.1
+      ],
+      [
+        0.15,
+        -0.01,
+        0.01,
+        1.0,
+        0.43,
+        0.15,
+        0.23,
+        0.23,
+        0.02,
+        -0.11
       ],
       [
         0.01,
-        -0.09,
-        -0.13,
-        0.0,
+        0.17,
+        0.17,
+        0.43,
         1.0,
-        0.18,
-        0.05,
-        0.19,
-        0.32,
-        0.03
+        0.29,
+        0.45,
+        0.34,
+        0.04,
+        -0.02
       ],
       [
         0.16,
         -0.02,
-        0.03,
         -0.09,
-        0.18,
+        0.15,
+        0.29,
         1.0,
         0.21,
+        0.22,
         0.17,
-        0.29,
-        0.2
+        0.29
       ],
       [
         0.02,
         0.05,
-        -0.07,
         0.18,
-        0.05,
+        0.23,
+        0.45,
         0.21,
         1.0,
+        0.2,
         -0.05,
-        0.12,
-        0.13
+        0.12
+      ],
+      [
+        0.24,
+        0.13,
+        0.26,
+        0.23,
+        0.34,
+        0.22,
+        0.2,
+        1.0,
+        0.13,
+        0.04
       ],
       [
         -0.01,
         0.07,
-        0.29,
         0.12,
-        0.19,
+        0.02,
+        0.04,
         0.17,
         -0.05,
+        0.13,
         1.0,
-        0.26,
-        0.12
+        0.26
       ],
       [
         0.16,
         -0.06,
-        0.03,
         0.1,
-        0.32,
+        -0.11,
+        -0.02,
         0.29,
         0.12,
+        0.04,
         0.26,
-        1.0,
-        0.15
-      ],
-      [
-        0.1,
-        0.19,
-        0.21,
-        0.23,
-        0.03,
-        0.2,
-        0.13,
-        0.12,
-        0.15,
         1.0
       ]
     ]
