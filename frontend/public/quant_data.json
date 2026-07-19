@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-19 14:30:25",
+  "last_updated": "2026-07-19 23:44:03",
   "model_portfolios": {
     "max_sharpe": {
       "FEDERALBNK.NS": 0.4784,
@@ -624,6 +624,22 @@
       },
       {
         "from": "2026-07-19",
+        "to": "2026-07-20",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "BAJAJ-AUTO.NS",
+          "SUNPHARMA.NS",
+          "LICI.NS",
+          "OFSS.NS",
+          "EMMVEE.NS",
+          "MOTHERSON.NS",
+          "JSWSTEEL.NS",
+          "INDIANB.NS",
+          "FEDERALBNK.NS"
+        ]
+      },
+      {
+        "from": "2026-07-20",
         "to": "2026-07-17",
         "tickers": [
           "CHENNPETRO.NS",
@@ -1249,6 +1265,22 @@
       },
       {
         "from": "2026-07-19",
+        "to": "2026-07-20",
+        "tickers": [
+          "CHENNPETRO.NS",
+          "OFSS.NS",
+          "LICI.NS",
+          "EMMVEE.NS",
+          "NMDC.NS",
+          "INDIANB.NS",
+          "HINDPETRO.NS",
+          "FEDERALBNK.NS",
+          "BAJAJ-AUTO.NS",
+          "TECHM.NS"
+        ]
+      },
+      {
+        "from": "2026-07-20",
         "to": "2026-07-17",
         "tickers": [
           "CHENNPETRO.NS",
@@ -5755,7 +5787,7 @@
     }
   },
   "market_regime": {
-    "score": 0,
+    "score": -1,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.3511092150170648
