@@ -12,6 +12,8 @@ on:
     - cron: "41 10 * * 1-5"
     # Night scan:     ~10:07 PM IST = 16:37 UTC, Mon-Fri
     - cron: "37 16 * * 1-5"
+    # Weekend update: ~9:07 AM IST Saturday = 03:37 UTC Saturday
+    - cron: "37 3 * * 6"
   workflow_dispatch:
 
 # Prevent overlapping runs - if a new scan triggers while one is running,
@@ -27,6 +29,8 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Only run the full scan on weekdays (Mon-Fri UTC)
+    if: github.event_name == 'workflow_dispatch' || (github.event.schedule != '37 3 * * 6')
 
     steps:
       - name: Checkout repository
@@ -55,3 +59,38 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add frontend/public/market_data.json frontend/public/quant_data.json frontend/public/score_history.json frontend/public/backtest_runs/ data/market_scans.db.part_*
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update market data [skip ci]" && git push)
+
+  weekend_update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Only run on the Saturday cron trigger
+    if: github.event.schedule == '37 3 * * 6'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run weekend update (outcome backfill + quant regen)
+        run: |
+          python db_split_join.py join
+          python weekend_update.py
+          python db_split_join.py split
+
+      - name: Commit and push updated quant data
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add frontend/public/quant_data.json frontend/public/backtest_runs/ data/market_scans.db.part_*
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: weekend outcome backfill + quant update [skip ci]" && git push)
+
