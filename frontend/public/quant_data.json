@@ -1,27 +1,28 @@
 {
-  "last_updated": "2026-07-20 18:41:54",
+  "last_updated": "2026-07-20 23:44:57",
   "model_portfolios": {
     "max_sharpe": {
-      "KARURVYSYA.NS": 0.4422,
-      "AUBANK.NS": 0.3249,
-      "SHYAMMETL.NS": 0.1359,
-      "PREMIERENE.NS": 0.097
+      "KARURVYSYA.NS": 0.418,
+      "INDIANB.NS": 0.397,
+      "SHYAMMETL.NS": 0.0991,
+      "PREMIERENE.NS": 0.0859
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.36,
-      "COALINDIA.NS": 0.2361,
-      "AUBANK.NS": 0.1345,
-      "BAJAJ-AUTO.NS": 0.1203,
-      "TIPSMUSIC.NS": 0.0726,
-      "SHYAMMETL.NS": 0.0311,
-      "KARURVYSYA.NS": 0.0293,
-      "OFSS.NS": 0.0162
+      "SUNPHARMA.NS": 0.363,
+      "COALINDIA.NS": 0.1822,
+      "BAJAJ-AUTO.NS": 0.1401,
+      "ONGC.NS": 0.1283,
+      "KARURVYSYA.NS": 0.0528,
+      "IOC.NS": 0.0467,
+      "SHYAMMETL.NS": 0.0438,
+      "OFSS.NS": 0.0294,
+      "INDIANB.NS": 0.0137
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 55.8,
+    "Quality": 58.1,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -665,14 +666,14 @@
         "tickers": [
           "SHYAMMETL.NS",
           "PREMIERENE.NS",
-          "OFSS.NS",
           "BAJAJ-AUTO.NS",
+          "OFSS.NS",
+          "INDIANB.NS",
           "SUNPHARMA.NS",
-          "TIPSMUSIC.NS",
           "COALINDIA.NS",
           "KARURVYSYA.NS",
-          "JSFB.NS",
-          "AUBANK.NS"
+          "ONGC.NS",
+          "IOC.NS"
         ]
       }
     ],
@@ -1330,11 +1331,11 @@
           "COALINDIA.NS",
           "PREMIERENE.NS",
           "SHYAMMETL.NS",
+          "INDIANB.NS",
+          "IOC.NS",
           "NMDC.NS",
-          "BPCL.NS",
-          "HINDPETRO.NS",
-          "ONGC.NS",
-          "KARURVYSYA.NS"
+          "TIPSMUSIC.NS",
+          "ONGC.NS"
         ]
       }
     ],
@@ -5829,152 +5830,151 @@
     }
   },
   "market_regime": {
-    "score": -1,
+    "score": 0,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.5485787017394994
   },
   "sector_allocation": {
-    "Financial Services": 30.0,
+    "Energy": 30.0,
     "Technology": 20.0,
+    "Financial Services": 20.0,
     "Basic Materials": 10.0,
     "Consumer Cyclical": 10.0,
-    "Healthcare": 10.0,
-    "Communication Services": 10.0,
-    "Energy": 10.0
+    "Healthcare": 10.0
   },
   "correlation_matrix": {
     "labels": [
-      "AUBANK",
       "BAJAJ-AUTO",
       "COALINDIA",
-      "JSFB",
+      "INDIANB",
+      "IOC",
       "KARURVYSYA",
       "OFSS",
+      "ONGC",
       "PREMIERENE",
       "SHYAMMETL",
-      "SUNPHARMA",
-      "TIPSMUSIC"
+      "SUNPHARMA"
     ],
     "matrix": [
       [
         1.0,
-        0.06,
-        -0.19,
-        0.14,
-        0.51,
-        0.13,
-        -0.0,
-        0.1,
+        -0.11,
+        0.01,
+        0.23,
+        0.23,
+        0.02,
         -0.08,
-        0.14
-      ],
-      [
-        0.06,
-        1.0,
-        -0.11,
-        -0.07,
-        0.23,
-        0.02,
         0.01,
         0.22,
-        0.16,
-        0.18
+        0.16
       ],
       [
-        -0.19,
         -0.11,
         1.0,
-        0.01,
+        -0.18,
+        -0.09,
         0.04,
         0.24,
+        0.26,
         0.11,
         -0.11,
-        0.02,
-        0.08
+        0.02
       ],
       [
-        0.14,
-        -0.07,
         0.01,
+        -0.18,
         1.0,
-        0.17,
-        -0.07,
-        0.07,
         0.36,
-        0.11,
-        0.14
+        0.37,
+        0.06,
+        -0.18,
+        0.33,
+        0.21,
+        0.0
       ],
       [
-        0.51,
+        0.23,
+        -0.09,
+        0.36,
+        1.0,
+        0.3,
+        0.23,
+        -0.24,
+        0.03,
+        0.38,
+        0.1
+      ],
+      [
         0.23,
         0.04,
-        0.17,
+        0.37,
+        0.3,
         1.0,
         0.18,
+        -0.08,
         0.02,
         0.22,
-        0.13,
-        0.03
-      ],
-      [
-        0.13,
-        0.02,
-        0.24,
-        -0.07,
-        0.18,
-        1.0,
-        0.33,
-        0.22,
-        0.25,
         0.13
       ],
       [
-        -0.0,
-        0.01,
-        0.11,
-        0.07,
         0.02,
-        0.33,
+        0.24,
+        0.06,
+        0.23,
+        0.18,
         1.0,
-        0.2,
-        0.16,
-        0.23
-      ],
-      [
-        0.1,
-        0.22,
         -0.11,
-        0.36,
+        0.33,
         0.22,
-        0.22,
-        0.2,
-        1.0,
-        0.36,
-        0.33
+        0.25
       ],
       [
         -0.08,
-        0.16,
-        0.02,
-        0.11,
-        0.13,
-        0.25,
-        0.16,
-        0.36,
+        0.26,
+        -0.18,
+        -0.24,
+        -0.08,
+        -0.11,
         1.0,
-        0.11
+        -0.08,
+        -0.06,
+        0.02
       ],
       [
-        0.14,
-        0.18,
-        0.08,
-        0.14,
-        0.03,
-        0.13,
-        0.23,
-        0.33,
+        0.01,
         0.11,
+        0.33,
+        0.03,
+        0.02,
+        0.33,
+        -0.08,
+        1.0,
+        0.2,
+        0.16
+      ],
+      [
+        0.22,
+        -0.11,
+        0.21,
+        0.38,
+        0.22,
+        0.22,
+        -0.06,
+        0.2,
+        1.0,
+        0.36
+      ],
+      [
+        0.16,
+        0.02,
+        0.0,
+        0.1,
+        0.13,
+        0.25,
+        0.02,
+        0.16,
+        0.36,
         1.0
       ]
     ]
