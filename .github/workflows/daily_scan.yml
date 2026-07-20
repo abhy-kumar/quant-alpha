@@ -53,5 +53,5 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add frontend/public/market_data.json frontend/public/quant_data.json frontend/public/score_history.json data/market_scans.db.part_*
+          git add frontend/public/market_data.json frontend/public/quant_data.json frontend/public/score_history.json frontend/public/backtest_runs/ data/market_scans.db.part_*
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update market data [skip ci]" && git push)
