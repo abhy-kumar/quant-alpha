@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-22 12:24:20",
+  "last_updated": "2026-07-22 17:58:51",
   "model_portfolios": {
     "max_sharpe": {
       "STYLAMIND.NS": 0.4074,
@@ -1380,8 +1380,8 @@
           "CHENNPETRO.NS",
           "BEPL.NS",
           "OFSS.NS",
-          "GULPOLY.NS",
           "LUPIN.NS",
+          "GULPOLY.NS",
           "COALINDIA.NS",
           "HUHTAMAKI.NS",
           "ONGC.NS",
@@ -2736,8 +2736,8 @@
           "CARTRADE.NS",
           "GARUDA.NS",
           "LTF.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "FORCEMOT.NS",
           "SYRMA.NS",
           "MTARTECH.NS",
@@ -4931,8 +4931,8 @@
           "GOLDIETF.NS",
           "NAVINFLUOR.NS",
           "LAURUSLABS.NS",
-          "BHARTIARTL.NS",
           "LaurusLabs.NS",
+          "BHARTIARTL.NS",
           "SRF.NS"
         ]
       },
@@ -4988,8 +4988,8 @@
         "from": "2025-12-12",
         "to": "2026-01-12",
         "tickers": [
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "EICHERMOT.NS",
           "ANANDRATHI.NS",
           "MARUTI.NS",
@@ -5029,7 +5029,7 @@
           "TVSMOTOR.NS",
           "MARUTI.NS",
           "SBILIFE.NS",
-          "LAURUSLABS.NS"
+          "LaurusLabs.NS"
         ]
       },
       {
@@ -5092,8 +5092,8 @@
           "MCX.NS",
           "BSE.NS",
           "JBCHEPHARM.NS",
-          "LAURUSLABS.NS",
-          "LaurusLabs.NS"
+          "LaurusLabs.NS",
+          "LAURUSLABS.NS"
         ]
       },
       {
@@ -5763,8 +5763,8 @@
         "tickers": [
           "SBC.NS",
           "ANANDRATHI.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "EICHERMOT.NS",
           "MARUTI.NS",
           "ABCAPITAL.NS",
@@ -5786,7 +5786,7 @@
           "LTF.NS",
           "MARUTI.NS",
           "TVSMOTOR.NS",
-          "LAURUSLABS.NS"
+          "LaurusLabs.NS"
         ]
       },
       {
@@ -5881,7 +5881,7 @@
     }
   },
   "market_regime": {
-    "score": 0,
+    "score": -2,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.2477838750527649
