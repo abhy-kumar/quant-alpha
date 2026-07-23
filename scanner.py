@@ -24,6 +24,7 @@ from data_fetcher import (
 )
 from scoring import compute_rs_score, compute_sector_medians, compute_all_scores, build_output_row
 from recommendation import compute_tech_score
+from regime_engine import compute_regime_score as _compute_regime_score
 from data_pipeline import (
     store_daily_ohlcv, store_factor_history, create_outcome_entries,
     update_outcome_tracking, store_regime_history, store_scan_summary,
