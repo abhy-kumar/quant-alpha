@@ -257,24 +257,26 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
     <div className="space-y-5">
       {/* Header row: description + regime */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="overflow-hidden card lg:col-span-2" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
-          <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-            Quant Lab · Last calculated: {quantData.last_updated}
+        <div className="card card-hover overflow-hidden lg:col-span-2">
+          <div className="section-band flex items-center justify-between">
+            <span className="typo-h3 flex items-center gap-2">
+              <Flask size={16} weight="duotone" style={{ color: 'var(--brand)' }} />
+              Quant Lab Overview
+            </span>
+            <span className="typo-caption">Last calculated: {quantData.last_updated}</span>
           </div>
           <div className="p-5 flex items-start gap-4">
-            <div className="p-2.5 shrink-0" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
-              <Flask size={18} weight="duotone" style={{ color: 'var(--brand)' }} />
-            </div>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-2)' }}>
-              Institutional-grade portfolio tools. Analyzes top screening picks to optimize portfolio weights, tracks aggregate factor exposures, and visualizes historical backtested performance.
+            <p className="typo-body leading-relaxed" style={{ color: 'var(--text-2)' }}>
+              Institutional-grade quantitative portfolio tools. Analyzes top screening picks to optimize portfolio weights, tracks aggregate factor exposures, and visualizes historical backtested performance.
             </p>
           </div>
         </div>
 
         {quantData.market_regime && (
-          <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="px-4 py-3 text-xs font-medium flex items-center gap-1" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-              Market Regime<InfoTooltip id="quant.regime" />
+          <div className="card card-hover overflow-hidden">
+            <div className="section-band flex items-center gap-1">
+              <span className="typo-h3">Market Regime</span>
+              <InfoTooltip id="quant.regime" />
             </div>
             <div className="p-5 flex flex-col items-center text-center gap-2">
               {quantData.market_regime.score >= 70 ? (
@@ -284,21 +286,21 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
               ) : (
                 <Scales size={28} weight="duotone" style={{ color: 'var(--amber)' }} />
               )}
-              <div className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+              <div className="typo-h2 font-semibold" style={{ color: 'var(--text)' }}>
                 {quantData.market_regime.score >= 70 ? 'Risk-On (Bull)' : quantData.market_regime.score <= 30 ? 'Risk-Off (Bear)' : 'Neutral Regime'}
               </div>
               <div className="grid grid-cols-3 gap-3 w-full mt-1">
                 <div>
-                  <div className="text-[11px] flex items-center justify-center gap-0.5" style={{ color: 'var(--text-3)' }}>Score<InfoTooltip id="quant.regime" /></div>
-                  <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>{quantData.market_regime.score}/100</div>
+                  <div className="typo-eyebrow flex items-center justify-center gap-0.5">Score<InfoTooltip id="quant.regime" /></div>
+                  <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.score}/100</div>
                 </div>
                 <div>
-                  <div className="text-[11px] flex items-center justify-center gap-0.5" style={{ color: 'var(--text-3)' }}>Breadth<InfoTooltip id="quant.breadth" /></div>
-                  <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>{quantData.market_regime.breadth.toFixed(1)}%</div>
+                  <div className="typo-eyebrow flex items-center justify-center gap-0.5">Breadth<InfoTooltip id="quant.breadth" /></div>
+                  <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.breadth.toFixed(1)}%</div>
                 </div>
                 <div>
-                  <div className="text-[11px] flex items-center justify-center gap-0.5" style={{ color: 'var(--text-3)' }}>VIX<InfoTooltip id="quant.vix" /></div>
-                  <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>{quantData.market_regime.vix.toFixed(1)}</div>
+                  <div className="typo-eyebrow flex items-center justify-center gap-0.5">VIX<InfoTooltip id="quant.vix" /></div>
+                  <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.vix.toFixed(1)}</div>
                 </div>
               </div>
             </div>
@@ -310,16 +312,16 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
       {backtestStats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
           {[
-            { icon: <TrendUp size={13} />, label: backtestModel === 'long' ? `CAGR · Long ${backtestHorizon.toUpperCase()}` : `CAGR · Short ${backtestHorizon.toUpperCase()}`, tooltipId: 'quant.cagr', value: `${backtestStats.cagr >= 0 ? '+' : ''}${backtestStats.cagr.toFixed(2)}%`, color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
-            { icon: <ChartLineDown size={13} />, label: 'Ann. Volatility', tooltipId: 'quant.volatility', value: `${backtestStats.volatility.toFixed(1)}%`, color: backtestStats.volatility <= 20 ? 'var(--green)' : 'var(--amber)' },
-            { icon: <Target size={13} />, label: 'Sharpe Ratio', tooltipId: 'quant.sharpe', value: backtestStats.sharpe.toFixed(2), color: backtestStats.sharpe >= 1 ? 'var(--green)' : 'var(--text)' },
-            { icon: <Warning size={13} />, label: 'Max Drawdown', tooltipId: 'quant.maxdd', value: `${backtestStats.max_drawdown.toFixed(2)}%`, color: 'var(--red)' },
+            { icon: <TrendUp size={14} />, label: backtestModel === 'long' ? `CAGR · Long ${backtestHorizon.toUpperCase()}` : `CAGR · Short ${backtestHorizon.toUpperCase()}`, tooltipId: 'quant.cagr', value: `${backtestStats.cagr >= 0 ? '+' : ''}${backtestStats.cagr.toFixed(2)}%`, color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
+            { icon: <ChartLineDown size={14} />, label: 'Ann. Volatility', tooltipId: 'quant.volatility', value: `${backtestStats.volatility.toFixed(1)}%`, color: backtestStats.volatility <= 20 ? 'var(--green)' : 'var(--amber)' },
+            { icon: <Target size={14} />, label: 'Sharpe Ratio', tooltipId: 'quant.sharpe', value: backtestStats.sharpe.toFixed(2), color: backtestStats.sharpe >= 1 ? 'var(--green)' : 'var(--text)' },
+            { icon: <Warning size={14} />, label: 'Max Drawdown', tooltipId: 'quant.maxdd', value: `${backtestStats.max_drawdown.toFixed(2)}%`, color: 'var(--red)' },
           ].map(stat => (
-            <div key={stat.label} className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
-              <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-                {stat.icon}{stat.label}<InfoTooltip id={stat.tooltipId} />
+            <div key={stat.label} className="card card-hover overflow-hidden">
+              <div className="section-band flex items-center gap-1.5">
+                {stat.icon}<span className="typo-caption font-semibold" style={{ color: 'var(--text-2)' }}>{stat.label}</span><InfoTooltip id={stat.tooltipId} />
               </div>
-              <div className="px-4 py-3 text-xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
+              <div className="p-4 typo-display font-bold" style={{ color: stat.color }}>{stat.value}</div>
             </div>
           ))}
         </div>
@@ -331,10 +333,10 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
         <div className="lg:col-span-2 space-y-5">
 
           {/* Backtest chart */}
-          <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+          <div className="card card-hover overflow-hidden">
+            <div className="section-band flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--text-2)' }}>
+                <span className="typo-h3 flex items-center gap-1">
                   Strategy Backtest · Top 10 Equal Weight<InfoTooltip id="quant.backtest" />
                 </span>
               </div>
@@ -386,7 +388,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                   className="w-full px-5 py-2.5 text-[11px] font-medium flex items-center justify-between transition-colors"
                   style={{ color: 'var(--text-3)', background: 'transparent' }}
                 >
-                  <span>Holdings Log — rebalance history</span>
+                  <span className="typo-caption">Holdings Log — rebalance history</span>
                   <span style={{ color: 'var(--text-4)' }}>{showHoldings ? '▲ Hide' : '▼ Show'}</span>
                 </button>
                 {showHoldings && (
@@ -394,9 +396,9 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                     <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                          <th className="py-2 pr-4 font-medium text-left whitespace-nowrap" style={{ color: 'var(--text-3)' }}>From</th>
-                          <th className="py-2 pr-4 font-medium text-left whitespace-nowrap" style={{ color: 'var(--text-3)' }}>To</th>
-                          <th className="py-2 font-medium text-left" style={{ color: 'var(--text-3)' }}>Top-10 Holdings (Equal Weight)</th>
+                          <th className="typo-table-head py-2 pr-4 text-left whitespace-nowrap">From</th>
+                          <th className="typo-table-head py-2 pr-4 text-left whitespace-nowrap">To</th>
+                          <th className="typo-table-head py-2 text-left">Top-10 Holdings (Equal Weight)</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -430,22 +432,22 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
             {/* Horizon Comparison Table */}
             {horizonComparison && (
               <div style={{ borderTop: '1px solid var(--glass-border)' }}>
-                <div className="px-5 py-3 flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
-                  <ArrowsLeftRight size={13} style={{ color: 'var(--brand)' }} />
-                  Horizon Comparison
+                <div className="section-band flex items-center gap-2">
+                  <ArrowsLeftRight size={14} style={{ color: 'var(--brand)' }} />
+                  <span className="typo-h3">Horizon Comparison</span>
                   <InfoTooltip id="quant.horizon-comparison" />
                 </div>
                 <div className="px-5 pb-5 overflow-x-auto scrollbar-none">
                   <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                        <th className="py-2 pr-5 font-medium text-left" style={{ color: 'var(--text-3)' }}>Model</th>
-                        <th className="py-2 pr-4 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>1Y CAGR</th>
-                        <th className="py-2 pr-4 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>1Y Sharpe</th>
-                        <th className="py-2 pr-4 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>1Y MaxDD</th>
-                        <th className="py-2 pr-4 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>6M CAGR</th>
-                        <th className="py-2 pr-4 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>6M Sharpe</th>
-                        <th className="py-2 font-medium text-right whitespace-nowrap" style={{ color: 'var(--text-3)' }}>6M MaxDD</th>
+                        <th className="typo-table-head py-2 pr-5 text-left">Model</th>
+                        <th className="typo-table-head py-2 pr-4 text-right whitespace-nowrap">1Y CAGR</th>
+                        <th className="typo-table-head py-2 pr-4 text-right whitespace-nowrap">1Y Sharpe</th>
+                        <th className="typo-table-head py-2 pr-4 text-right whitespace-nowrap">1Y MaxDD</th>
+                        <th className="typo-table-head py-2 pr-4 text-right whitespace-nowrap">6M CAGR</th>
+                        <th className="typo-table-head py-2 pr-4 text-right whitespace-nowrap">6M Sharpe</th>
+                        <th className="typo-table-head py-2 text-right whitespace-nowrap">6M MaxDD</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -491,19 +493,19 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
           {/* Model Portfolios */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {[
-              { title: 'Max Sharpe Portfolio', tooltipId: 'quant.max-sharpe', icon: <Target size={13} weight="duotone" style={{ color: 'var(--brand)' }} />, data: max_sharpe, accent: 'var(--brand)' },
-              { title: 'Min Volatility Portfolio', tooltipId: 'quant.min-vol', icon: <Scales size={13} weight="duotone" style={{ color: 'var(--amber)' }} />, data: min_volatility, accent: 'var(--amber)' },
+              { title: 'Max Sharpe Portfolio', tooltipId: 'quant.max-sharpe', icon: <Target size={14} weight="duotone" style={{ color: 'var(--brand)' }} />, data: max_sharpe, accent: 'var(--brand)' },
+              { title: 'Min Volatility Portfolio', tooltipId: 'quant.min-vol', icon: <Scales size={14} weight="duotone" style={{ color: 'var(--amber)' }} />, data: min_volatility, accent: 'var(--amber)' },
             ].map(port => (
-              <div key={port.title} className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
-                <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-                  {port.icon}{port.title}<InfoTooltip id={port.tooltipId} />
+              <div key={port.title} className="card card-hover overflow-hidden">
+                <div className="section-band flex items-center gap-1.5">
+                  {port.icon}<span className="typo-h3">{port.title}</span><InfoTooltip id={port.tooltipId} />
                 </div>
                 <div className="p-5 space-y-3 max-h-56 overflow-y-auto scrollbar-none">
                   {Object.entries(port.data).map(([ticker, weight]) => (
                     <div key={ticker}>
                       <div className="flex justify-between text-xs mb-1.5" style={{ color: 'var(--text-2)' }}>
                         <TickerLink ticker={ticker} />
-                        <span>{(Number(weight) * 100).toFixed(1)}%</span>
+                        <span className="typo-num-sm">{(Number(weight) * 100).toFixed(1)}%</span>
                       </div>
                       <div className="h-1 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>
                         <div className="h-full rounded-full" style={{ width: `${Number(weight) * 100}%`, background: port.accent }} />
@@ -520,9 +522,11 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
         <div className="space-y-5">
 
           {/* Factor Exposures */}
-          <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
-            <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-              <Crosshair size={13} weight="duotone" style={{ color: 'var(--green)' }} />Portfolio Factor Exposure<InfoTooltip id="quant.factor.value" />
+          <div className="card card-hover overflow-hidden">
+            <div className="section-band flex items-center gap-1.5">
+              <Crosshair size={14} weight="duotone" style={{ color: 'var(--green)' }} />
+              <span className="typo-h3">Portfolio Factor Exposure</span>
+              <InfoTooltip id="quant.factor.value" />
             </div>
             <div className="p-5" style={{ height: 240 }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -535,16 +539,18 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <p className="text-[11px] text-center px-4 pb-4 leading-relaxed" style={{ color: 'var(--text-3)' }}>
+            <p className="typo-caption text-center px-4 pb-4 leading-relaxed" style={{ color: 'var(--text-3)' }}>
               Percentile rank of top picks against screened universe.
             </p>
           </div>
 
           {/* Sector Allocation */}
           {quantData.sector_allocation && (
-            <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
-              <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-                <ChartPieSlice size={13} weight="duotone" style={{ color: 'var(--blue)' }} />Sector Allocation<InfoTooltip id="quant.sector" />
+            <div className="card card-hover overflow-hidden">
+              <div className="section-band flex items-center gap-1.5">
+                <ChartPieSlice size={14} weight="duotone" style={{ color: 'var(--blue)' }} />
+                <span className="typo-h3">Sector Allocation</span>
+                <InfoTooltip id="quant.sector" />
               </div>
               <div className="px-5 pt-3" style={{ height: 200 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -568,7 +574,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                 {Object.entries(quantData.sector_allocation).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([name, val], i) => {
                   const colors = ['#0D9488', '#2563EB', '#7C3AED', '#DB2777', '#EA580C', '#65A30D', '#0891B2', '#4F46E5', '#C026D3', '#E11D48']
                   return (
-                    <div key={name} className="flex items-center gap-1.5 text-[10px]" style={{ color: 'var(--text-2)' }}>
+                    <div key={name} className="flex items-center gap-1.5 typo-caption" style={{ color: 'var(--text-2)' }}>
                       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: colors[i % colors.length] }} />
                       {name} ({val}%)
                     </div>
@@ -580,9 +586,11 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
 
           {/* Correlation Matrix */}
           {quantData.correlation_matrix && quantData.correlation_matrix.labels.length > 0 && (
-            <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
-              <div className="px-4 py-3 text-xs font-medium flex items-center gap-1.5" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
-                <GridFour size={13} weight="duotone" style={{ color: 'var(--amber)' }} />Asset Correlation<InfoTooltip id="quant.correlation" />
+            <div className="card card-hover overflow-hidden">
+              <div className="section-band flex items-center gap-1.5">
+                <GridFour size={14} weight="duotone" style={{ color: 'var(--amber)' }} />
+                <span className="typo-h3">Asset Correlation</span>
+                <InfoTooltip id="quant.correlation" />
               </div>
               <div className="p-5 overflow-x-auto scrollbar-none">
                 <table className="w-full" style={{ borderSpacing: '2px', borderCollapse: 'separate' }}>
@@ -646,17 +654,17 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
       {/* ===============================================================
           BACKTEST ARCHIVE  (auto-updated every Saturday by scheduler)
       =============================================================== */}
-      <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+      <div className="card card-hover overflow-hidden">
 
         {/* Header */}
-        <div className="px-6 py-4 flex flex-wrap items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+        <div className="section-band flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2 shrink-0" style={{ background: 'var(--green-bg)', borderRadius: 'var(--radius)' }}>
+            <div className="p-1.5 shrink-0" style={{ background: 'var(--green-bg)', borderRadius: 'var(--radius)' }}>
               <ClockCounterClockwise size={16} weight="duotone" style={{ color: 'var(--green)' }} />
             </div>
             <div>
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Backtest Archive</h3>
-              <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>
+              <span className="typo-h2">Backtest Archive</span>
+              <p className="typo-caption mt-0.5" style={{ color: 'var(--text-3)' }}>
                 Auto-updated every Saturday · {cachedRuns.length} snapshot{cachedRuns.length !== 1 ? 's' : ''} stored
               </p>
             </div>
@@ -808,16 +816,16 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
           BACKTEST METHODOLOGY AND RESULTS
           Full-width section at the bottom of Quant Lab
       =============================================================== */}
-      <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
+      <div className="card card-hover overflow-hidden">
 
         {/* Header */}
-        <div className="px-6 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid var(--glass-border)' }}>
-          <div className="p-2 shrink-0" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
+        <div className="section-band flex items-center gap-3">
+          <div className="p-1.5 shrink-0" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
             <BookOpen size={16} weight="duotone" style={{ color: 'var(--brand)' }} />
           </div>
           <div>
-            <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Walk-Forward Backtest · Methodology &amp; Results</h3>
-            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>How these backtests work, what they measure, and what the numbers actually mean</p>
+            <span className="typo-h2">Walk-Forward Backtest · Methodology &amp; Results</span>
+            <p className="typo-caption mt-0.5" style={{ color: 'var(--text-3)' }}>How these backtests work, what they measure, and what the numbers actually mean</p>
           </div>
         </div>
 
