@@ -32,11 +32,17 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-const SignalsTab   = lazy(() => import('./components/signals/SignalsTab').then(m => { console.log('[Alpha] SignalsTab chunk loaded'); return m }))
-const ScreenerTab  = lazy(() => import('./components/screener/ScreenerTab').then(m => { console.log('[Alpha] ScreenerTab chunk loaded'); return m }))
-const ChartingTab  = lazy(() => import('./components/charting/ChartingTab').then(m => { console.log('[Alpha] ChartingTab chunk loaded'); return m }))
-const HeatmapTab   = lazy(() => import('./components/heatmap/HeatmapTab').then(m => { console.log('[Alpha] HeatmapTab chunk loaded'); return m }))
-const QuantLabTab = lazy(() => import('./components/quantlab/QuantLabTab').then(m => { console.log('[Alpha] QuantLabTab chunk loaded'); return m }))
+const loadSignalsTab   = () => import('./components/signals/SignalsTab')
+const loadScreenerTab  = () => import('./components/screener/ScreenerTab')
+const loadChartingTab  = () => import('./components/charting/ChartingTab')
+const loadHeatmapTab   = () => import('./components/heatmap/HeatmapTab')
+const loadQuantLabTab  = () => import('./components/quantlab/QuantLabTab')
+
+const SignalsTab   = lazy(loadSignalsTab)
+const ScreenerTab  = lazy(loadScreenerTab)
+const ChartingTab  = lazy(loadChartingTab)
+const HeatmapTab   = lazy(loadHeatmapTab)
+const QuantLabTab = lazy(loadQuantLabTab)
 
 function TabSkeleton() {
   return (
@@ -156,6 +162,17 @@ export default function App() {
   useEffect(() => { localStorage.setItem('qa_watchlist', JSON.stringify(watchlist)) }, [watchlist])
   useEffect(() => { localStorage.setItem('qa_dark', String(isDark)) }, [isDark])
   useEffect(() => { isDark ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark') }, [isDark])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadSignalsTab()
+      loadScreenerTab()
+      loadChartingTab()
+      loadHeatmapTab()
+      loadQuantLabTab()
+    }, 150)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     const cached = sessionStorage.getItem('qa_score_history')
@@ -721,14 +738,22 @@ export default function App() {
               }}>Retry</button>
           </div>
         ) : (
-          <ErrorBoundary key={activeTab}>
-            <Suspense fallback={null}>
-              <div className="tab-fade-in">
-                {activeTab==='picks' && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
-                {activeTab==='fundamentals' && <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>}
-                {activeTab==='charting' && <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon} isLoggedIn={isLoggedIn}/>}
-                {activeTab==='heatmap' && <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>}
-                {activeTab==='quantlab' && <QuantLabTab isDark={isDark} scanUpdated={scanUpdated} onSelect={handleSelect}/>}
+          <ErrorBoundary>
+            <Suspense fallback={<TabSkeleton />}>
+              <div className={activeTab === 'charting' ? 'block animate-fade-in' : 'hidden'}>
+                <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon} isLoggedIn={isLoggedIn}/>
+              </div>
+              <div className={activeTab === 'picks' ? 'block animate-fade-in' : 'hidden'}>
+                <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>
+              </div>
+              <div className={activeTab === 'fundamentals' ? 'block animate-fade-in' : 'hidden'}>
+                <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>
+              </div>
+              <div className={activeTab === 'heatmap' ? 'block animate-fade-in' : 'hidden'}>
+                <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>
+              </div>
+              <div className={activeTab === 'quantlab' ? 'block animate-fade-in' : 'hidden'}>
+                <QuantLabTab isDark={isDark} scanUpdated={scanUpdated} onSelect={handleSelect}/>
               </div>
             </Suspense>
           </ErrorBoundary>
