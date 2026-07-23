@@ -40,8 +40,8 @@ export const SortHeader = ({ field, children, align='left', sortKey, sortDir, on
   field: string; children: React.ReactNode; align?: 'left'|'right';
   sortKey: string; sortDir: 'asc'|'desc'; onSort: (k: string) => void;
 }) => (
-  <th className="py-2 px-2 text-[10px] font-medium cursor-pointer select-none uppercase tracking-wider"
-    style={{color:'var(--text-3)',textAlign:align}} onClick={()=>onSort(field)}>
+  <th className="py-2.5 px-3 typo-table-head cursor-pointer select-none"
+    style={{textAlign:align}} onClick={()=>onSort(field)}>
     <span className="inline-flex items-center gap-1">
       {children}
       {sortKey===field && <span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}
