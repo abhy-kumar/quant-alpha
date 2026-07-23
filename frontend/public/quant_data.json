@@ -1,28 +1,28 @@
 {
-  "last_updated": "2026-07-23 06:44:47",
+  "last_updated": "2026-07-23 09:39:06",
   "model_portfolios": {
     "max_sharpe": {
-      "STYLAMIND.NS": 0.3805,
-      "LUPIN.NS": 0.2915,
-      "TIPSMUSIC.NS": 0.1424,
-      "CHENNPETRO.NS": 0.1131,
-      "SUNPHARMA.NS": 0.0725
+      "STYLAMIND.NS": 0.389,
+      "LUPIN.NS": 0.271,
+      "TIPSMUSIC.NS": 0.1371,
+      "SUNPHARMA.NS": 0.1159,
+      "CHENNPETRO.NS": 0.087
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.4172,
-      "COALINDIA.NS": 0.1815,
-      "ONGC.NS": 0.1339,
-      "LUPIN.NS": 0.0743,
-      "TIPSMUSIC.NS": 0.0703,
+      "SUNPHARMA.NS": 0.426,
+      "COALINDIA.NS": 0.246,
+      "LUPIN.NS": 0.0835,
+      "TIPSMUSIC.NS": 0.0717,
       "STYLAMIND.NS": 0.0684,
-      "OFSS.NS": 0.0314,
-      "CHENNPETRO.NS": 0.023
+      "JKPAPER.NS": 0.0461,
+      "OFSS.NS": 0.0315,
+      "CHENNPETRO.NS": 0.0268
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 63.6,
+    "Quality": 61.9,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -174,7 +174,7 @@
       },
       {
         "date": "2026-07-23",
-        "portfolio": 99.71,
+        "portfolio": 99.13,
         "benchmark": 100.0
       }
     ],
@@ -712,25 +712,25 @@
         "to": "2026-07-23",
         "tickers": [
           "STYLAMIND.NS",
-          "LUPIN.NS",
-          "TIPSMUSIC.NS",
-          "SUNPHARMA.NS",
-          "GULPOLY.NS",
           "CHENNPETRO.NS",
+          "LUPIN.NS",
           "OFSS.NS",
-          "ONGC.NS",
+          "GULPOLY.NS",
+          "SUNPHARMA.NS",
+          "JKPAPER.NS",
+          "TIPSMUSIC.NS",
           "COALINDIA.NS",
           "MOTHERSON.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": -0.29,
-      "cagr": -2.55,
-      "volatility": 13.13,
-      "sharpe": -0.69,
-      "max_drawdown": -3.33,
-      "info_ratio": -0.19,
+      "total_return": -0.87,
+      "cagr": -7.49,
+      "volatility": 13.37,
+      "sharpe": -1.05,
+      "max_drawdown": -3.43,
+      "info_ratio": -0.56,
       "win_rate": 41.4
     }
   },
@@ -883,7 +883,7 @@
       },
       {
         "date": "2026-07-23",
-        "portfolio": 94.98,
+        "portfolio": 94.13,
         "benchmark": 100.0
       }
     ],
@@ -1422,25 +1422,25 @@
         "tickers": [
           "CHENNPETRO.NS",
           "BEPL.NS",
-          "LUPIN.NS",
           "GULPOLY.NS",
+          "LUPIN.NS",
           "COALINDIA.NS",
-          "HUHTAMAKI.NS",
           "HEROMOTOCO.NS",
           "OFSS.NS",
-          "ONGC.NS",
-          "TIPSMUSIC.NS"
+          "HUHTAMAKI.NS",
+          "STYLAMIND.NS",
+          "ONGC.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": -5.02,
-      "cagr": -36.8,
-      "volatility": 16.6,
-      "sharpe": -2.61,
-      "max_drawdown": -8.83,
-      "info_ratio": -2.22,
-      "win_rate": 48.3
+      "total_return": -5.87,
+      "cagr": -41.66,
+      "volatility": 16.47,
+      "sharpe": -2.92,
+      "max_drawdown": -9.17,
+      "info_ratio": -2.53,
+      "win_rate": 44.8
     }
   },
   "backtest_short_1y": {
@@ -2702,7 +2702,7 @@
       },
       {
         "date": "2026-07-23",
-        "portfolio": 135.31,
+        "portfolio": 134.56,
         "benchmark": 100.0
       }
     ],
@@ -2917,13 +2917,13 @@
       }
     ],
     "stats": {
-      "total_return": 35.31,
-      "cagr": 34.79,
+      "total_return": 34.56,
+      "cagr": 34.04,
       "volatility": 30.79,
-      "sharpe": 0.92,
+      "sharpe": 0.89,
       "max_drawdown": -20.95,
-      "info_ratio": 1.13,
-      "win_rate": 54.2
+      "info_ratio": 1.11,
+      "win_rate": 53.8
     }
   },
   "backtest_short_6m": {
@@ -3555,7 +3555,7 @@
       },
       {
         "date": "2026-07-23",
-        "portfolio": 108.3,
+        "portfolio": 108.37,
         "benchmark": 100.0
       }
     ],
@@ -3674,10 +3674,10 @@
       }
     ],
     "stats": {
-      "total_return": 8.3,
-      "cagr": 17.15,
+      "total_return": 8.37,
+      "cagr": 17.29,
       "volatility": 38.91,
-      "sharpe": 0.27,
+      "sharpe": 0.28,
       "max_drawdown": -25.09,
       "info_ratio": 0.44,
       "win_rate": 51.2
@@ -4942,7 +4942,7 @@
       },
       {
         "date": "2026-07-23",
-        "portfolio": 116.35,
+        "portfolio": 116.06,
         "benchmark": 100.0
       }
     ],
@@ -4992,7 +4992,7 @@
           "PAYTM.NS",
           "NUVOCO.NS",
           "SOLARINDS.NS",
-          "LaurusLabs.NS"
+          "LAURUSLABS.NS"
         ]
       },
       {
@@ -5130,8 +5130,8 @@
           "SBC.NS",
           "GRANULES.NS",
           "ANANDRATHI.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "BHARATFORG.NS",
           "ANURAS.NS",
           "POWERINDIA.NS",
@@ -5157,12 +5157,12 @@
       }
     ],
     "stats": {
-      "total_return": 16.35,
-      "cagr": 16.12,
+      "total_return": 16.06,
+      "cagr": 15.84,
       "volatility": 18.46,
-      "sharpe": 0.52,
+      "sharpe": 0.51,
       "max_drawdown": -17.48,
-      "info_ratio": 0.87,
+      "info_ratio": 0.86,
       "win_rate": 57.4
     }
   },
@@ -5795,7 +5795,7 @@
       },
       {
         "date": "2026-07-23",
-        "portfolio": 117.27,
+        "portfolio": 117.08,
         "benchmark": 100.0
       }
     ],
@@ -5811,8 +5811,8 @@
           "MARUTI.NS",
           "TVSMOTOR.NS",
           "CANBK.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "SBILIFE.NS"
         ]
       },
@@ -5914,38 +5914,38 @@
       }
     ],
     "stats": {
-      "total_return": 17.27,
-      "cagr": 37.19,
+      "total_return": 17.08,
+      "cagr": 36.76,
       "volatility": 22.41,
-      "sharpe": 1.37,
+      "sharpe": 1.35,
       "max_drawdown": -14.43,
-      "info_ratio": 1.66,
+      "info_ratio": 1.64,
       "win_rate": 56.0
     }
   },
   "market_regime": {
-    "score": -2,
+    "score": -3,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.2477838750527649
   },
   "sector_allocation": {
-    "Energy": 30.0,
     "Consumer Cyclical": 20.0,
+    "Energy": 20.0,
     "Healthcare": 20.0,
-    "Communication Services": 10.0,
-    "Basic Materials": 10.0,
-    "Technology": 10.0
+    "Basic Materials": 20.0,
+    "Technology": 10.0,
+    "Communication Services": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "CHENNPETRO",
       "COALINDIA",
       "GULPOLY",
+      "JKPAPER",
       "LUPIN",
       "MOTHERSON",
       "OFSS",
-      "ONGC",
       "STYLAMIND",
       "SUNPHARMA",
       "TIPSMUSIC"
@@ -5954,121 +5954,121 @@
       [
         1.0,
         0.31,
-        0.25,
-        0.02,
-        0.2,
-        0.01,
-        -0.07,
-        0.11,
+        0.24,
+        -0.01,
+        0.03,
+        0.18,
+        0.04,
+        0.16,
         -0.05,
-        -0.05
+        -0.14
       ],
       [
         0.31,
         1.0,
         0.15,
+        0.04,
         0.01,
-        -0.05,
+        -0.04,
         0.24,
         0.14,
         0.15,
-        0.16,
-        0.11
-      ],
-      [
-        0.25,
-        0.15,
-        1.0,
-        -0.03,
-        -0.07,
-        -0.16,
-        0.21,
-        0.1,
-        0.24,
         0.13
       ],
       [
-        0.02,
+        0.24,
+        0.15,
+        1.0,
         0.01,
         -0.03,
-        1.0,
-        0.2,
-        0.21,
-        -0.11,
-        0.11,
-        0.28,
-        0.25
-      ],
-      [
-        0.2,
-        -0.05,
         -0.07,
-        0.2,
-        1.0,
-        0.26,
-        -0.53,
-        0.22,
-        -0.05,
-        0.3
-      ],
-      [
-        0.01,
+        -0.15,
+        0.11,
         0.24,
-        -0.16,
-        0.21,
-        0.26,
-        1.0,
-        -0.23,
-        0.26,
-        0.23,
-        0.17
+        0.12
       ],
       [
+        -0.01,
+        0.04,
+        0.01,
+        1.0,
+        0.0,
+        0.14,
+        -0.02,
+        -0.05,
+        -0.01,
+        -0.04
+      ],
+      [
+        0.03,
+        0.01,
+        -0.03,
+        0.0,
+        1.0,
+        0.2,
+        0.21,
+        0.12,
+        0.28,
+        0.24
+      ],
+      [
+        0.18,
+        -0.04,
         -0.07,
         0.14,
-        0.21,
-        -0.11,
-        -0.53,
-        -0.23,
+        0.2,
         1.0,
-        -0.12,
-        -0.08,
-        -0.06
+        0.29,
+        0.23,
+        -0.04,
+        0.28
       ],
       [
-        0.11,
-        0.15,
-        0.1,
-        0.11,
-        0.22,
-        0.26,
-        -0.12,
+        0.04,
+        0.24,
+        -0.15,
+        -0.02,
+        0.21,
+        0.29,
         1.0,
-        0.09,
-        -0.13
+        0.22,
+        0.21,
+        0.28
+      ],
+      [
+        0.16,
+        0.14,
+        0.11,
+        -0.05,
+        0.12,
+        0.23,
+        0.22,
+        1.0,
+        0.07,
+        -0.11
       ],
       [
         -0.05,
-        0.16,
+        0.15,
+        0.24,
+        -0.01,
+        0.28,
+        -0.04,
+        0.21,
+        0.07,
+        1.0,
+        0.19
+      ],
+      [
+        -0.14,
+        0.13,
+        0.12,
+        -0.04,
         0.24,
         0.28,
-        -0.05,
-        0.23,
-        -0.08,
-        0.09,
-        1.0,
-        0.15
-      ],
-      [
-        -0.05,
-        0.11,
-        0.13,
-        0.25,
-        0.3,
-        0.17,
-        -0.06,
-        -0.13,
-        0.15,
+        0.28,
+        -0.11,
+        0.19,
         1.0
       ]
     ]
