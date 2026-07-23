@@ -18,6 +18,8 @@ export interface DashboardData {
   Composite_Score_Long: number
   Conviction: string
   Conviction_Long: string
+  ML_Alpha_Prob?: number
+  ML_Conviction?: string
   Scan_Time: string
   "1d_Chg_%"?: number
   "P/E"?: number
