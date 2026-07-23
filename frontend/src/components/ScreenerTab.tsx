@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react'
 import type { DashboardData } from '../types'
 import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline, InfoTooltip } from './shared'
 import { SegmentedControl } from './shared'
-import { Info, Funnel, X, Star } from '@phosphor-icons/react'
+import { Info, Funnel, X, Star, Scales } from '@phosphor-icons/react'
+import { ComparisonModal } from './ComparisonModal'
 
 interface Props {
   data: DashboardData[]
@@ -24,6 +25,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
   const [showFilters, setShowFilters] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [horizonMode, setHorizonMode] = useState<'short' | 'long'>('short')
+  const [compareTickers, setCompareTickers] = useState<string[]>([])
+  const [isCompareOpen, setIsCompareOpen] = useState(false)
 
   // Active score and conviction column names driven by the horizon toggle
   const scoreCol   = horizonMode === 'long' ? 'Composite_Score_Long' : 'Composite_Score'
@@ -280,6 +283,9 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
         <table className="w-full text-left text-xs" style={{borderCollapse:'collapse'}}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
+              <th className="py-2 px-1 text-center w-8" style={{ color: 'var(--text-3)' }}>
+                <span title="Select up to 4 stocks to compare"><Scales size={14} /></span>
+              </th>
               <th className="py-2 px-2 text-[10px] font-medium cursor-pointer select-none uppercase tracking-wider" style={{color:'var(--text-3)',textAlign:'left',position:'sticky',left:0,background:'var(--surface)',zIndex:1}} onClick={()=>handleSort('Ticker')}>
                 <span className="inline-flex items-center gap-1"><InfoTooltip id="screener.ticker">Ticker</InfoTooltip>{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}</span>
               </th>
@@ -314,6 +320,19 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   onMouseEnter={e => { if (expandedRow !== row.Ticker && !flashTickers[row.Ticker]) e.currentTarget.style.background = 'var(--glass-bg-subtle)' }}
                   onMouseLeave={e => { if (expandedRow === row.Ticker) e.currentTarget.style.background = 'var(--glass-bg-subtle)' ; else if (!flashTickers[row.Ticker]) e.currentTarget.style.background = 'transparent' }}
                 >
+                  <td className="py-2 px-1 text-center" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={compareTickers.includes(row.Ticker)}
+                      onChange={() => {
+                        setCompareTickers(prev =>
+                          prev.includes(row.Ticker) ? prev.filter(t => t !== row.Ticker) : prev.length < 4 ? [...prev, row.Ticker] : prev
+                        )
+                      }}
+                      className="accent-brand rounded cursor-pointer"
+                      title="Compare stock"
+                    />
+                  </td>
                   <td className="py-2 px-2 font-medium cursor-pointer transition-colors" style={{ color: 'var(--text)', position:'sticky', left:0, background:'var(--surface)', zIndex:1 }} onClick={() => onSelect(row.Ticker)}
                     onMouseEnter={e => (e.currentTarget.style.color = 'var(--brand)')}
                     onMouseLeave={e => (e.currentTarget.style.color = 'var(--text)')}
@@ -646,6 +665,43 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           </div>
         ))}
       </div>
+
+      {/* Floating Stock Comparison Toolbar */}
+      {compareTickers.length > 0 && (
+        <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-4 py-3 rounded-2xl glass-strong shadow-2xl animate-fade-in border border-white/20">
+          <div className="flex items-center gap-2">
+            <Scales size={18} className="text-cyan-400" />
+            <span className="text-xs font-semibold text-white">
+              {compareTickers.length} of 4 stocks selected
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsCompareOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-md"
+            >
+              Compare Matrix
+            </button>
+            <button
+              onClick={() => setCompareTickers([])}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 transition-colors text-xs"
+              title="Clear selection"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Multi-Stock Comparison Matrix Modal */}
+      <ComparisonModal
+        isOpen={isCompareOpen}
+        onClose={() => setIsCompareOpen(false)}
+        tickers={compareTickers}
+        allData={data}
+        onRemoveTicker={(t) => setCompareTickers((prev) => prev.filter((x) => x !== t))}
+        onSelectTicker={onSelect}
+      />
     </div>
   )
 }

@@ -1,0 +1,674 @@
+import React, { useEffect, useRef, useState } from 'react'
+import {
+  createChart,
+  ColorType,
+  PriceScaleMode,
+  LineStyle,
+  CrosshairMode,
+  CandlestickSeries,
+  LineSeries,
+  HistogramSeries,
+} from 'lightweight-charts'
+import type {
+  IChartApi,
+  ISeriesApi,
+  Time,
+  CandlestickData,
+  HistogramData,
+  LineData,
+} from 'lightweight-charts'
+
+export interface ChartDataPoint {
+  time: string
+  open: number | null
+  high: number | null
+  low: number | null
+  close: number | null
+  volume: number | null
+  sma50: number | null
+  sma200: number | null
+  rsi: number | null
+  macd: number | null
+  macd_signal: number | null
+  macd_hist: number | null
+  bb_upper: number | null
+  bb_lower: number | null
+  bb_mid: number | null
+  bb_pctb: number | null
+  supertrend: number | null
+  supertrend_dir: number | null
+}
+
+interface TradingViewChartProps {
+  data: ChartDataPoint[]
+  ticker: string
+  isDark?: boolean
+  height?: number
+}
+
+export const TradingViewChart: React.FC<TradingViewChartProps> = ({
+  data,
+  ticker,
+  isDark = true,
+  height = 460,
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const rsiContainerRef = useRef<HTMLDivElement>(null)
+  const macdContainerRef = useRef<HTMLDivElement>(null)
+
+  // Chart instances
+  const mainChartRef = useRef<IChartApi | null>(null)
+  const rsiChartRef = useRef<IChartApi | null>(null)
+  const macdChartRef = useRef<IChartApi | null>(null)
+
+  // Series references
+  const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
+  const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null)
+  const sma50SeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
+  const sma200SeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
+  const supertrendSeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
+  const bbUpperRef = useRef<ISeriesApi<'Line'> | null>(null)
+  const bbLowerRef = useRef<ISeriesApi<'Line'> | null>(null)
+
+  const rsiSeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
+  const macdLineRef = useRef<ISeriesApi<'Line'> | null>(null)
+  const macdSignalRef = useRef<ISeriesApi<'Line'> | null>(null)
+  const macdHistRef = useRef<ISeriesApi<'Histogram'> | null>(null)
+
+  // State controls
+  const [isLogScale, setIsLogScale] = useState(false)
+  const [showSma50, setShowSma50] = useState(true)
+  const [showSma200, setShowSma200] = useState(true)
+  const [showSupertrend, setShowSupertrend] = useState(true)
+  const [showBollinger, setShowBollinger] = useState(false)
+  const [showRsi, setShowRsi] = useState(true)
+  const [showMacd, setShowMacd] = useState(true)
+
+  // Crosshair HUD state
+  const [hudInfo, setHudInfo] = useState<{
+    time?: string
+    open?: number
+    high?: number
+    low?: number
+    close?: number
+    chgPct?: number
+    volume?: number
+    sma50?: number
+    sma200?: number
+    supertrend?: number
+    rsi?: number
+    macd?: number
+    macdSignal?: number
+    macdHist?: number
+  }>({})
+
+  // Theme colors
+  const textColor = isDark ? '#94a3b8' : '#475569'
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
+  const crosshairColor = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+
+  // Main Chart Initialization
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    // Clean up existing charts
+    if (mainChartRef.current) mainChartRef.current.remove()
+    if (rsiChartRef.current) rsiChartRef.current.remove()
+    if (macdChartRef.current) macdChartRef.current.remove()
+
+    // 1. Create Main Chart
+    const mainChart = createChart(containerRef.current, {
+      width: containerRef.current.clientWidth,
+      height: height,
+      layout: {
+        background: { type: ColorType.Solid, color: 'transparent' },
+        textColor: textColor,
+        fontSize: 11,
+        fontFamily: 'Inter, system-ui, sans-serif',
+      },
+      grid: {
+        vertLines: { color: gridColor },
+        horzLines: { color: gridColor },
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: { color: crosshairColor, width: 1, style: LineStyle.Dashed },
+        horzLine: { color: crosshairColor, width: 1, style: LineStyle.Dashed },
+      },
+      rightPriceScale: {
+        borderColor: gridColor,
+        mode: isLogScale ? PriceScaleMode.Logarithmic : PriceScaleMode.Normal,
+        autoScale: true,
+      },
+      timeScale: {
+        borderColor: gridColor,
+        timeVisible: false,
+        secondsVisible: false,
+      },
+    })
+    mainChartRef.current = mainChart
+
+    // Main Candlestick Series
+    const candleSeries = mainChart.addSeries(CandlestickSeries, {
+      upColor: '#22c55e',
+      downColor: '#ef4444',
+      borderVisible: false,
+      wickUpColor: '#22c55e',
+      wickDownColor: '#ef4444',
+    })
+    candleSeriesRef.current = candleSeries
+
+    // Volume Series (Overlay at bottom 20% of main chart)
+    const volumeSeries = mainChart.addSeries(HistogramSeries, {
+      color: '#3b82f6',
+      priceFormat: { type: 'volume' },
+      priceScaleId: 'volume',
+    })
+    mainChart.priceScale('volume').applyOptions({
+      scaleMargins: {
+        top: 0.8,
+        bottom: 0,
+      },
+    })
+    volumeSeriesRef.current = volumeSeries
+
+    // Indicator Overlays
+    const sma50Series = mainChart.addSeries(LineSeries, {
+      color: '#3b82f6',
+      lineWidth: 2,
+      title: 'SMA 50',
+    })
+    sma50SeriesRef.current = sma50Series
+
+    const sma200Series = mainChart.addSeries(LineSeries, {
+      color: '#f59e0b',
+      lineWidth: 2,
+      lineStyle: LineStyle.Dashed,
+      title: 'SMA 200',
+    })
+    sma200SeriesRef.current = sma200Series
+
+    const supertrendSeries = mainChart.addSeries(LineSeries, {
+      color: '#06b6d4',
+      lineWidth: 2,
+      lineStyle: LineStyle.Dotted,
+      title: 'Supertrend',
+    })
+    supertrendSeriesRef.current = supertrendSeries
+
+    const bbUpper = mainChart.addSeries(LineSeries, {
+      color: 'rgba(168, 85, 247, 0.6)',
+      lineWidth: 1,
+      lineStyle: LineStyle.Dashed,
+      title: 'BB Upper',
+    })
+    bbUpperRef.current = bbUpper
+
+    const bbLower = mainChart.addSeries(LineSeries, {
+      color: 'rgba(168, 85, 247, 0.6)',
+      lineWidth: 1,
+      lineStyle: LineStyle.Dashed,
+      title: 'BB Lower',
+    })
+    bbLowerRef.current = bbLower
+
+    // 2. Create RSI Sub-Chart if enabled
+    if (showRsi && rsiContainerRef.current) {
+      const rsiChart = createChart(rsiContainerRef.current, {
+        width: rsiContainerRef.current.clientWidth,
+        height: 120,
+        layout: {
+          background: { type: ColorType.Solid, color: 'transparent' },
+          textColor: textColor,
+          fontSize: 10,
+          fontFamily: 'Inter, system-ui, sans-serif',
+        },
+        grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
+        rightPriceScale: { borderColor: gridColor, scaleMargins: { top: 0.1, bottom: 0.1 } },
+        timeScale: { visible: false },
+      })
+      rsiChartRef.current = rsiChart
+
+      const rsiSeries = rsiChart.addSeries(LineSeries, {
+        color: '#a855f7',
+        lineWidth: 2,
+        title: 'RSI(14)',
+      })
+      rsiSeriesRef.current = rsiSeries
+
+      // Oversold / Overbought reference lines
+      rsiSeries.createPriceLine({ price: 70, color: 'rgba(239, 68, 68, 0.6)', lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: '70 OB' })
+      rsiSeries.createPriceLine({ price: 30, color: 'rgba(34, 197, 94, 0.6)', lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: '30 OS' })
+
+      // Synchronize time scales
+      mainChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (range) rsiChart.timeScale().setVisibleLogicalRange(range)
+      })
+      rsiChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (range) mainChart.timeScale().setVisibleLogicalRange(range)
+      })
+    }
+
+    // 3. Create MACD Sub-Chart if enabled
+    if (showMacd && macdContainerRef.current) {
+      const macdChart = createChart(macdContainerRef.current, {
+        width: macdContainerRef.current.clientWidth,
+        height: 130,
+        layout: {
+          background: { type: ColorType.Solid, color: 'transparent' },
+          textColor: textColor,
+          fontSize: 10,
+          fontFamily: 'Inter, system-ui, sans-serif',
+        },
+        grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
+        rightPriceScale: { borderColor: gridColor, scaleMargins: { top: 0.1, bottom: 0.1 } },
+        timeScale: { borderColor: gridColor, visible: true },
+      })
+      macdChartRef.current = macdChart
+
+      const macdHist = macdChart.addSeries(HistogramSeries, {
+        color: '#22c55e',
+        priceFormat: { type: 'volume' },
+      })
+      macdHistRef.current = macdHist
+
+      const macdLine = macdChart.addSeries(LineSeries, {
+        color: '#3b82f6',
+        lineWidth: 2,
+        title: 'MACD',
+      })
+      macdLineRef.current = macdLine
+
+      const macdSignal = macdChart.addSeries(LineSeries, {
+        color: '#f59e0b',
+        lineWidth: 1,
+        lineStyle: LineStyle.Dashed,
+        title: 'Signal',
+      })
+      macdSignalRef.current = macdSignal
+
+      // Synchronize time scales
+      mainChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (range) macdChart.timeScale().setVisibleLogicalRange(range)
+      })
+      macdChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (range) mainChart.timeScale().setVisibleLogicalRange(range)
+      })
+    }
+
+    // Crosshair HUD listener
+    mainChart.subscribeCrosshairMove((param) => {
+      if (!param || !param.time || param.point === undefined || param.point.x < 0 || param.point.y < 0) {
+        setHudInfo({})
+        return
+      }
+
+      const rawDate = typeof param.time === 'string' ? param.time : ''
+      const candleData = param.seriesData.get(candleSeries) as CandlestickData | undefined
+      const volumeData = param.seriesData.get(volumeSeries) as HistogramData | undefined
+      const sma50Data = param.seriesData.get(sma50Series) as LineData | undefined
+      const sma200Data = param.seriesData.get(sma200Series) as LineData | undefined
+      const supertrendData = param.seriesData.get(supertrendSeries) as LineData | undefined
+
+      let open, high, low, close, chgPct
+      if (candleData) {
+        open = candleData.open
+        high = candleData.high
+        low = candleData.low
+        close = candleData.close
+        if (open > 0) chgPct = ((close - open) / open) * 100
+      }
+
+      // Lookup matching index for RSI and MACD
+      const dataPoint = data.find((d) => d.time === rawDate)
+
+      setHudInfo({
+        time: rawDate,
+        open,
+        high,
+        low,
+        close,
+        chgPct,
+        volume: volumeData?.value,
+        sma50: sma50Data?.value,
+        sma200: sma200Data?.value,
+        supertrend: supertrendData?.value,
+        rsi: dataPoint?.rsi ?? undefined,
+        macd: dataPoint?.macd ?? undefined,
+        macdSignal: dataPoint?.macd_signal ?? undefined,
+        macdHist: dataPoint?.macd_hist ?? undefined,
+      })
+    })
+
+    // Handle ResizeObserver for responsive width
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (!entries || entries.length === 0) return
+      const newWidth = entries[0].contentRect.width
+      if (newWidth > 0) {
+        mainChart.applyOptions({ width: newWidth })
+        if (rsiChartRef.current && rsiContainerRef.current) {
+          rsiChartRef.current.applyOptions({ width: newWidth })
+        }
+        if (macdChartRef.current && macdContainerRef.current) {
+          macdChartRef.current.applyOptions({ width: newWidth })
+        }
+      }
+    })
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current)
+    }
+
+    return () => {
+      resizeObserver.disconnect()
+      mainChart.remove()
+      if (rsiChartRef.current) rsiChartRef.current.remove()
+      if (macdChartRef.current) macdChartRef.current.remove()
+    }
+  }, [isDark, showRsi, showMacd])
+
+  // Update Data on Series without re-instantiating Chart Canvas
+  useEffect(() => {
+    if (!data || data.length === 0 || !candleSeriesRef.current) return
+
+    // Filter valid data points
+    const validPoints = data.filter((d) => d.time && d.close !== null)
+
+    const candleData: CandlestickData[] = validPoints.map((d) => ({
+      time: d.time as Time,
+      open: d.open ?? d.close!,
+      high: d.high ?? d.close!,
+      low: d.low ?? d.close!,
+      close: d.close!,
+    }))
+
+    const volumeData: HistogramData[] = validPoints.map((d) => ({
+      time: d.time as Time,
+      value: d.volume ?? 0,
+      color: (d.close ?? 0) >= (d.open ?? 0) ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)',
+    }))
+
+    candleSeriesRef.current.setData(candleData)
+    if (volumeSeriesRef.current) volumeSeriesRef.current.setData(volumeData)
+
+    // SMA 50
+    if (sma50SeriesRef.current) {
+      if (showSma50) {
+        const sma50Data: LineData[] = validPoints
+          .filter((d) => d.sma50 !== null)
+          .map((d) => ({ time: d.time as Time, value: d.sma50! }))
+        sma50SeriesRef.current.setData(sma50Data)
+      } else {
+        sma50SeriesRef.current.setData([])
+      }
+    }
+
+    // SMA 200
+    if (sma200SeriesRef.current) {
+      if (showSma200) {
+        const sma200Data: LineData[] = validPoints
+          .filter((d) => d.sma200 !== null)
+          .map((d) => ({ time: d.time as Time, value: d.sma200! }))
+        sma200SeriesRef.current.setData(sma200Data)
+      } else {
+        sma200SeriesRef.current.setData([])
+      }
+    }
+
+    // Supertrend
+    if (supertrendSeriesRef.current) {
+      if (showSupertrend) {
+        const stData: LineData[] = validPoints
+          .filter((d) => d.supertrend !== null)
+          .map((d) => ({ time: d.time as Time, value: d.supertrend! }))
+        supertrendSeriesRef.current.setData(stData)
+      } else {
+        supertrendSeriesRef.current.setData([])
+      }
+    }
+
+    // Bollinger Bands
+    if (bbUpperRef.current && bbLowerRef.current) {
+      if (showBollinger) {
+        const upperData: LineData[] = validPoints
+          .filter((d) => d.bb_upper !== null)
+          .map((d) => ({ time: d.time as Time, value: d.bb_upper! }))
+        const lowerData: LineData[] = validPoints
+          .filter((d) => d.bb_lower !== null)
+          .map((d) => ({ time: d.time as Time, value: d.bb_lower! }))
+        bbUpperRef.current.setData(upperData)
+        bbLowerRef.current.setData(lowerData)
+      } else {
+        bbUpperRef.current.setData([])
+        bbLowerRef.current.setData([])
+      }
+    }
+
+    // RSI Series
+    if (rsiSeriesRef.current && showRsi) {
+      const rsiData: LineData[] = validPoints
+        .filter((d) => d.rsi !== null)
+        .map((d) => ({ time: d.time as Time, value: d.rsi! }))
+      rsiSeriesRef.current.setData(rsiData)
+    }
+
+    // MACD Series
+    if (showMacd && macdLineRef.current && macdSignalRef.current && macdHistRef.current) {
+      const macdData: LineData[] = validPoints
+        .filter((d) => d.macd !== null)
+        .map((d) => ({ time: d.time as Time, value: d.macd! }))
+
+      const signalData: LineData[] = validPoints
+        .filter((d) => d.macd_signal !== null)
+        .map((d) => ({ time: d.time as Time, value: d.macd_signal! }))
+
+      const histData: HistogramData[] = validPoints
+        .filter((d) => d.macd_hist !== null)
+        .map((d) => ({
+          time: d.time as Time,
+          value: d.macd_hist!,
+          color: d.macd_hist! >= 0 ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)',
+        }))
+
+      macdLineRef.current.setData(macdData)
+      macdSignalRef.current.setData(signalData)
+      macdHistRef.current.setData(histData)
+    }
+
+    // Fit content into view nicely
+    if (mainChartRef.current) {
+      mainChartRef.current.timeScale().fitContent()
+    }
+  }, [data, showSma50, showSma200, showSupertrend, showBollinger, showRsi, showMacd])
+
+  // Handle Logarithmic Toggle
+  useEffect(() => {
+    if (mainChartRef.current) {
+      mainChartRef.current.priceScale('right').applyOptions({
+        mode: isLogScale ? PriceScaleMode.Logarithmic : PriceScaleMode.Normal,
+      })
+    }
+  }, [isLogScale])
+
+  const formatNum = (val?: number, decimals = 2) => {
+    if (val === undefined || val === null || isNaN(val)) return '-'
+    return val.toLocaleString('en-IN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+  }
+
+  const formatVol = (vol?: number) => {
+    if (!vol) return '-'
+    if (vol >= 1e7) return `${(vol / 1e7).toFixed(2)}Cr`
+    if (vol >= 1e5) return `${(vol / 1e5).toFixed(2)}L`
+    if (vol >= 1e3) return `${(vol / 1e3).toFixed(1)}k`
+    return vol.toString()
+  }
+
+  return (
+    <div className="flex flex-col w-full space-y-3">
+      {/* Top Toolbar Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 card rounded-xl text-xs">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>
+            {ticker.replace('.NS', '')}
+          </span>
+
+          <span className="h-4 w-px bg-white/10 mx-1" />
+
+          {/* Scale Toggle */}
+          <button
+            onClick={() => setIsLogScale(!isLogScale)}
+            className="px-2 py-1 rounded transition-all font-mono text-[11px]"
+            style={{
+              background: isLogScale ? 'var(--brand)' : 'var(--glass-bg-subtle)',
+              color: isLogScale ? '#fff' : 'var(--text-3)',
+              border: '1px solid var(--glass-border)',
+            }}
+          >
+            {isLogScale ? 'Log Scale' : 'Linear Scale'}
+          </button>
+
+          <span className="h-4 w-px bg-white/10 mx-1" />
+
+          {/* Indicator Checkbox Controls */}
+          <label className="flex items-center gap-1.5 cursor-pointer text-xs select-none">
+            <input
+              type="checkbox"
+              checked={showSma50}
+              onChange={(e) => setShowSma50(e.target.checked)}
+              className="accent-blue-500 rounded"
+            />
+            <span style={{ color: showSma50 ? '#3b82f6' : 'var(--text-3)' }}>SMA 50</span>
+          </label>
+
+          <label className="flex items-center gap-1.5 cursor-pointer text-xs select-none">
+            <input
+              type="checkbox"
+              checked={showSma200}
+              onChange={(e) => setShowSma200(e.target.checked)}
+              className="accent-amber-500 rounded"
+            />
+            <span style={{ color: showSma200 ? '#f59e0b' : 'var(--text-3)' }}>SMA 200</span>
+          </label>
+
+          <label className="flex items-center gap-1.5 cursor-pointer text-xs select-none">
+            <input
+              type="checkbox"
+              checked={showSupertrend}
+              onChange={(e) => setShowSupertrend(e.target.checked)}
+              className="accent-cyan-500 rounded"
+            />
+            <span style={{ color: showSupertrend ? '#06b6d4' : 'var(--text-3)' }}>Supertrend</span>
+          </label>
+
+          <label className="flex items-center gap-1.5 cursor-pointer text-xs select-none">
+            <input
+              type="checkbox"
+              checked={showBollinger}
+              onChange={(e) => setShowBollinger(e.target.checked)}
+              className="accent-purple-500 rounded"
+            />
+            <span style={{ color: showBollinger ? '#a855f7' : 'var(--text-3)' }}>Bollinger</span>
+          </label>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-1.5 cursor-pointer text-xs select-none">
+            <input
+              type="checkbox"
+              checked={showRsi}
+              onChange={(e) => setShowRsi(e.target.checked)}
+              className="accent-purple-500 rounded"
+            />
+            <span style={{ color: 'var(--text-2)' }}>RSI(14)</span>
+          </label>
+
+          <label className="flex items-center gap-1.5 cursor-pointer text-xs select-none">
+            <input
+              type="checkbox"
+              checked={showMacd}
+              onChange={(e) => setShowMacd(e.target.checked)}
+              className="accent-blue-500 rounded"
+            />
+            <span style={{ color: 'var(--text-2)' }}>MACD</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Interactive Crosshair HUD Banner */}
+      <div
+        className="px-3 py-1.5 rounded-lg flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-mono glass-subtle min-h-[30px]"
+        style={{ color: 'var(--text-2)', border: '1px solid var(--glass-border)' }}
+      >
+        {hudInfo.time ? (
+          <>
+            <span className="font-sans text-xs font-medium text-white">{hudInfo.time}</span>
+            <span>
+              O: <strong className="text-white">{formatNum(hudInfo.open)}</strong>
+            </span>
+            <span>
+              H: <strong className="text-white">{formatNum(hudInfo.high)}</strong>
+            </span>
+            <span>
+              L: <strong className="text-white">{formatNum(hudInfo.low)}</strong>
+            </span>
+            <span>
+              C: <strong className="text-white">{formatNum(hudInfo.close)}</strong>
+            </span>
+            {hudInfo.chgPct !== undefined && (
+              <span className={hudInfo.chgPct >= 0 ? 'text-green-400 font-semibold' : 'text-red-400 font-semibold'}>
+                ({hudInfo.chgPct >= 0 ? '+' : ''}
+                {hudInfo.chgPct.toFixed(2)}%)
+              </span>
+            )}
+            <span>
+              Vol: <strong className="text-white">{formatVol(hudInfo.volume)}</strong>
+            </span>
+
+            {showSma50 && hudInfo.sma50 && (
+              <span className="text-blue-400">
+                SMA50: <strong>{formatNum(hudInfo.sma50)}</strong>
+              </span>
+            )}
+            {showSma200 && hudInfo.sma200 && (
+              <span className="text-amber-400">
+                SMA200: <strong>{formatNum(hudInfo.sma200)}</strong>
+              </span>
+            )}
+            {showSupertrend && hudInfo.supertrend && (
+              <span className="text-cyan-400">
+                ST: <strong>{formatNum(hudInfo.supertrend)}</strong>
+              </span>
+            )}
+            {showRsi && hudInfo.rsi && (
+              <span className="text-purple-400">
+                RSI: <strong>{formatNum(hudInfo.rsi, 1)}</strong>
+              </span>
+            )}
+          </>
+        ) : (
+          <span className="text-gray-400 font-sans">Hover over the chart to inspect prices and indicators</span>
+        )}
+      </div>
+
+      {/* Main Canvas Chart Container */}
+      <div className="relative w-full overflow-hidden card p-1" style={{ borderRadius: 'var(--radius-xl)' }}>
+        <div ref={containerRef} className="w-full" style={{ height }} />
+
+        {/* RSI Sub-Chart Container */}
+        {showRsi && (
+          <div className="mt-2 pt-2 border-t border-white/5">
+            <div className="px-2 text-[10px] font-semibold text-purple-400 mb-1">RSI (14) Relative Strength</div>
+            <div ref={rsiContainerRef} className="w-full" style={{ height: 120 }} />
+          </div>
+        )}
+
+        {/* MACD Sub-Chart Container */}
+        {showMacd && (
+          <div className="mt-2 pt-2 border-t border-white/5">
+            <div className="px-2 text-[10px] font-semibold text-blue-400 mb-1">MACD (12, 26, 9)</div>
+            <div ref={macdContainerRef} className="w-full" style={{ height: 130 }} />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

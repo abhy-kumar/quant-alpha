@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import type { DashboardData } from '../types'
 import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip } from './shared'
 import { MagnifyingGlass } from '@phosphor-icons/react'
 import {
   ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine
 } from 'recharts'
+import { TradingViewChart } from './TradingViewChart'
 
 
 interface Props {
@@ -159,6 +160,30 @@ export default function ChartingTab({
   const ath = selectedAsset?.All_Time_High ? Number(selectedAsset.All_Time_High) : null
 
   const [mobilePanelTab, setMobilePanelTab] = useState<'profile'|'tech'|'research'|'mom'|'fund'|'risk'>('profile')
+  const [chartEngine, setChartEngine] = useState<'tradingview' | 'classic'>('tradingview')
+
+  const tvChartData = useMemo(() => {
+    return chartData.map((d: any) => ({
+      time: d.time || d.date,
+      open: typeof d.open === 'number' ? d.open : null,
+      high: typeof d.high === 'number' ? d.high : null,
+      low: typeof d.low === 'number' ? d.low : null,
+      close: typeof d.close === 'number' ? d.close : null,
+      volume: typeof d.volume === 'number' ? d.volume : null,
+      sma50: typeof d.sma50 === 'number' ? d.sma50 : null,
+      sma200: typeof d.sma200 === 'number' ? d.sma200 : null,
+      rsi: typeof d.rsi === 'number' ? d.rsi : null,
+      macd: typeof d.macd === 'number' ? d.macd : null,
+      macd_signal: typeof d.macd_signal === 'number' ? d.macd_signal : null,
+      macd_hist: typeof d.macd_hist === 'number' ? d.macd_hist : null,
+      bb_upper: typeof d.bb_upper === 'number' ? d.bb_upper : null,
+      bb_lower: typeof d.bb_lower === 'number' ? d.bb_lower : null,
+      bb_mid: typeof d.bb_mid === 'number' ? d.bb_mid : null,
+      bb_pctb: typeof d.bb_pctb === 'number' ? d.bb_pctb : null,
+      supertrend: typeof d.supertrend === 'number' ? d.supertrend : null,
+      supertrend_dir: typeof d.supertrend_dir === 'number' ? d.supertrend_dir : null,
+    }))
+  }, [chartData])
 
   return (
     <div className="space-y-5">
@@ -416,111 +441,137 @@ export default function ChartingTab({
 
       {/* Right: Charts */}
       <div className="w-full xl:flex-1 flex flex-col gap-5 min-w-0">
-        {/* Period + Interval - segmented controls */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <SegmentedControl
-            options={['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => ({
-              key: p,
-              label: p.replace('mo', 'M').replace('y', 'Y').replace('w', 'W'),
-            }))}
-            value={chartPeriod}
-            onChange={setChartPeriod}
-          />
+        {/* Period + Interval + Engine controls */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <SegmentedControl
+              options={['1w', '1mo', '3mo', '6mo', '1y', '2y', '5y'].map(p => ({
+                key: p,
+                label: p.replace('mo', 'M').replace('y', 'Y').replace('w', 'W'),
+              }))}
+              value={chartPeriod}
+              onChange={setChartPeriod}
+            />
+            <SegmentedControl
+              options={[
+                { key: '1d', label: 'Daily' },
+                { key: '1wk', label: 'Weekly' },
+              ]}
+              value={chartInterval}
+              onChange={setChartInterval}
+            />
+          </div>
+
           <SegmentedControl
             options={[
-              { key: '1d', label: 'Daily' },
-              { key: '1wk', label: 'Weekly' },
+              { key: 'tradingview', label: 'TradingView Engine' },
+              { key: 'classic', label: 'Classic View' },
             ]}
-            value={chartInterval}
-            onChange={setChartInterval}
+            value={chartEngine}
+            onChange={(v) => setChartEngine(v as 'tradingview' | 'classic')}
           />
         </div>
 
-        {/* Main chart */}
-        <Panel title={<InfoTooltip id="chart.panel.price">{`${selectedTicker.replace('.NS', '')} - Price · SMA 50 · SMA 200 · Supertrend`}</InfoTooltip>}>
-          <div className="chart-main" role="img" aria-label={`${selectedTicker} price chart`}>
-            {chartLoading ? (
-              <div className="flex items-center justify-center h-full text-sm animate-pulse" style={{ color: 'var(--text-3)' }}>Loading…</div>
-            ) : chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--brand)" stopOpacity={isDark ? 0.25 : 0.08}/>
-                      <stop offset="95%" stopColor="var(--brand)" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="time" stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} tickMargin={10} minTickGap={30} />
-                  <YAxis yAxisId="price" domain={['auto', 'auto']} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={55} />
-                  <YAxis yAxisId="volume" orientation="right" domain={[0, dataMax => dataMax * 4]} hide={true} />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{fontFamily: 'Inter, system-ui, sans-serif', fontSize: '10px', color: 'var(--text-3)'}}/>
-                  <Bar yAxisId="volume" name="Volume" dataKey="volume" fill="var(--border)" maxBarSize={6} />
-                  <Area yAxisId="price" type="monotone" name="Close" dataKey="close" stroke="var(--brand)" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
-                  <Line yAxisId="price" type="monotone" name="SMA 50" dataKey="sma50" stroke="var(--blue)" strokeWidth={1} dot={false} />
-                  <Line yAxisId="price" type="monotone" name="SMA 200" dataKey="sma200" stroke="var(--amber)" strokeWidth={1} dot={false} strokeDasharray="5 5" />
-                  <Line yAxisId="price" type="monotone" name="Supertrend" dataKey="supertrend" stroke="#06B6D4" strokeWidth={1.5} dot={false} strokeDasharray="2 2" />
-                </ComposedChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full text-sm" style={{ color: 'var(--text-3)' }}>No chart data for {selectedTicker}</div>
-            )}
+        {/* Main chart rendering */}
+        {chartLoading ? (
+          <div className="flex items-center justify-center h-96 card rounded-xl text-sm animate-pulse" style={{ color: 'var(--text-3)' }}>
+            Loading chart data for {selectedTicker}…
           </div>
-        </Panel>
+        ) : chartEngine === 'tradingview' ? (
+          chartData.length > 0 ? (
+            <TradingViewChart data={tvChartData} ticker={selectedTicker} isDark={isDark} height={460} />
+          ) : (
+            <div className="flex items-center justify-center h-96 card rounded-xl text-sm" style={{ color: 'var(--text-3)' }}>
+              No chart data available for {selectedTicker}
+            </div>
+          )
+        ) : (
+          <>
+            {/* Classic Recharts View */}
+            <Panel title={<InfoTooltip id="chart.panel.price">{`${selectedTicker.replace('.NS', '')} - Price · SMA 50 · SMA 200 · Supertrend`}</InfoTooltip>}>
+              <div className="chart-main" role="img" aria-label={`${selectedTicker} price chart`}>
+                {chartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={chartData}>
+                      <defs>
+                        <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--brand)" stopOpacity={isDark ? 0.25 : 0.08}/>
+                          <stop offset="95%" stopColor="var(--brand)" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
+                      <XAxis dataKey="time" stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} tickMargin={10} minTickGap={30} />
+                      <YAxis yAxisId="price" domain={['auto', 'auto']} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={55} />
+                      <YAxis yAxisId="volume" orientation="right" domain={[0, dataMax => dataMax * 4]} hide={true} />
+                      <Tooltip content={<ChartTooltip />} />
+                      <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{fontFamily: 'Inter, system-ui, sans-serif', fontSize: '10px', color: 'var(--text-3)'}}/>
+                      <Bar yAxisId="volume" name="Volume" dataKey="volume" fill="var(--border)" maxBarSize={6} />
+                      <Area yAxisId="price" type="monotone" name="Close" dataKey="close" stroke="var(--brand)" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
+                      <Line yAxisId="price" type="monotone" name="SMA 50" dataKey="sma50" stroke="var(--blue)" strokeWidth={1} dot={false} />
+                      <Line yAxisId="price" type="monotone" name="SMA 200" dataKey="sma200" stroke="var(--amber)" strokeWidth={1} dot={false} strokeDasharray="5 5" />
+                      <Line yAxisId="price" type="monotone" name="Supertrend" dataKey="supertrend" stroke="#06B6D4" strokeWidth={1.5} dot={false} strokeDasharray="2 2" />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-sm" style={{ color: 'var(--text-3)' }}>No chart data for {selectedTicker}</div>
+                )}
+              </div>
+            </Panel>
 
-        {/* RSI with reference lines */}
-        <Panel title={<InfoTooltip id="chart.panel.rsi">RSI(14) - 30 oversold · 70 overbought</InfoTooltip>}>
-          <div className="chart-sub" role="img" aria-label={`${selectedTicker} RSI chart`}>
-            {chartData.length > 0 && !chartLoading && (
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData}>
-                  <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="time" hide={true} />
-                  <YAxis domain={[0, 100]} ticks={[30, 50, 70]} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={50} />
-                  <Tooltip content={<ChartTooltip />} />
-                  <ReferenceLine y={70} stroke="var(--red)" strokeDasharray="3 3" strokeOpacity={0.5}
-                    label={{ value: '70', fontSize: 9, fill: 'var(--red)', position: 'right' }}/>
-                  <ReferenceLine y={30} stroke="var(--green)" strokeDasharray="3 3" strokeOpacity={0.5}
-                    label={{ value: '30', fontSize: 9, fill: 'var(--green)', position: 'right' }}/>
-                  <ReferenceLine y={50} stroke="var(--border-2)" strokeDasharray="2 4" strokeOpacity={0.4}/>
-                  <Line type="monotone" dataKey="rsi" name="RSI" stroke="#A855F7" strokeWidth={1.5} dot={false} />
-                </ComposedChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </Panel>
+            {/* RSI with reference lines */}
+            <Panel title={<InfoTooltip id="chart.panel.rsi">RSI(14) - 30 oversold · 70 overbought</InfoTooltip>}>
+              <div className="chart-sub" role="img" aria-label={`${selectedTicker} RSI chart`}>
+                {chartData.length > 0 && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={chartData}>
+                      <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
+                      <XAxis dataKey="time" hide={true} />
+                      <YAxis domain={[0, 100]} ticks={[30, 50, 70]} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={50} />
+                      <Tooltip content={<ChartTooltip />} />
+                      <ReferenceLine y={70} stroke="var(--red)" strokeDasharray="3 3" strokeOpacity={0.5}
+                        label={{ value: '70', fontSize: 9, fill: 'var(--red)', position: 'right' }}/>
+                      <ReferenceLine y={30} stroke="var(--green)" strokeDasharray="3 3" strokeOpacity={0.5}
+                        label={{ value: '30', fontSize: 9, fill: 'var(--green)', position: 'right' }}/>
+                      <ReferenceLine y={50} stroke="var(--border-2)" strokeDasharray="2 4" strokeOpacity={0.4}/>
+                      <Line type="monotone" dataKey="rsi" name="RSI" stroke="#A855F7" strokeWidth={1.5} dot={false} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </Panel>
 
-        {/* MACD with zero line */}
-        <Panel title={<InfoTooltip id="chart.panel.macd">MACD (12, 26, 9) - histogram · signal line</InfoTooltip>}>
-          <div className="chart-sub" role="img" aria-label={`${selectedTicker} MACD chart`}>
-            {chartData.length > 0 && !chartLoading && (
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData}>
-                  <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="time" hide={true} />
-                  <YAxis stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={50} />
-                  <Tooltip content={<ChartTooltip />} />
-                  <ReferenceLine y={0} stroke="var(--text-3)" strokeOpacity={0.4} strokeWidth={1}/>
-                  <Bar dataKey="macd_hist" name="Histogram" maxBarSize={4}>
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`macd-${index}`}
-                        fill={(entry.macd_hist ?? 0) >= 0
-                          ? (isDark ? '#3DD68C' : '#0D7C3F')
-                          : (isDark ? '#FF6B6B' : '#C92A2A')
-                        }
-                        fillOpacity={0.6}
-                      />
-                    ))}
-                  </Bar>
-                  <Line type="monotone" dataKey="macd" name="MACD" stroke="var(--blue)" strokeWidth={1.5} dot={false} />
-                  <Line type="monotone" dataKey="macd_signal" name="Signal" stroke="var(--amber)" strokeWidth={1} dot={false} strokeDasharray="3 3" />
-                </ComposedChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </Panel>
+            {/* MACD with zero line */}
+            <Panel title={<InfoTooltip id="chart.panel.macd">MACD (12, 26, 9) - histogram · signal line</InfoTooltip>}>
+              <div className="chart-sub" role="img" aria-label={`${selectedTicker} MACD chart`}>
+                {chartData.length > 0 && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={chartData}>
+                      <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
+                      <XAxis dataKey="time" hide={true} />
+                      <YAxis stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={50} />
+                      <Tooltip content={<ChartTooltip />} />
+                      <ReferenceLine y={0} stroke="var(--text-3)" strokeOpacity={0.4} strokeWidth={1}/>
+                      <Bar dataKey="macd_hist" name="Histogram" maxBarSize={4}>
+                        {chartData.map((entry, index) => (
+                          <Cell
+                            key={`macd-${index}`}
+                            fill={(entry.macd_hist ?? 0) >= 0
+                              ? (isDark ? '#3DD68C' : '#0D7C3F')
+                              : (isDark ? '#FF6B6B' : '#C92A2A')
+                            }
+                            fillOpacity={0.6}
+                          />
+                        ))}
+                      </Bar>
+                      <Line type="monotone" dataKey="macd" name="MACD" stroke="var(--blue)" strokeWidth={1.5} dot={false} />
+                      <Line type="monotone" dataKey="macd_signal" name="Signal" stroke="var(--amber)" strokeWidth={1} dot={false} strokeDasharray="3 3" />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </Panel>
+          </>
+        )}
 
         {/* Score History */}
         {tickerScores.length > 1 && (

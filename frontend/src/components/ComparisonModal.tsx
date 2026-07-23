@@ -1,0 +1,226 @@
+import React from 'react'
+import type { DashboardData } from '../types'
+import { num, colorCode, scoreColor, InfoTooltip } from './shared'
+import { X, Minus } from '@phosphor-icons/react'
+
+interface ComparisonModalProps {
+  isOpen: boolean
+  onClose: () => void
+  tickers: string[]
+  allData: DashboardData[]
+  onRemoveTicker: (ticker: string) => void
+  onSelectTicker: (ticker: string) => void
+}
+
+export const ComparisonModal: React.FC<ComparisonModalProps> = ({
+  isOpen,
+  onClose,
+  tickers,
+  allData,
+  onRemoveTicker,
+  onSelectTicker,
+}) => {
+  if (!isOpen) return null
+
+  const selectedAssets = tickers
+    .map((t) => allData.find((d) => d.Ticker === t))
+    .filter((d): d is DashboardData => d !== undefined)
+
+  const renderMetricRow = (
+    label: string,
+    getValue: (asset: DashboardData) => React.ReactNode,
+    tooltipId?: string
+  ) => {
+    return (
+      <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
+        <td
+          className="py-2.5 px-4 text-xs font-medium sticky left-0 z-10 glass-strong"
+          style={{ color: 'var(--text-2)', minWidth: 160 }}
+        >
+          {tooltipId ? <InfoTooltip id={tooltipId}>{label}</InfoTooltip> : label}
+        </td>
+        {selectedAssets.map((asset) => (
+          <td
+            key={asset.Ticker}
+            className="py-2.5 px-4 text-sm text-center font-mono font-medium"
+            style={{ color: 'var(--text)', minWidth: 140 }}
+          >
+            {getValue(asset)}
+          </td>
+        ))}
+      </tr>
+    )
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-md animate-fade-in">
+      <div
+        className="relative w-full max-w-5xl max-h-[90vh] flex flex-col card overflow-hidden shadow-2xl"
+        style={{ borderRadius: 'var(--radius-xl)', border: '1px solid var(--glass-border-strong)' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 glass-strong">
+          <div>
+            <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>
+              Multi-Stock Comparison Matrix
+            </h2>
+            <p className="text-xs" style={{ color: 'var(--text-3)' }}>
+              Comparing {selectedAssets.length} stock{selectedAssets.length === 1 ? '' : 's'} across technical, fundamental, and quantitative factors
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+            style={{ color: 'var(--text-2)' }}
+            aria-label="Close"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Content Body */}
+        <div className="flex-1 overflow-auto p-6 scrollbar-thin">
+          {selectedAssets.length === 0 ? (
+            <div className="py-12 text-center text-sm" style={{ color: 'var(--text-3)' }}>
+              No stocks selected for comparison. Select stocks in Screener tab to compare.
+            </div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--glass-border-strong)' }}>
+                  <th
+                    className="py-3 px-4 text-xs font-semibold uppercase tracking-wider sticky left-0 z-10 glass-strong"
+                    style={{ color: 'var(--text-3)' }}
+                  >
+                    Asset
+                  </th>
+                  {selectedAssets.map((asset) => (
+                    <th key={asset.Ticker} className="py-3 px-4 text-center min-w-[140px]">
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center justify-between w-full">
+                          <span
+                            onClick={() => {
+                              onSelectTicker(asset.Ticker)
+                              onClose()
+                            }}
+                            className="font-bold text-sm cursor-pointer hover:underline"
+                            style={{ color: 'var(--text)' }}
+                          >
+                            {asset.Ticker.replace('.NS', '')}
+                          </span>
+                          <button
+                            onClick={() => onRemoveTicker(asset.Ticker)}
+                            className="p-1 rounded text-red-400 hover:bg-red-500/20 transition-colors"
+                            title="Remove from comparison"
+                          >
+                            <Minus size={14} />
+                          </button>
+                        </div>
+                        <span className="text-[10px] truncate max-w-[130px]" style={{ color: 'var(--text-3)' }}>
+                          {asset.Sector}
+                        </span>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {/* General Info */}
+                <tr className="bg-white/5">
+                  <td
+                    colSpan={selectedAssets.length + 1}
+                    className="py-1.5 px-4 text-[11px] font-bold uppercase tracking-wider text-brand"
+                  >
+                    Overview & Valuation
+                  </td>
+                </tr>
+                {renderMetricRow('Price', (a) => `₹${num(a.Price)}`, 'chart.price')}
+                {renderMetricRow(
+                  '1D Change',
+                  (a) => (
+                    <span className={a['1d_Chg_%'] && a['1d_Chg_%'] >= 0 ? 'text-green-400' : 'text-red-400'}>
+                      {a['1d_Chg_%'] ? `${a['1d_Chg_%'] >= 0 ? '+' : ''}${a['1d_Chg_%'].toFixed(2)}%` : '-'}
+                    </span>
+                  ),
+                  'chart.1d-change'
+                )}
+                {renderMetricRow('Market Cap', (a) => (a.Market_Cap_B ? `₹${num(a.Market_Cap_B)}B` : '-'), 'chart.market-cap')}
+                {renderMetricRow('Forward P/E', (a) => num(a['Forward_P/E']), 'chart.forward-pe')}
+
+                {/* Score Section */}
+                <tr className="bg-white/5">
+                  <td
+                    colSpan={selectedAssets.length + 1}
+                    className="py-1.5 px-4 text-[11px] font-bold uppercase tracking-wider text-cyan-400"
+                  >
+                    Composite & Dimension Scores
+                  </td>
+                </tr>
+                {renderMetricRow(
+                  'Composite Score',
+                  (a) => (
+                    <span className={`px-2 py-0.5 rounded font-bold ${scoreColor(a.Composite_Score)}`}>
+                      {num(a.Composite_Score)}/10
+                    </span>
+                  ),
+                  'chart.score.composite'
+                )}
+                {renderMetricRow(
+                  'Tech Score',
+                  (a) => <span className={colorCode(a.Tech_Score)}>{num(a.Tech_Score)}</span>,
+                  'chart.tech-score'
+                )}
+                {renderMetricRow('Fund Score', (a) => `${num(a.Fund_Score)}/10`, 'chart.fund-score')}
+                {renderMetricRow('Research Score', (a) => `${num(a.Research_Score)}/10`, 'chart.score.research')}
+                {renderMetricRow('Conviction', (a) => a.Conviction || '-', 'chart.conviction')}
+
+                {/* Quantitative Factor Section */}
+                <tr className="bg-white/5">
+                  <td
+                    colSpan={selectedAssets.length + 1}
+                    className="py-1.5 px-4 text-[11px] font-bold uppercase tracking-wider text-purple-400"
+                  >
+                    Academic Quantitative Factors
+                  </td>
+                </tr>
+                {renderMetricRow('Piotroski F-Score', (a) => `${a.Piotroski_F ?? '-'}/9`, 'chart.piotroski')}
+                {renderMetricRow('Gross Profit Score', (a) => num(a.Gross_Profit_Score), 'chart.gross-profit')}
+                {renderMetricRow('Value Factor Score', (a) => num(a.Value_Score), 'chart.value-score')}
+                {renderMetricRow('Investment Factor', (a) => num(a.Investment_Score), 'chart.investment')}
+                {renderMetricRow('Earnings Quality', (a) => num(a.Earnings_Quality), 'chart.earnings-quality')}
+                {renderMetricRow('SUE Score', (a) => num(a.SUE_Score), 'chart.sue')}
+
+                {/* Technical Signals */}
+                <tr className="bg-white/5">
+                  <td
+                    colSpan={selectedAssets.length + 1}
+                    className="py-1.5 px-4 text-[11px] font-bold uppercase tracking-wider text-emerald-400"
+                  >
+                    Technicals & Risk
+                  </td>
+                </tr>
+                {renderMetricRow('RSI (14)', (a) => num(a.RSI_Value), 'chart.rsi')}
+                {renderMetricRow('ADX (14)', (a) => num(a.ADX_Value), 'chart.adx')}
+                {renderMetricRow('Supertrend Signal', (a) => a.ST_Signal || '-', 'chart.supertrend')}
+                {renderMetricRow('Beta', (a) => (a.Beta != null ? a.Beta.toFixed(2) : '-'), 'chart.beta')}
+                {renderMetricRow('Vol (60D)', (a) => `${num(a.Vol_60D)}%`, 'chart.vol-60d')}
+                {renderMetricRow('Sharpe Ratio', (a) => num(a.Sharpe), 'chart.sharpe')}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 py-3 border-t border-white/10 glass-strong text-xs">
+          <span style={{ color: 'var(--text-3)' }}>Tip: Click any ticker name to open its chart details</span>
+          <button
+            onClick={onClose}
+            className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors font-medium text-white"
+          >
+            Close Matrix
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
