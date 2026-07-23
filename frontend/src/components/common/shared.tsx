@@ -90,22 +90,49 @@ export function SegmentedControl({ options, value, onChange, className = '' }: {
     if (container && btn) {
       const containerRect = container.getBoundingClientRect()
       const btnRect = btn.getBoundingClientRect()
-      setIndicator({
-        left: btnRect.left - containerRect.left,
-        width: btnRect.width,
-      })
+      if (btnRect.width > 0 && containerRect.width > 0) {
+        setIndicator({
+          left: btnRect.left - containerRect.left,
+          width: btnRect.width,
+        })
+      }
     }
   }, [value])
 
   useEffect(() => {
     updateIndicator()
+
+    // Multiple RAF passes to ensure measurements after font load / layout calculations
+    let rafId1: number
+    let rafId2: number
+    rafId1 = requestAnimationFrame(() => {
+      updateIndicator()
+      rafId2 = requestAnimationFrame(updateIndicator)
+    })
+
     window.addEventListener('resize', updateIndicator)
-    return () => window.removeEventListener('resize', updateIndicator)
+
+    let resizeObserver: ResizeObserver | null = null
+    if (containerRef.current) {
+      resizeObserver = new ResizeObserver(() => {
+        updateIndicator()
+      })
+      resizeObserver.observe(containerRef.current)
+    }
+
+    return () => {
+      cancelAnimationFrame(rafId1)
+      cancelAnimationFrame(rafId2)
+      window.removeEventListener('resize', updateIndicator)
+      if (resizeObserver) resizeObserver.disconnect()
+    }
   }, [updateIndicator])
 
   return (
     <div ref={containerRef} className={`segmented-control ${className}`}>
-      {indicator && <div className="seg-indicator" style={{ left: indicator.left, width: indicator.width }} />}
+      {indicator && indicator.width > 0 && (
+        <div className="seg-indicator" style={{ left: indicator.left, width: indicator.width }} />
+      )}
       {options.map(opt => (
         <button
           key={opt.key}
