@@ -6,8 +6,8 @@ Run once before the first scan to warm up caches.
 """
 
 import time
-from nse_fetcher import get_liquid_universe
-from data_fetcher import fetch_fundamentals, cache_manager
+from data_pipeline.nse_fetcher import get_liquid_universe
+from data_pipeline.data_fetcher import fetch_fundamentals, cache_manager
 
 
 def main():

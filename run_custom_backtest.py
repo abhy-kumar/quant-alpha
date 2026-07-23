@@ -39,7 +39,7 @@ project_root = os.path.dirname(os.path.abspath(__file__))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-import backtest_engine
+import engine.backtest_engine as backtest_engine
 
 logging.basicConfig(
     level=logging.INFO,

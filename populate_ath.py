@@ -6,8 +6,8 @@ for the liquid universe to avoid blocking daily scans.
 """
 
 import time
-from nse_fetcher import get_liquid_universe
-from data_fetcher import background_fetch_ath, cache_manager
+from data_pipeline.nse_fetcher import get_liquid_universe
+from data_pipeline.data_fetcher import background_fetch_ath, cache_manager
 
 
 def main():

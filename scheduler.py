@@ -115,7 +115,7 @@ def _auto_backtest() -> None:
     """
     logger.info("Weekend auto-backtest started.")
     try:
-        from backtest_engine import run_all_current_backtests
+        from engine.backtest_engine import run_all_current_backtests
 
         results = run_all_current_backtests()
 

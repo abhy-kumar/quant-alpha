@@ -7,7 +7,7 @@ India VIX volatility, FII/DII net flows, Put-Call Ratio (PCR), and advance-decli
 """
 
 from utils import log, _safe_float
-from indicators import add_indicators
+from engine.indicators import add_indicators
 
 
 def compute_regime_score(nifty_df, vix_df, fii_dii: dict, pcr_data: dict, breadth_pct: float | None) -> int:

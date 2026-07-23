@@ -6,7 +6,7 @@ import os
 from scipy.optimize import minimize
 from config import RISK_FREE_RATE
 import logging
-import backtest_engine
+import engine.backtest_engine as backtest_engine
 
 logger = logging.getLogger("quant_engine")
 DB_PATH = "data/market_scans.db"

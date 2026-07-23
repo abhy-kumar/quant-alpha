@@ -246,7 +246,7 @@ def _get_outcome_accuracy() -> dict:
     """Compute outcome accuracy from ML pipeline."""
     outcome_accuracy = {}
     try:
-        from data_pipeline import get_outcome_accuracy
+        from data_pipeline.data_pipeline import get_outcome_accuracy
         acc_df = get_outcome_accuracy()
         if not acc_df.empty:
             for _, row in acc_df.iterrows():
@@ -265,7 +265,7 @@ def _get_outcome_accuracy() -> dict:
 def _get_first_scan_date() -> str | None:
     """Get the first scan date from the database."""
     try:
-        from data_pipeline import _get_conn
+        from data_pipeline.data_pipeline import _get_conn
         conn = _get_conn()
         cursor = conn.cursor()
         cursor.execute("SELECT MIN(Scan_Date) FROM factor_history")
