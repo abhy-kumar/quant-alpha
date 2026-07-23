@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-23 12:20:34",
+  "last_updated": "2026-07-23 18:04:34",
   "model_portfolios": {
     "max_sharpe": {
       "STYLAMIND.NS": 0.4133,
@@ -713,9 +713,9 @@
         "to": "2026-07-23",
         "tickers": [
           "STYLAMIND.NS",
+          "OFSS.NS",
           "SOTL.NS",
           "CHENNPETRO.NS",
-          "OFSS.NS",
           "LUPIN.NS",
           "GULPOLY.NS",
           "SUNPHARMA.NS",
@@ -1422,11 +1422,11 @@
         "to": "2026-07-23",
         "tickers": [
           "CHENNPETRO.NS",
+          "OFSS.NS",
           "HUHTAMAKI.NS",
           "SOTL.NS",
           "BEPL.NS",
           "ROUTE.NS",
-          "OFSS.NS",
           "TANLA.NS",
           "GULPOLY.NS",
           "GANDHAR.NS",
@@ -4993,7 +4993,7 @@
           "PAYTM.NS",
           "NUVOCO.NS",
           "SOLARINDS.NS",
-          "LAURUSLABS.NS"
+          "LaurusLabs.NS"
         ]
       },
       {
@@ -5812,8 +5812,8 @@
           "MARUTI.NS",
           "TVSMOTOR.NS",
           "CANBK.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "SBILIFE.NS"
         ]
       },
