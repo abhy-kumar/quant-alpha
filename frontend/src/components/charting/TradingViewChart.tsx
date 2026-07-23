@@ -379,7 +379,8 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       }
     })
 
-    // ResizeObserver
+    // ResizeObserver with visibility restoration
+    let prevWidth = 0
     const resizeObserver = new ResizeObserver((entries) => {
       if (!isSubscribed || !entries || entries.length === 0) return
       const newWidth = entries[0].contentRect.width
@@ -388,17 +389,42 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
           if (mainChartRef.current) mainChartRef.current.applyOptions({ width: newWidth })
           if (rsiChartRef.current && rsiContainerRef.current) rsiChartRef.current.applyOptions({ width: newWidth })
           if (macdChartRef.current && macdContainerRef.current) macdChartRef.current.applyOptions({ width: newWidth })
+
+          if (prevWidth === 0 && mainChartRef.current) {
+            mainChartRef.current.timeScale().fitContent()
+          }
+        } catch {}
+        prevWidth = newWidth
+      } else {
+        prevWidth = 0
+      }
+    })
+
+    // IntersectionObserver to auto-fit scale when switching back to visible tab
+    const intersectionObserver = new IntersectionObserver((entries) => {
+      if (!isSubscribed || !entries || entries.length === 0) return
+      if (entries[0].isIntersecting && mainChartRef.current) {
+        try {
+          const containerWidth = containerRef.current?.clientWidth || 0
+          if (containerWidth > 0) {
+            mainChartRef.current.applyOptions({ width: containerWidth })
+            if (rsiChartRef.current) rsiChartRef.current.applyOptions({ width: containerWidth })
+            if (macdChartRef.current) macdChartRef.current.applyOptions({ width: containerWidth })
+            mainChartRef.current.timeScale().fitContent()
+          }
         } catch {}
       }
     })
 
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current)
+      intersectionObserver.observe(containerRef.current)
     }
 
     return () => {
       isSubscribed = false
       resizeObserver.disconnect()
+      intersectionObserver.disconnect()
 
       // Safe nullification and teardown
       const mc = mainChartRef.current
