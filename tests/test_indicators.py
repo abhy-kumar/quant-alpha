@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 import numpy as np
-from indicators import _wilder_smoothing, _add_vpt, _add_ichimoku
+from engine.indicators import _wilder_smoothing, _add_vpt, _add_ichimoku
 
 class TestIndicators(unittest.TestCase):
     def test_wilder_smoothing(self):

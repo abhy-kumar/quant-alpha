@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
-import type { DashboardData } from '../types'
-import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline, InfoTooltip } from './shared'
-import { SegmentedControl } from './shared'
+import type { DashboardData } from '../../types'
+import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline, InfoTooltip } from '../common/shared'
+import { SegmentedControl } from '../common/shared'
 import { Info, Funnel, X, Star, Scales } from '@phosphor-icons/react'
 import { ComparisonModal } from './ComparisonModal'
 

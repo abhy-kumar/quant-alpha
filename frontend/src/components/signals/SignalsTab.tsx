@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import type { DashboardData } from '../types'
-import { scoreBar, SegmentedControl } from './shared'
+import type { DashboardData } from '../../types'
+import { scoreBar, SegmentedControl } from '../common/shared'
 
 function ConvictionDots({ conviction }: { conviction: string }) {
   const levels: Record<string, number> = { 'Strong Buy': 5, 'Buy': 4, 'Hold': 3, 'Caution': 2, 'Avoid': 1 }

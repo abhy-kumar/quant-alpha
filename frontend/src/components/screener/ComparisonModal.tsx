@@ -1,6 +1,6 @@
 import React from 'react'
-import type { DashboardData } from '../types'
-import { num, colorCode, scoreColor, InfoTooltip } from './shared'
+import type { DashboardData } from '../../types'
+import { num, colorCode, scoreColor, InfoTooltip } from '../common/shared'
 import { X, Minus } from '@phosphor-icons/react'
 
 interface ComparisonModalProps {

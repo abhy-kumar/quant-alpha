@@ -25,9 +25,9 @@ Factor weights derived from:
 import numpy as np
 import pandas as pd
 
-from utils import _safe_float
-from recommendation import compute_fund_score, get_conviction_rating
-from research_factors import compute_research_composite
+from utils import _safe_float, log
+from engine.recommendation import compute_fund_score, get_conviction_rating
+from engine.research_factors import compute_research_composite
 
 
 def compute_rs_score(tech: dict) -> tuple[float, list]:
@@ -351,7 +351,7 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
     # ── Call ML Alpha Engine ─────────────────────────────────────────────────
     try:
-        from ml_engine import predict_stock_alpha, get_ml_model
+        from engine.ml_engine import predict_stock_alpha, get_ml_model
         ml_model = get_ml_model()
         for item in final_rows:
             stock_dict = {

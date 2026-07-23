@@ -32,11 +32,11 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-const SignalsTab   = lazy(() => import('./components/SignalsTab').then(m => { console.log('[Alpha] SignalsTab chunk loaded'); return m }))
-const ScreenerTab  = lazy(() => import('./components/ScreenerTab').then(m => { console.log('[Alpha] ScreenerTab chunk loaded'); return m }))
-const ChartingTab  = lazy(() => import('./components/ChartingTab').then(m => { console.log('[Alpha] ChartingTab chunk loaded'); return m }))
-const HeatmapTab   = lazy(() => import('./components/HeatmapTab').then(m => { console.log('[Alpha] HeatmapTab chunk loaded'); return m }))
-const QuantLabTab = lazy(() => import('./components/QuantLabTab').then(m => { console.log('[Alpha] QuantLabTab chunk loaded'); return m }))
+const SignalsTab   = lazy(() => import('./components/signals/SignalsTab').then(m => { console.log('[Alpha] SignalsTab chunk loaded'); return m }))
+const ScreenerTab  = lazy(() => import('./components/screener/ScreenerTab').then(m => { console.log('[Alpha] ScreenerTab chunk loaded'); return m }))
+const ChartingTab  = lazy(() => import('./components/charting/ChartingTab').then(m => { console.log('[Alpha] ChartingTab chunk loaded'); return m }))
+const HeatmapTab   = lazy(() => import('./components/heatmap/HeatmapTab').then(m => { console.log('[Alpha] HeatmapTab chunk loaded'); return m }))
+const QuantLabTab = lazy(() => import('./components/quantlab/QuantLabTab').then(m => { console.log('[Alpha] QuantLabTab chunk loaded'); return m }))
 
 function TabSkeleton() {
   return (

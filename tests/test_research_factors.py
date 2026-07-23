@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import pandas as pd
-from research_factors import (
+from engine.research_factors import (
     compute_piotroski_f_score,
     compute_gross_profitability,
     compute_momentum_z_score,

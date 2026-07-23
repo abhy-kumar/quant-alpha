@@ -21,8 +21,8 @@ from datetime import datetime
 import pandas as pd
 import yfinance as yf
 
-import quant_engine
-from data_pipeline import update_outcome_tracking, DB_PATH
+import engine.quant_engine as quant_engine
+from data_pipeline.data_pipeline import update_outcome_tracking, DB_PATH
 from config import PERIOD, INTERVAL, MIN_ROWS
 
 logging.basicConfig(

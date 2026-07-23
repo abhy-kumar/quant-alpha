@@ -13,10 +13,10 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from indicators import add_indicators, compute_metrics
-from recommendation import compute_tech_score, compute_fund_score, get_conviction_rating
-from research_factors import compute_research_composite
-from scoring import compute_rs_score, compute_all_scores, build_output_row
+from engine.indicators import add_indicators, compute_metrics
+from engine.recommendation import compute_tech_score, compute_fund_score, get_conviction_rating
+from engine.research_factors import compute_research_composite
+from engine.scoring import compute_rs_score, compute_all_scores, build_output_row
 from utils import _safe_float
 
 
@@ -216,7 +216,7 @@ class TestMomentumBug(unittest.TestCase):
             "Volume": np.random.randint(1000000, 5000000, 300),
         }, index=dates)
 
-        from research_factors import compute_momentum_z_score
+        from engine.research_factors import compute_momentum_z_score
         mom = compute_momentum_z_score(df)
 
         # The stock went from ~100 to ~150, so 12-1 month momentum should be positive
@@ -233,7 +233,7 @@ class TestMomentumBug(unittest.TestCase):
 
     def test_ret_skip_is_inverted(self):
         """Directly test _ret_skip to catch the inversion bug."""
-        from research_factors import compute_momentum_z_score
+        from engine.research_factors import compute_momentum_z_score
         dates = pd.date_range("2023-01-01", periods=300, freq="B")
         prices = np.linspace(100, 200, 300)  # Strong uptrend
         df = pd.DataFrame({

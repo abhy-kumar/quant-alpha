@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull } from '../types'
+import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull } from '../../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
 import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise } from '@phosphor-icons/react'
-import { SegmentedControl, InfoTooltip } from './shared'
+import { SegmentedControl, InfoTooltip } from '../common/shared'
 
 interface Props {
   isDark: boolean

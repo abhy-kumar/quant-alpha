@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from recommendation import compute_fund_score, get_conviction_rating
+from engine.recommendation import compute_fund_score, get_conviction_rating
 
 class TestScoring(unittest.TestCase):
     def test_compute_fund_score_with_sector(self):

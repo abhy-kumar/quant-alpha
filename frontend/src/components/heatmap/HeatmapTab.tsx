@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import type { DashboardData } from '../types'
-import { SegmentedControl } from './shared'
+import type { DashboardData } from '../../types'
+import { SegmentedControl } from '../common/shared'
 
 interface Props {
   sectorMap: Record<string, DashboardData[]>

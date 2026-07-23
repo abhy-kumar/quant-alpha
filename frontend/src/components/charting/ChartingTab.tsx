@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import type { DashboardData } from '../types'
-import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip } from './shared'
+import type { DashboardData } from '../../types'
+import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip } from '../common/shared'
 import { MagnifyingGlass } from '@phosphor-icons/react'
 import {
   ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine

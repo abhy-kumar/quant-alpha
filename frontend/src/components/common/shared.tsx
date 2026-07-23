@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { Question } from '@phosphor-icons/react'
-import { tooltips } from '../data/tooltipContent'
-import { formatNum, colorCode, scoreColor, getBadgeClass } from '../utils/formatters'
+import { tooltips } from '../../data/tooltipContent'
+import { formatNum, colorCode, scoreColor, getBadgeClass } from '../../utils/formatters'
 
 export { formatNum, colorCode, scoreColor, getBadgeClass }
 export const num = formatNum

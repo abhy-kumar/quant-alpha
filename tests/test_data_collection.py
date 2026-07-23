@@ -10,11 +10,11 @@ import numpy as np
 import pandas as pd
 from unittest.mock import MagicMock, patch
 
-from indicators import (
+from engine.indicators import (
     add_indicators, compute_metrics, _wilder_smoothing,
     _add_atr, _add_adx, _add_supertrend, _add_ichimoku
 )
-from research_factors import (
+from engine.research_factors import (
     compute_piotroski_f_score,
     compute_gross_profitability,
     compute_investment_factor,
@@ -27,8 +27,8 @@ from research_factors import (
     compute_sue_factor,
     compute_beta_factor,
 )
-from recommendation import compute_tech_score, compute_fund_score, get_conviction_rating
-from scoring import compute_all_scores, build_output_row
+from engine.recommendation import compute_tech_score, compute_fund_score, get_conviction_rating
+from engine.scoring import compute_all_scores, build_output_row
 from config import RISK_FREE_RATE
 
 

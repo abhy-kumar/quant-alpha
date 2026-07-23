@@ -50,7 +50,7 @@ jobs:
       - name: Run market scanner
         run: |
           python db_split_join.py join
-          python scanner.py
+          python -m engine.scanner
           python db_split_join.py split
 
       - name: Broadcast daily Telegram signals (optional)
@@ -58,7 +58,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python telegram_bot.py
+          python -m notifications.telegram_bot
 
       - name: Commit and push updated data
         run: |
@@ -91,7 +91,7 @@ jobs:
       - name: Run weekend update (outcome backfill + quant regen)
         run: |
           python db_split_join.py join
-          python weekend_update.py
+          python -m notifications.weekend_update
           python db_split_join.py split
 
       - name: Commit and push updated quant data

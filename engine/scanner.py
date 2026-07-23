@@ -17,20 +17,20 @@ import pandas as pd
 
 from utils import log, _safe_float
 from config import MAX_WORKERS_OHLCV, MAX_WORKERS_FUNDAMENTALS
-from indicators import add_indicators, compute_metrics
-from nse_fetcher import get_liquid_universe, download_bhav_copy, get_market_breadth, get_fii_dii_activity, get_put_call_ratio
-from data_fetcher import (
+from engine.indicators import add_indicators, compute_metrics
+from data_pipeline.nse_fetcher import get_liquid_universe, download_bhav_copy, get_market_breadth, get_fii_dii_activity, get_put_call_ratio
+from data_pipeline.data_fetcher import (
     fetch_ohlcv_with_retry, fetch_fundamentals, get_ath, get_atl, cache_manager
 )
-from scoring import compute_rs_score, compute_sector_medians, compute_all_scores, build_output_row
-from recommendation import compute_tech_score
-from regime_engine import compute_regime_score as _compute_regime_score
-from data_pipeline import (
+from engine.scoring import compute_rs_score, compute_sector_medians, compute_all_scores, build_output_row
+from engine.recommendation import compute_tech_score
+from engine.regime_engine import compute_regime_score as _compute_regime_score
+from data_pipeline.data_pipeline import (
     store_daily_ohlcv, store_factor_history, create_outcome_entries,
     update_outcome_tracking, store_regime_history, store_scan_summary,
 )
-from generate_score_history import generate as generate_score_history
-import quant_engine
+from notifications.generate_score_history import generate as generate_score_history
+import engine.quant_engine as quant_engine
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
