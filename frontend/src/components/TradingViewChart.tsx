@@ -102,19 +102,41 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     macdHist?: number
   }>({})
 
-  // Theme colors
+  // Theme colors calculation
   const textColor = isDark ? '#94a3b8' : '#475569'
-  const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.06)'
   const crosshairColor = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
 
-  // Main Chart Initialization
+  // Dynamic Theme Update Effect (Zero Chart Re-creation, Instant Theme Shift)
+  useEffect(() => {
+    const layout = { textColor, background: { type: ColorType.Solid, color: 'transparent' } }
+    const grid = { vertLines: { color: gridColor }, horzLines: { color: gridColor } }
+
+    try {
+      if (mainChartRef.current) {
+        mainChartRef.current.applyOptions({
+          layout,
+          grid,
+          rightPriceScale: { borderColor: gridColor },
+          crosshair: { vertLine: { color: crosshairColor }, horzLine: { color: crosshairColor } },
+        })
+      }
+      if (rsiChartRef.current) {
+        rsiChartRef.current.applyOptions({ layout, grid, rightPriceScale: { borderColor: gridColor } })
+      }
+      if (macdChartRef.current) {
+        macdChartRef.current.applyOptions({ layout, grid, rightPriceScale: { borderColor: gridColor } })
+      }
+    } catch {
+      // Ignore if chart is in process of being unmounted
+    }
+  }, [isDark, textColor, gridColor, crosshairColor])
+
+  // Main Chart Lifecycle Effect
   useEffect(() => {
     if (!containerRef.current) return
 
-    // Clean up existing charts
-    if (mainChartRef.current) mainChartRef.current.remove()
-    if (rsiChartRef.current) rsiChartRef.current.remove()
-    if (macdChartRef.current) macdChartRef.current.remove()
+    let isSubscribed = true
 
     // 1. Create Main Chart
     const mainChart = createChart(containerRef.current, {
@@ -158,17 +180,14 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     })
     candleSeriesRef.current = candleSeries
 
-    // Volume Series (Overlay at bottom 20% of main chart)
+    // Volume Series
     const volumeSeries = mainChart.addSeries(HistogramSeries, {
       color: '#3b82f6',
       priceFormat: { type: 'volume' },
       priceScaleId: 'volume',
     })
     mainChart.priceScale('volume').applyOptions({
-      scaleMargins: {
-        top: 0.8,
-        bottom: 0,
-      },
+      scaleMargins: { top: 0.8, bottom: 0 },
     })
     volumeSeriesRef.current = volumeSeries
 
@@ -213,8 +232,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     bbLowerRef.current = bbLower
 
     // 2. Create RSI Sub-Chart if enabled
+    let rsiChart: IChartApi | null = null
     if (showRsi && rsiContainerRef.current) {
-      const rsiChart = createChart(rsiContainerRef.current, {
+      rsiChart = createChart(rsiContainerRef.current, {
         width: rsiContainerRef.current.clientWidth,
         height: 120,
         layout: {
@@ -236,22 +256,14 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       })
       rsiSeriesRef.current = rsiSeries
 
-      // Oversold / Overbought reference lines
       rsiSeries.createPriceLine({ price: 70, color: 'rgba(239, 68, 68, 0.6)', lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: '70 OB' })
       rsiSeries.createPriceLine({ price: 30, color: 'rgba(34, 197, 94, 0.6)', lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: '30 OS' })
-
-      // Synchronize time scales
-      mainChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
-        if (range) rsiChart.timeScale().setVisibleLogicalRange(range)
-      })
-      rsiChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
-        if (range) mainChart.timeScale().setVisibleLogicalRange(range)
-      })
     }
 
     // 3. Create MACD Sub-Chart if enabled
+    let macdChart: IChartApi | null = null
     if (showMacd && macdContainerRef.current) {
-      const macdChart = createChart(macdContainerRef.current, {
+      macdChart = createChart(macdContainerRef.current, {
         width: macdContainerRef.current.clientWidth,
         height: 130,
         layout: {
@@ -286,206 +298,253 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         title: 'Signal',
       })
       macdSignalRef.current = macdSignal
+    }
 
-      // Synchronize time scales
-      mainChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
-        if (range) macdChart.timeScale().setVisibleLogicalRange(range)
-      })
-      macdChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
-        if (range) mainChart.timeScale().setVisibleLogicalRange(range)
+    // Safe Time Scale Synchronizers
+    const handleMainTimeChange = (range: any) => {
+      if (!isSubscribed || !range) return
+      try {
+        if (rsiChartRef.current) rsiChartRef.current.timeScale().setVisibleLogicalRange(range)
+      } catch {}
+      try {
+        if (macdChartRef.current) macdChartRef.current.timeScale().setVisibleLogicalRange(range)
+      } catch {}
+    }
+
+    mainChart.timeScale().subscribeVisibleLogicalRangeChange(handleMainTimeChange)
+
+    if (rsiChart) {
+      rsiChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (!isSubscribed || !range) return
+        try {
+          if (mainChartRef.current) mainChartRef.current.timeScale().setVisibleLogicalRange(range)
+        } catch {}
       })
     }
 
-    // Crosshair HUD listener
+    if (macdChart) {
+      macdChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (!isSubscribed || !range) return
+        try {
+          if (mainChartRef.current) mainChartRef.current.timeScale().setVisibleLogicalRange(range)
+        } catch {}
+      })
+    }
+
+    // Crosshair HUD listener with safety checks
     mainChart.subscribeCrosshairMove((param) => {
+      if (!isSubscribed) return
       if (!param || !param.time || param.point === undefined || param.point.x < 0 || param.point.y < 0) {
         setHudInfo({})
         return
       }
 
-      const rawDate = typeof param.time === 'string' ? param.time : ''
-      const candleData = param.seriesData.get(candleSeries) as CandlestickData | undefined
-      const volumeData = param.seriesData.get(volumeSeries) as HistogramData | undefined
-      const sma50Data = param.seriesData.get(sma50Series) as LineData | undefined
-      const sma200Data = param.seriesData.get(sma200Series) as LineData | undefined
-      const supertrendData = param.seriesData.get(supertrendSeries) as LineData | undefined
+      try {
+        const rawDate = typeof param.time === 'string' ? param.time : ''
+        const candleData = param.seriesData.get(candleSeries) as CandlestickData | undefined
+        const volumeData = param.seriesData.get(volumeSeries) as HistogramData | undefined
+        const sma50Data = param.seriesData.get(sma50Series) as LineData | undefined
+        const sma200Data = param.seriesData.get(sma200Series) as LineData | undefined
+        const supertrendData = param.seriesData.get(supertrendSeries) as LineData | undefined
 
-      let open, high, low, close, chgPct
-      if (candleData) {
-        open = candleData.open
-        high = candleData.high
-        low = candleData.low
-        close = candleData.close
-        if (open > 0) chgPct = ((close - open) / open) * 100
+        let open, high, low, close, chgPct
+        if (candleData) {
+          open = candleData.open
+          high = candleData.high
+          low = candleData.low
+          close = candleData.close
+          if (open > 0) chgPct = ((close - open) / open) * 100
+        }
+
+        const dataPoint = data.find((d) => d.time === rawDate)
+
+        setHudInfo({
+          time: rawDate,
+          open,
+          high,
+          low,
+          close,
+          chgPct,
+          volume: volumeData?.value,
+          sma50: sma50Data?.value,
+          sma200: sma200Data?.value,
+          supertrend: supertrendData?.value,
+          rsi: dataPoint?.rsi ?? undefined,
+          macd: dataPoint?.macd ?? undefined,
+          macdSignal: dataPoint?.macd_signal ?? undefined,
+          macdHist: dataPoint?.macd_hist ?? undefined,
+        })
+      } catch {
+        // Safe catch for transient disposal states
       }
-
-      // Lookup matching index for RSI and MACD
-      const dataPoint = data.find((d) => d.time === rawDate)
-
-      setHudInfo({
-        time: rawDate,
-        open,
-        high,
-        low,
-        close,
-        chgPct,
-        volume: volumeData?.value,
-        sma50: sma50Data?.value,
-        sma200: sma200Data?.value,
-        supertrend: supertrendData?.value,
-        rsi: dataPoint?.rsi ?? undefined,
-        macd: dataPoint?.macd ?? undefined,
-        macdSignal: dataPoint?.macd_signal ?? undefined,
-        macdHist: dataPoint?.macd_hist ?? undefined,
-      })
     })
 
-    // Handle ResizeObserver for responsive width
+    // ResizeObserver
     const resizeObserver = new ResizeObserver((entries) => {
-      if (!entries || entries.length === 0) return
+      if (!isSubscribed || !entries || entries.length === 0) return
       const newWidth = entries[0].contentRect.width
       if (newWidth > 0) {
-        mainChart.applyOptions({ width: newWidth })
-        if (rsiChartRef.current && rsiContainerRef.current) {
-          rsiChartRef.current.applyOptions({ width: newWidth })
-        }
-        if (macdChartRef.current && macdContainerRef.current) {
-          macdChartRef.current.applyOptions({ width: newWidth })
-        }
+        try {
+          if (mainChartRef.current) mainChartRef.current.applyOptions({ width: newWidth })
+          if (rsiChartRef.current && rsiContainerRef.current) rsiChartRef.current.applyOptions({ width: newWidth })
+          if (macdChartRef.current && macdContainerRef.current) macdChartRef.current.applyOptions({ width: newWidth })
+        } catch {}
       }
     })
+
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current)
     }
 
     return () => {
+      isSubscribed = false
       resizeObserver.disconnect()
-      mainChart.remove()
-      if (rsiChartRef.current) rsiChartRef.current.remove()
-      if (macdChartRef.current) macdChartRef.current.remove()
+
+      // Safe nullification and teardown
+      const mc = mainChartRef.current
+      const rc = rsiChartRef.current
+      const mac = macdChartRef.current
+
+      mainChartRef.current = null
+      rsiChartRef.current = null
+      macdChartRef.current = null
+
+      candleSeriesRef.current = null
+      volumeSeriesRef.current = null
+      sma50SeriesRef.current = null
+      sma200SeriesRef.current = null
+      supertrendSeriesRef.current = null
+      bbUpperRef.current = null
+      bbLowerRef.current = null
+      rsiSeriesRef.current = null
+      macdLineRef.current = null
+      macdSignalRef.current = null
+      macdHistRef.current = null
+
+      try { if (rc) rc.remove() } catch {}
+      try { if (mac) mac.remove() } catch {}
+      try { if (mc) mc.remove() } catch {}
     }
-  }, [isDark, showRsi, showMacd])
+  }, [showRsi, showMacd])
 
   // Update Data on Series without re-instantiating Chart Canvas
   useEffect(() => {
     if (!data || data.length === 0 || !candleSeriesRef.current) return
 
-    // Filter valid data points
-    const validPoints = data.filter((d) => d.time && d.close !== null)
+    try {
+      const validPoints = data.filter((d) => d.time && d.close !== null)
 
-    const candleData: CandlestickData[] = validPoints.map((d) => ({
-      time: d.time as Time,
-      open: d.open ?? d.close!,
-      high: d.high ?? d.close!,
-      low: d.low ?? d.close!,
-      close: d.close!,
-    }))
+      const candleData: CandlestickData[] = validPoints.map((d) => ({
+        time: d.time as Time,
+        open: d.open ?? d.close!,
+        high: d.high ?? d.close!,
+        low: d.low ?? d.close!,
+        close: d.close!,
+      }))
 
-    const volumeData: HistogramData[] = validPoints.map((d) => ({
-      time: d.time as Time,
-      value: d.volume ?? 0,
-      color: (d.close ?? 0) >= (d.open ?? 0) ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)',
-    }))
+      const volumeData: HistogramData[] = validPoints.map((d) => ({
+        time: d.time as Time,
+        value: d.volume ?? 0,
+        color: (d.close ?? 0) >= (d.open ?? 0) ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)',
+      }))
 
-    candleSeriesRef.current.setData(candleData)
-    if (volumeSeriesRef.current) volumeSeriesRef.current.setData(volumeData)
+      candleSeriesRef.current.setData(candleData)
+      if (volumeSeriesRef.current) volumeSeriesRef.current.setData(volumeData)
 
-    // SMA 50
-    if (sma50SeriesRef.current) {
-      if (showSma50) {
-        const sma50Data: LineData[] = validPoints
-          .filter((d) => d.sma50 !== null)
-          .map((d) => ({ time: d.time as Time, value: d.sma50! }))
-        sma50SeriesRef.current.setData(sma50Data)
-      } else {
-        sma50SeriesRef.current.setData([])
+      if (sma50SeriesRef.current) {
+        if (showSma50) {
+          const sma50Data: LineData[] = validPoints
+            .filter((d) => d.sma50 !== null)
+            .map((d) => ({ time: d.time as Time, value: d.sma50! }))
+          sma50SeriesRef.current.setData(sma50Data)
+        } else {
+          sma50SeriesRef.current.setData([])
+        }
       }
-    }
 
-    // SMA 200
-    if (sma200SeriesRef.current) {
-      if (showSma200) {
-        const sma200Data: LineData[] = validPoints
-          .filter((d) => d.sma200 !== null)
-          .map((d) => ({ time: d.time as Time, value: d.sma200! }))
-        sma200SeriesRef.current.setData(sma200Data)
-      } else {
-        sma200SeriesRef.current.setData([])
+      if (sma200SeriesRef.current) {
+        if (showSma200) {
+          const sma200Data: LineData[] = validPoints
+            .filter((d) => d.sma200 !== null)
+            .map((d) => ({ time: d.time as Time, value: d.sma200! }))
+          sma200SeriesRef.current.setData(sma200Data)
+        } else {
+          sma200SeriesRef.current.setData([])
+        }
       }
-    }
 
-    // Supertrend
-    if (supertrendSeriesRef.current) {
-      if (showSupertrend) {
-        const stData: LineData[] = validPoints
-          .filter((d) => d.supertrend !== null)
-          .map((d) => ({ time: d.time as Time, value: d.supertrend! }))
-        supertrendSeriesRef.current.setData(stData)
-      } else {
-        supertrendSeriesRef.current.setData([])
+      if (supertrendSeriesRef.current) {
+        if (showSupertrend) {
+          const stData: LineData[] = validPoints
+            .filter((d) => d.supertrend !== null)
+            .map((d) => ({ time: d.time as Time, value: d.supertrend! }))
+          supertrendSeriesRef.current.setData(stData)
+        } else {
+          supertrendSeriesRef.current.setData([])
+        }
       }
-    }
 
-    // Bollinger Bands
-    if (bbUpperRef.current && bbLowerRef.current) {
-      if (showBollinger) {
-        const upperData: LineData[] = validPoints
-          .filter((d) => d.bb_upper !== null)
-          .map((d) => ({ time: d.time as Time, value: d.bb_upper! }))
-        const lowerData: LineData[] = validPoints
-          .filter((d) => d.bb_lower !== null)
-          .map((d) => ({ time: d.time as Time, value: d.bb_lower! }))
-        bbUpperRef.current.setData(upperData)
-        bbLowerRef.current.setData(lowerData)
-      } else {
-        bbUpperRef.current.setData([])
-        bbLowerRef.current.setData([])
+      if (bbUpperRef.current && bbLowerRef.current) {
+        if (showBollinger) {
+          const upperData: LineData[] = validPoints
+            .filter((d) => d.bb_upper !== null)
+            .map((d) => ({ time: d.time as Time, value: d.bb_upper! }))
+          const lowerData: LineData[] = validPoints
+            .filter((d) => d.bb_lower !== null)
+            .map((d) => ({ time: d.time as Time, value: d.bb_lower! }))
+          bbUpperRef.current.setData(upperData)
+          bbLowerRef.current.setData(lowerData)
+        } else {
+          bbUpperRef.current.setData([])
+          bbLowerRef.current.setData([])
+        }
       }
-    }
 
-    // RSI Series
-    if (rsiSeriesRef.current && showRsi) {
-      const rsiData: LineData[] = validPoints
-        .filter((d) => d.rsi !== null)
-        .map((d) => ({ time: d.time as Time, value: d.rsi! }))
-      rsiSeriesRef.current.setData(rsiData)
-    }
+      if (rsiSeriesRef.current && showRsi) {
+        const rsiData: LineData[] = validPoints
+          .filter((d) => d.rsi !== null)
+          .map((d) => ({ time: d.time as Time, value: d.rsi! }))
+        rsiSeriesRef.current.setData(rsiData)
+      }
 
-    // MACD Series
-    if (showMacd && macdLineRef.current && macdSignalRef.current && macdHistRef.current) {
-      const macdData: LineData[] = validPoints
-        .filter((d) => d.macd !== null)
-        .map((d) => ({ time: d.time as Time, value: d.macd! }))
+      if (showMacd && macdLineRef.current && macdSignalRef.current && macdHistRef.current) {
+        const macdData: LineData[] = validPoints
+          .filter((d) => d.macd !== null)
+          .map((d) => ({ time: d.time as Time, value: d.macd! }))
 
-      const signalData: LineData[] = validPoints
-        .filter((d) => d.macd_signal !== null)
-        .map((d) => ({ time: d.time as Time, value: d.macd_signal! }))
+        const signalData: LineData[] = validPoints
+          .filter((d) => d.macd_signal !== null)
+          .map((d) => ({ time: d.time as Time, value: d.macd_signal! }))
 
-      const histData: HistogramData[] = validPoints
-        .filter((d) => d.macd_hist !== null)
-        .map((d) => ({
-          time: d.time as Time,
-          value: d.macd_hist!,
-          color: d.macd_hist! >= 0 ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)',
-        }))
+        const histData: HistogramData[] = validPoints
+          .filter((d) => d.macd_hist !== null)
+          .map((d) => ({
+            time: d.time as Time,
+            value: d.macd_hist!,
+            color: d.macd_hist! >= 0 ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)',
+          }))
 
-      macdLineRef.current.setData(macdData)
-      macdSignalRef.current.setData(signalData)
-      macdHistRef.current.setData(histData)
-    }
+        macdLineRef.current.setData(macdData)
+        macdSignalRef.current.setData(signalData)
+        macdHistRef.current.setData(histData)
+      }
 
-    // Fit content into view nicely
-    if (mainChartRef.current) {
-      mainChartRef.current.timeScale().fitContent()
+      if (mainChartRef.current) {
+        mainChartRef.current.timeScale().fitContent()
+      }
+    } catch {
+      // Safe catch
     }
   }, [data, showSma50, showSma200, showSupertrend, showBollinger, showRsi, showMacd])
 
   // Handle Logarithmic Toggle
   useEffect(() => {
     if (mainChartRef.current) {
-      mainChartRef.current.priceScale('right').applyOptions({
-        mode: isLogScale ? PriceScaleMode.Logarithmic : PriceScaleMode.Normal,
-      })
+      try {
+        mainChartRef.current.priceScale('right').applyOptions({
+          mode: isLogScale ? PriceScaleMode.Logarithmic : PriceScaleMode.Normal,
+        })
+      } catch {}
     }
   }, [isLogScale])
 
@@ -505,7 +564,10 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   return (
     <div className="flex flex-col w-full space-y-3">
       {/* Top Toolbar Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 card rounded-xl text-xs">
+      <div
+        className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 card rounded-xl text-xs"
+        style={{ background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}
+      >
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>
             {ticker.replace('.NS', '')}
@@ -600,27 +662,29 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       >
         {hudInfo.time ? (
           <>
-            <span className="font-sans text-xs font-medium text-white">{hudInfo.time}</span>
-            <span>
-              O: <strong className="text-white">{formatNum(hudInfo.open)}</strong>
+            <span className="font-sans text-xs font-medium" style={{ color: 'var(--text)' }}>
+              {hudInfo.time}
             </span>
             <span>
-              H: <strong className="text-white">{formatNum(hudInfo.high)}</strong>
+              O: <strong style={{ color: 'var(--text)' }}>{formatNum(hudInfo.open)}</strong>
             </span>
             <span>
-              L: <strong className="text-white">{formatNum(hudInfo.low)}</strong>
+              H: <strong style={{ color: 'var(--text)' }}>{formatNum(hudInfo.high)}</strong>
             </span>
             <span>
-              C: <strong className="text-white">{formatNum(hudInfo.close)}</strong>
+              L: <strong style={{ color: 'var(--text)' }}>{formatNum(hudInfo.low)}</strong>
+            </span>
+            <span>
+              C: <strong style={{ color: 'var(--text)' }}>{formatNum(hudInfo.close)}</strong>
             </span>
             {hudInfo.chgPct !== undefined && (
-              <span className={hudInfo.chgPct >= 0 ? 'text-green-400 font-semibold' : 'text-red-400 font-semibold'}>
+              <span className={hudInfo.chgPct >= 0 ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
                 ({hudInfo.chgPct >= 0 ? '+' : ''}
                 {hudInfo.chgPct.toFixed(2)}%)
               </span>
             )}
             <span>
-              Vol: <strong className="text-white">{formatVol(hudInfo.volume)}</strong>
+              Vol: <strong style={{ color: 'var(--text)' }}>{formatVol(hudInfo.volume)}</strong>
             </span>
 
             {showSma50 && hudInfo.sma50 && (
@@ -645,7 +709,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
             )}
           </>
         ) : (
-          <span className="text-gray-400 font-sans">Hover over the chart to inspect prices and indicators</span>
+          <span style={{ color: 'var(--text-3)' }} className="font-sans">
+            Hover over the chart to inspect prices and indicators
+          </span>
         )}
       </div>
 
@@ -655,7 +721,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
         {/* RSI Sub-Chart Container */}
         {showRsi && (
-          <div className="mt-2 pt-2 border-t border-white/5">
+          <div className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--glass-border)' }}>
             <div className="px-2 text-[10px] font-semibold text-purple-400 mb-1">RSI (14) Relative Strength</div>
             <div ref={rsiContainerRef} className="w-full" style={{ height: 120 }} />
           </div>
@@ -663,7 +729,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
         {/* MACD Sub-Chart Container */}
         {showMacd && (
-          <div className="mt-2 pt-2 border-t border-white/5">
+          <div className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--glass-border)' }}>
             <div className="px-2 text-[10px] font-semibold text-blue-400 mb-1">MACD (12, 26, 9)</div>
             <div ref={macdContainerRef} className="w-full" style={{ height: 130 }} />
           </div>

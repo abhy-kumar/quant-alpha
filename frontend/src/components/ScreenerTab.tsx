@@ -668,23 +668,36 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
 
       {/* Floating Stock Comparison Toolbar */}
       {compareTickers.length > 0 && (
-        <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-4 py-3 rounded-2xl glass-strong shadow-2xl animate-fade-in border border-white/20">
+        <div
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-4 py-3 rounded-2xl glass-strong shadow-2xl animate-fade-in"
+          style={{
+            background: 'var(--surface-3)',
+            color: 'var(--text)',
+            border: '1px solid var(--border-2)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+          }}
+        >
           <div className="flex items-center gap-2">
-            <Scales size={18} className="text-cyan-400" />
-            <span className="text-xs font-semibold text-white">
+            <Scales size={18} style={{ color: 'var(--brand)' }} />
+            <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
               {compareTickers.length} of 4 stocks selected
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsCompareOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-md"
+              className="px-3 py-1.5 rounded-xl font-bold text-xs transition-all shadow-md"
+              style={{
+                background: 'var(--brand)',
+                color: '#ffffff',
+              }}
             >
               Compare Matrix
             </button>
             <button
               onClick={() => setCompareTickers([])}
-              className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 transition-colors text-xs"
+              className="p-1.5 rounded-lg transition-colors text-xs hover:bg-white/10"
+              style={{ color: 'var(--text-3)' }}
               title="Clear selection"
             >
               <X size={16} />
