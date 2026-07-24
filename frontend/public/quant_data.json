@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-24 12:13:19",
+  "last_updated": "2026-07-24 18:11:21",
   "model_portfolios": {
     "max_sharpe": {
       "EICHERMOT.NS": 0.3571,
@@ -1367,12 +1367,12 @@
         "to": "2026-07-24",
         "tickers": [
           "CHENNPETRO.NS",
-          "HUHTAMAKI.NS",
           "INDOBORAX.NS",
-          "SOTL.NS",
-          "OFSS.NS",
-          "GANDHAR.NS",
+          "HUHTAMAKI.NS",
           "TANLA.NS",
+          "SOTL.NS",
+          "GANDHAR.NS",
+          "OFSS.NS",
           "COALINDIA.NS",
           "ACE.NS",
           "HEROMOTOCO.NS"
@@ -2691,8 +2691,8 @@
         "tickers": [
           "CUPID.NS",
           "TFCILTD.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "GVT&D.NS",
           "AXISCADES.NS",
           "APOLLO.NS",
@@ -5754,8 +5754,8 @@
           "ANANDRATHI.NS",
           "MARUTI.NS",
           "EICHERMOT.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "AUBANK.NS",
           "TVSMOTOR.NS",
           "CANBK.NS",
