@@ -110,7 +110,15 @@ def run():
         update_outcome_tracking(today, ohlcv_results)
         log.info("Outcome backfill complete.")
 
-    # Step 4: Regenerate quant_data.json and backtest_runs/
+    # Step 4: Run backtests to generate weekend snapshots in backtest_cache
+    log.info("Running all current backtests for weekend snapshot...")
+    try:
+        import engine.backtest_engine as backtest_engine
+        backtest_engine.run_all_current_backtests()
+    except Exception as e:
+        log.error(f"Failed to run weekend backtests: {e}")
+
+    # Step 5: Regenerate quant_data.json and backtest_runs/
     log.info("Running quant engine to regenerate quant_data.json...")
     quant_engine.generate_quant_data()
 
@@ -120,3 +128,4 @@ def run():
 
 if __name__ == "__main__":
     run()
+

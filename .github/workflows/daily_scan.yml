@@ -70,8 +70,8 @@ jobs:
   weekend_update:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Only run on the Saturday cron trigger
-    if: github.event.schedule == '37 3 * * 6'
+    # Run on Saturday cron trigger or manual workflow_dispatch
+    if: github.event.schedule == '37 3 * * 6' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
