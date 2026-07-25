@@ -1,6 +1,63 @@
 {
   "runs": [
     {
+      "slug": "long-6m-2026-07-25",
+      "as_of_date": "2026-07-25",
+      "model": "long",
+      "horizon": "6m",
+      "created_at": "2026-07-25 20:40:39",
+      "data_start": "2026-01-15",
+      "data_end": "2026-07-20",
+      "n_chart_pts": 126,
+      "stats": {
+        "total_return": 11.65,
+        "cagr": 24.15,
+        "volatility": 21.63,
+        "sharpe": 0.82,
+        "max_drawdown": -14.29,
+        "info_ratio": 1.12,
+        "win_rate": 53.6
+      }
+    },
+    {
+      "slug": "long-1y-2026-07-25",
+      "as_of_date": "2026-07-25",
+      "model": "long",
+      "horizon": "1y",
+      "created_at": "2026-07-25 20:40:33",
+      "data_start": "2025-07-15",
+      "data_end": "2026-07-20",
+      "n_chart_pts": 252,
+      "stats": {
+        "total_return": 14.7,
+        "cagr": 14.5,
+        "volatility": 18.75,
+        "sharpe": 0.43,
+        "max_drawdown": -16.14,
+        "info_ratio": 0.77,
+        "win_rate": 55.0
+      }
+    },
+    {
+      "slug": "short-6m-2026-07-25",
+      "as_of_date": "2026-07-25",
+      "model": "short",
+      "horizon": "6m",
+      "created_at": "2026-07-25 20:40:24",
+      "data_start": "2026-01-15",
+      "data_end": "2026-07-20",
+      "n_chart_pts": 126,
+      "stats": {
+        "total_return": 24.43,
+        "cagr": 53.61,
+        "volatility": 37.91,
+        "sharpe": 1.24,
+        "max_drawdown": -24.44,
+        "info_ratio": 1.41,
+        "win_rate": 56.0
+      }
+    },
+    {
       "slug": "short-1y-2026-07-25",
       "as_of_date": "2026-07-25",
       "model": "short",
@@ -18,64 +75,7 @@
         "info_ratio": 2.04,
         "win_rate": 58.2
       }
-    },
-    {
-      "slug": "long-1y-2026-07-25",
-      "as_of_date": "2026-07-25",
-      "model": "long",
-      "horizon": "1y",
-      "created_at": "2026-07-25 19:49:38",
-      "data_start": "2025-07-15",
-      "data_end": "2026-07-20",
-      "n_chart_pts": 252,
-      "stats": {
-        "total_return": 14.7,
-        "cagr": 14.5,
-        "volatility": 18.75,
-        "sharpe": 0.43,
-        "max_drawdown": -16.14,
-        "info_ratio": 0.77,
-        "win_rate": 55.0
-      }
-    },
-    {
-      "slug": "long-6m-2026-07-25",
-      "as_of_date": "2026-07-25",
-      "model": "long",
-      "horizon": "6m",
-      "created_at": "2026-07-25 19:49:34",
-      "data_start": "2026-01-15",
-      "data_end": "2026-07-20",
-      "n_chart_pts": 126,
-      "stats": {
-        "total_return": 11.65,
-        "cagr": 24.15,
-        "volatility": 21.63,
-        "sharpe": 0.82,
-        "max_drawdown": -14.29,
-        "info_ratio": 1.12,
-        "win_rate": 53.6
-      }
-    },
-    {
-      "slug": "short-6m-2026-07-25",
-      "as_of_date": "2026-07-25",
-      "model": "short",
-      "horizon": "6m",
-      "created_at": "2026-07-25 19:49:20",
-      "data_start": "2026-01-15",
-      "data_end": "2026-07-20",
-      "n_chart_pts": 126,
-      "stats": {
-        "total_return": 24.43,
-        "cagr": 53.61,
-        "volatility": 37.91,
-        "sharpe": 1.24,
-        "max_drawdown": -24.44,
-        "info_ratio": 1.41,
-        "win_rate": 56.0
-      }
     }
   ],
-  "exported_at": "2026-07-25 20:40:07"
+  "exported_at": "2026-07-25 20:41:42"
 }
