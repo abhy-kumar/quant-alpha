@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-27 13:35:45",
+  "last_updated": "2026-07-27 18:17:29",
   "model_portfolios": {
     "max_sharpe": {
       "INDOBORAX.NS": 0.4743,
@@ -690,8 +690,8 @@
         "tickers": [
           "ATUL.NS",
           "CHENNPETRO.NS",
-          "LUPIN.NS",
           "OFSS.NS",
+          "LUPIN.NS",
           "TANLA.NS",
           "INDOBORAX.NS",
           "SURYODAY.NS",
@@ -2700,8 +2700,8 @@
         "tickers": [
           "CUPID.NS",
           "TFCILTD.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "GVT&D.NS",
           "AXISCADES.NS",
           "APOLLO.NS",
@@ -4978,8 +4978,8 @@
           "GOLDBEES.NS",
           "GOLDIETF.NS",
           "LaurusLabs.NS",
-          "LAURUSLABS.NS",
-          "BEL.NS"
+          "BEL.NS",
+          "LAURUSLABS.NS"
         ]
       },
       {
@@ -5005,8 +5005,8 @@
           "SBC.NS",
           "EICHERMOT.NS",
           "MARUTI.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "ANANDRATHI.NS",
           "TVSMOTOR.NS",
           "ABCAPITAL.NS",
@@ -5023,8 +5023,8 @@
           "ABCAPITAL.NS",
           "AUBANK.NS",
           "LTF.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "MARUTI.NS",
           "HEROMOTOCO.NS",
           "TVSMOTOR.NS"
@@ -5781,8 +5781,8 @@
           "SBC.NS",
           "LTF.NS",
           "CANBK.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "HEROMOTOCO.NS",
           "ANANDRATHI.NS"
         ]
