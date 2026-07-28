@@ -627,6 +627,7 @@ def run_walkforward_backtest(
     as_of_date: str | None = None,   # cap simulation at this date (YYYY-MM-DD)
     weighting_scheme: str = "equal",  # "equal", "volatility_parity", or "score_weighted"
     stop_loss_pct: float = 0.0,      # e.g. 0.08 for 8% stop loss, 0.0 for none
+    regime_adaptive: bool = False,   # dynamically scale equity vs cash allocation
 ) -> dict:
     """
     Walk-forward backtest.
@@ -637,6 +638,7 @@ def run_walkforward_backtest(
       as_of_date        — if provided, treat this date as 'today' (no data beyond it used)
       weighting_scheme  — position allocation ("equal", "volatility_parity", or "score_weighted")
       stop_loss_pct     — trailing stop loss threshold (0.0 to disable)
+      regime_adaptive   — dynamically adjust equity vs cash buffer based on macro regime
       Returns dict: {chart, holdings, stats}
     """
     dates = prices.index
@@ -719,6 +721,22 @@ def run_walkforward_backtest(
             n_picks = max(len(top_picks), 1)
             weights = {t: 1.0 / n_picks for t in top_picks}
 
+        # Determine regime equity ratio if regime_adaptive is enabled
+        equity_ratio = 1.0
+        if regime_adaptive and has_bench:
+            b_prices = prices[bench].iloc[max(0, idx - 200):idx + 1].dropna()
+            if len(b_prices) >= 50:
+                b_close = float(b_prices.iloc[-1])
+                b_sma200 = float(b_prices.mean()) if len(b_prices) >= 200 else float(b_prices.mean())
+                b_vol = float(b_prices.pct_change().std() * np.sqrt(252))
+                
+                if b_close < b_sma200 and b_vol > 0.30:
+                    equity_ratio = 0.20  # Extreme Risk-Off: 20% equity, 80% cash
+                elif b_close < b_sma200 or b_vol > 0.25:
+                    equity_ratio = 0.50  # Risk-Off/Caution: 50% equity, 50% cash
+                else:
+                    equity_ratio = 1.00  # Risk-On: 100% equity
+
         # Entry prices for stop-loss monitoring
         entry_prices = {t: float(prices[t].iloc[idx]) for t in top_picks if t in prices.columns}
         stopped_out = set()
@@ -728,11 +746,14 @@ def run_walkforward_backtest(
         period_range = range(idx + 1, min(next_idx + 1, end_bar + 1))
 
         holdings_log.append({
-            "from":    str(dates[idx].date()),
-            "to":      str(dates[min(next_idx, end_bar)].date()),
-            "tickers": top_picks,
-            "weights": {t: round(w, 4) for t, w in weights.items()},
+            "from":         str(dates[idx].date()),
+            "to":           str(dates[min(next_idx, end_bar)].date()),
+            "tickers":      top_picks,
+            "weights":      {t: round(w * equity_ratio, 4) for t, w in weights.items()},
+            "equity_ratio": equity_ratio,
         })
+
+        daily_cash_rf = (RISK_FREE_RATE / 252.0)
 
         for bar_idx in period_range:
             if bar_idx > end_bar:
@@ -755,11 +776,14 @@ def run_walkforward_backtest(
             if active_picks:
                 active_weight_sum = sum(weights.get(t, 0.0) for t in active_picks)
                 if active_weight_sum > 0:
-                    daily_ret = float(sum(row[t] * (weights.get(t, 0.0) / active_weight_sum) for t in active_picks))
+                    equity_ret = float(sum(row[t] * (weights.get(t, 0.0) / active_weight_sum) for t in active_picks))
                 else:
-                    daily_ret = 0.0
+                    equity_ret = 0.0
             else:
-                daily_ret = 0.0
+                equity_ret = 0.0
+
+            # Combine weighted equity return + cash yield remainder
+            daily_ret = (equity_ret * equity_ratio) + (daily_cash_rf * (1.0 - equity_ratio))
 
             portfolio_value *= (1 + daily_ret)
 

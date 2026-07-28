@@ -170,13 +170,16 @@ def init_schema():
 
     c.execute("CREATE INDEX IF NOT EXISTS idx_ohlcv_ticker ON daily_ohlcv(Ticker)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_ohlcv_date ON daily_ohlcv(Date)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_ohlcv_ticker_date ON daily_ohlcv(Ticker, Date)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_factor_ticker ON factor_history(Ticker)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_factor_date ON factor_history(Scan_Date)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_factor_ticker_date ON factor_history(Ticker, Scan_Date)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_outcome_date ON outcome_tracking(Scan_Date)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_outcome_ticker_date ON outcome_tracking(Ticker, Scan_Date)")
 
     conn.commit()
     conn.close()
-    logger.info("Data pipeline schema initialized.")
+    logger.info("Data pipeline schema initialized with optimized composite indexes.")
 
 def store_daily_ohlcv(ohlcv_results: dict, scan_date: str):
     """

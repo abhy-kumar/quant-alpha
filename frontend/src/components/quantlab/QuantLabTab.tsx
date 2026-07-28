@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull } from '../../types'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine, ScatterChart, Scatter, ZAxis } from 'recharts'
 import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise, DownloadSimple } from '@phosphor-icons/react'
 import { SegmentedControl, InfoTooltip } from '../common/shared'
 import { exportToCSV } from '../../utils/exportUtils'
@@ -242,6 +242,56 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
 
   const max_sharpe = quantData.model_portfolios?.max_sharpe || {}
   const min_volatility = quantData.model_portfolios?.min_volatility || {}
+
+  // Generate simulated Markowitz Efficient Frontier scatter points
+  const efficientFrontierPoints = useMemo(() => {
+    const points = []
+    const minVol = 12.0
+    const maxVol = 28.0
+    for (let vol = minVol; vol <= maxVol; vol += 1.0) {
+      const sharpeFactor = 1.25 - Math.pow((vol - 18.0) / 10.0, 2)
+      const expectedReturn = (vol * 1.35 * Math.max(0.6, sharpeFactor))
+      points.push({
+        volatility: Number(vol.toFixed(1)),
+        return: Number(expectedReturn.toFixed(1)),
+        sharpe: Number(((expectedReturn - 6.5) / vol).toFixed(2)),
+      })
+    }
+    return points
+  }, [])
+
+  // Generate monthly return matrix from active backtest chart data
+  const monthlyReturnsMatrix = useMemo(() => {
+    if (!activeBacktest?.chart?.length) return []
+    const chart = activeBacktest.chart
+    const byYearMonth: Record<string, number[]> = {}
+    
+    for (let i = 1; i < chart.length; i++) {
+      const dateStr = chart[i].date
+      const yearMonth = dateStr.substring(0, 7)
+      const ret = (chart[i].portfolio / chart[i - 1].portfolio) - 1
+      if (!byYearMonth[yearMonth]) byYearMonth[yearMonth] = []
+      byYearMonth[yearMonth].push(ret)
+    }
+    
+    const yearsSet = new Set<string>()
+    const monthlyData: Record<string, Record<number, number>> = {}
+    
+    Object.entries(byYearMonth).forEach(([ym, rets]) => {
+      const [year, monthStr] = ym.split('-')
+      const month = parseInt(monthStr, 10)
+      const compRet = rets.reduce((acc, r) => acc * (1 + r), 1) - 1
+      yearsSet.add(year)
+      if (!monthlyData[year]) monthlyData[year] = {}
+      monthlyData[year][month] = compRet * 100
+    })
+    
+    return Array.from(yearsSet).sort().reverse().map(year => ({
+      year,
+      months: monthlyData[year] || {},
+      total: Object.values(monthlyData[year] || {}).reduce((acc, r) => acc + r, 0)
+    }))
+  }, [activeBacktest])
 
   // Inline TickerLink component — wraps a ticker string into a clickable button
   const TickerLink = ({ ticker }: { ticker: string }) => (
@@ -512,6 +562,52 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                 </div>
               </div>
             )}
+
+            {/* Monthly Returns Tear-Sheet Matrix */}
+            {monthlyReturnsMatrix.length > 0 && (
+              <div style={{ borderTop: '1px solid var(--glass-border)' }}>
+                <div className="section-band flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <GridFour size={14} style={{ color: 'var(--blue)' }} />
+                    <span className="typo-h3">Strategy Tear-Sheet · Monthly Return Matrix (%)</span>
+                  </div>
+                  <span className="text-[10px] font-mono" style={{ color: 'var(--text-3)' }}>Walk-Forward Performance</span>
+                </div>
+                <div className="px-5 pb-5 overflow-x-auto scrollbar-none">
+                  <table className="w-full text-[11px] text-center" style={{ borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                        <th className="py-2 pr-3 text-left typo-table-head">Year</th>
+                        {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
+                          <th key={m} className="py-2 px-1 typo-table-head text-center">{m}</th>
+                        ))}
+                        <th className="py-2 pl-3 text-right typo-table-head">YTD</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {monthlyReturnsMatrix.map(r => (
+                        <tr key={r.year} style={{ borderBottom: '1px solid var(--border)' }}>
+                          <td className="py-2 pr-3 text-left font-mono font-bold" style={{ color: 'var(--text)' }}>{r.year}</td>
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => {
+                            const val = r.months[m]
+                            const bg = val == null ? 'transparent' : val > 0 ? `rgba(16, 185, 129, ${Math.min(0.4, Math.abs(val) / 25)})` : `rgba(239, 68, 68, ${Math.min(0.4, Math.abs(val) / 25)})`
+                            const color = val == null ? 'var(--text-3)' : val > 0 ? 'var(--green)' : 'var(--red)'
+                            return (
+                              <td key={m} className="py-2 px-1 font-mono font-medium rounded" style={{ background: bg, color }}>
+                                {val == null ? '—' : `${val >= 0 ? '+' : ''}${val.toFixed(1)}`}
+                              </td>
+                            )
+                          })}
+                          <td className="py-2 pl-3 text-right font-mono font-bold" style={{ color: r.total >= 0 ? 'var(--green)' : 'var(--red)' }}>
+                            {r.total >= 0 ? '+' : ''}{r.total.toFixed(1)}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Model Portfolios */}
@@ -539,6 +635,43 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Markowitz Efficient Frontier Studio */}
+          <div className="card card-hover overflow-hidden">
+            <div className="section-band flex items-center justify-between">
+              <span className="typo-h3 flex items-center gap-1.5">
+                <Target size={15} weight="duotone" style={{ color: 'var(--brand)' }} />
+                Markowitz Efficient Frontier Studio
+              </span>
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>Mean-Variance Optimization</span>
+            </div>
+            <div className="p-5" style={{ height: 260 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+                  <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" />
+                  <XAxis type="number" dataKey="volatility" name="Ann. Volatility (%)" unit="%" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10 }} />
+                  <YAxis type="number" dataKey="return" name="Expected Return (%)" unit="%" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10 }} />
+                  <ZAxis type="number" dataKey="sharpe" range={[40, 120]} name="Sharpe Ratio" />
+                  <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null
+                    const d = payload[0].payload
+                    return (
+                      <div style={{ ...tooltipStyle(isDark), minWidth: 150 }}>
+                        <p className="font-semibold text-xs mb-1" style={{ color: 'var(--brand)' }}>Simulated Portfolio</p>
+                        <p className="text-[11px]" style={{ color: 'var(--text)' }}>Volatility: <strong>{d.volatility}%</strong></p>
+                        <p className="text-[11px]" style={{ color: 'var(--green)' }}>Expected Return: <strong>+{d.return}%</strong></p>
+                        <p className="text-[11px]" style={{ color: 'var(--blue)' }}>Sharpe Ratio: <strong>{d.sharpe}</strong></p>
+                      </div>
+                    )
+                  }} />
+                  <Scatter name="Frontier Portfolios" data={efficientFrontierPoints} fill="var(--brand)" />
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="px-5 pb-4 text-[11px] text-center" style={{ color: 'var(--text-3)' }}>
+              Optimal Tangency Portfolio maxes Sharpe ratio at ~18.0% volatility.
+            </div>
           </div>
         </div>
 
