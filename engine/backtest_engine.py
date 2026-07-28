@@ -625,14 +625,18 @@ def run_walkforward_backtest(
     rebalance_every: int = REBALANCE_EVERY,
     label: str = "Portfolio",
     as_of_date: str | None = None,   # cap simulation at this date (YYYY-MM-DD)
+    weighting_scheme: str = "equal",  # "equal", "volatility_parity", or "score_weighted"
+    stop_loss_pct: float = 0.0,      # e.g. 0.08 for 8% stop loss, 0.0 for none
 ) -> dict:
     """
     Walk-forward backtest.
 
     Args:
-      score_fn      — callable(prices, volumes, highs, lows, tickers, idx) → pd.Series
-      horizon_days  — number of trailing *trading* days to simulate over (252=1Y, 126=6M)
-      as_of_date    — if provided, treat this date as 'today' (no data beyond it used)
+      score_fn          — callable(prices, volumes, highs, lows, tickers, idx) → pd.Series
+      horizon_days      — number of trailing *trading* days to simulate over (252=1Y, 126=6M)
+      as_of_date        — if provided, treat this date as 'today' (no data beyond it used)
+      weighting_scheme  — position allocation ("equal", "volatility_parity", or "score_weighted")
+      stop_loss_pct     — trailing stop loss threshold (0.0 to disable)
       Returns dict: {chart, holdings, stats}
     """
     dates = prices.index
@@ -690,6 +694,35 @@ def run_walkforward_backtest(
 
         current_holdings = top_picks
 
+        # Calculate position weights
+        weights = {}
+        if weighting_scheme == "score_weighted" and not scores.empty:
+            pick_scores = scores.loc[[t for t in top_picks if t in scores.index]]
+            score_sum = pick_scores.sum()
+            if score_sum > 0:
+                weights = (pick_scores / score_sum).to_dict()
+        elif weighting_scheme == "volatility_parity":
+            vols = {}
+            for t in top_picks:
+                sub_prices = prices[t].iloc[max(0, idx - 60):idx + 1].dropna()
+                if len(sub_prices) >= 10:
+                    v = float(sub_prices.pct_change().std())
+                    vols[t] = 1.0 / v if v > 0 else 1.0
+                else:
+                    vols[t] = 1.0
+            total_inv_vol = sum(vols.values())
+            if total_inv_vol > 0:
+                weights = {t: vols[t] / total_inv_vol for t in top_picks}
+
+        # Fallback to equal weighting if unassigned or equal requested
+        if not weights:
+            n_picks = max(len(top_picks), 1)
+            weights = {t: 1.0 / n_picks for t in top_picks}
+
+        # Entry prices for stop-loss monitoring
+        entry_prices = {t: float(prices[t].iloc[idx]) for t in top_picks if t in prices.columns}
+        stopped_out = set()
+
         # Determine hold period
         next_idx = sim_dates_idx[i + 1] if i + 1 < len(sim_dates_idx) else end_bar
         period_range = range(idx + 1, min(next_idx + 1, end_bar + 1))
@@ -698,6 +731,7 @@ def run_walkforward_backtest(
             "from":    str(dates[idx].date()),
             "to":      str(dates[min(next_idx, end_bar)].date()),
             "tickers": top_picks,
+            "weights": {t: round(w, 4) for t, w in weights.items()},
         })
 
         for bar_idx in period_range:
@@ -706,7 +740,27 @@ def run_walkforward_backtest(
             row = returns_all.iloc[bar_idx]
 
             valid_picks = [t for t in top_picks if t in row.index and not np.isnan(row[t])]
-            daily_ret = float(np.mean([row[t] for t in valid_picks])) if valid_picks else 0.0
+            
+            # Check stop loss if enabled
+            if stop_loss_pct > 0:
+                for t in valid_picks:
+                    if t not in stopped_out and t in entry_prices:
+                        curr_p = float(prices[t].iloc[bar_idx])
+                        ent_p = entry_prices[t]
+                        if ent_p > 0 and (curr_p / ent_p - 1.0) <= -stop_loss_pct:
+                            stopped_out.add(t)
+
+            active_picks = [t for t in valid_picks if t not in stopped_out]
+            
+            if active_picks:
+                active_weight_sum = sum(weights.get(t, 0.0) for t in active_picks)
+                if active_weight_sum > 0:
+                    daily_ret = float(sum(row[t] * (weights.get(t, 0.0) / active_weight_sum) for t in active_picks))
+                else:
+                    daily_ret = 0.0
+            else:
+                daily_ret = 0.0
+
             portfolio_value *= (1 + daily_ret)
 
             if has_bench:

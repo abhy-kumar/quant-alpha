@@ -12,8 +12,14 @@ import numpy as np
 import pandas as pd
 import joblib
 
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from utils import log, _safe_float
 from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.model_selection import TimeSeriesSplit
+from sklearn.metrics import roc_auc_score, accuracy_score, brier_score_loss
+from sklearn.inspection import permutation_importance
 
 MODEL_PATH = "data/ml_alpha_model.joblib"
 DB_PATH = "data/market_scans.db"
@@ -34,7 +40,7 @@ FEATURE_COLS = [
 
 
 def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
-    """Train gradient boosted decision tree classifier on historical scan outcomes."""
+    """Train gradient boosted decision tree classifier on historical scan outcomes with TimeSeriesSplit CV."""
     if not os.path.exists(DB_PATH):
         log.warning(f"[ML Engine] Database {DB_PATH} not found. Skipping ML training.")
         return None
@@ -49,7 +55,7 @@ def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
             conn.close()
             return None
 
-        # Fetch feature vector + 21d forward returns
+        # Fetch feature vector + 21d forward returns ordered by Scan_Date for proper temporal splitting
         query = """
         SELECT 
             t.Ticker, t.Scan_Date,
@@ -61,6 +67,7 @@ def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
         FROM outcome_tracking t
         JOIN factor_history f ON t.Ticker = f.Ticker AND t.Scan_Date = f.Scan_Date
         WHERE t.Return_21d IS NOT NULL
+        ORDER BY t.Scan_Date ASC
         """
         df = pd.read_sql_query(query, conn)
         conn.close()
@@ -78,7 +85,31 @@ def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
         y = (df["Return_21d"] > 0).astype(int)
         X = df[FEATURE_COLS]
 
-        # Train model
+        # Perform TimeSeriesSplit cross validation if enough data exists
+        if len(df) >= 30:
+            n_splits = min(5, len(df) // 10)
+            tscv = TimeSeriesSplit(n_splits=n_splits)
+            cv_scores = []
+            cv_aucs = []
+            
+            for train_idx, val_idx in tscv.split(X):
+                X_tr, X_val = X.iloc[train_idx], X.iloc[val_idx]
+                y_tr, y_val = y.iloc[train_idx], y.iloc[val_idx]
+                
+                # Ensure validation slice has both classes before scoring ROC AUC
+                if len(np.unique(y_tr)) > 1 and len(np.unique(y_val)) > 1:
+                    cv_model = HistGradientBoostingClassifier(
+                        max_iter=100, max_depth=4, learning_rate=0.05, random_state=42
+                    )
+                    cv_model.fit(X_tr, y_tr)
+                    probs = cv_model.predict_proba(X_val)[:, 1]
+                    cv_scores.append(accuracy_score(y_val, cv_model.predict(X_val)))
+                    cv_aucs.append(roc_auc_score(y_val, probs))
+            
+            if cv_aucs:
+                log.info(f"[ML Engine] TimeSeries CV ({n_splits}-fold) - Acc: {np.mean(cv_scores):.2%}, ROC-AUC: {np.mean(cv_aucs):.4f}")
+
+        # Train final model on full dataset
         model = HistGradientBoostingClassifier(
             max_iter=100,
             max_depth=4,
@@ -86,6 +117,15 @@ def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
             random_state=42,
         )
         model.fit(X, y)
+
+        # Compute permutation feature importances
+        try:
+            perm_imp = permutation_importance(model, X, y, n_repeats=5, random_state=42)
+            importances = dict(zip(FEATURE_COLS, perm_imp.importances_mean))
+            top_factors = sorted(importances.items(), key=lambda x: x[1], reverse=True)[:3]
+            log.info(f"[ML Engine] Top Factor Importances: {', '.join([f'{k}: {v:.4f}' for k, v in top_factors])}")
+        except Exception as e:
+            log.debug(f"[ML Engine] Permutation importance check skipped: {e}")
 
         os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
         joblib.dump(model, MODEL_PATH)
@@ -114,7 +154,8 @@ def predict_stock_alpha(stock_dict: dict, model: HistGradientBoostingClassifier 
     Returns:
       {
         "ml_alpha_prob": float (0.0 to 100.0),
-        "ml_conviction": str ("Strong Alpha", "Moderate Alpha", "Neutral", "Low Alpha")
+        "ml_conviction": str ("Strong Alpha", "Moderate Alpha", "Neutral", "Low Alpha"),
+        "top_drivers": list of string factor names contributing positively
       }
     """
     if model is None:
@@ -123,6 +164,11 @@ def predict_stock_alpha(stock_dict: dict, model: HistGradientBoostingClassifier 
     research_score = _safe_float(stock_dict.get("Research_Score"), 5.0)
     tech_score = _safe_float(stock_dict.get("Tech_Score"), 0.0)
     fund_score = _safe_float(stock_dict.get("Fund_Score"), 5.0)
+
+    top_drivers = []
+    if research_score > 6.5: top_drivers.append("High Multi-Factor Rank")
+    if tech_score > 0.6: top_drivers.append("Strong Technical Momentum")
+    if fund_score > 6.5: top_drivers.append("Robust Fundamental Quality")
 
     if model is None:
         # Heuristic ensemble calculation when ML samples are accumulating
@@ -161,6 +207,7 @@ def predict_stock_alpha(stock_dict: dict, model: HistGradientBoostingClassifier 
     return {
         "ml_alpha_prob": prob,
         "ml_conviction": conviction,
+        "top_drivers": top_drivers,
     }
 
 
@@ -182,3 +229,4 @@ if __name__ == "__main__":
     }
     res = predict_stock_alpha(sample_stock, trained)
     print("Sample Prediction Result:", res)
+

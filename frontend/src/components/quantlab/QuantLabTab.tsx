@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull } from '../../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
-import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise } from '@phosphor-icons/react'
+import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise, DownloadSimple } from '@phosphor-icons/react'
 import { SegmentedControl, InfoTooltip } from '../common/shared'
+import { exportToCSV } from '../../utils/exportUtils'
 
 interface Props {
   isDark: boolean
@@ -340,7 +341,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                   Strategy Backtest · Top 10 Equal Weight<InfoTooltip id="quant.backtest" />
                 </span>
               </div>
-              {/* 2-axis controls: Model × Horizon */}
+              {/* 2-axis controls: Model × Horizon + Export */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                 <SegmentedControl
                   options={[
@@ -358,6 +359,29 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                   value={backtestHorizon}
                   onChange={(v) => setBacktestHorizon(v as '1y' | '6m')}
                 />
+                <button
+                  onClick={() => {
+                    if (windowedChart && windowedChart.length > 0) {
+                      exportToCSV(
+                        `QuantAlpha_Backtest_${backtestModel}_${backtestHorizon}_${new Date().toISOString().slice(0, 10)}.csv`,
+                        windowedChart.map(pt => ({
+                          Date: pt.date,
+                          Portfolio_Index: pt.portfolio,
+                          Benchmark_Index: pt.benchmark,
+                        }))
+                      )
+                    }
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded-lg transition-all"
+                  style={{
+                    background: 'var(--glass-bg)',
+                    color: 'var(--text-2)',
+                    border: '1px solid var(--glass-border)',
+                  }}
+                  title="Export equity curve data to CSV"
+                >
+                  <DownloadSimple size={13} weight="bold" /> Export CSV
+                </button>
               </div>
             </div>
             {!activeBacktest?.chart?.length && (

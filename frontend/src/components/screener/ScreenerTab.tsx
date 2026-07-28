@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react'
 import type { DashboardData } from '../../types'
 import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline, InfoTooltip } from '../common/shared'
 import { SegmentedControl } from '../common/shared'
-import { Info, Funnel, X, Star, Scales } from '@phosphor-icons/react'
+import { Info, Funnel, X, Star, Scales, DownloadSimple } from '@phosphor-icons/react'
 import { ComparisonModal } from './ComparisonModal'
+import { exportToCSV } from '../../utils/exportUtils'
 
 interface Props {
   data: DashboardData[]
@@ -170,27 +171,58 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           />
           <span className="text-[12px]" style={{color:'var(--text-3)'}}>Displaying {filteredData.length} of {data.length} stocks</span>
         </div>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
-          style={{
-            background: showFilters ? 'var(--brand)' : 'var(--glass-bg)',
-            color: showFilters ? '#fff' : 'var(--text-2)',
-            border: `1px solid ${showFilters ? 'var(--brand)' : 'var(--glass-border)'}`,
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            boxShadow: showFilters ? '0 4px 12px rgba(110, 168, 254, 0.3)' : 'var(--glass-shadow)',
-          }}
-        >
-          <Funnel size={14} weight="duotone" /> Filters
-          {activeFilterCount > 0 && (
-            <span style={{ minWidth: 18, height: 18, borderRadius: 9, background: showFilters ? 'rgba(255,255,255,0.2)' : 'var(--brand)',
-              color: showFilters ? 'white' : 'white', fontSize: 10, fontWeight: 700,
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const exportData = filteredData.map(d => ({
+                Ticker: d.Ticker,
+                Company: d.Long_Name || d.Ticker,
+                Sector: d.Sector,
+                Score: horizonMode === 'long' ? d.Composite_Score_Long : d.Composite_Score,
+                Conviction: horizonMode === 'long' ? d.Conviction_Long : d.Conviction,
+                Price: d.Price,
+                Change_Pct: d["1d_Chg_%"],
+                Piotroski_F: d.Piotroski_F,
+                RSI: d.RSI_Value,
+                Volume_Signal: d.Sig_Volume,
+              }))
+              exportToCSV(`QuantAlpha_Screener_${horizonMode}_${new Date().toISOString().slice(0, 10)}.csv`, exportData)
+            }}
+            className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
+            style={{
+              background: 'var(--glass-bg)',
+              color: 'var(--text-2)',
+              border: '1px solid var(--glass-border)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            title="Export filtered securities to CSV"
+          >
+            <DownloadSimple size={14} weight="bold" /> Export CSV
+          </button>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
+            style={{
+              background: showFilters ? 'var(--brand)' : 'var(--glass-bg)',
+              color: showFilters ? '#fff' : 'var(--text-2)',
+              border: `1px solid ${showFilters ? 'var(--brand)' : 'var(--glass-border)'}`,
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              boxShadow: showFilters ? '0 4px 12px rgba(110, 168, 254, 0.3)' : 'var(--glass-shadow)',
+            }}
+          >
+            <Funnel size={14} weight="duotone" /> Filters
+            {activeFilterCount > 0 && (
+              <span style={{ minWidth: 18, height: 18, borderRadius: 9, background: showFilters ? 'rgba(255,255,255,0.2)' : 'var(--brand)',
+                color: showFilters ? 'white' : 'white', fontSize: 10, fontWeight: 700,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Filters panel with animation */}

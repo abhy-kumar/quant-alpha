@@ -7,6 +7,7 @@ Handles OHLCV fetching, fundamental data, and Screener.in scraping.
 
 import time
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import urllib.parse
 import numpy as np
 import pandas as pd
@@ -272,9 +273,9 @@ def get_atl(ticker: str, default_52w_low: float) -> tuple[float, str]:
     return default_52w_low, "52W"
 
 
-def background_fetch_ath(tickers_to_fetch: list[str]):
-    """Background worker to fetch all-time high/low for tickers."""
-    for ticker in tickers_to_fetch:
+def background_fetch_ath(tickers_to_fetch: list[str], max_workers: int = 6):
+    """Background worker to fetch all-time high/low for tickers concurrently."""
+    def _fetch_single(ticker: str):
         sym = ticker.replace('.NS', '').replace('.BO', '')
         try:
             df = fetch_ohlcv_with_retry(ticker, period="max")
@@ -284,10 +285,14 @@ def background_fetch_ath(tickers_to_fetch: list[str]):
                 cache_manager.set("ath", sym, round(actual_ath, 2))
             if not np.isnan(actual_atl):
                 cache_manager.set("atl", sym, round(actual_atl, 2))
-            cache_manager.save_all()
         except (ValueError, KeyError, requests.RequestException) as e:
             log.debug(f"ATH fetch failed for {ticker}: {e}")
-        time.sleep(0.5)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(_fetch_single, ticker) for ticker in tickers_to_fetch]
+        for _ in as_completed(futures):
+            pass
+    cache_manager.save_all()
 
 
 def fetch_fundamentals(ticker: str) -> dict:
