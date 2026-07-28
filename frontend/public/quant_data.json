@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-28 12:32:29",
+  "last_updated": "2026-07-28 18:08:01",
   "model_portfolios": {
     "max_sharpe": {
       "TMB.NS": 0.7574,
@@ -714,10 +714,10 @@
           "OFSS.NS",
           "CHENNPETRO.NS",
           "LUPIN.NS",
-          "BALAMINES.NS",
           "HUHTAMAKI.NS",
-          "GANDHAR.NS",
+          "BALAMINES.NS",
           "MOTHERSON.NS",
+          "GANDHAR.NS",
           "TMB.NS"
         ]
       }
@@ -1419,8 +1419,8 @@
         "tickers": [
           "HUHTAMAKI.NS",
           "OFSS.NS",
-          "TMB.NS",
           "USHAMART.NS",
+          "TMB.NS",
           "GANDHAR.NS",
           "LUPIN.NS",
           "ATUL.NS",
@@ -2747,8 +2747,8 @@
           "ABDL.NS",
           "GABRIEL.NS",
           "TFCILTD.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "ACUTAAS.NS"
         ]
       },
@@ -4987,8 +4987,8 @@
           "NUVOCO.NS",
           "CHOICEIN.NS",
           "HDFCAMC.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "PAYTM.NS"
         ]
       },
@@ -5017,8 +5017,8 @@
           "TVSMOTOR.NS",
           "GOLDBEES.NS",
           "TFCILTD.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "INDIANB.NS",
           "PAYTM.NS",
           "GOLDIETF.NS"
@@ -5046,8 +5046,8 @@
         "tickers": [
           "EICHERMOT.NS",
           "SBC.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "ANANDRATHI.NS",
           "MARUTI.NS",
           "TVSMOTOR.NS",
@@ -5803,8 +5803,8 @@
         "tickers": [
           "SBC.NS",
           "EICHERMOT.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "ANANDRATHI.NS",
           "CANBK.NS",
           "AUBANK.NS",
@@ -5826,7 +5826,7 @@
           "ANANDRATHI.NS",
           "CANBK.NS",
           "SHRIRAMFIN.NS",
-          "LAURUSLABS.NS"
+          "LaurusLabs.NS"
         ]
       },
       {
@@ -5856,8 +5856,8 @@
           "RBLBANK.NS",
           "JBCHEPHARM.NS",
           "SBIN.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "INDOBORAX.NS"
         ]
       },
@@ -5921,7 +5921,7 @@
     }
   },
   "market_regime": {
-    "score": -2,
+    "score": 0,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.2938706968933669
