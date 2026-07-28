@@ -2,7 +2,7 @@ import React from 'react'
 import type { DashboardData } from '../../types'
 import { num, colorCode, scoreColor, InfoTooltip } from '../common/shared'
 import { X, Minus } from '@phosphor-icons/react'
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend, Tooltip } from 'recharts'
+import { FactorRadarChart } from './FactorRadarChart'
 
 interface ComparisonModalProps {
   isOpen: boolean
@@ -12,8 +12,6 @@ interface ComparisonModalProps {
   onRemoveTicker: (ticker: string) => void
   onSelectTicker: (ticker: string) => void
 }
-
-const ASSET_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6']
 
 export const ComparisonModal: React.FC<ComparisonModalProps> = ({
   isOpen,
@@ -28,15 +26,6 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
   const selectedAssets = tickers
     .map((t) => allData.find((d) => d.Ticker === t))
     .filter((d): d is DashboardData => d !== undefined)
-
-  const radarData = [
-    { dimension: 'Technical', ...Object.fromEntries(selectedAssets.map(a => [a.Ticker.replace('.NS',''), Number(((a.Tech_Score || 0) * 10).toFixed(1))])) },
-    { dimension: 'Piotroski', ...Object.fromEntries(selectedAssets.map(a => [a.Ticker.replace('.NS',''), Number((((a.Piotroski_F || 0) / 9) * 10).toFixed(1))])) },
-    { dimension: 'Fundamental', ...Object.fromEntries(selectedAssets.map(a => [a.Ticker.replace('.NS',''), Number((a.Fund_Score || 0).toFixed(1))])) },
-    { dimension: 'Gross Profit', ...Object.fromEntries(selectedAssets.map(a => [a.Ticker.replace('.NS',''), Number((a.Gross_Profit_Score || 5).toFixed(1))])) },
-    { dimension: 'Earnings Quality', ...Object.fromEntries(selectedAssets.map(a => [a.Ticker.replace('.NS',''), Number((a.Earnings_Quality || 5).toFixed(1))])) },
-    { dimension: 'Composite Rank', ...Object.fromEntries(selectedAssets.map(a => [a.Ticker.replace('.NS',''), Number((a.Composite_Score || 0).toFixed(1))])) },
-  ]
 
   const renderMetricRow = (
     label: string,
@@ -115,30 +104,10 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
             <>
               {/* Factor Radar Chart */}
               <div className="mb-6 card p-4" style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)' }}>
-                <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--brand)' }}>
+                <div className="text-xs font-semibold uppercase tracking-wider mb-2 text-center" style={{ color: 'var(--brand)' }}>
                   Multi-Factor Dimension Spider Radar
                 </div>
-                <div style={{ width: '100%', height: 260 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={radarData} outerRadius="75%">
-                      <PolarGrid stroke="var(--border)" />
-                      <PolarAngleAxis dataKey="dimension" tick={{ fill: 'var(--text-2)', fontSize: 11 }} />
-                      <PolarRadiusAxis angle={30} domain={[0, 10]} stroke="var(--border)" />
-                      {selectedAssets.map((asset, idx) => (
-                        <Radar
-                          key={asset.Ticker}
-                          name={asset.Ticker.replace('.NS', '')}
-                          dataKey={asset.Ticker.replace('.NS', '')}
-                          stroke={ASSET_COLORS[idx % ASSET_COLORS.length]}
-                          fill={ASSET_COLORS[idx % ASSET_COLORS.length]}
-                          fillOpacity={0.25}
-                        />
-                      ))}
-                      <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Tooltip />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </div>
+                <FactorRadarChart assets={selectedAssets} />
               </div>
 
               <table className="w-full text-left border-collapse">
