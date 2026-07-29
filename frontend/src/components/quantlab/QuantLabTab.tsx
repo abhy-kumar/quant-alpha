@@ -195,54 +195,6 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
     }
   }, [quantData])
 
-  // Custom tooltip that also shows holdings for the hovered date
-  const BacktestTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload?.length) return null
-    const holding = holdings.find(h => label >= h.from && label < h.to)
-    return (
-      <div style={{ ...tooltipStyle(isDark), minWidth: 180 }}>
-        <p className="text-[11px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>{label}</p>
-        {payload.map((p: any) => (
-          <p key={p.dataKey} className="text-xs" style={{ color: p.color }}>
-            {p.name}: <strong>{typeof p.value === 'number' ? p.value.toFixed(2) : p.value}</strong>
-          </p>
-        ))}
-        {holding && holding.tickers.length > 0 && (
-          <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
-            <p className="text-[10px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>Holdings</p>
-            <div className="flex flex-wrap gap-1">
-              {holding.tickers.map(t => (
-                <span key={t} className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
-                  {t.replace('.NS', '')}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  if (loading) {
-    return <div className="p-8 text-center" style={{ color: 'var(--text-3)' }}>Loading Quant Lab...</div>
-  }
-
-  // Show loading state if walk-forward backtests are absent (new run needed)
-  const hasWfData = quantData?.backtest_short_1y || quantData?.backtest_short_6m ||
-    quantData?.backtest_long_1y || quantData?.backtest_long_6m
-
-  if (!quantData || (!quantData.backtest?.chart?.length && !hasWfData)) {
-    return (
-      <div className="p-8 text-center card" style={{ borderRadius: 'var(--radius-xl)' }}>
-        <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>Quant Lab Initialization</h3>
-        <p style={{ color: 'var(--text-2)' }}>Insufficient history to run portfolio optimizations or backtests. Run the scanner for a few more days to collect data.</p>
-      </div>
-    )
-  }
-
-  const max_sharpe = quantData.model_portfolios?.max_sharpe || {}
-  const min_volatility = quantData.model_portfolios?.min_volatility || {}
-
   // Generate simulated Markowitz Efficient Frontier scatter points
   const efficientFrontierPoints = useMemo(() => {
     const points = []
@@ -292,6 +244,54 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
       total: Object.values(monthlyData[year] || {}).reduce((acc, r) => acc + r, 0)
     }))
   }, [activeBacktest])
+
+  // Custom tooltip that also shows holdings for the hovered date
+  const BacktestTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length) return null
+    const holding = holdings.find(h => label >= h.from && label < h.to)
+    return (
+      <div style={{ ...tooltipStyle(isDark), minWidth: 180 }}>
+        <p className="text-[11px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>{label}</p>
+        {payload.map((p: any) => (
+          <p key={p.dataKey} className="text-xs" style={{ color: p.color }}>
+            {p.name}: <strong>{typeof p.value === 'number' ? p.value.toFixed(2) : p.value}</strong>
+          </p>
+        ))}
+        {holding && holding.tickers.length > 0 && (
+          <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
+            <p className="text-[10px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>Holdings</p>
+            <div className="flex flex-wrap gap-1">
+              {holding.tickers.map(t => (
+                <span key={t} className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
+                  {t.replace('.NS', '')}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  if (loading) {
+    return <div className="p-8 text-center" style={{ color: 'var(--text-3)' }}>Loading Quant Lab...</div>
+  }
+
+  // Show loading state if walk-forward backtests are absent (new run needed)
+  const hasWfData = quantData?.backtest_short_1y || quantData?.backtest_short_6m ||
+    quantData?.backtest_long_1y || quantData?.backtest_long_6m
+
+  if (!quantData || (!quantData.backtest?.chart?.length && !hasWfData)) {
+    return (
+      <div className="p-8 text-center card" style={{ borderRadius: 'var(--radius-xl)' }}>
+        <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>Quant Lab Initialization</h3>
+        <p style={{ color: 'var(--text-2)' }}>Insufficient history to run portfolio optimizations or backtests. Run the scanner for a few more days to collect data.</p>
+      </div>
+    )
+  }
+
+  const max_sharpe = quantData.model_portfolios?.max_sharpe || {}
+  const min_volatility = quantData.model_portfolios?.min_volatility || {}
 
   // Inline TickerLink component — wraps a ticker string into a clickable button
   const TickerLink = ({ ticker }: { ticker: string }) => (
