@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import type { DashboardData } from '../../types'
-import { num, colorCode, scoreColor, getSignalLabel, SortHeader, MiniSparkline, InfoTooltip } from '../common/shared'
+import { num, colorCode, scoreColor, getSignalLabel, getBadgeClass, SortHeader, MiniSparkline, InfoTooltip } from '../common/shared'
 import { SegmentedControl } from '../common/shared'
 import { Info, Funnel, X, Star, Scales, DownloadSimple } from '@phosphor-icons/react'
 import { ComparisonModal } from './ComparisonModal'
@@ -188,15 +188,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               }))
               exportToCSV(`QuantAlpha_Screener_${horizonMode}_${new Date().toISOString().slice(0, 10)}.csv`, exportData)
             }}
-            className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
-            style={{
-              background: 'var(--glass-bg)',
-              color: 'var(--text-2)',
-              border: '1px solid var(--glass-border)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              boxShadow: 'var(--glass-shadow)',
-            }}
+            className="btn-glass"
             title="Export filtered securities to CSV"
           >
             <DownloadSimple size={14} weight="bold" /> Export CSV
@@ -392,12 +384,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                   <td className="py-2 px-2 text-right font-mono hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>
                   {isLoggedIn && (
                   <td className="py-2 px-2 font-medium whitespace-nowrap">
-                    <span className={`badge ${
-                      (row as any)[convCol] === 'Strong Buy' ? 'badge-strong-buy' :
-                      (row as any)[convCol] === 'Buy'        ? 'badge-buy' :
-                      (row as any)[convCol] === 'Caution'    ? 'badge-caution' :
-                      (row as any)[convCol] === 'Avoid'      ? 'badge-avoid' : 'badge-hold'
-                    }`}>
+                    <span className={`badge ${getBadgeClass((row as any)[convCol])}`}>
                       {(row as any)[convCol] || '-'}
                     </span>
                   </td>
@@ -550,8 +537,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                     {row.Ticker.replace('.NS', '')}
                   </button>
                   {isLoggedIn && (
-                  <span className={`badge ${row.Conviction === 'Strong Buy' ? 'badge-strong-buy' : row.Conviction === 'Buy' ? 'badge-buy' : row.Conviction === 'Caution' ? 'badge-caution' : row.Conviction === 'Avoid' ? 'badge-avoid' : 'badge-hold'}`}>
-                    {row.Conviction || '-'}
+                  <span className={`badge ${getBadgeClass((row as any)[convCol])}`}>
+                    {(row as any)[convCol] || '-'}
                   </span>
                   )}
                 </div>

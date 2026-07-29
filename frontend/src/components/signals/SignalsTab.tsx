@@ -233,7 +233,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
 
               {/* Sub-score bars */}
               <div className="mb-3 space-y-1.5">
-                {scoreBar('Technical', (Number(s.Tech_Score) + 1) * 5, 0, 10)}
+                {scoreBar('Technical', (Number(s.Tech_Score) || 0) <= 1.0 ? Math.max(0, Math.min(10, ((Number(s.Tech_Score) || 0) + 1) * 5)) : Math.min(10, Number(s.Tech_Score) || 0), 0, 10)}
                 {scoreBar('Fundamental', Number(s.Fund_Score) || 0, 0, 10)}
                 {scoreBar('Research', Number(s.Research_Score) || 0, 0, 10)}
               </div>

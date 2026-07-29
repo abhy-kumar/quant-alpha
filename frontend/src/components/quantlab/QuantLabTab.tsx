@@ -422,15 +422,10 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                       )
                     }
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded-lg transition-all"
-                  style={{
-                    background: 'var(--glass-bg)',
-                    color: 'var(--text-2)',
-                    border: '1px solid var(--glass-border)',
-                  }}
+                  className="btn-glass"
                   title="Export equity curve data to CSV"
                 >
-                  <DownloadSimple size={13} weight="bold" /> Export CSV
+                  <DownloadSimple size={14} weight="bold" /> Export CSV
                 </button>
               </div>
             </div>
