@@ -54,6 +54,7 @@
 - Calculates aggregate market breath percentage (% of NSE stocks above 200 SMA), India VIX volatility, and Nifty trend indices to output a dynamic 0–100 **Regime Score** (*Risk-On*, *Neutral*, *Risk-Off*).
 
 ### 5. Institutional-Grade UI & Visualization (`frontend/src/`)
+- **Mobile-First Ergonomic Interface**: Fixed glassmorphic **Bottom Navigation Dock** on mobile viewports (`< md`), slide-up **Filter Drawer / Bottom Sheet** for stock screening, touch-optimized pill selectors, and clean mobile header layout.
 - **TradingView Canvas Charting**: Built on `@tradingview/lightweight-charts` with real-time indicators (SMA 50/200, Supertrend, Bollinger Bands, RSI, MACD) and log/linear scaling.
 - **Stock Comparison Matrix**: Comparative evaluation drawer analyzing up to 4 assets across 20+ dimensions.
 - **macOS Design System**: Crafted with San Francisco typography hierarchy, translucent glassmorphism materials (`backdrop-blur-xl`), and dark/light adaptive color palettes.
