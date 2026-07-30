@@ -404,8 +404,8 @@ html { overflow-y: scroll; }
 
 /* Mobile Bottom Sheet & Nav Animations */
 @keyframes sheetSlideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { transform: translateY(16px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
 }
 @keyframes backdropFadeIn {
   from { opacity: 0; }
@@ -413,11 +413,11 @@ html { overflow-y: scroll; }
 }
 
 .animate-sheet-up {
-  animation: sheetSlideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: sheetSlideUp 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-backdrop-in {
-  animation: backdropFadeIn 200ms ease-out forwards;
+  animation: backdropFadeIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Safe area for mobile home indicator */
@@ -427,5 +427,20 @@ html { overflow-y: scroll; }
 
 .bottom-nav-pad {
   padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* ===============================================================
+   APPLE HUMAN INTERFACE GUIDELINES: REDUCED MOTION ACCESSIBILITY
+   =============================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .tape {
+    animation: none !important;
+  }
 }
 
