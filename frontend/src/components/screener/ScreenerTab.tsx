@@ -162,14 +162,13 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
       </div>
 
       {/* Search + Filter bar */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 flex-1">
+      <div className="flex items-center justify-between gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-[200px]">
           <input type="text" placeholder="Search ticker or company..." value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="glass-input"
-            style={{ width: 220 }}
+            className="glass-input w-full sm:w-[220px]"
           />
-          <span className="text-[12px]" style={{color:'var(--text-3)'}}>Displaying {filteredData.length} of {data.length} stocks</span>
+          <span className="text-[11px] sm:text-[12px] hidden xs:inline" style={{color:'var(--text-3)'}}>Displaying {filteredData.length} of {data.length}</span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -188,14 +187,14 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               }))
               exportToCSV(`QuantAlpha_Screener_${horizonMode}_${new Date().toISOString().slice(0, 10)}.csv`, exportData)
             }}
-            className="btn-glass"
+            className="btn-glass text-xs py-1.5 px-2.5 sm:px-3"
             title="Export filtered securities to CSV"
           >
-            <DownloadSimple size={14} weight="bold" /> Export CSV
+            <DownloadSimple size={14} weight="bold" /> <span className="hidden sm:inline">Export CSV</span>
           </button>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 text-[12px] sm:text-[13px] font-medium rounded-xl transition-all duration-200"
             style={{
               background: showFilters ? 'var(--brand)' : 'var(--glass-bg)',
               color: showFilters ? '#fff' : 'var(--text-2)',
@@ -217,8 +216,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
         </div>
       </div>
 
-      {/* Filters panel with animation */}
-      <div className="filter-panel" data-open={showFilters ? 'true' : 'false'}>
+      {/* Desktop Filters inline panel */}
+      <div className="hidden sm:block filter-panel" data-open={showFilters ? 'true' : 'false'}>
         <div className="p-5 card" style={{ borderRadius: 'var(--radius-xl)' }}>
           <div className="flex items-center justify-between mb-4">
             <span className="section-label" style={{ color: 'var(--brand)' }}>Filters</span>
@@ -294,6 +293,101 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           </div>
         </div>
       </div>
+
+      {/* Mobile Slide-Up Filter Drawer */}
+      {showFilters && (
+        <div className="sm:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-backdrop-in">
+          <div className="w-full max-h-[85vh] overflow-y-auto card p-5 pb-safe rounded-t-3xl animate-sheet-up border-t border-[var(--glass-border-strong)]" style={{ background: 'var(--glass-bg-strong)' }}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="section-label" style={{ color: 'var(--brand)' }}>Filter Securities</span>
+                {activeFilterCount > 0 && (
+                  <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full" style={{ background: 'var(--brand-soft)', color: 'var(--brand)' }}>
+                    {activeFilterCount} active
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                {activeFilterCount > 0 && (
+                  <button onClick={clearFilters} className="text-xs transition-colors" style={{ color: 'var(--text-3)' }}>Clear</button>
+                )}
+                <button onClick={() => setShowFilters(false)} className="p-1 rounded-full text-[var(--text-2)] hover:bg-[var(--glass-bg-subtle)]">
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min composite score: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{minComposite.toFixed(1)}</span></label>
+                <input type="range" min="0" max="10" step="0.5" value={minComposite} onChange={e => setMinComposite(Number(e.target.value))} className="w-full" />
+              </div>
+              <div>
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Piotroski score: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{minPiotroski}</span></label>
+                <input type="range" min="0" max="9" step="1" value={minPiotroski} onChange={e => setMinPiotroski(Number(e.target.value))} className="w-full" />
+              </div>
+              <div>
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Market Cap: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>₹{minMarketCap >= 1000 ? `${(minMarketCap/1000).toFixed(1)}T` : `${minMarketCap}B`}</span></label>
+                <input type="range" min="0" max="500" step="5" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" />
+              </div>
+              <div>
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max Debt-to-Equity: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{maxDE >= 999 ? 'Any' : maxDE}</span></label>
+                <input type="range" min="0" max="10" step="0.5" value={maxDE >= 999 ? 10 : maxDE} onChange={e => setMaxDE(Number(e.target.value) >= 10 ? 999 : Number(e.target.value))} className="w-full" />
+              </div>
+              <div>
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Value Score: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{minValue.toFixed(1)}</span></label>
+                <input type="range" min="0" max="10" step="0.5" value={minValue} onChange={e => setMinValue(Number(e.target.value))} className="w-full" />
+              </div>
+              <div>
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max Beta: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{maxBeta >= 3 ? 'Any' : maxBeta.toFixed(1)}</span></label>
+                <input type="range" min="0" max="3" step="0.1" value={maxBeta} onChange={e => setMaxBeta(Number(e.target.value) >= 2.9 ? 3 : Number(e.target.value))} className="w-full" />
+              </div>
+
+              <div>
+                <label className="text-xs mb-2 block font-medium" style={{ color: 'var(--text-2)' }}>Sectors</label>
+                <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+                  {availableSectors.map(s => (
+                    <button key={s} onClick={() => toggleSector(s)} className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all" style={selectedSectors.includes(s) ? {
+                      background: 'var(--brand)', color: '#fff', border: '1px solid var(--brand)',
+                    } : {
+                      background: 'var(--glass-bg-subtle)', color: 'var(--text-2)', border: '1px solid var(--glass-border)',
+                    }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {isLoggedIn && (
+              <div>
+                <label className="text-xs mb-2 block font-medium" style={{ color: 'var(--text-2)' }}>Conviction</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {CONVICTION_OPTIONS.map(c => (
+                    <button key={c} onClick={() => toggleConviction(c)} className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all" style={selectedConvictions.includes(c) ? {
+                      background: 'var(--brand)', color: '#fff', border: '1px solid var(--brand)',
+                    } : {
+                      background: 'var(--glass-bg-subtle)', color: 'var(--text-2)', border: '1px solid var(--glass-border)',
+                    }}>
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              )}
+
+              <div className="pt-3">
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="w-full py-2.5 rounded-xl text-xs font-semibold"
+                  style={{ background: 'var(--brand)', color: '#fff', boxShadow: '0 4px 12px rgba(110, 168, 254, 0.3)' }}
+                >
+                  Apply Filters ({filteredData.length} stocks)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Desktop table */}
       <div className="overflow-hidden hidden sm:block card" style={{ borderRadius: 'var(--radius-xl)' }}>

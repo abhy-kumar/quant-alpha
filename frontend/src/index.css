@@ -422,3 +422,36 @@ html { overflow-y: scroll; }
 .chart-main { height: 320px; }
 .chart-sub { height: 160px; }
 .chart-score { height: 200px; }
+
+@media (max-width: 640px) {
+  .chart-main { height: 250px; }
+  .chart-sub { height: 120px; }
+}
+
+/* Mobile Bottom Sheet & Nav Animations */
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-sheet-up {
+  animation: sheetSlideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-backdrop-in {
+  animation: backdropFadeIn 200ms ease-out forwards;
+}
+
+/* Safe area for mobile home indicator */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.bottom-nav-pad {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+

@@ -333,12 +333,11 @@ export default function App() {
     <div className="min-h-screen flex flex-col" style={{ background:'var(--bg-gradient)' }}>
       <Tape data={data} />
 
-      {isDark ? (
       <div>
-        {/* Header - Row 1: Nav */}
+        {/* Header - Row 1: Nav & Controls */}
         <header className="glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
-          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
-            {/* Left: nav */}
+          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center justify-between relative">
+            {/* Left: Desktop Nav */}
             <nav className="hidden md:flex items-center gap-1">
               {visibleTabs.map(tab => (
                 <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
@@ -354,18 +353,20 @@ export default function App() {
               ))}
             </nav>
 
-            <div className="flex-1" />
-
-            {/* Center: logo */}
-            <button onClick={()=>setActiveTab('charting')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-              <img src='/logo-dark.svg' alt="Alpha" className="h-[41px] md:h-[48px] w-auto" />
+            {/* Mobile Left: Brand Logo */}
+            <button onClick={()=>setActiveTab('charting')} className="md:hidden flex items-center shrink-0 hover:opacity-80 transition-opacity">
+              <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-[30px] w-auto" />
             </button>
 
-            <div className="flex-1" />
+            {/* Desktop Center: logo */}
+            <button onClick={()=>setActiveTab('charting')} className="hidden md:block absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
+              <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-[48px] w-auto" />
+            </button>
 
+            {/* Right: Mode & Auth Controls */}
             <div className="flex items-center gap-1.5" ref={loginRef} style={{ position: 'relative' }}>
-              <button onClick={()=>setIsDark(!isDark)} aria-label="Switch to light mode"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+              <button onClick={()=>setIsDark(!isDark)} aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-xl transition-all duration-200"
                 style={{
                   color: 'var(--text-3)',
                   background: 'var(--glass-bg-subtle)',
@@ -375,11 +376,12 @@ export default function App() {
                   boxShadow: 'var(--glass-shadow)',
                   cursor: 'pointer',
                 }}>
-                <Sun size={13} weight="duotone"/>Light
+                {isDark ? <Sun size={13} weight="duotone"/> : <Moon size={13} weight="duotone"/>}
+                <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
               </button>
               {isLoggedIn ? (
                 <button onClick={handleLogout} aria-label="Logout"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-xl transition-all duration-200"
                   style={{
                     color: 'var(--text-3)',
                     background: 'var(--glass-bg-subtle)',
@@ -389,11 +391,11 @@ export default function App() {
                     boxShadow: 'var(--glass-shadow)',
                     cursor: 'pointer',
                   }}>
-                  <SignOut size={13} weight="duotone"/>Logout
+                  <SignOut size={13} weight="duotone"/><span className="hidden sm:inline">Logout</span>
                 </button>
               ) : (
                 <button onClick={()=>setShowLogin(!showLogin)} aria-label="Login"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-xl transition-all duration-200"
                   style={{
                     color: 'var(--text-3)',
                     background: 'var(--glass-bg-subtle)',
@@ -403,7 +405,7 @@ export default function App() {
                     boxShadow: 'var(--glass-shadow)',
                     cursor: 'pointer',
                   }}>
-                  <LockSimple size={13} weight="duotone"/>Login
+                  <LockSimple size={13} weight="duotone"/><span className="hidden sm:inline">Login</span>
                 </button>
               )}
               {showLogin && !isLoggedIn && (
@@ -414,189 +416,7 @@ export default function App() {
                   backdropFilter: 'blur(40px) saturate(1.2)',
                   WebkitBackdropFilter: 'blur(40px) saturate(1.2)',
                   border: '1px solid var(--glass-border-strong)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-                }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Club Member Login</div>
-                  <input type="email" placeholder="Email" value={loginEmail}
-                    onChange={e => { setLoginEmail(e.target.value); setLoginError('') }}
-                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                    className="glass-input" style={{ width: '100%', marginBottom: 8, fontSize: 12 }} />
-                  <input type="password" placeholder="Password" value={loginPassword}
-                    onChange={e => { setLoginPassword(e.target.value); setLoginError('') }}
-                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                    className="glass-input" style={{ width: '100%', marginBottom: 8, fontSize: 12 }} />
-                  {loginError && <div style={{ fontSize: 11, color: 'var(--red)', marginBottom: 8 }}>{loginError}</div>}
-                  <button onClick={handleLogin} className="w-full py-1.5 text-[12px] font-medium rounded-lg transition-all duration-200"
-                    style={{
-                      background: 'var(--brand)', color: '#fff', border: 'none', cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(110, 168, 254, 0.3)',
-                    }}>Sign In</button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* Row 2: Market Data Sub-Header */}
-        <div className="glass-subtle" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
-          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
-          {/* LIVE indicator */}
-          <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
-            <div style={{ width:5, height:5, borderRadius:'50%',
-              background: isDynamic ? 'var(--amber)' : 'var(--text-3)',
-              transition: 'background 300ms ease',
-              boxShadow: isDynamic ? '0 0 4px var(--amber)' : 'none' }}/>
-            <span style={{ fontSize:9, color:'var(--text-3)', letterSpacing:'0.08em', fontWeight:600 }}>
-              {isDynamic ? 'LIVE' : 'CLOSED'}
-            </span>
-          </div>
-
-          <span style={{ width:1, height:12, background:'var(--border)', flexShrink:0 }}/>
-
-          {niftyData && (
-            <span style={{ display:'inline-flex', alignItems:'center', gap:4, flexShrink:0 }}>
-              <span style={{ color:'var(--text-3)', fontWeight:500 }}>NIFTY</span>
-              <span className="font-mono" style={{ fontWeight:700, color:'var(--text)' }}>
-                {niftyData.price.toLocaleString('en-IN')}
-              </span>
-              <span className="font-mono" style={{ color: niftyData.is_up ? 'var(--green)' : 'var(--red)' }}>
-                {niftyData.is_up?'▲':'▼'}{niftyData.change_pct}%
-              </span>
-            </span>
-          )}
-
-          {marketRegimeScore!==null && (
-            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0 }}>
-              <span style={{ width:5, height:5, borderRadius:'50%', background: regimeColor, display:'inline-block' }}/>
-              <span className="font-mono" style={{ fontWeight:500, color:'var(--text)' }}>
-                {regimeLabel} {marketRegimeScore > 0 ? '+' : ''}{marketRegimeScore}
-              </span>
-            </span>
-          )}
-
-          {fiiNet!==null && (
-            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0, fontWeight:500 }}>
-              <span style={{ color:'var(--text-3)' }}>FII</span>
-              <span className="font-mono" style={{ color: fiiNet > 0 ? 'var(--green)' : 'var(--red)' }}>
-                {fiiNet > 0 ? '+' : ''}{Math.round(fiiNet)}
-              </span>
-            </span>
-          )}
-
-          {diiNet!==null && (
-            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0, fontWeight:500 }}>
-              <span style={{ color:'var(--text-3)' }}>DII</span>
-              <span className="font-mono" style={{ color: diiNet > 0 ? 'var(--green)' : 'var(--red)' }}>
-                {diiNet > 0 ? '+' : ''}{Math.round(diiNet)}
-              </span>
-            </span>
-          )}
-
-          {pcr!==null && (
-            <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0, fontWeight:500 }}>
-              <span style={{ color:'var(--text-3)' }}>PCR</span>
-              <span className="font-mono" style={{ color:'var(--text)' }}>{pcr.toFixed(2)}</span>
-            </span>
-          )}
-
-          {coveragePct!==null && (
-            <span style={{ flexShrink:0, fontWeight:500 }}>
-              <span className="font-mono" style={{ color:'var(--text-2)' }}>{coveragePct}%</span>
-            </span>
-          )}
-
-          <div className="flex-1" />
-
-          {pricesUpdated && (
-            <span style={{ flexShrink:0, color:'var(--text-3)', fontSize:10 }}>
-              {pricesUpdated}
-            </span>
-          )}
-        </div>
-      </div>
-      </div>
-      ) : (
-      <div>
-        {/* Header - Row 1: Nav */}
-        <header className="glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
-          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center">
-            {/* Left: nav */}
-            <nav className="hidden md:flex items-center gap-1">
-              {visibleTabs.map(tab => (
-                <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
-                  style={{
-                    color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
-                    background: activeTab===tab.id ? 'var(--glass-bg)' : 'transparent',
-                    border: activeTab===tab.id ? '1px solid var(--glass-border)' : '1px solid transparent',
-                    boxShadow: activeTab===tab.id ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
-                  }}>
-                   <tab.icon size={14} weight="duotone" />{tab.label}
-                </button>
-              ))}
-            </nav>
-
-            <div className="flex-1" />
-
-            {/* Center: logo */}
-            <button onClick={()=>setActiveTab('charting')} className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-              <img src='/logo-light.svg' alt="Alpha" className="h-[41px] md:h-[48px] w-auto" />
-            </button>
-
-            <div className="flex-1" />
-
-            <div className="flex items-center gap-1.5" style={{ position: 'relative' }}>
-              <button onClick={()=>setIsDark(!isDark)} aria-label="Switch to dark mode"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
-                style={{
-                  color: 'var(--text-3)',
-                  background: 'var(--glass-bg-subtle)',
-                  border: '1px solid var(--glass-border)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
-                  boxShadow: 'var(--glass-shadow)',
-                  cursor: 'pointer',
-                }}>
-                <Moon size={13} weight="duotone"/>Dark
-              </button>
-              {isLoggedIn ? (
-                <button onClick={handleLogout} aria-label="Logout"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
-                  style={{
-                    color: 'var(--text-3)',
-                    background: 'var(--glass-bg-subtle)',
-                    border: '1px solid var(--glass-border)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    boxShadow: 'var(--glass-shadow)',
-                    cursor: 'pointer',
-                  }}>
-                  <SignOut size={13} weight="duotone"/>Logout
-                </button>
-              ) : (
-                <button onClick={()=>setShowLogin(!showLogin)} aria-label="Login"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-xl transition-all duration-200"
-                  style={{
-                    color: 'var(--text-3)',
-                    background: 'var(--glass-bg-subtle)',
-                    border: '1px solid var(--glass-border)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    boxShadow: 'var(--glass-shadow)',
-                    cursor: 'pointer',
-                  }}>
-                  <LockSimple size={13} weight="duotone"/>Login
-                </button>
-              )}
-              {showLogin && !isLoggedIn && (
-                <div style={{
-                  position: 'absolute', top: '100%', right: 0, marginTop: 8, padding: 16,
-                  borderRadius: 'var(--radius-lg)', zIndex: 100, minWidth: 240,
-                  background: 'var(--glass-bg-strong)',
-                  backdropFilter: 'blur(40px) saturate(1.2)',
-                  WebkitBackdropFilter: 'blur(40px) saturate(1.2)',
-                  border: '1px solid var(--glass-border-strong)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                  boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.3)' : '0 8px 32px rgba(0,0,0,0.12)',
                 }}>
                   <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Club Member Login</div>
                   <input type="email" placeholder="Email" value={loginEmail}
@@ -697,28 +517,9 @@ export default function App() {
         </div>
       </div>
       </div>
-      )}
-
-      {/* Mobile tab bar */}
-      <nav className="md:hidden overflow-x-auto glass" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
-        <div className="flex items-center gap-1 px-3 py-2">
-          {visibleTabs.map(tab => (
-            <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium whitespace-nowrap shrink-0 rounded-lg transition-all duration-200"
-              style={{
-                color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
-                background: activeTab===tab.id ? 'var(--glass-bg-strong)' : 'transparent',
-                border: activeTab===tab.id ? '1px solid var(--glass-border-strong)' : '1px solid transparent',
-                boxShadow: activeTab===tab.id ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
-              }}>
-              <tab.icon size={13} weight="duotone" />{tab.label}
-            </button>
-          ))}
-        </div>
-      </nav>
 
       {/* Content */}
-      <main className="flex-1 max-w-[1400px] mx-auto w-full px-3 md:px-5 py-3 md:py-5">
+      <main className="flex-1 max-w-[1400px] mx-auto w-full px-3 md:px-5 py-3 md:py-5 bottom-nav-pad md:pb-5">
         {loading ? (
           <TabSkeleton />
         ) : !data.length ? (
@@ -759,6 +560,31 @@ export default function App() {
           </ErrorBoundary>
         )}
       </main>
+
+      {/* Mobile Bottom Navigation Dock */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-strong border-t border-[var(--glass-border)] px-2 py-1 pb-safe backdrop-blur-xl" style={{ borderRadius: 0 }}>
+        <div className="flex items-center justify-around max-w-md mx-auto">
+          {visibleTabs.map(tab => {
+            const isActive = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className="flex flex-col items-center justify-center py-1 px-3 min-w-[56px] min-h-[44px] rounded-xl transition-all duration-200"
+                style={{
+                  color: isActive ? 'var(--brand)' : 'var(--text-3)',
+                  background: isActive ? 'var(--brand-soft)' : 'transparent',
+                }}
+              >
+                <tab.icon size={18} weight={isActive ? "fill" : "duotone"} />
+                <span className="text-[10px] font-medium mt-0.5" style={{ color: isActive ? 'var(--brand)' : 'var(--text-3)' }}>
+                  {tab.label}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </nav>
 
       {/* Footer */}
       <footer className="mt-auto glass" style={{borderTop:'1px solid var(--glass-border)', borderRadius: 0 }}>

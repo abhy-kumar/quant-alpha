@@ -196,7 +196,7 @@ export default function ChartingTab({
 
         {/* Mobile: horizontal tab strip to switch between info panels */}
         <div className="xl:hidden">
-          <div className="flex gap-1 overflow-x-auto scrollbar-none pb-0.5">
+          <div className="flex gap-1 overflow-x-auto scrollbar-none p-1 rounded-xl glass-subtle" style={{ border: '1px solid var(--glass-border)' }}>
             {([
               { id: 'profile',  label: 'Profile' },
               { id: 'tech',     label: 'Technical' },
@@ -208,11 +208,11 @@ export default function ChartingTab({
               <button
                 key={tab.id}
                 onClick={() => setMobilePanelTab(tab.id)}
-                className="shrink-0 px-3 py-1.5 text-[11px] font-medium rounded-lg transition-all"
+                className="shrink-0 px-3 py-1.5 min-h-[36px] text-[11px] font-medium rounded-lg transition-all duration-200"
                 style={{
-                  background: mobilePanelTab === tab.id ? 'var(--brand)' : 'var(--glass-bg-subtle)',
+                  background: mobilePanelTab === tab.id ? 'var(--brand)' : 'transparent',
                   color: mobilePanelTab === tab.id ? '#fff' : 'var(--text-3)',
-                  border: `1px solid ${mobilePanelTab === tab.id ? 'var(--brand)' : 'var(--glass-border)'}`,
+                  boxShadow: mobilePanelTab === tab.id ? '0 2px 8px rgba(110, 168, 254, 0.3)' : 'none',
                 }}
               >
                 {tab.label}
