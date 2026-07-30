@@ -41,12 +41,9 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-      <div
-        className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto card p-6 shadow-2xl"
-        style={{ background: 'var(--surface-3)', borderRadius: 'var(--radius-xl)' }}
-      >
+      <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto glass-strong p-6 shadow-2xl rounded-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 mb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between pb-4 mb-4" style={{ borderBottom: '1px solid var(--glass-border)' }}>
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl" style={{ background: 'var(--brand-soft)', color: 'var(--brand)' }}>
               <Lightning size={22} weight="duotone" />
@@ -72,25 +69,25 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
 
         {/* Hero Score Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-          <div className="p-3 card text-center" style={{ background: 'var(--surface)', borderRadius: 'var(--radius)' }}>
+          <div className="p-3 card text-center">
             <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Composite Rank</span>
             <div className={`text-lg font-bold font-mono mt-1 ${scoreColor(asset.Composite_Score)}`}>
               {num(asset.Composite_Score)}
             </div>
           </div>
-          <div className="p-3 card text-center" style={{ background: 'var(--surface)', borderRadius: 'var(--radius)' }}>
+          <div className="p-3 card text-center">
             <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Technical</span>
             <div className={`text-lg font-bold font-mono mt-1 ${colorCode(asset.Tech_Score)}`}>
               {num(asset.Tech_Score)}
             </div>
           </div>
-          <div className="p-3 card text-center" style={{ background: 'var(--surface)', borderRadius: 'var(--radius)' }}>
+          <div className="p-3 card text-center">
             <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Fundamental</span>
             <div className="text-lg font-bold font-mono mt-1 text-[var(--text)]">
               {num(asset.Fund_Score)}
             </div>
           </div>
-          <div className="p-3 card text-center" style={{ background: 'var(--surface)', borderRadius: 'var(--radius)' }}>
+          <div className="p-3 card text-center">
             <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">F-Score</span>
             <div className="text-lg font-bold font-mono mt-1 text-[var(--text)]">
               {asset.Piotroski_F ?? '-'}/9
@@ -101,7 +98,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
         {/* Catalysts & Risks */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
           {/* Bullish Catalysts */}
-          <div className="card p-4" style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)' }}>
+          <div className="card p-4">
             <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--green)] mb-3">
               <ShieldCheck size={16} weight="duotone" /> Key Bullish Catalysts
             </h4>
@@ -120,7 +117,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
           </div>
 
           {/* Key Risks */}
-          <div className="card p-4" style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)' }}>
+          <div className="card p-4">
             <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--red)] mb-3">
               <Warning size={16} weight="duotone" /> Operational & Market Risks
             </h4>
@@ -141,7 +138,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
 
         {/* Peer Relative Valuation */}
         {peerGroup.length > 0 && (
-          <div className="card p-4" style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)' }}>
+          <div className="card p-4">
             <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--brand)] mb-3">
               <Scales size={16} weight="duotone" /> Sector Peer Benchmark Matrix
             </h4>

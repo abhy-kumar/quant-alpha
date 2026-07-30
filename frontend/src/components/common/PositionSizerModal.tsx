@@ -31,12 +31,9 @@ export const PositionSizerModal: React.FC<PositionSizerModalProps> = ({ asset, i
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-      <div
-        className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto card p-6 shadow-2xl"
-        style={{ background: 'var(--surface-3)', borderRadius: 'var(--radius-xl)' }}
-      >
+      <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto glass-strong p-6 shadow-2xl rounded-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 mb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between pb-4 mb-4" style={{ borderBottom: '1px solid var(--glass-border)' }}>
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl" style={{ background: 'var(--brand-soft)', color: 'var(--brand)' }}>
               <Calculator size={22} weight="duotone" />
@@ -120,20 +117,20 @@ export const PositionSizerModal: React.FC<PositionSizerModalProps> = ({ asset, i
         </div>
 
         {/* Output Calculation Breakdown */}
-        <div className="card p-4 space-y-3" style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)' }}>
+        <div className="card p-4 space-y-3">
           <div className="text-xs font-bold uppercase tracking-wider text-[var(--brand)] mb-2">
             Recommended Execution Plan
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 card" style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)' }}>
+            <div className="p-3 card">
               <span className="text-[10px] text-[var(--text-3)] uppercase font-semibold">Recommended Share Qty</span>
               <div className="text-xl font-bold font-mono text-[var(--brand)] mt-1">
                 {recommendedShares.toLocaleString('en-IN')} <span className="text-xs font-normal">shares</span>
               </div>
             </div>
 
-            <div className="p-3 card" style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)' }}>
+            <div className="p-3 card">
               <span className="text-[10px] text-[var(--text-3)] uppercase font-semibold">Total Allocation</span>
               <div className="text-xl font-bold font-mono text-[var(--text)] mt-1">
                 ₹{num(totalPositionValue)} <span className="text-xs font-normal text-[var(--text-3)]">({positionPctOfAccount.toFixed(1)}%)</span>

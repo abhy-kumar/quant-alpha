@@ -64,7 +64,7 @@ export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatili
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="card p-3" style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)' }}>
+        <div className="card p-3">
           <div className="flex items-center gap-1.5 text-xs text-[var(--text-3)] mb-1">
             <Warning size={14} className="text-[var(--red)]" /> 5th Percentile (Bear Case)
             <InfoTooltip id="mc.p5" />
@@ -74,7 +74,7 @@ export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatili
           </div>
         </div>
 
-        <div className="card p-3" style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)' }}>
+        <div className="card p-3">
           <div className="flex items-center gap-1.5 text-xs text-[var(--text-3)] mb-1">
             <Target size={14} className="text-[var(--brand)]" /> 50th Percentile (Expected)
             <InfoTooltip id="mc.p50" />
@@ -84,7 +84,7 @@ export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatili
           </div>
         </div>
 
-        <div className="card p-3" style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)' }}>
+        <div className="card p-3">
           <div className="flex items-center gap-1.5 text-xs text-[var(--text-3)] mb-1">
             <ChartLineUp size={14} className="text-[var(--green)]" /> 95th Percentile (Bull Case)
             <InfoTooltip id="mc.p95" />
@@ -148,7 +148,7 @@ export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatili
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
           {crisisScenarios.map(sc => (
-            <div key={sc.name} className="p-3 card" style={{ background: 'var(--surface)', borderRadius: 'var(--radius)' }}>
+            <div key={sc.name} className="p-3 card">
               <div className="font-semibold text-[var(--text)] mb-1">{sc.name}</div>
               <div className="flex justify-between items-center text-[11px] mb-1">
                 <span className="text-[var(--text-3)]">Drawdown Shock:</span>

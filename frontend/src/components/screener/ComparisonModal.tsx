@@ -103,7 +103,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
           ) : (
             <>
               {/* Factor Radar Chart */}
-              <div className="mb-6 card p-4" style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)' }}>
+              <div className="mb-6 card p-4">
                 <div className="text-xs font-semibold uppercase tracking-wider mb-2 text-center" style={{ color: 'var(--brand)' }}>
                   Multi-Factor Dimension Spider Radar
                 </div>
@@ -112,10 +112,10 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
 
               <table className="w-full text-left border-collapse">
               <thead>
-                <tr style={{ borderBottom: '2px solid var(--border-2)' }}>
+                <tr style={{ borderBottom: '2px solid var(--glass-border-strong)' }}>
                   <th
-                    className="py-3 px-4 text-xs font-bold uppercase tracking-wider sticky left-0 z-10 glass"
-                    style={{ color: 'var(--text-3)', background: 'var(--surface)' }}
+                    className="py-3 px-4 text-xs font-bold uppercase tracking-wider sticky left-0 z-10 glass-strong"
+                    style={{ color: 'var(--text-3)' }}
                   >
                     Asset
                   </th>
