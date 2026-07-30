@@ -591,11 +591,11 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     <div className="flex flex-col w-full space-y-3">
       {/* Top Toolbar Controls */}
       <div
-        className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 card rounded-xl text-xs"
-        style={{ background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}
+        className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 card rounded-xl text-xs"
+        style={{ background: 'var(--glass-bg-subtle)', border: '0.5px solid var(--glass-border)' }}
       >
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="font-semibold text-sm tracking-tight" style={{ color: 'var(--text)' }}>
             {ticker.replace('.NS', '')}
           </span>
 
@@ -604,12 +604,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
           {/* Scale Toggle */}
           <button
             onClick={() => setIsLogScale(!isLogScale)}
-            className="px-2 py-1 rounded transition-all font-mono text-[11px]"
-            style={{
-              background: isLogScale ? 'var(--brand)' : 'var(--glass-bg-subtle)',
-              color: isLogScale ? '#fff' : 'var(--text-3)',
-              border: '1px solid var(--glass-border)',
-            }}
+            className="btn-glass text-[11px] py-1 px-2.5"
           >
             {isLogScale ? 'Log Scale' : 'Linear Scale'}
           </button>

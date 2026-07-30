@@ -135,11 +135,11 @@ const Panel = ({ title, children }: { title: React.ReactNode; children: React.Re
 )
 
 const InfoBlock = ({ label, value, accent, tooltipId }: { label: string; value: React.ReactNode; accent?: string; tooltipId?: string }) => (
-  <div>
-    <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}>
+  <div className="flex flex-col gap-0.5">
+    <div className="typo-caption text-[11px] font-medium tracking-tight" style={{ color: 'var(--text-3)' }}>
       {tooltipId ? <InfoTooltip id={tooltipId}>{label}</InfoTooltip> : label}
     </div>
-    <div className="text-sm font-medium" style={{ color: accent || 'var(--text)' }}>{value}</div>
+    <div className="typo-num text-[12px] font-semibold tracking-tight" style={{ color: accent || 'var(--text)' }}>{value}</div>
   </div>
 )
 

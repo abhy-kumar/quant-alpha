@@ -333,41 +333,35 @@ export default function App() {
       <Tape data={data} />
 
       <div>
-        {/* Header - Row 1: Nav & Controls */}
+        {/* Header - Web Application Navigation Bar */}
         <header className="glass-strong" style={{ borderBottom:'0.5px solid var(--glass-border)', borderRadius: 0 }}>
-          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[48px] flex items-center justify-between relative">
-            {/* Left: macOS Window Traffic Lights + Desktop Nav */}
-            <div className="hidden md:flex items-center gap-3">
-              <div className="flex items-center gap-1.5 mr-1">
-                <span className="w-3 h-3 rounded-full bg-[#FF5F56] inline-block shadow-sm" />
-                <span className="w-3 h-3 rounded-full bg-[#FFBD2E] inline-block shadow-sm" />
-                <span className="w-3 h-3 rounded-full bg-[#27C93F] inline-block shadow-sm" />
+          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center justify-between relative">
+            {/* Left: Brand Logo & Market Status */}
+            <div className="flex items-center gap-3">
+              <button onClick={()=>setActiveTab('charting')} className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity">
+                <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-[36px] w-auto" />
+              </button>
+              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium glass-subtle">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: isDynamic ? 'var(--green)' : 'var(--amber)' }} />
+                <span style={{ color: 'var(--text-2)' }}>{isDynamic ? 'LIVE' : 'CLOSED'}</span>
               </div>
-              <nav className="flex items-center gap-1">
-                {visibleTabs.map(tab => (
-                  <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg transition-all duration-150"
-                    style={{
-                      color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
-                      background: activeTab===tab.id ? 'var(--glass-bg-strong)' : 'transparent',
-                      border: activeTab===tab.id ? '0.5px solid var(--glass-border-strong)' : '0.5px solid transparent',
-                      boxShadow: activeTab===tab.id ? '0 1px 3px rgba(0,0,0,0.08), var(--glass-highlight)' : 'none',
-                    }}>
-                    <tab.icon size={14} weight="duotone" />{tab.label}
-                  </button>
-                ))}
-              </nav>
             </div>
 
-            {/* Mobile Left: Brand Logo */}
-            <button onClick={()=>setActiveTab('charting')} className="md:hidden flex items-center shrink-0 hover:opacity-80 transition-opacity">
-              <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-[30px] w-auto" />
-            </button>
-
-            {/* Desktop Center: logo */}
-            <button onClick={()=>setActiveTab('charting')} className="hidden md:block absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
-              <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-[48px] w-auto" />
-            </button>
+            {/* Desktop Center: Segmented Navigation Bar */}
+            <nav className="hidden md:flex items-center p-1 rounded-xl glass-subtle" style={{ border: '0.5px solid var(--glass-border)' }}>
+              {visibleTabs.map(tab => (
+                <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg transition-all duration-150"
+                  style={{
+                    color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
+                    background: activeTab===tab.id ? 'var(--glass-bg-strong)' : 'transparent',
+                    border: activeTab===tab.id ? '0.5px solid var(--glass-border-strong)' : '0.5px solid transparent',
+                    boxShadow: activeTab===tab.id ? '0 1px 3px rgba(0,0,0,0.08), var(--glass-highlight)' : 'none',
+                  }}>
+                  <tab.icon size={14} weight="duotone" />{tab.label}
+                </button>
+              ))}
+            </nav>
 
             {/* Right: Mode & Auth Controls */}
             <div className="flex items-center gap-1.5" ref={loginRef} style={{ position: 'relative' }}>
