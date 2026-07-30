@@ -122,16 +122,16 @@
 @layer components {
   .card {
     background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+    backdrop-filter: blur(36px) saturate(1.8);
+    -webkit-backdrop-filter: blur(36px) saturate(1.8);
     border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     box-shadow: var(--glass-shadow);
     position: relative;
-    transition: box-shadow 300ms var(--ease-out),
-                border-color 300ms var(--ease-out),
-                background 300ms var(--ease-out),
-                transform 300ms var(--ease-out);
+    transition: box-shadow 280ms var(--ease-out),
+                border-color 280ms var(--ease-out),
+                background 280ms var(--ease-out),
+                transform 280ms var(--ease-out);
   }
   .card::before {
     content: '';
@@ -143,9 +143,9 @@
     z-index: 1;
   }
   .card-hover {
-    transition: box-shadow 300ms var(--ease-out),
-                border-color 300ms var(--ease-out),
-                transform 300ms var(--ease-out);
+    transition: box-shadow 280ms var(--ease-out),
+                border-color 280ms var(--ease-out),
+                transform 280ms var(--ease-out);
   }
   .card-hover:hover {
     box-shadow: var(--glass-shadow-lg);
@@ -155,22 +155,22 @@
 
   .glass {
     background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+    backdrop-filter: blur(36px) saturate(1.8);
+    -webkit-backdrop-filter: blur(36px) saturate(1.8);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
   }
   .glass-strong {
     background: var(--glass-bg-strong);
-    backdrop-filter: blur(40px) saturate(1.6);
-    -webkit-backdrop-filter: blur(40px) saturate(1.6);
+    backdrop-filter: blur(48px) saturate(2.0);
+    -webkit-backdrop-filter: blur(48px) saturate(2.0);
     border: 1px solid var(--glass-border-strong);
     box-shadow: var(--glass-shadow-lg);
   }
   .glass-subtle {
     background: var(--glass-bg-subtle);
-    backdrop-filter: blur(28px) saturate(1.2);
-    -webkit-backdrop-filter: blur(28px) saturate(1.2);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
   }
@@ -187,8 +187,8 @@
     left: 0;
     right: 0;
     height: 100px;
-    backdrop-filter: blur(40px) saturate(1.5);
-    -webkit-backdrop-filter: blur(40px) saturate(1.5);
+    backdrop-filter: blur(40px) saturate(1.6);
+    -webkit-backdrop-filter: blur(40px) saturate(1.6);
     z-index: -1;
     pointer-events: none;
   }
@@ -200,23 +200,23 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 8px;
+    padding: 3px 9px;
     border-radius: var(--radius-sm);
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.02em;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     transition: background 200ms ease, color 200ms ease, border-color 200ms ease, transform 150ms ease;
   }
   .badge:active {
     transform: scale(0.95);
   }
-  .badge-strong-buy { background: var(--green-bg); color: var(--green); border: 1px solid rgba(48, 209, 88, 0.25); }
-  .badge-buy { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(100, 210, 255, 0.25); }
+  .badge-strong-buy { background: var(--green-bg); color: var(--green); border: 1px solid rgba(48, 209, 88, 0.28); }
+  .badge-buy { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(100, 210, 255, 0.28); }
   .badge-hold { background: var(--glass-bg-subtle); color: var(--text-2); border: 1px solid var(--glass-border); }
-  .badge-caution { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(255, 159, 10, 0.25); }
-  .badge-avoid { background: var(--red-bg); color: var(--red); border: 1px solid rgba(255, 69, 58, 0.25); }
+  .badge-caution { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(255, 159, 10, 0.28); }
+  .badge-avoid { background: var(--red-bg); color: var(--red); border: 1px solid rgba(255, 69, 58, 0.28); }
 
   .section-label {
     font-size: 10px;
@@ -227,14 +227,14 @@
   }
   .section-band {
     background: var(--glass-bg-subtle);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
     border-bottom: 1px solid var(--glass-border);
-    padding: 10px 16px;
-    font-size: 11px;
+    padding: 11px 18px;
+    font-size: 12px;
     font-weight: 600;
-    color: var(--text-2);
-    letter-spacing: 0.03em;
+    color: var(--text);
+    letter-spacing: 0.02em;
   }
 
   .segmented-control {
