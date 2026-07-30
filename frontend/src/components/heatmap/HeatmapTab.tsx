@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { DashboardData } from '../../types'
-import { SegmentedControl } from '../common/shared'
+import { SegmentedControl, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
+import { GridFour } from '@phosphor-icons/react'
 
 interface Props {
   sectorMap: Record<string, DashboardData[]>
@@ -75,25 +76,17 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
           const avgScore = sectorAvgScores[sector]
           const colCount = Math.min(4, Math.max(2, Math.ceil(Math.sqrt(stocks.length))))
           return (
-            <div key={sector} className="p-5 card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
-              <div className="mb-4 pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{sector}</h3>
-                  <span className="font-mono text-[11px] font-medium" style={{ color: avgScore >= 7 ? 'var(--green)' : avgScore >= 4 ? 'var(--text-2)' : 'var(--red)' }}>
-                    {avgScore.toFixed(1)}
+            <GlassCard key={sector}>
+              <GlassCardHeader
+                icon={GridFour}
+                title={sector}
+                badge={
+                  <span className="font-mono text-xs font-bold" style={{ color: avgScore >= 7 ? 'var(--green)' : avgScore >= 4 ? 'var(--text-2)' : 'var(--red)' }}>
+                    {avgScore.toFixed(1)} / 10
                   </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ flex: 1, height: 2, background: 'var(--border)', borderRadius: 1 }}>
-                    <div style={{ width: `${(avgScore/10)*100}%`, height: '100%',
-                      background: `hsl(${Math.round(avgScore*14)}, 55%, 45%)`,
-                      borderRadius: 1, transition: 'width 500ms var(--ease-out)' }}/>
-                  </div>
-                  <span className="font-mono text-[10px]" style={{ color: 'var(--text-2)' }}>
-                    {stocks.length} stocks
-                  </span>
-                </div>
-              </div>
+                }
+              />
+              <GlassCardContent className="p-4">
               <div style={{ display: 'grid', gridTemplateColumns: `repeat(${colCount}, 1fr)`, gap: 6 }}>
                 {stocks.map(stock => {
                   const s = Number(stock.Composite_Score || 0)
@@ -127,7 +120,8 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
                   )
                 })}
               </div>
-            </div>
+              </GlassCardContent>
+            </GlassCard>
           )
         })}
       </div>

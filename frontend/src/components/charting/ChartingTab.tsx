@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import type { DashboardData } from '../../types'
-import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip } from '../common/shared'
-import { MagnifyingGlass, Lightning, Calculator } from '@phosphor-icons/react'
+import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
+import { MagnifyingGlass, Lightning, Calculator, User, TrendUp, BookOpen, ChartBar, ShieldCheck, Scales } from '@phosphor-icons/react'
 import {
   ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine
 } from 'recharts'
@@ -77,14 +77,9 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
         <kbd className="text-[10px] px-1.5 py-0.5 hidden sm:block rounded-md" style={{ color: 'var(--text-3)', background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'}K</kbd>
       </div>
       {open && query && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1" style={{
-          borderRadius: 'var(--radius-lg)',
-          background: 'var(--dropdown-bg)',
-          border: '1px solid var(--glass-border-strong)',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.1)',
-        }}>
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 glass-strong rounded-xl shadow-2xl overflow-hidden">
           {/* Scrollable content */}
-          <div className="max-h-60 overflow-y-auto scrollbar-none" style={{ borderRadius: 'var(--radius-lg)' }}>
+          <div className="max-h-60 overflow-y-auto scrollbar-none">
             {filtered.length === 0 ? (
               <div className="p-3 text-xs text-center" style={{ color: 'var(--text-3)' }}>No results</div>
             ) : filtered.map(d => (
@@ -96,7 +91,7 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
                 background: d.Ticker === selectedTicker ? 'var(--brand-soft)' : 'transparent',
                 color: 'var(--text)',
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-2)')}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--glass-bg-subtle)')}
               onMouseLeave={e => (e.currentTarget.style.background = d.Ticker === selectedTicker ? 'var(--brand-soft)' : 'transparent')}
             >
               <span className="font-medium">{d.Ticker.replace('.NS', '')}</span>
@@ -351,115 +346,131 @@ export default function ChartingTab({
 
         {/* Desktop: all panels stacked (xl+) */}
 
-        <div className="xl:block hidden card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-          <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Company Profile</h3>
-          <div className="mb-4">
-            <div className="text-sm font-medium truncate" style={{ color: 'var(--text)' }} title={selectedAsset?.Long_Name || '-'}>{selectedAsset?.Long_Name?.replace(' Limited', ' Ltd').replace(' Industries', ' Ind.') || '-'}</div>
-          </div>
-          <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-            <InfoBlock label="Price" value={`₹${num(selectedAsset?.Price)}`} tooltipId="chart.price" />
-            <InfoBlock
-              label="1D Change"
-              value={selectedAsset?.["1d_Chg_%"] ? `${selectedAsset["1d_Chg_%"] > 0 ? '+' : ''}${selectedAsset["1d_Chg_%"].toFixed(2)}%` : '-'}
-              accent={selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] > 0 ? 'var(--green)' : selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] < 0 ? 'var(--red)' : undefined}
-              tooltipId="chart.1d-change"
-            />
-            <InfoBlock label="CEO" value={selectedAsset?.CEO || '-'} tooltipId="chart.ceo" />
-            <InfoBlock label="Market Cap" value={selectedAsset?.Market_Cap_B ? `₹${num(selectedAsset?.Market_Cap_B)}B` : '-'} tooltipId="chart.market-cap" />
-            <InfoBlock label="Revenue" value={selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue)}B` : '-'} tooltipId="chart.revenue" />
-            <InfoBlock label="Profit" value={selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income)}B` : '-'} tooltipId="chart.profit" />
-            <InfoBlock label="EBITDA" value={selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA)}B` : '-'} tooltipId="chart.ebitda" />
-            <InfoBlock label="Div Yield" value={selectedAsset?.["Div_Yield_%"] ? `${num(selectedAsset?.["Div_Yield_%"])}%` : '-'} tooltipId="chart.div-yield" />
-            <InfoBlock label="52W High" value={selectedAsset?.["52W_High"] ? `₹${num(selectedAsset?.["52W_High"])}` : '-'} tooltipId="chart.52w-high" />
-            <InfoBlock label="52W Low" value={selectedAsset?.["52W_Low"] ? `₹${num(selectedAsset?.["52W_Low"])}` : '-'} tooltipId="chart.52w-low" />
-            {ath && price > 0 && (
-              <InfoBlock label="vs ATH" value={`${(((price / ath) - 1) * 100).toFixed(1)}%`} accent={(price / ath) > 0.95 ? 'var(--green)' : 'var(--amber)'} tooltipId="chart.vs-ath" />
-            )}
-            <InfoBlock label="ATH" value={ath ? `₹${num(ath)}` : '-'} tooltipId="chart.ath" />
-            <InfoBlock label="ATL" value={selectedAsset?.All_Time_Low ? `₹${num(selectedAsset?.All_Time_Low)}` : '-'} tooltipId="chart.atl" />
-          </div>
-        </div>
+        <GlassCard className="xl:block hidden">
+          <GlassCardHeader
+            icon={User}
+            title="Company Profile"
+            subtitle={selectedAsset?.Long_Name?.replace(' Limited', ' Ltd').replace(' Industries', ' Ind.') || '-'}
+          />
+          <GlassCardContent className="p-4">
+            <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
+              <InfoBlock label="Price" value={`₹${num(selectedAsset?.Price)}`} tooltipId="chart.price" />
+              <InfoBlock
+                label="1D Change"
+                value={selectedAsset?.["1d_Chg_%"] ? `${selectedAsset["1d_Chg_%"] > 0 ? '+' : ''}${selectedAsset["1d_Chg_%"].toFixed(2)}%` : '-'}
+                accent={selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] > 0 ? 'var(--green)' : selectedAsset?.["1d_Chg_%"] && selectedAsset["1d_Chg_%"] < 0 ? 'var(--red)' : undefined}
+                tooltipId="chart.1d-change"
+              />
+              <InfoBlock label="CEO" value={selectedAsset?.CEO || '-'} tooltipId="chart.ceo" />
+              <InfoBlock label="Market Cap" value={selectedAsset?.Market_Cap_B ? `₹${num(selectedAsset?.Market_Cap_B)}B` : '-'} tooltipId="chart.market-cap" />
+              <InfoBlock label="Revenue" value={selectedAsset?.Total_Revenue ? `₹${num(selectedAsset?.Total_Revenue)}B` : '-'} tooltipId="chart.revenue" />
+              <InfoBlock label="Profit" value={selectedAsset?.Net_Income ? `₹${num(selectedAsset?.Net_Income)}B` : '-'} tooltipId="chart.profit" />
+              <InfoBlock label="EBITDA" value={selectedAsset?.EBITDA ? `₹${num(selectedAsset?.EBITDA)}B` : '-'} tooltipId="chart.ebitda" />
+              <InfoBlock label="Div Yield" value={selectedAsset?.["Div_Yield_%"] ? `${num(selectedAsset?.["Div_Yield_%"])}%` : '-'} tooltipId="chart.div-yield" />
+              <InfoBlock label="52W High" value={selectedAsset?.["52W_High"] ? `₹${num(selectedAsset?.["52W_High"])}` : '-'} tooltipId="chart.52w-high" />
+              <InfoBlock label="52W Low" value={selectedAsset?.["52W_Low"] ? `₹${num(selectedAsset?.["52W_Low"])}` : '-'} tooltipId="chart.52w-low" />
+              {ath && price > 0 && (
+                <InfoBlock label="vs ATH" value={`${(((price / ath) - 1) * 100).toFixed(1)}%`} accent={(price / ath) > 0.95 ? 'var(--green)' : 'var(--amber)'} tooltipId="chart.vs-ath" />
+              )}
+              <InfoBlock label="ATH" value={ath ? `₹${num(ath)}` : '-'} tooltipId="chart.ath" />
+              <InfoBlock label="ATL" value={selectedAsset?.All_Time_Low ? `₹${num(selectedAsset?.All_Time_Low)}` : '-'} tooltipId="chart.atl" />
+            </div>
+          </GlassCardContent>
+        </GlassCard>
 
         {/* Desktop: Technicals */}
-        <div className="xl:block hidden card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-          <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Technical Snapshot</h3>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} tooltipId="chart.tech-score" />
-            {isLoggedIn && <InfoBlock label="Conviction" value={selectedAsset?.Conviction || '-'} tooltipId="chart.conviction" />}
-            <InfoBlock label="RSI(14)" value={num(selectedAsset?.RSI_Value)} tooltipId="chart.rsi" />
-            <InfoBlock label="ADX(14)" value={num(selectedAsset?.ADX_Value)} tooltipId="chart.adx" />
-            <InfoBlock label="MACD" value={num(selectedAsset?.MACD_Value)} tooltipId="chart.macd" />
-            <InfoBlock label="Supertrend" value={selectedAsset?.ST_Signal || '-'} tooltipId="chart.supertrend" />
-            <div className="col-span-2">
-              <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.bull-bear">Bull / Neutral / Bear</InfoTooltip></div>
-              <span style={{color:'var(--green)'}}>{selectedAsset?.Bull_Count ?? '-'}</span>
-              <span className="mx-1" style={{color:'var(--text-3)'}}>/</span>
-              <span style={{color:'var(--text-2)'}}>{selectedAsset?.Bull_Count != null && selectedAsset?.Bear_Count != null ? 15 - selectedAsset.Bull_Count - selectedAsset.Bear_Count : '-'}</span>
-              <span className="mx-1" style={{color:'var(--text-3)'}}>/</span>
-              <span style={{color:'var(--red)'}}>{selectedAsset?.Bear_Count ?? '-'}</span>
+        <GlassCard className="xl:block hidden">
+          <GlassCardHeader icon={TrendUp} title="Technical Snapshot" />
+          <GlassCardContent className="p-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} tooltipId="chart.tech-score" />
+              {isLoggedIn && <InfoBlock label="Conviction" value={selectedAsset?.Conviction || '-'} tooltipId="chart.conviction" />}
+              <InfoBlock label="RSI(14)" value={num(selectedAsset?.RSI_Value)} tooltipId="chart.rsi" />
+              <InfoBlock label="ADX(14)" value={num(selectedAsset?.ADX_Value)} tooltipId="chart.adx" />
+              <InfoBlock label="MACD" value={num(selectedAsset?.MACD_Value)} tooltipId="chart.macd" />
+              <InfoBlock label="Supertrend" value={selectedAsset?.ST_Signal || '-'} tooltipId="chart.supertrend" />
+              <div className="col-span-2">
+                <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.bull-bear">Bull / Neutral / Bear</InfoTooltip></div>
+                <span style={{color:'var(--green)'}}>{selectedAsset?.Bull_Count ?? '-'}</span>
+                <span className="mx-1" style={{color:'var(--text-3)'}}>/</span>
+                <span style={{color:'var(--text-2)'}}>{selectedAsset?.Bull_Count != null && selectedAsset?.Bear_Count != null ? 15 - selectedAsset.Bull_Count - selectedAsset.Bear_Count : '-'}</span>
+                <span className="mx-1" style={{color:'var(--text-3)'}}>/</span>
+                <span style={{color:'var(--red)'}}>{selectedAsset?.Bear_Count ?? '-'}</span>
+              </div>
             </div>
-          </div>
-        </div>
+          </GlassCardContent>
+        </GlassCard>
 
         {/* Desktop: Research */}
-        <div className="xl:block hidden card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Research Factors</h3>
-            <span className="text-sm font-medium" style={{ color: Number(selectedAsset?.Research_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Research_Score) < 4 ? 'var(--red)' : 'var(--text)' }}>
-              {num(selectedAsset?.Research_Score)}/10
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="Piotroski" value={`${selectedAsset?.Piotroski_F ?? '-'}/9`} accent={Number(selectedAsset?.Piotroski_F) >= 7 ? 'var(--green)' : Number(selectedAsset?.Piotroski_F) <= 3 ? 'var(--red)' : undefined} tooltipId="chart.piotroski" />
-            <InfoBlock label="Gross Profit" value={num(selectedAsset?.Gross_Profit_Score)} tooltipId="chart.gross-profit" />
-            <InfoBlock label="Earnings Quality" value={num(selectedAsset?.Earnings_Quality)} tooltipId="chart.earnings-quality" />
-            <InfoBlock label="Z-Score" value={num(selectedAsset?.Z_Score_60)} accent={Number(selectedAsset?.Z_Score_60) > 2 ? 'var(--red)' : Number(selectedAsset?.Z_Score_60) < -2 ? 'var(--green)' : undefined} tooltipId="chart.z-score" />
-            <InfoBlock label="Value Score" value={num(selectedAsset?.Value_Score)} accent={Number(selectedAsset?.Value_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Value_Score) < 4 ? 'var(--red)' : undefined} tooltipId="chart.value-score" />
-            <InfoBlock label="Investment" value={num(selectedAsset?.Investment_Score)} tooltipId="chart.investment" />
-            <InfoBlock label="SUE" value={num(selectedAsset?.SUE_Score)} tooltipId="chart.sue" />
-            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '-'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} tooltipId="chart.beta" />
-          </div>
-        </div>
+        <GlassCard className="xl:block hidden">
+          <GlassCardHeader
+            icon={BookOpen}
+            title="Research Factors"
+            badge={
+              <span className="text-sm font-medium" style={{ color: Number(selectedAsset?.Research_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Research_Score) < 4 ? 'var(--red)' : 'var(--text)' }}>
+                {num(selectedAsset?.Research_Score)}/10
+              </span>
+            }
+          />
+          <GlassCardContent className="p-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <InfoBlock label="Piotroski" value={`${selectedAsset?.Piotroski_F ?? '-'}/9`} accent={Number(selectedAsset?.Piotroski_F) >= 7 ? 'var(--green)' : Number(selectedAsset?.Piotroski_F) <= 3 ? 'var(--red)' : undefined} tooltipId="chart.piotroski" />
+              <InfoBlock label="Gross Profit" value={num(selectedAsset?.Gross_Profit_Score)} tooltipId="chart.gross-profit" />
+              <InfoBlock label="Earnings Quality" value={num(selectedAsset?.Earnings_Quality)} tooltipId="chart.earnings-quality" />
+              <InfoBlock label="Z-Score" value={num(selectedAsset?.Z_Score_60)} accent={Number(selectedAsset?.Z_Score_60) > 2 ? 'var(--red)' : Number(selectedAsset?.Z_Score_60) < -2 ? 'var(--green)' : undefined} tooltipId="chart.z-score" />
+              <InfoBlock label="Value Score" value={num(selectedAsset?.Value_Score)} accent={Number(selectedAsset?.Value_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Value_Score) < 4 ? 'var(--red)' : undefined} tooltipId="chart.value-score" />
+              <InfoBlock label="Investment" value={num(selectedAsset?.Investment_Score)} tooltipId="chart.investment" />
+              <InfoBlock label="SUE" value={num(selectedAsset?.SUE_Score)} tooltipId="chart.sue" />
+              <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '-'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} tooltipId="chart.beta" />
+            </div>
+          </GlassCardContent>
+        </GlassCard>
 
         {/* Desktop: Momentum */}
-        <div className="xl:block hidden card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-          <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Momentum</h3>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="1 Month" value={selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_1M)} tooltipId="chart.mom-1m" />
-            <InfoBlock label="3 Month" value={selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_3M)} tooltipId="chart.mom-3m" />
-            <InfoBlock label="6 Month" value={selectedAsset?.Momentum_6M != null ? `${(selectedAsset.Momentum_6M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_6M)} tooltipId="chart.mom-6m" />
-            <InfoBlock label="12 Month" value={selectedAsset?.Momentum_12M != null ? `${(selectedAsset.Momentum_12M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_12M)} tooltipId="chart.mom-12m" />
-            <div className="col-span-2 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
-              <InfoBlock label="Risk-Adjusted" value={num(selectedAsset?.Risk_Adj_Mom)} accent={colorCode(selectedAsset?.Risk_Adj_Mom)} tooltipId="chart.risk-adj-mom" />
+        <GlassCard className="xl:block hidden">
+          <GlassCardHeader icon={ChartBar} title="Momentum Profile" />
+          <GlassCardContent className="p-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <InfoBlock label="1 Month" value={selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_1M)} tooltipId="chart.mom-1m" />
+              <InfoBlock label="3 Month" value={selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_3M)} tooltipId="chart.mom-3m" />
+              <InfoBlock label="6 Month" value={selectedAsset?.Momentum_6M != null ? `${(selectedAsset.Momentum_6M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_6M)} tooltipId="chart.mom-6m" />
+              <InfoBlock label="12 Month" value={selectedAsset?.Momentum_12M != null ? `${(selectedAsset.Momentum_12M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_12M)} tooltipId="chart.mom-12m" />
+              <div className="col-span-2 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
+                <InfoBlock label="Risk-Adjusted" value={num(selectedAsset?.Risk_Adj_Mom)} accent={colorCode(selectedAsset?.Risk_Adj_Mom)} tooltipId="chart.risk-adj-mom" />
+              </div>
             </div>
-          </div>
-        </div>
+          </GlassCardContent>
+        </GlassCard>
 
         {/* Desktop: Fundamentals */}
-        <div className="xl:block hidden card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-          <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Fundamentals</h3>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="Fund Score" value={num(selectedAsset?.Fund_Score)} accent={Number(selectedAsset?.Fund_Score) >= 5 ? 'var(--green)' : undefined} tooltipId="chart.fund-score" />
-            <InfoBlock label="Forward P/E" value={num(selectedAsset?.['Forward_P/E'])} tooltipId="chart.forward-pe" />
-            <InfoBlock label="D/E" value={num(selectedAsset?.['Debt_to_Equity'])} tooltipId="chart.de" />
-            <InfoBlock label="ROE" value={`${num(selectedAsset?.['ROE_%'])}%`} tooltipId="chart.roe" />
-            <InfoBlock label="ROCE" value={`${num(selectedAsset?.['ROCE_%'])}%`} tooltipId="chart.roce" />
-            <InfoBlock label="Promoter" value={`${num(selectedAsset?.['Promoter_Holding_%'])}%`} tooltipId="chart.promoter" />
-          </div>
-        </div>
+        <GlassCard className="xl:block hidden">
+          <GlassCardHeader icon={Scales} title="Fundamentals" />
+          <GlassCardContent className="p-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <InfoBlock label="Fund Score" value={num(selectedAsset?.Fund_Score)} accent={Number(selectedAsset?.Fund_Score) >= 5 ? 'var(--green)' : undefined} tooltipId="chart.fund-score" />
+              <InfoBlock label="Forward P/E" value={num(selectedAsset?.['Forward_P/E'])} tooltipId="chart.forward-pe" />
+              <InfoBlock label="D/E" value={num(selectedAsset?.['Debt_to_Equity'])} tooltipId="chart.de" />
+              <InfoBlock label="ROE" value={`${num(selectedAsset?.['ROE_%'])}%`} tooltipId="chart.roe" />
+              <InfoBlock label="ROCE" value={`${num(selectedAsset?.['ROCE_%'])}%`} tooltipId="chart.roce" />
+              <InfoBlock label="Promoter" value={`${num(selectedAsset?.['Promoter_Holding_%'])}%`} tooltipId="chart.promoter" />
+            </div>
+          </GlassCardContent>
+        </GlassCard>
 
         {/* Desktop: Risk */}
-        <div className="xl:block hidden card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
-          <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Risk Metrics</h3>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoBlock label="Volatility (60D)" value={`${num(selectedAsset?.Vol_60D)}%`} accent={Number(selectedAsset?.Vol_60D) < 25 ? 'var(--green)' : Number(selectedAsset?.Vol_60D) > 40 ? 'var(--red)' : undefined} tooltipId="chart.vol-60d" />
-            <InfoBlock label="Sharpe" value={num(selectedAsset?.Sharpe)} accent={colorCode(selectedAsset?.Sharpe)} tooltipId="chart.sharpe" />
-            <InfoBlock label="Max Drawdown" value={`${num(selectedAsset?.['Max_Drawdown_%'])}%`} accent="var(--red)" tooltipId="chart.max-dd" />
-            <InfoBlock label="Total Return" value={`${num(selectedAsset?.['Total_Return_%'])}%`} accent={colorCode(selectedAsset?.['Total_Return_%'])} tooltipId="chart.total-return" />
-            <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '-'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} tooltipId="chart.beta" />
-            <InfoBlock label="Alpha (60D)" value={selectedAsset?.Alpha_60D != null ? `${selectedAsset.Alpha_60D.toFixed(1)}%` : '-'} accent={selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D > 0 ? 'var(--green)' : selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D < 0 ? 'var(--red)' : undefined} tooltipId="chart.alpha-60d" />
-          </div>
-        </div>
+        <GlassCard className="xl:block hidden">
+          <GlassCardHeader icon={ShieldCheck} title="Risk Metrics" />
+          <GlassCardContent className="p-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <InfoBlock label="Volatility (60D)" value={`${num(selectedAsset?.Vol_60D)}%`} accent={Number(selectedAsset?.Vol_60D) < 25 ? 'var(--green)' : Number(selectedAsset?.Vol_60D) > 40 ? 'var(--red)' : undefined} tooltipId="chart.vol-60d" />
+              <InfoBlock label="Sharpe" value={num(selectedAsset?.Sharpe)} accent={colorCode(selectedAsset?.Sharpe)} tooltipId="chart.sharpe" />
+              <InfoBlock label="Max Drawdown" value={`${num(selectedAsset?.['Max_Drawdown_%'])}%`} accent="var(--red)" tooltipId="chart.max-dd" />
+              <InfoBlock label="Total Return" value={`${num(selectedAsset?.['Total_Return_%'])}%`} accent={colorCode(selectedAsset?.['Total_Return_%'])} tooltipId="chart.total-return" />
+              <InfoBlock label="Beta" value={selectedAsset?.Beta != null ? selectedAsset.Beta.toFixed(2) : '-'} accent={selectedAsset?.Beta != null && selectedAsset.Beta < 0.8 ? 'var(--green)' : selectedAsset?.Beta != null && selectedAsset.Beta > 1.2 ? 'var(--red)' : undefined} tooltipId="chart.beta" />
+              <InfoBlock label="Alpha (60D)" value={selectedAsset?.Alpha_60D != null ? `${selectedAsset.Alpha_60D.toFixed(1)}%` : '-'} accent={selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D > 0 ? 'var(--green)' : selectedAsset?.Alpha_60D != null && selectedAsset.Alpha_60D < 0 ? 'var(--red)' : undefined} tooltipId="chart.alpha-60d" />
+            </div>
+          </GlassCardContent>
+        </GlassCard>
       </div>
 
       {/* Right: Charts */}

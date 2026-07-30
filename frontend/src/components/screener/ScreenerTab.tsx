@@ -409,7 +409,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <th className="py-2 px-1 text-center w-8" style={{ color: 'var(--text-3)' }}>
                 <span title="Select up to 4 stocks to compare"><Scales size={14} /></span>
               </th>
-              <th className="py-2 px-2 text-[10px] font-medium cursor-pointer select-none uppercase tracking-wider" style={{color:'var(--text-3)',textAlign:'left',position:'sticky',left:0,background:'var(--surface)',zIndex:1}} onClick={()=>handleSort('Ticker')}>
+              <th className="py-2 px-2 text-[10px] font-medium cursor-pointer select-none uppercase tracking-wider glass-subtle" style={{color:'var(--text-3)',textAlign:'left',position:'sticky',left:0,zIndex:1}} onClick={()=>handleSort('Ticker')}>
                 <span className="inline-flex items-center gap-1"><InfoTooltip id="screener.ticker">Ticker</InfoTooltip>{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}</span>
               </th>
               <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline"><InfoTooltip id="screener.sector">Sector</InfoTooltip></span></SortHeader>
@@ -456,7 +456,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                       title="Compare stock"
                     />
                   </td>
-                  <td className="py-2 px-2 font-medium cursor-pointer transition-colors" style={{ color: 'var(--text)', position:'sticky', left:0, background:'var(--surface)', zIndex:1 }} onClick={() => onSelect(row.Ticker)}
+                  <td className="py-2 px-2 font-medium cursor-pointer transition-colors glass-subtle" style={{ color: 'var(--text)', position:'sticky', left:0, zIndex:1 }} onClick={() => onSelect(row.Ticker)}
                     onMouseEnter={e => (e.currentTarget.style.color = 'var(--brand)')}
                     onMouseLeave={e => (e.currentTarget.style.color = 'var(--text)')}
                   >

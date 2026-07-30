@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react'
 import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull } from '../../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine, ScatterChart, Scatter, ZAxis } from 'recharts'
 import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise, DownloadSimple } from '@phosphor-icons/react'
-import { SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
+import { SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent, GlassCardFooter } from '../common/shared'
 import { exportToCSV } from '../../utils/exportUtils'
 import { MonteCarloChart } from './MonteCarloChart'
 
@@ -378,51 +378,52 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
         <div className="lg:col-span-2 space-y-5">
 
           {/* Backtest chart */}
-          <div className="card card-hover overflow-hidden">
-            <div className="section-band flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="typo-h3 flex items-center gap-1">
-                  Strategy Backtest · Top 10 Equal Weight<InfoTooltip id="quant.backtest" />
-                </span>
-              </div>
-              {/* 2-axis controls: Model × Horizon + Export */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <SegmentedControl
-                  options={[
-                    { key: 'short', label: 'Short-term' },
-                    { key: 'long',  label: 'Long Horizon' },
-                  ]}
-                  value={backtestModel}
-                  onChange={(v) => setBacktestModel(v as 'short' | 'long')}
-                />
-                <SegmentedControl
-                  options={[
-                    { key: '1y', label: '1 Year' },
-                    { key: '6m', label: '6 Months' },
-                  ]}
-                  value={backtestHorizon}
-                  onChange={(v) => setBacktestHorizon(v as '1y' | '6m')}
-                />
-                <button
-                  onClick={() => {
-                    if (windowedChart && windowedChart.length > 0) {
-                      exportToCSV(
-                        `QuantAlpha_Backtest_${backtestModel}_${backtestHorizon}_${new Date().toISOString().slice(0, 10)}.csv`,
-                        windowedChart.map(pt => ({
-                          Date: pt.date,
-                          Portfolio_Index: pt.portfolio,
-                          Benchmark_Index: pt.benchmark,
-                        }))
-                      )
-                    }
-                  }}
-                  className="btn-glass"
-                  title="Export equity curve data to CSV"
-                >
-                  <DownloadSimple size={14} weight="bold" /> Export CSV
-                </button>
-              </div>
-            </div>
+          <GlassCard>
+            <GlassCardHeader
+              icon={TrendUp}
+              title="Strategy Backtest · Top 10 Equal Weight"
+              tooltipId="quant.backtest"
+              action={
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                  <SegmentedControl
+                    options={[
+                      { key: 'short', label: 'Short-term' },
+                      { key: 'long',  label: 'Long Horizon' },
+                    ]}
+                    value={backtestModel}
+                    onChange={(v) => setBacktestModel(v as 'short' | 'long')}
+                  />
+                  <SegmentedControl
+                    options={[
+                      { key: '1y', label: '1 Year' },
+                      { key: '6m', label: '6 Months' },
+                    ]}
+                    value={backtestHorizon}
+                    onChange={(v) => setBacktestHorizon(v as '1y' | '6m')}
+                  />
+                  <button
+                    onClick={() => {
+                      if (windowedChart && windowedChart.length > 0) {
+                        exportToCSV(
+                          `QuantAlpha_Backtest_${backtestModel}_${backtestHorizon}_${new Date().toISOString().slice(0, 10)}.csv`,
+                          windowedChart.map(pt => ({
+                            Date: pt.date,
+                            Portfolio_Index: pt.portfolio,
+                            Benchmark_Index: pt.benchmark,
+                          }))
+                        )
+                      }
+                    }}
+                    className="btn-glass"
+                    title="Export equity curve data to CSV"
+                  >
+                    <DownloadSimple size={13} />
+                    <span className="hidden sm:inline">Export CSV</span>
+                  </button>
+                </div>
+              }
+            />
+            <GlassCardContent className="p-5 space-y-4">
             {!activeBacktest?.chart?.length && (
               <div className="px-5 py-2 text-[11px]" style={{ background: 'var(--amber-bg)', borderBottom: '1px solid var(--glass-border)', color: 'var(--amber)' }}>
                 Walk-forward backtest data not yet generated. Run <code>python quant_engine.py</code> to produce it.
@@ -597,19 +598,23 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                 </div>
               </div>
             )}
-          </div>
+            </GlassCardContent>
+          </GlassCard>
 
           {/* Model Portfolios */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {[
-              { title: 'Max Sharpe Portfolio', tooltipId: 'quant.max-sharpe', icon: <Target size={14} weight="duotone" style={{ color: 'var(--brand)' }} />, data: max_sharpe, accent: 'var(--brand)' },
-              { title: 'Min Volatility Portfolio', tooltipId: 'quant.min-vol', icon: <Scales size={14} weight="duotone" style={{ color: 'var(--amber)' }} />, data: min_volatility, accent: 'var(--amber)' },
+              { title: 'Max Sharpe Portfolio', tooltipId: 'quant.max-sharpe', icon: Target, data: max_sharpe, accent: 'var(--brand)', iconColor: 'var(--brand)' },
+              { title: 'Min Volatility Portfolio', tooltipId: 'quant.min-vol', icon: Scales, data: min_volatility, accent: 'var(--amber)', iconColor: 'var(--amber)' },
             ].map(port => (
-              <div key={port.title} className="card card-hover overflow-hidden">
-                <div className="section-band flex items-center gap-1.5">
-                  {port.icon}<span className="typo-h3">{port.title}</span><InfoTooltip id={port.tooltipId} />
-                </div>
-                <div className="p-5 space-y-3 max-h-56 overflow-y-auto scrollbar-none">
+              <GlassCard key={port.title}>
+                <GlassCardHeader
+                  icon={port.icon}
+                  iconColor={port.iconColor}
+                  title={port.title}
+                  tooltipId={port.tooltipId}
+                />
+                <GlassCardContent className="p-5 space-y-3 max-h-56 overflow-y-auto scrollbar-none">
                   {Object.entries(port.data).map(([ticker, weight]) => (
                     <div key={ticker}>
                       <div className="flex justify-between text-xs mb-1.5" style={{ color: 'var(--text-2)' }}>
@@ -621,21 +626,19 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
+                </GlassCardContent>
+              </GlassCard>
             ))}
           </div>
 
           {/* Markowitz Efficient Frontier Studio */}
-          <div className="card card-hover overflow-hidden">
-            <div className="section-band flex items-center justify-between">
-              <span className="typo-h3 flex items-center gap-1.5">
-                <Target size={15} weight="duotone" style={{ color: 'var(--brand)' }} />
-                Markowitz Efficient Frontier Studio
-              </span>
-              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>Mean-Variance Optimization</span>
-            </div>
-            <div className="p-5" style={{ height: 260 }}>
+          <GlassCard>
+            <GlassCardHeader
+              icon={Target}
+              title="Markowitz Efficient Frontier Studio"
+              badge={<span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>Mean-Variance Optimization</span>}
+            />
+            <GlassCardContent className="p-5" style={{ height: 260 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
                   <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" />
@@ -657,38 +660,37 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                   <Scatter name="Frontier Portfolios" data={efficientFrontierPoints} fill="var(--brand)" />
                 </ScatterChart>
               </ResponsiveContainer>
-            </div>
-            <div className="px-5 pb-4 text-[11px] text-center" style={{ color: 'var(--text-3)' }}>
+            </GlassCardContent>
+            <GlassCardFooter className="px-5 pb-4 text-[11px] text-center text-[var(--text-3)] border-none">
               Optimal Tangency Portfolio maxes Sharpe ratio at ~18.0% volatility.
-            </div>
-          </div>
+            </GlassCardFooter>
+          </GlassCard>
 
           {/* Monte Carlo 1,000-Path Forward Simulator & Crisis Stress Testing */}
-          <div className="card card-hover overflow-hidden">
-            <div className="section-band flex items-center justify-between">
-              <span className="typo-h3 flex items-center gap-1.5">
-                <Lightning size={15} weight="duotone" style={{ color: 'var(--brand)' }} />
-                Monte Carlo Forward Simulator & Macro Stress Testing
-              </span>
-              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>1,000 Paths</span>
-            </div>
-            <div className="p-5">
+          <GlassCard>
+            <GlassCardHeader
+              icon={Lightning}
+              title="Monte Carlo Forward Simulator & Macro Stress Testing"
+              badge={<span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>1,000 Paths</span>}
+            />
+            <GlassCardContent className="p-5">
               <MonteCarloChart cagr={backtestStats?.cagr || 15} volatility={backtestStats?.volatility || 18} isDark={isDark} />
-            </div>
-          </div>
+            </GlassCardContent>
+          </GlassCard>
         </div>
 
         {/* Right column */}
         <div className="space-y-5">
 
           {/* Factor Exposures */}
-          <div className="card card-hover overflow-hidden">
-            <div className="section-band flex items-center gap-1.5">
-              <Crosshair size={14} weight="duotone" style={{ color: 'var(--green)' }} />
-              <span className="typo-h3">Portfolio Factor Exposure</span>
-              <InfoTooltip id="quant.factor.value" />
-            </div>
-            <div className="p-5" style={{ height: 240 }}>
+          <GlassCard>
+            <GlassCardHeader
+              icon={Crosshair}
+              iconColor="var(--green)"
+              title="Portfolio Factor Exposure"
+              tooltipId="quant.factor.value"
+            />
+            <GlassCardContent className="p-5" style={{ height: 240 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={radarData} layout="vertical" margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" horizontal={false} vertical={true} />
@@ -698,21 +700,22 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                   <Bar dataKey="A" name="Exposure" fill="var(--green)" radius={[0, 4, 4, 0]} barSize={20} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
-            <p className="typo-caption text-center px-4 pb-4 leading-relaxed" style={{ color: 'var(--text-3)' }}>
+            </GlassCardContent>
+            <GlassCardFooter className="typo-caption text-center px-4 pb-4 leading-relaxed text-[var(--text-3)] border-none">
               Percentile rank of top picks against screened universe.
-            </p>
-          </div>
+            </GlassCardFooter>
+          </GlassCard>
 
           {/* Sector Allocation */}
           {quantData.sector_allocation && (
-            <div className="card card-hover overflow-hidden">
-              <div className="section-band flex items-center gap-1.5">
-                <ChartPieSlice size={14} weight="duotone" style={{ color: 'var(--blue)' }} />
-                <span className="typo-h3">Sector Allocation</span>
-                <InfoTooltip id="quant.sector" />
-              </div>
-              <div className="px-5 pt-3" style={{ height: 200 }}>
+            <GlassCard>
+              <GlassCardHeader
+                icon={ChartPieSlice}
+                iconColor="var(--blue)"
+                title="Sector Allocation"
+                tooltipId="quant.sector"
+              />
+              <GlassCardContent className="px-5 pt-3" style={{ height: 200 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -729,8 +732,8 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                     <Tooltip contentStyle={tooltipStyle(isDark)} formatter={(value: any) => `${Number(value).toFixed(1)}%`} />
                   </PieChart>
                 </ResponsiveContainer>
-              </div>
-              <div className="flex flex-wrap gap-x-3 gap-y-1.5 justify-center px-4 pb-4">
+              </GlassCardContent>
+              <GlassCardFooter className="flex flex-wrap gap-x-3 gap-y-1.5 justify-center px-4 pb-4 border-none">
                 {Object.entries(quantData.sector_allocation).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([name, val], i) => {
                   const colors = ['#0D9488', '#2563EB', '#7C3AED', '#DB2777', '#EA580C', '#65A30D', '#0891B2', '#4F46E5', '#C026D3', '#E11D48']
                   return (
@@ -740,19 +743,20 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                     </div>
                   )
                 })}
-              </div>
-            </div>
+              </GlassCardFooter>
+            </GlassCard>
           )}
 
           {/* Correlation Matrix */}
           {quantData.correlation_matrix && quantData.correlation_matrix.labels.length > 0 && (
-            <div className="card card-hover overflow-hidden">
-              <div className="section-band flex items-center gap-1.5">
-                <GridFour size={14} weight="duotone" style={{ color: 'var(--amber)' }} />
-                <span className="typo-h3">Asset Correlation</span>
-                <InfoTooltip id="quant.correlation" />
-              </div>
-              <div className="p-5 overflow-x-auto scrollbar-none">
+            <GlassCard>
+              <GlassCardHeader
+                icon={GridFour}
+                iconColor="var(--amber)"
+                title="Asset Correlation"
+                tooltipId="quant.correlation"
+              />
+              <GlassCardContent className="p-5 overflow-x-auto scrollbar-none">
                 <table className="w-full" style={{ borderSpacing: '2px', borderCollapse: 'separate' }}>
                   <thead>
                     <tr>
@@ -802,8 +806,8 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                     ))}
                 </tbody>
                 </table>
-              </div>
-            </div>
+              </GlassCardContent>
+            </GlassCard>
             )}
 
           </div>

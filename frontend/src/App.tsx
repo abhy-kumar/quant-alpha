@@ -428,11 +428,9 @@ export default function App() {
                     onKeyDown={e => e.key === 'Enter' && handleLogin()}
                     className="glass-input" style={{ width: '100%', marginBottom: 8, fontSize: 12 }} />
                   {loginError && <div style={{ fontSize: 11, color: 'var(--red)', marginBottom: 8 }}>{loginError}</div>}
-                  <button onClick={handleLogin} className="w-full py-1.5 text-[12px] font-medium rounded-lg transition-all duration-200"
-                    style={{
-                      background: 'var(--brand)', color: '#fff', border: 'none', cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(110, 168, 254, 0.3)',
-                    }}>Sign In</button>
+                  <button onClick={handleLogin} className="btn-primary w-full text-xs py-2">
+                    Sign In
+                  </button>
                 </div>
               )}
             </div>
