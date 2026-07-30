@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import type { DashboardData } from '../../types'
 import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip } from '../common/shared'
-import { MagnifyingGlass } from '@phosphor-icons/react'
+import { MagnifyingGlass, Lightning, Calculator } from '@phosphor-icons/react'
 import {
   ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine
 } from 'recharts'
 import { TradingViewChart } from './TradingViewChart'
+import { InvestmentThesisModal } from '../common/InvestmentThesisModal'
+import { PositionSizerModal } from '../common/PositionSizerModal'
 
 
 interface Props {
@@ -161,6 +163,8 @@ export default function ChartingTab({
 
   const [mobilePanelTab, setMobilePanelTab] = useState<'profile'|'tech'|'research'|'mom'|'fund'|'risk'>('profile')
   const [chartEngine, setChartEngine] = useState<'tradingview' | 'classic'>('tradingview')
+  const [isThesisOpen, setIsThesisOpen] = useState(false)
+  const [isSizerOpen, setIsSizerOpen] = useState(false)
 
   const tvChartData = useMemo(() => {
     return chartData.map((d: any) => ({
@@ -186,6 +190,7 @@ export default function ChartingTab({
   }, [chartData])
 
   return (
+    <>
     <div className="space-y-5">
       {/* On mobile: search + panel tabs on top, then charts, then peer comparison */}
       {/* On xl+: true two-column layout */}
@@ -193,6 +198,24 @@ export default function ChartingTab({
       {/* Left: Controls & Info */}
       <div className="w-full xl:w-72 flex flex-col gap-3 shrink-0">
         <StockSearch data={data} selectedTicker={selectedTicker} onSelect={setSelectedTicker} />
+
+        {/* Quick Action Buttons */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setIsThesisOpen(true)}
+            className="btn-glass text-xs py-2 px-3 w-full"
+            title="Generate 1-click Investment Thesis"
+          >
+            <Lightning size={14} weight="duotone" className="text-[var(--brand)]" /> Thesis
+          </button>
+          <button
+            onClick={() => setIsSizerOpen(true)}
+            className="btn-glass text-xs py-2 px-3 w-full"
+            title="Calculate Risk & Position Size"
+          >
+            <Calculator size={14} weight="duotone" className="text-[var(--brand)]" /> Position Sizer
+          </button>
+        </div>
 
         {/* Mobile: horizontal tab strip to switch between info panels */}
         <div className="xl:hidden">
@@ -675,5 +698,20 @@ export default function ChartingTab({
       </div>
     </div>
     </div>
+
+    {/* Investment Thesis & Position Sizer Modals */}
+    <InvestmentThesisModal
+      asset={selectedAsset}
+      isOpen={isThesisOpen}
+      onClose={() => setIsThesisOpen(false)}
+      peerGroup={peerGroup}
+    />
+
+    <PositionSizerModal
+      asset={selectedAsset}
+      isOpen={isSizerOpen}
+      onClose={() => setIsSizerOpen(false)}
+    />
+    </>
   )
 }

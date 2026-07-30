@@ -4,7 +4,10 @@ import { num, colorCode, scoreColor, getSignalLabel, getBadgeClass, SortHeader, 
 import { SegmentedControl } from '../common/shared'
 import { Info, Funnel, X, Star, Scales, DownloadSimple } from '@phosphor-icons/react'
 import { ComparisonModal } from './ComparisonModal'
+import { InvestmentThesisModal } from '../common/InvestmentThesisModal'
+import { PositionSizerModal } from '../common/PositionSizerModal'
 import { exportToCSV } from '../../utils/exportUtils'
+import { Lightning, Calculator } from '@phosphor-icons/react'
 
 interface Props {
   data: DashboardData[]
@@ -28,6 +31,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
   const [horizonMode, setHorizonMode] = useState<'short' | 'long'>('short')
   const [compareTickers, setCompareTickers] = useState<string[]>([])
   const [isCompareOpen, setIsCompareOpen] = useState(false)
+  const [thesisAsset, setThesisAsset] = useState<DashboardData | null>(null)
+  const [sizerAsset, setSizerAsset] = useState<DashboardData | null>(null)
 
   // Active score and conviction column names driven by the horizon toggle
   const scoreCol   = horizonMode === 'long' ? 'Composite_Score_Long' : 'Composite_Score'
@@ -572,24 +577,39 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                             </div>
                           </div>
                         </div>
-                        <div className="mt-4 pt-3 grid grid-cols-3 gap-4 text-xs" style={{ borderTop: '1px solid var(--glass-border)' }}>
-                          <div className="flex items-center gap-2">
-                            <span style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.bull-bear">Bull</InfoTooltip></span>
-                            <span className="font-medium font-mono" style={{color:'var(--green)'}}>{row.Bull_Count ?? '-'}</span>
-                            <span style={{ color: 'var(--text-3)' }}>/</span>
-                            <span style={{ color: 'var(--text-3)' }}>Neutral</span>
-                            <span className="font-medium font-mono" style={{color:'var(--text-2)'}}>{row.Bull_Count != null && row.Bear_Count != null ? 15 - row.Bull_Count - row.Bear_Count : '-'}</span>
-                            <span style={{ color: 'var(--text-3)' }}>/</span>
-                            <span style={{ color: 'var(--text-3)' }}>Bear</span>
-                            <span className="font-medium font-mono" style={{color:'var(--red)'}}>{row.Bear_Count ?? '-'}</span>
+                        <div className="mt-4 pt-3 flex flex-wrap items-center justify-between gap-4 text-xs" style={{ borderTop: '1px solid var(--glass-border)' }}>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <span style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.bull-bear">Bull</InfoTooltip></span>
+                              <span className="font-medium font-mono" style={{color:'var(--green)'}}>{row.Bull_Count ?? '-'}</span>
+                              <span style={{ color: 'var(--text-3)' }}>/</span>
+                              <span style={{ color: 'var(--text-3)' }}>Neutral</span>
+                              <span className="font-medium font-mono" style={{color:'var(--text-2)'}}>{row.Bull_Count != null && row.Bear_Count != null ? 15 - row.Bull_Count - row.Bear_Count : '-'}</span>
+                              <span style={{ color: 'var(--text-3)' }}>/</span>
+                              <span style={{ color: 'var(--text-3)' }}>Bear</span>
+                              <span className="font-medium font-mono" style={{color:'var(--red)'}}>{row.Bear_Count ?? '-'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.rs-percentile">RS Percentile</InfoTooltip></span>
+                              <span className="font-medium font-mono" style={{color:'var(--text)'}}>{num(row.RS_Percentile)}%</span>
+                            </div>
                           </div>
+
                           <div className="flex items-center gap-2">
-                            <span style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.rs-percentile">RS Percentile</InfoTooltip></span>
-                            <span className="font-medium font-mono" style={{color:'var(--text)'}}>{num(row.RS_Percentile)}%</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.vol-vs-avg">Vol vs Avg</InfoTooltip></span>
-                            <span className="font-medium font-mono" style={{color:'var(--text)'}}>{row['Vol_vs_Avg_%'] != null ? `${row['Vol_vs_Avg_%'].toFixed(1)}%` : '-'}</span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setThesisAsset(row) }}
+                              className="btn-glass text-xs py-1 px-3"
+                              title="Generate 1-click Investment Thesis"
+                            >
+                              <Lightning size={13} weight="duotone" className="text-[var(--brand)]" /> Thesis
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setSizerAsset(row) }}
+                              className="btn-glass text-xs py-1 px-3"
+                              title="Calculate Risk & Position Size"
+                            >
+                              <Calculator size={13} weight="duotone" className="text-[var(--brand)]" /> Position Sizer
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -827,6 +847,21 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
         allData={data}
         onRemoveTicker={(t) => setCompareTickers((prev) => prev.filter((x) => x !== t))}
         onSelectTicker={onSelect}
+      />
+
+      {/* 1-Click Institutional Investment Thesis Modal */}
+      <InvestmentThesisModal
+        asset={thesisAsset}
+        isOpen={thesisAsset !== null}
+        onClose={() => setThesisAsset(null)}
+        peerGroup={thesisAsset ? data.filter(d => d.Sector === thesisAsset.Sector).slice(0, 5) : []}
+      />
+
+      {/* Position Sizer & Risk Management Calculator Modal */}
+      <PositionSizerModal
+        asset={sizerAsset}
+        isOpen={sizerAsset !== null}
+        onClose={() => setSizerAsset(null)}
       />
     </div>
   )

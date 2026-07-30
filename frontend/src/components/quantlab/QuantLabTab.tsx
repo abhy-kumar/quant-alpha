@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise, DownloadSimple } from '@phosphor-icons/react'
 import { SegmentedControl, InfoTooltip } from '../common/shared'
 import { exportToCSV } from '../../utils/exportUtils'
+import { MonteCarloChart } from './MonteCarloChart'
 
 interface Props {
   isDark: boolean
@@ -666,6 +667,20 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
             </div>
             <div className="px-5 pb-4 text-[11px] text-center" style={{ color: 'var(--text-3)' }}>
               Optimal Tangency Portfolio maxes Sharpe ratio at ~18.0% volatility.
+            </div>
+          </div>
+
+          {/* Monte Carlo 1,000-Path Forward Simulator & Crisis Stress Testing */}
+          <div className="card card-hover overflow-hidden">
+            <div className="section-band flex items-center justify-between">
+              <span className="typo-h3 flex items-center gap-1.5">
+                <Lightning size={15} weight="duotone" style={{ color: 'var(--brand)' }} />
+                Monte Carlo Forward Simulator & Macro Stress Testing
+              </span>
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>1,000 Paths</span>
+            </div>
+            <div className="p-5">
+              <MonteCarloChart cagr={backtestStats?.cagr || 15} volatility={backtestStats?.volatility || 18} isDark={isDark} />
             </div>
           </div>
         </div>
