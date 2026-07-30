@@ -339,10 +339,10 @@ export default function App() {
             {/* Left: Brand Logo & Market Status */}
             <div className="flex items-center gap-3">
               <button onClick={()=>setActiveTab('charting')} className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity">
-                <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-[36px] w-auto" />
+                <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-[26px] w-auto" />
               </button>
-              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium glass-subtle">
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: isDynamic ? 'var(--green)' : 'var(--amber)' }} />
+              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium glass-subtle">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${isDynamic ? 'pulse-glow' : ''}`} style={{ background: isDynamic ? 'var(--green)' : 'var(--amber)' }} />
                 <span style={{ color: 'var(--text-2)' }}>{isDynamic ? 'LIVE' : 'CLOSED'}</span>
               </div>
             </div>
@@ -366,11 +366,11 @@ export default function App() {
             {/* Right: Mode & Auth Controls */}
             <div className="flex items-center gap-1.5" ref={loginRef} style={{ position: 'relative' }}>
               <button onClick={()=>setIsDark(!isDark)} aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-xl transition-all duration-200"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
                 style={{
                   color: 'var(--text-3)',
                   background: 'var(--glass-bg-subtle)',
-                  border: '1px solid var(--glass-border)',
+                  border: '0.5px solid var(--glass-border)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   boxShadow: 'var(--glass-shadow)',
@@ -381,11 +381,11 @@ export default function App() {
               </button>
               {isLoggedIn ? (
                 <button onClick={handleLogout} aria-label="Logout"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-xl transition-all duration-200"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
                   style={{
                     color: 'var(--text-3)',
                     background: 'var(--glass-bg-subtle)',
-                    border: '1px solid var(--glass-border)',
+                    border: '0.5px solid var(--glass-border)',
                     backdropFilter: 'blur(12px)',
                     WebkitBackdropFilter: 'blur(12px)',
                     boxShadow: 'var(--glass-shadow)',
@@ -395,11 +395,11 @@ export default function App() {
                 </button>
               ) : (
                 <button onClick={()=>setShowLogin(!showLogin)} aria-label="Login"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-xl transition-all duration-200"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
                   style={{
                     color: 'var(--text-3)',
                     background: 'var(--glass-bg-subtle)',
-                    border: '1px solid var(--glass-border)',
+                    border: '0.5px solid var(--glass-border)',
                     backdropFilter: 'blur(12px)',
                     WebkitBackdropFilter: 'blur(12px)',
                     boxShadow: 'var(--glass-shadow)',
@@ -413,9 +413,9 @@ export default function App() {
                   position: 'absolute', top: '100%', right: 0, marginTop: 8, padding: 16,
                   borderRadius: 'var(--radius-lg)', zIndex: 100, minWidth: 240,
                   background: 'var(--glass-bg-strong)',
-                  backdropFilter: 'blur(40px) saturate(1.2)',
-                  WebkitBackdropFilter: 'blur(40px) saturate(1.2)',
-                  border: '1px solid var(--glass-border-strong)',
+                  backdropFilter: 'blur(40px) saturate(1.8)',
+                  WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
+                  border: '0.5px solid var(--glass-border-strong)',
                   boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.3)' : '0 8px 32px rgba(0,0,0,0.12)',
                 }}>
                   <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Club Member Login</div>
@@ -438,15 +438,15 @@ export default function App() {
         </header>
 
         {/* Row 2: Market Data Sub-Header (Bloomberg-style) */}
-        <div className="glass-subtle" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
+        <div className="glass-subtle" style={{ borderBottom:'0.5px solid var(--glass-border)', borderRadius: 0 }}>
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
           {/* LIVE indicator */}
           <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
-            <div style={{ width:5, height:5, borderRadius:'50%',
+            <div className={isDynamic ? 'pulse-glow' : ''} style={{ width:6, height:6, borderRadius:'50%',
               background: isDynamic ? 'var(--amber)' : 'var(--text-3)',
               transition: 'background 300ms ease',
               boxShadow: isDynamic ? '0 0 4px var(--amber)' : 'none' }}/>
-            <span style={{ fontSize:9, color:'var(--text-3)', letterSpacing:'0.08em', fontWeight:600 }}>
+            <span style={{ fontSize:11, color:'var(--text-3)', letterSpacing:'0.08em', fontWeight:600 }}>
               {isDynamic ? 'LIVE' : 'CLOSED'}
             </span>
           </div>
@@ -467,7 +467,7 @@ export default function App() {
 
           {marketRegimeScore!==null && (
             <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0 }}>
-              <span style={{ width:5, height:5, borderRadius:'50%', background: regimeColor, display:'inline-block' }}/>
+              <span style={{ width:6, height:6, borderRadius:'50%', background: regimeColor, display:'inline-block' }}/>
               <span className="font-mono" style={{ fontWeight:500, color:'var(--text)' }}>
                 {regimeLabel} {marketRegimeScore > 0 ? '+' : ''}{marketRegimeScore}
               </span>
@@ -508,7 +508,7 @@ export default function App() {
           <div className="flex-1" />
 
           {pricesUpdated && (
-            <span style={{ flexShrink:0, color:'var(--text-3)', fontSize:10 }}>
+            <span style={{ flexShrink:0, color:'var(--text-3)', fontSize:11 }}>
               {pricesUpdated}
             </span>
           )}
@@ -585,7 +585,7 @@ export default function App() {
       </nav>
 
       {/* Footer */}
-      <footer className="mt-auto glass" style={{borderTop:'1px solid var(--glass-border)', borderRadius: 0 }}>
+      <footer className="mt-auto glass" style={{borderTop:'0.5px solid var(--glass-border)', borderRadius: 0 }}>
         <div className="max-w-[1400px] mx-auto px-3 md:px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px]" style={{color:'var(--text-3)'}}>
           <div className="flex items-center gap-3">
             <span>Made with &#10084;&#65039; by Abhishek Kumar</span>

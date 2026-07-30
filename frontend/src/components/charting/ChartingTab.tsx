@@ -62,7 +62,7 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
 
   return (
     <div className="relative" ref={containerRef}>
-      <div className="flex items-center gap-3 px-3 py-2.5 card" style={{ borderRadius: 'var(--radius-xl)' }}>
+      <div className="flex items-center gap-3 px-3 py-2.5 card" style={{ borderRadius: 'var(--radius-lg)' }}>
         <MagnifyingGlass size={15} weight="light" style={{ color: 'var(--text-3)' }} />
         <input
           ref={inputRef}
@@ -74,7 +74,7 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
           className="bg-transparent text-sm outline-none w-full"
           style={{ color: 'var(--text)' }}
         />
-        <kbd className="text-[10px] px-1.5 py-0.5 hidden sm:block rounded-md" style={{ color: 'var(--text-3)', background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'}K</kbd>
+        <kbd className="text-[10px] px-1.5 py-0.5 hidden sm:block rounded-md" style={{ color: 'var(--text-3)', background: 'var(--glass-bg-subtle)', border: '0.5px solid var(--glass-border)' }}>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'}K</kbd>
       </div>
       {open && query && (
         <div className="absolute z-50 top-full left-0 right-0 mt-1 glass-strong rounded-xl shadow-2xl overflow-hidden">
@@ -116,7 +116,7 @@ const ChartTooltip = ({ active, payload, label }: any) => {
       {payload.map((p: any) => (
         <div key={p.name} style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
           <span style={{ color: p.color || 'var(--text-2)' }}>{p.name}</span>
-          <span style={{ fontFamily: 'Space Mono', fontWeight: 600, color: 'var(--text)' }}>
+          <span style={{ fontFamily: 'SF Mono, Space Mono, monospace', fontWeight: 600, color: 'var(--text)' }}>
             {typeof p.value === 'number' ? p.value.toFixed(2) : p.value}
           </span>
         </div>
@@ -126,8 +126,8 @@ const ChartTooltip = ({ active, payload, label }: any) => {
 }
 
 const Panel = ({ title, children }: { title: React.ReactNode; children: React.ReactNode }) => (
-  <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-xl)' }}>
-    <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
+  <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-lg)' }}>
+    <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '0.5px solid var(--glass-border)', color: 'var(--text-2)' }}>
       {title}
     </div>
     {children}
@@ -214,7 +214,7 @@ export default function ChartingTab({
 
         {/* Mobile: horizontal tab strip to switch between info panels */}
         <div className="xl:hidden">
-          <div className="flex gap-1 overflow-x-auto scrollbar-none p-1 rounded-xl glass-subtle" style={{ border: '1px solid var(--glass-border)' }}>
+          <div className="flex gap-1 overflow-x-auto scrollbar-none p-1 rounded-xl glass-subtle" style={{ border: '0.5px solid var(--glass-border)' }}>
             {([
               { id: 'profile',  label: 'Profile' },
               { id: 'tech',     label: 'Technical' },
@@ -226,11 +226,12 @@ export default function ChartingTab({
               <button
                 key={tab.id}
                 onClick={() => setMobilePanelTab(tab.id)}
-                className="shrink-0 px-3 py-1.5 min-h-[36px] text-[11px] font-medium rounded-lg transition-all duration-200"
+                className="shrink-0 px-3 py-2 min-h-[44px] text-[12px] font-medium rounded-lg transition-all duration-200"
                 style={{
-                  background: mobilePanelTab === tab.id ? 'var(--brand)' : 'transparent',
-                  color: mobilePanelTab === tab.id ? '#fff' : 'var(--text-3)',
-                  boxShadow: mobilePanelTab === tab.id ? '0 2px 8px rgba(110, 168, 254, 0.3)' : 'none',
+                  background: mobilePanelTab === tab.id ? 'var(--glass-bg-strong)' : 'transparent',
+                  color: mobilePanelTab === tab.id ? 'var(--text)' : 'var(--text-3)',
+                  border: mobilePanelTab === tab.id ? '0.5px solid var(--glass-border-strong)' : '0.5px solid transparent',
+                  boxShadow: mobilePanelTab === tab.id ? '0 1px 3px rgba(0,0,0,0.08), var(--glass-highlight)' : 'none',
                 }}
               >
                 {tab.label}
@@ -241,7 +242,7 @@ export default function ChartingTab({
           {/* Mobile: single active panel */}
           <div className="mt-2">
             {mobilePanelTab === 'profile' && (
-              <div className="card p-4" style={{ borderRadius: 'var(--radius-xl)' }}>
+              <div className="card p-4" style={{ borderRadius: 'var(--radius-lg)' }}>
                 <div className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>
                   {selectedAsset?.Long_Name?.replace(' Limited', ' Ltd').replace(' Industries', ' Ind.') || '-'}
                 </div>
@@ -266,7 +267,7 @@ export default function ChartingTab({
               </div>
             )}
             {mobilePanelTab === 'tech' && (
-              <div className="card p-4" style={{ borderRadius: 'var(--radius-xl)' }}>
+              <div className="card p-4" style={{ borderRadius: 'var(--radius-lg)' }}>
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} tooltipId="chart.tech-score" />
                   {isLoggedIn && <InfoBlock label="Conviction" value={selectedAsset?.Conviction || '-'} tooltipId="chart.conviction" />}
@@ -286,7 +287,7 @@ export default function ChartingTab({
               </div>
             )}
             {mobilePanelTab === 'research' && (
-              <div className="card p-4" style={{ borderRadius: 'var(--radius-xl)' }}>
+              <div className="card p-4" style={{ borderRadius: 'var(--radius-lg)' }}>
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Research</span>
                   <span className="text-sm font-medium" style={{ color: Number(selectedAsset?.Research_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Research_Score) < 4 ? 'var(--red)' : 'var(--text)' }}>
@@ -306,7 +307,7 @@ export default function ChartingTab({
               </div>
             )}
             {mobilePanelTab === 'mom' && (
-              <div className="card p-4" style={{ borderRadius: 'var(--radius-xl)' }}>
+              <div className="card p-4" style={{ borderRadius: 'var(--radius-lg)' }}>
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <InfoBlock label="1M" value={selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_1M)} tooltipId="chart.mom-1m" />
                   <InfoBlock label="3M" value={selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_3M)} tooltipId="chart.mom-3m" />
@@ -318,7 +319,7 @@ export default function ChartingTab({
               </div>
             )}
             {mobilePanelTab === 'fund' && (
-              <div className="card p-4" style={{ borderRadius: 'var(--radius-xl)' }}>
+              <div className="card p-4" style={{ borderRadius: 'var(--radius-lg)' }}>
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <InfoBlock label="Fund Score" value={num(selectedAsset?.Fund_Score)} accent={Number(selectedAsset?.Fund_Score) >= 5 ? 'var(--green)' : undefined} tooltipId="chart.fund-score" />
                   <InfoBlock label="Forward P/E" value={num(selectedAsset?.['Forward_P/E'])} tooltipId="chart.forward-pe" />
@@ -330,7 +331,7 @@ export default function ChartingTab({
               </div>
             )}
             {mobilePanelTab === 'risk' && (
-              <div className="card p-4" style={{ borderRadius: 'var(--radius-xl)' }}>
+              <div className="card p-4" style={{ borderRadius: 'var(--radius-lg)' }}>
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <InfoBlock label="Vol (60D)" value={`${num(selectedAsset?.Vol_60D)}%`} accent={Number(selectedAsset?.Vol_60D) < 25 ? 'var(--green)' : Number(selectedAsset?.Vol_60D) > 40 ? 'var(--red)' : undefined} tooltipId="chart.vol-60d" />
                   <InfoBlock label="Sharpe" value={num(selectedAsset?.Sharpe)} accent={colorCode(selectedAsset?.Sharpe)} tooltipId="chart.sharpe" />
@@ -435,7 +436,7 @@ export default function ChartingTab({
               <InfoBlock label="3 Month" value={selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_3M)} tooltipId="chart.mom-3m" />
               <InfoBlock label="6 Month" value={selectedAsset?.Momentum_6M != null ? `${(selectedAsset.Momentum_6M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_6M)} tooltipId="chart.mom-6m" />
               <InfoBlock label="12 Month" value={selectedAsset?.Momentum_12M != null ? `${(selectedAsset.Momentum_12M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_12M)} tooltipId="chart.mom-12m" />
-              <div className="col-span-2 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
+              <div className="col-span-2 pt-2" style={{ borderTop: '0.5px solid var(--glass-border)' }}>
                 <InfoBlock label="Risk-Adjusted" value={num(selectedAsset?.Risk_Adj_Mom)} accent={colorCode(selectedAsset?.Risk_Adj_Mom)} tooltipId="chart.risk-adj-mom" />
               </div>
             </div>
@@ -534,11 +535,11 @@ export default function ChartingTab({
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                      <XAxis dataKey="time" stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} tickMargin={10} minTickGap={30} />
-                      <YAxis yAxisId="price" domain={['auto', 'auto']} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={55} />
+                      <XAxis dataKey="time" stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'}} tickMargin={10} minTickGap={30} />
+                      <YAxis yAxisId="price" domain={['auto', 'auto']} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'}} width={55} />
                       <YAxis yAxisId="volume" orientation="right" domain={[0, dataMax => dataMax * 4]} hide={true} />
                       <Tooltip content={<ChartTooltip />} />
-                      <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{fontFamily: 'Inter, system-ui, sans-serif', fontSize: '10px', color: 'var(--text-3)'}}/>
+                      <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif', fontSize: '10px', color: 'var(--text-3)'}}/>
                       <Bar yAxisId="volume" name="Volume" dataKey="volume" fill="var(--border)" maxBarSize={6} />
                       <Area yAxisId="price" type="monotone" name="Close" dataKey="close" stroke="var(--brand)" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
                       <Line yAxisId="price" type="monotone" name="SMA 50" dataKey="sma50" stroke="var(--blue)" strokeWidth={1} dot={false} />
@@ -560,7 +561,7 @@ export default function ChartingTab({
                     <ComposedChart data={chartData}>
                       <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
                       <XAxis dataKey="time" hide={true} />
-                      <YAxis domain={[0, 100]} ticks={[30, 50, 70]} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={50} />
+                      <YAxis domain={[0, 100]} ticks={[30, 50, 70]} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'}} width={50} />
                       <Tooltip content={<ChartTooltip />} />
                       <ReferenceLine y={70} stroke="var(--red)" strokeDasharray="3 3" strokeOpacity={0.5}
                         label={{ value: '70', fontSize: 9, fill: 'var(--red)', position: 'right' }}/>
@@ -582,7 +583,7 @@ export default function ChartingTab({
                     <ComposedChart data={chartData}>
                       <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
                       <XAxis dataKey="time" hide={true} />
-                      <YAxis stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={50} />
+                      <YAxis stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'}} width={50} />
                       <Tooltip content={<ChartTooltip />} />
                       <ReferenceLine y={0} stroke="var(--text-3)" strokeOpacity={0.4} strokeWidth={1}/>
                       <Bar dataKey="macd_hist" name="Histogram" maxBarSize={4}>

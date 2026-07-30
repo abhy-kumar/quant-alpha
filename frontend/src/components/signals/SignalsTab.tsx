@@ -27,7 +27,7 @@ function Metric({ label, value, color }: { label: string; value: string; color?:
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-[10px] uppercase tracking-wider" style={{color:'var(--text-3)'}}>{label}</span>
-      <span className="text-[13px] font-mono font-medium" style={{color: color||'var(--text)'}}>{value}</span>
+      <span className="typo-num" style={{color: color||'var(--text)'}}>{value}</span>
     </div>
   )
 }
@@ -36,9 +36,9 @@ function SignalBadge({ label, bullish }: { label: string; bullish: boolean }) {
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-lg"
       style={{
-        background: bullish ? 'rgba(74, 222, 128, 0.1)' : 'rgba(248, 113, 113, 0.1)',
+        background: bullish ? 'var(--green-bg)' : 'var(--red-bg)',
         color: bullish ? 'var(--green)' : 'var(--red)',
-        border: `1px solid ${bullish ? 'rgba(74, 222, 128, 0.12)' : 'rgba(248, 113, 113, 0.12)'}`,
+        border: `0.5px solid ${bullish ? 'rgba(48, 209, 88, 0.3)' : 'rgba(255, 69, 58, 0.3)'}`,
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
       }}>
@@ -102,7 +102,7 @@ function ScoreRadar({ s }: { s: DashboardData }) {
           const lbl = toXY(i, 12)
           return (
             <text key={i} x={lbl.x} y={lbl.y} textAnchor="middle" dominantBaseline="middle"
-              fontSize={8} fill="var(--text-3)" fontWeight={500}>
+              fontSize={10} fill="var(--text-3)" fontWeight={500}>
               {a.label}
             </text>
           )
@@ -258,7 +258,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                     </div>
                     <div className="relative h-1.5 rounded-full" style={{background:'var(--border)'}}>
                       <div className="absolute h-1.5 rounded-full" style={{left:0,width:`${priceVsHigh}%`,background: priceVsHigh > 90 ? 'var(--green)' : priceVsHigh > 50 ? 'var(--brand)' : 'var(--amber)'}} />
-                      <div className="absolute rounded-full border-2 border-white" style={{left:`${priceVsHigh}%`,top:'50%',width:10,height:10,transform:'translate(-50%,-50%)',background:'var(--text)'}} />
+                      <div className="absolute rounded-full border-[1.5px] border-[var(--surface-3)] shadow-sm" style={{left:`${priceVsHigh}%`,top:'50%',width:10,height:10,transform:'translate(-50%,-50%)',background:'var(--text)'}} />
                     </div>
                   </div>
                 )}
@@ -275,7 +275,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
               </div>
 
               {/* Radar chart */}
-              <div style={{borderTop:'1px solid var(--glass-border)',paddingTop:'8px'}}>
+              <div style={{borderTop:'0.5px solid var(--glass-border)',paddingTop:'8px'}}>
                 <ScoreRadar s={s} />
               </div>
               </GlassCardContent>

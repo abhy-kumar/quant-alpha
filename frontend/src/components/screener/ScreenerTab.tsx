@@ -99,7 +99,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
   return (
     <div className="space-y-4">
       {/* Algorithm Info + Horizon Toggle */}
-      <div className="card p-4" style={{ borderRadius: 'var(--radius-xl)' }}>
+      <div className="card p-4" style={{ borderRadius: 'var(--radius-lg)' }}>
         <div className="flex items-center justify-between mb-3">
           <span className="section-label" style={{ color: 'var(--brand)' }}>Scoring Model</span>
           <div className="flex items-center gap-3">

@@ -87,7 +87,7 @@ export const GlassCardContent: React.FC<{ children: React.ReactNode; className?:
 
 export const GlassCardFooter: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({
   children,
-  className = 'px-5 py-3 border-t border-[var(--glass-border)] text-xs text-[var(--text-3)]',
+  className = 'px-5 py-3 border-t-[0.5px] border-[var(--glass-border)] text-xs text-[var(--text-3)]',
   style,
 }) => {
   return (

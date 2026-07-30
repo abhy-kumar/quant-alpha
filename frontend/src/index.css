@@ -109,14 +109,23 @@
   .typo-display { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
   .typo-h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.015em; color: var(--text); }
   .typo-h2 { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
-  .typo-h3 { font-size: 12px; font-weight: 600; color: var(--text); }
+  .typo-h3 { font-size: 13px; font-weight: 600; color: var(--text); }
   .typo-body { font-size: 12px; font-weight: 400; line-height: 1.45; color: var(--text-2); }
   .typo-body-bold { font-size: 12px; font-weight: 600; color: var(--text); }
   .typo-caption { font-size: 11px; font-weight: 500; color: var(--text-3); }
   .typo-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
-  .typo-table-head { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); }
+  .typo-table-head { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); }
   .typo-num { font-family: "SF Mono", "Space Mono", monospace; font-size: 12px; font-weight: 500; font-feature-settings: "tnum" 1; }
   .typo-num-sm { font-family: "SF Mono", "Space Mono", monospace; font-size: 11px; font-weight: 500; font-feature-settings: "tnum" 1; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.92); }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 
 @layer components {
@@ -130,8 +139,7 @@
     position: relative;
     transition: box-shadow 240ms var(--ease-out),
                 border-color 240ms var(--ease-out),
-                background 240ms var(--ease-out),
-                transform 240ms var(--ease-out);
+                background 240ms var(--ease-out);
   }
   .card::before {
     content: '';
@@ -144,13 +152,11 @@
   }
   .card-hover {
     transition: box-shadow 240ms var(--ease-out),
-                border-color 240ms var(--ease-out),
-                transform 240ms var(--ease-out);
+                border-color 240ms var(--ease-out);
   }
   .card-hover:hover {
     box-shadow: var(--glass-shadow-lg);
     border-color: var(--glass-border-strong);
-    transform: translateY(-1px);
   }
 
   .glass {
