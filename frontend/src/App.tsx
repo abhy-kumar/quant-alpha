@@ -68,19 +68,18 @@ function TapeInner({ data }: { data: DashboardData[] }) {
   })), [data])
   if (!items.length) return null
 
-  const tapeBackground = '#000000'
   const duration = (items.length * 217) / 150;
 
   return (
-    <div className="overflow-hidden" style={{ background: tapeBackground }}>
+    <div className="overflow-hidden glass-subtle" style={{ borderBottom: '0.5px solid var(--glass-border)' }}>
       <div className="tape flex w-max whitespace-nowrap scrollbar-none" style={{ animation: `scroll ${duration}s linear infinite` }}>
           {[...items, ...items].map((x, i) => (
             <span key={i} className="inline-flex items-center px-4 py-1.5 text-[11px] shrink-0">
-              <span className="font-medium" style={{ color: '#E6EDF3' }}>{x.t}</span>
-              <span style={{ color: 'rgba(255,255,255,0.15)', margin: '0 8px' }}>·</span>
+              <span className="font-semibold" style={{ color: 'var(--text)' }}>{x.t}</span>
+              <span style={{ color: 'var(--text-3)', opacity: 0.4, margin: '0 8px' }}>·</span>
               <span className="flex items-center gap-2">
-                <span className="font-mono text-right w-[65px] shrink-0" style={{ color: '#8B949E' }}>{x.p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                <span className="font-mono text-right w-[60px] shrink-0" style={{ color: x.c >= 0 ? '#3FB950' : '#F85149' }}>{x.c >= 0 ? '▲' : '▼'} {Math.abs(x.c).toFixed(2)}%</span>
+                <span className="font-mono text-right w-[65px] shrink-0" style={{ color: 'var(--text-2)' }}>{x.p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="font-mono text-right w-[60px] shrink-0 font-medium" style={{ color: x.c >= 0 ? 'var(--green)' : 'var(--red)' }}>{x.c >= 0 ? '▲' : '▼'} {Math.abs(x.c).toFixed(2)}%</span>
               </span>
             </span>
           ))}
@@ -335,23 +334,30 @@ export default function App() {
 
       <div>
         {/* Header - Row 1: Nav & Controls */}
-        <header className="glass-strong" style={{ borderBottom:'1px solid var(--glass-border)', borderRadius: 0 }}>
-          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center justify-between relative">
-            {/* Left: Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-1">
-              {visibleTabs.map(tab => (
-                <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-xl transition-all duration-200"
-                  style={{
-                    color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
-                    background: activeTab===tab.id ? 'var(--glass-bg)' : 'transparent',
-                    border: activeTab===tab.id ? '1px solid var(--glass-border)' : '1px solid transparent',
-                    boxShadow: activeTab===tab.id ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
-                  }}>
-                  <tab.icon size={14} weight="duotone" />{tab.label}
-                </button>
-              ))}
-            </nav>
+        <header className="glass-strong" style={{ borderBottom:'0.5px solid var(--glass-border)', borderRadius: 0 }}>
+          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[48px] flex items-center justify-between relative">
+            {/* Left: macOS Window Traffic Lights + Desktop Nav */}
+            <div className="hidden md:flex items-center gap-3">
+              <div className="flex items-center gap-1.5 mr-1">
+                <span className="w-3 h-3 rounded-full bg-[#FF5F56] inline-block shadow-sm" />
+                <span className="w-3 h-3 rounded-full bg-[#FFBD2E] inline-block shadow-sm" />
+                <span className="w-3 h-3 rounded-full bg-[#27C93F] inline-block shadow-sm" />
+              </div>
+              <nav className="flex items-center gap-1">
+                {visibleTabs.map(tab => (
+                  <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg transition-all duration-150"
+                    style={{
+                      color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
+                      background: activeTab===tab.id ? 'var(--glass-bg-strong)' : 'transparent',
+                      border: activeTab===tab.id ? '0.5px solid var(--glass-border-strong)' : '0.5px solid transparent',
+                      boxShadow: activeTab===tab.id ? '0 1px 3px rgba(0,0,0,0.08), var(--glass-highlight)' : 'none',
+                    }}>
+                    <tab.icon size={14} weight="duotone" />{tab.label}
+                  </button>
+                ))}
+              </nav>
+            </div>
 
             {/* Mobile Left: Brand Logo */}
             <button onClick={()=>setActiveTab('charting')} className="md:hidden flex items-center shrink-0 hover:opacity-80 transition-opacity">
