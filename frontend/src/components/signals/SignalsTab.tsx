@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { DashboardData } from '../../types'
-import { scoreBar, SegmentedControl } from '../common/shared'
+import { scoreBar, SegmentedControl, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
 
 function ConvictionDots({ conviction }: { conviction: string }) {
   const levels: Record<string, number> = { 'Strong Buy': 5, 'Buy': 4, 'Hold': 3, 'Caution': 2, 'Avoid': 1 }
@@ -189,26 +189,13 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
           const priceVsHigh = high52 ? ((price / high52) * 100) : null
 
           return (
-            <div key={s.Ticker} onClick={()=>onSelect(s.Ticker)}
-              role="button" tabIndex={0}
-              onKeyDown={e => e.key === 'Enter' && onSelect(s.Ticker)}
-              className="card card-hover cursor-pointer p-4"
-              data-liquid
-              style={{ borderRadius: 'var(--radius-xl)' }}>
-              <div className="liquid-sheen" />
-              {/* Header: ticker + category */}
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-base font-bold" style={{color:'var(--text)'}}>{s.Ticker.replace('.NS','')}</span>
-                    <span className="text-[10px] font-medium" style={{color:'var(--text-3)'}}>#{i+1}</span>
-                  </div>
-                  <span style={{ fontSize:10, color:'var(--text-3)' }}>
-                    {s.Sector || 'Equities'} {s.Long_Name ? `· ${s.Long_Name.replace(' Limited', ' Ltd').replace(' Industries', ' Ind.')}` : ''}
-                  </span>
-                </div>
-                {s.Conviction && <ConvictionDots conviction={s.Conviction} />}
-              </div>
+            <GlassCard key={s.Ticker} onClick={()=>onSelect(s.Ticker)} className="cursor-pointer">
+              <GlassCardHeader
+                title={s.Ticker.replace('.NS', '')}
+                subtitle={`#${i + 1} · ${s.Sector || 'Equities'}`}
+                badge={s.Conviction ? <ConvictionDots conviction={s.Conviction} /> : undefined}
+              />
+              <GlassCardContent className="p-4">
 
               {/* Price + Composite - hero row */}
               <div className="flex items-baseline justify-between mb-3">
@@ -291,7 +278,8 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
               <div style={{borderTop:'1px solid var(--glass-border)',paddingTop:'8px'}}>
                 <ScoreRadar s={s} />
               </div>
-            </div>
+              </GlassCardContent>
+            </GlassCard>
           )
         })}
       </div>

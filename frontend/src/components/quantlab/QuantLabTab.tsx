@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react'
 import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull } from '../../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine, ScatterChart, Scatter, ZAxis } from 'recharts'
 import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise, DownloadSimple } from '@phosphor-icons/react'
-import { SegmentedControl, InfoTooltip } from '../common/shared'
+import { SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
 import { exportToCSV } from '../../utils/exportUtils'
 import { MonteCarloChart } from './MonteCarloChart'
 
@@ -309,35 +309,28 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
     <div className="space-y-5">
       {/* Header row: description + regime */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="card card-hover overflow-hidden lg:col-span-2">
-          <div className="section-band flex items-center justify-between">
-            <span className="typo-h3 flex items-center gap-2">
-              <Flask size={16} weight="duotone" style={{ color: 'var(--brand)' }} />
-              Quant Lab Overview
-            </span>
-            <span className="typo-caption">Last calculated: {quantData.last_updated}</span>
-          </div>
-          <div className="p-5 flex items-start gap-4">
+        <GlassCard className="lg:col-span-2">
+          <GlassCardHeader
+            icon={Flask}
+            title="Quant Lab Overview"
+            badge={<span className="typo-caption text-[var(--text-3)]">Last calculated: {quantData.last_updated}</span>}
+          />
+          <GlassCardContent className="p-5 flex items-start gap-4">
             <p className="typo-body leading-relaxed" style={{ color: 'var(--text-2)' }}>
               Institutional-grade quantitative portfolio tools. Analyzes top screening picks to optimize portfolio weights, tracks aggregate factor exposures, and visualizes historical backtested performance.
             </p>
-          </div>
-        </div>
+          </GlassCardContent>
+        </GlassCard>
 
         {quantData.market_regime && (
-          <div className="card card-hover overflow-hidden">
-            <div className="section-band flex items-center gap-1">
-              <span className="typo-h3">Market Regime</span>
-              <InfoTooltip id="quant.regime" />
-            </div>
-            <div className="p-5 flex flex-col items-center text-center gap-2">
-              {quantData.market_regime.score >= 70 ? (
-                <ShieldCheck size={28} weight="duotone" style={{ color: 'var(--green)' }} />
-              ) : quantData.market_regime.score <= 30 ? (
-                <Warning size={28} weight="duotone" style={{ color: 'var(--red)' }} />
-              ) : (
-                <Scales size={28} weight="duotone" style={{ color: 'var(--amber)' }} />
-              )}
+          <GlassCard>
+            <GlassCardHeader
+              icon={ShieldCheck}
+              iconColor={quantData.market_regime.score >= 70 ? 'var(--green)' : quantData.market_regime.score <= 30 ? 'var(--red)' : 'var(--amber)'}
+              title="Market Regime"
+              tooltipId="quant.regime"
+            />
+            <GlassCardContent className="p-5 flex flex-col items-center text-center gap-2">
               <div className="typo-h2 font-semibold" style={{ color: 'var(--text)' }}>
                 {quantData.market_regime.score >= 70 ? 'Risk-On (Bull)' : quantData.market_regime.score <= 30 ? 'Risk-Off (Bear)' : 'Neutral Regime'}
               </div>
@@ -355,8 +348,8 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                   <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.vix.toFixed(1)}</div>
                 </div>
               </div>
-            </div>
-          </div>
+            </GlassCardContent>
+          </GlassCard>
         )}
       </div>
 

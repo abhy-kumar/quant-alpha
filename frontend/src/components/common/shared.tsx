@@ -3,8 +3,9 @@ import * as Tooltip from '@radix-ui/react-tooltip'
 import { Question } from '@phosphor-icons/react'
 import { tooltips } from '../../data/tooltipContent'
 import { formatNum, colorCode, scoreColor, getBadgeClass } from '../../utils/formatters'
+import { GlassCard, GlassCardHeader, GlassCardContent, GlassCardFooter } from './GlassCard'
 
-export { formatNum, colorCode, scoreColor, getBadgeClass }
+export { formatNum, colorCode, scoreColor, getBadgeClass, GlassCard, GlassCardHeader, GlassCardContent, GlassCardFooter }
 export const num = formatNum
 
 export const scoreBar = (label: string, value: number, min: number = 0, max: number = 10, color?: string, tooltipId?: string) => {
