@@ -262,6 +262,14 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         item["quality_gated"]   = len(reasons) > 0
         item["quality_reasons"] = reasons
 
+    # ── Convex Regime Factor Weight Allocation (Lambda in [0, 1]) ───────────────
+    # Bull regime (regime_score=+5): Tech 35%, Fund 15%, Research 50% (Momentum-oriented)
+    # Bear regime (regime_score=-5): Tech 25%, Fund 50%, Research 25% (Quality/Value-oriented)
+    lambda_regime = max(0.0, min(1.0, (float(regime_score) + 5.0) / 10.0))
+    w_tech = lambda_regime * 0.35 + (1.0 - lambda_regime) * 0.25
+    w_fund = lambda_regime * 0.15 + (1.0 - lambda_regime) * 0.50
+    w_res  = lambda_regime * 0.50 + (1.0 - lambda_regime) * 0.25
+
     # ── Compute composite scores using ranked values ────────────────────────
     for item in final_rows:
         norm_tech = item["norm_tech"]
@@ -269,7 +277,7 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         ranked_research = item.get("research_composite_ranked",     item["research"]["research_composite"])
         ranked_research_long = item.get("research_composite_long_ranked", item.get("research_composite_long_raw", 5.0))
 
-        raw_composite       = (norm_tech * 0.35) + (ranked_fund * 0.25) + (ranked_research * 0.40)
+        raw_composite       = (norm_tech * w_tech) + (ranked_fund * w_fund) + (ranked_research * w_res)
         raw_composite_tech  = (norm_tech * 0.50) + (ranked_fund * 0.10) + (ranked_research * 0.40)
         raw_composite_fund  = (norm_tech * 0.10) + (ranked_fund * 0.40) + (ranked_research * 0.50)
         raw_composite_mom   = (ranked_research * 0.70) + (norm_tech * 0.20) + (ranked_fund * 0.10)

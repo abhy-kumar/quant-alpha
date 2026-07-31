@@ -52,6 +52,11 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{ticker}</h3>
                 <span className={`badge ${getBadgeClass(asset.Conviction)}`}>{asset.Conviction || 'Hold'}</span>
+                {asset.ML_Conviction && (
+                  <span className="badge text-[10px]" style={{ background: 'var(--brand-soft)', color: 'var(--brand)', border: '0.5px solid var(--glass-border)' }}>
+                    ML: {asset.ML_Conviction}
+                  </span>
+                )}
               </div>
               <p className="text-xs" style={{ color: 'var(--text-3)' }}>
                 {asset.Long_Name || ticker} — {asset.Sector || 'Equities'}
@@ -68,7 +73,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
         </div>
 
         {/* Hero Score Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
           <div className="p-3 card text-center">
             <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Composite Score</span>
             <div className={`text-lg font-bold font-mono mt-1 ${scoreColor(asset.Composite_Score)}`}>
@@ -91,6 +96,12 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
             <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">F-Score</span>
             <div className="text-lg font-bold font-mono mt-1 text-[var(--text)]">
               {asset.Piotroski_F ?? '-'}/9
+            </div>
+          </div>
+          <div className="p-3 card text-center">
+            <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--brand)]">ML Alpha Prob</span>
+            <div className="text-lg font-bold font-mono mt-1 text-[var(--brand)]">
+              {asset.ML_Alpha_Prob != null ? `${asset.ML_Alpha_Prob}%` : 'N/A'}
             </div>
           </div>
         </div>

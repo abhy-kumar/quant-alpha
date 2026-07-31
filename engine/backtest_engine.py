@@ -41,6 +41,8 @@ REBALANCE_EVERY = 20   # trading days between rebalances
 TOP_N = 10             # stocks in portfolio at each rebalance
 MIN_HISTORY = 60       # minimum trading days of history before we start scoring
 RUNS_DIR = os.path.join("frontend", "public", "backtest_runs")
+TRANSACTION_COST_PER_LEG_BPS = 20  # 20 bps per leg buy/sell (40 bps round-trip)
+MIN_ADTV_INR = 10_000_000           # ₹1 Crore 30-day ADTV minimum liquidity gate
 
 
 # ---------------------------------------------------------------------------
@@ -145,9 +147,15 @@ def load_ohlcv() -> tuple[pd.DataFrame, pd.DataFrame, list]:
     lows    = df.pivot(index="Date", columns="Ticker", values="Low").ffill()
 
     bench = "^NSEI"
-    all_tickers = [t for t in prices.columns if t != bench]
+    adtv_30d = (prices * volumes).rolling(30, min_periods=5).mean()
+    max_adtv = adtv_30d.max(axis=0)
+    liquid_tickers = max_adtv[max_adtv >= MIN_ADTV_INR].index.tolist()
+    if bench in prices.columns and bench not in liquid_tickers:
+        liquid_tickers.append(bench)
 
-    return prices, volumes, highs, lows, all_tickers
+    all_tickers = [t for t in liquid_tickers if t != bench]
+
+    return prices[liquid_tickers], volumes[liquid_tickers], highs[liquid_tickers], lows[liquid_tickers], all_tickers
 
 
 # ---------------------------------------------------------------------------
@@ -681,6 +689,7 @@ def run_walkforward_backtest(
         })
 
     current_holdings: list[str] = []
+    prev_target_weights: dict[str, float] = {}
 
     for i, idx in enumerate(sim_dates_idx):
         # Score all tickers using data up to (and including) idx — look-ahead free
@@ -690,9 +699,23 @@ def run_walkforward_backtest(
         valid = [t for t in scores.index if t in prices.columns and not np.isnan(prices.iloc[idx].get(t, np.nan))]
         scores = scores.loc[[t for t in scores.index if t in valid]]
 
-        top_picks = scores.nlargest(top_n).index.tolist()
+        # Apply Portfolio Continuation Buffer / Hysteresis Band (Entry <= top_n, Exit <= top_n * 2)
+        ranked_tickers = scores.sort_values(ascending=False).index.tolist()
+        exit_rank_threshold = top_n * 2
+
+        retained = []
+        if current_holdings:
+            for t in current_holdings:
+                if t in ranked_tickers and ranked_tickers.index(t) < exit_rank_threshold:
+                    retained.append(t)
+
+        needed = top_n - len(retained)
+        new_candidates = [t for t in ranked_tickers if t not in retained]
+        new_buys = new_candidates[:needed] if needed > 0 else []
+
+        top_picks = retained + new_buys
         if not top_picks:
-            top_picks = current_holdings  # hold previous if scoring fails
+            top_picks = scores.nlargest(top_n).index.tolist()
 
         current_holdings = top_picks
 
@@ -736,6 +759,14 @@ def run_walkforward_backtest(
                     equity_ratio = 0.50  # Risk-Off/Caution: 50% equity, 50% cash
                 else:
                     equity_ratio = 1.00  # Risk-On: 100% equity
+
+        # Apply transaction friction based on portfolio turnover
+        target_weights = {t: weights.get(t, 0.0) * equity_ratio for t in top_picks}
+        all_w_keys = set(prev_target_weights.keys()).union(target_weights.keys())
+        turnover = sum(abs(target_weights.get(k, 0.0) - prev_target_weights.get(k, 0.0)) for k in all_w_keys)
+        tx_cost_pct = turnover * (TRANSACTION_COST_PER_LEG_BPS / 10000.0)
+        portfolio_value *= max(0.0, 1.0 - tx_cost_pct)
+        prev_target_weights = target_weights
 
         # Entry prices for stop-loss monitoring
         entry_prices = {t: float(prices[t].iloc[idx]) for t in top_picks if t in prices.columns}

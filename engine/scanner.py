@@ -199,6 +199,14 @@ def _build_intermediate_rows(raw_data: dict, nifty_df, etf_list: list) -> tuple[
 
         is_etf = sym in etf_list or "BEES" in ticker.upper() or "ETF" in ticker.upper() or "ETF" in long_name.upper()
 
+        # Liquidity and Market Cap Gating for non-ETF equities
+        if not is_etf:
+            adtv_30d = (df["Close"] * df["Volume"]).tail(30).mean()
+            mcap = _safe_float(info.get("marketCap"))
+            if adtv_30d < 10_000_000 or (not np.isnan(mcap) and mcap > 0 and mcap < 500_000_000):
+                log.info(f"[Scanner] Pre-filter: Excluded illiquid/microcap {ticker} (ADTV: ₹{adtv_30d/1e5:.1f}L, MCAP: ₹{mcap/1e7 if not np.isnan(mcap) else 0:.1f}Cr)")
+                continue
+
         sector = "ETF" if is_etf else (info.get("sector", "Unknown") or "Unknown")
         industry = "Exchange Traded Fund" if is_etf else (info.get("industry", "Unknown") or "Unknown")
 

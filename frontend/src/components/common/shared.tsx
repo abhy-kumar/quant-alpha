@@ -34,11 +34,11 @@ export const getSignalLabel = (v: any) => {
   return <span className="text-[var(--text-3)] text-xs">Neutral</span>
 }
 
-export const SortHeader = ({ field, children, align = 'left', sortKey, sortDir, onSort }: {
-  field: string; children: React.ReactNode; align?: 'left' | 'right';
+export const SortHeader = ({ field, children, align = 'left', className = '', sortKey, sortDir, onSort }: {
+  field: string; children: React.ReactNode; align?: 'left' | 'right'; className?: string;
   sortKey: string; sortDir: 'asc' | 'desc'; onSort: (k: string) => void;
 }) => (
-  <th className="py-2.5 px-3 typo-table-head cursor-pointer select-none"
+  <th className={`py-2.5 px-3 typo-table-head cursor-pointer select-none ${className}`}
     style={{ textAlign: align }} onClick={() => onSort(field)}>
     <span className="inline-flex items-center gap-1">
       {children}

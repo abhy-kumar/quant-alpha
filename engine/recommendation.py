@@ -210,22 +210,21 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
     if not np.isnan(fifty_two_high) and fifty_two_high > 0:
         sig_52w_high = 1 if (close / fifty_two_high) >= 0.95 else 0
 
+    # De-correlated Technical Core (VIF < 5.0): Trend, Momentum, Volume, Volatility
     weighted_signals = [
-        (sig_supertrend, 2.0),
-        (sig_price_sma200, 2.0),
-        (sig_sma50_sma200, 2.0),
-        (sig_adx, 2.0),
-        (sig_ichimoku, 1.5),
-        (sig_macd, 1.0),
-        (sig_rsi, 1.0),
-        (sig_52w_high, 1.0),
-        (sig_vpt, 1.0),
-        (sig_price_sma50, 1.0),
-        (sig_vol, 0.5),
-        (sig_stoch, 0.25),
-        (sig_cci, 0.25),
-        (sig_bb, 0.25),
-        (sig_macd_hist, 0.5)
+        # Trend Core
+        (sig_supertrend, 2.5),
+        (sig_price_sma200, 1.5),
+        (sig_adx, 1.5),
+        # Momentum & Relative Breakout Core
+        (sig_rsi, 2.0),
+        (sig_52w_high, 1.5),
+        # Volume Flow Core
+        (sig_vpt, 1.5),
+        (sig_vol, 1.0),
+        # Volatility Compression & Dynamic Reversion Core
+        (sig_macd_hist, 1.0),
+        (sig_bb, 0.5),
     ]
 
     bull_score = sum(w for v, w in weighted_signals if v == 1)

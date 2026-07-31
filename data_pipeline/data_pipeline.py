@@ -140,6 +140,19 @@ def init_schema():
     """)
 
     c.execute("""
+        CREATE TABLE IF NOT EXISTS pit_fundamentals (
+            ticker TEXT NOT NULL,
+            metric_name TEXT NOT NULL,
+            metric_value REAL NOT NULL,
+            period_end_date DATE NOT NULL,
+            filing_date DATE NOT NULL,
+            db_ingest_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (ticker, metric_name, period_end_date, filing_date)
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_pit_lookup ON pit_fundamentals (ticker, metric_name, filing_date)")
+
+    c.execute("""
         CREATE TABLE IF NOT EXISTS regime_history (
             Scan_Date TEXT PRIMARY KEY,
             Regime_Score INTEGER,

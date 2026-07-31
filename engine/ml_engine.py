@@ -39,8 +39,39 @@ FEATURE_COLS = [
 ]
 
 
+class PurgedGroupTimeSeriesSplit:
+    """
+    Purged & Embargoed Time-Series Cross-Validator (López de Prado, 2018).
+    Prevents temporal data leakage across overlapping forward return evaluation windows.
+    """
+    def __init__(self, n_splits=5, purge_window=21, embargo_window=10):
+        self.n_splits = n_splits
+        self.purge_window = purge_window
+        self.embargo_window = embargo_window
+
+    def split(self, X, y=None, groups=None):
+        n_samples = len(X)
+        indices = np.arange(n_samples)
+        split_size = n_samples // (self.n_splits + 1)
+        
+        for i in range(self.n_splits):
+            test_start = (i + 1) * split_size
+            test_end = test_start + split_size
+            
+            test_indices = indices[test_start:test_end]
+            
+            # Purge training labels overlapping with test start
+            train_left = indices[:max(0, test_start - self.purge_window)]
+            
+            # Embargo training labels following test end
+            train_right = indices[min(n_samples, test_end + self.embargo_window):]
+            
+            train_indices = np.concatenate([train_left, train_right])
+            yield train_indices, test_indices
+
+
 def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
-    """Train gradient boosted decision tree classifier on historical scan outcomes with TimeSeriesSplit CV."""
+    """Train gradient boosted decision tree classifier on historical scan outcomes with Purged Group CV."""
     if not os.path.exists(DB_PATH):
         log.warning(f"[ML Engine] Database {DB_PATH} not found. Skipping ML training.")
         return None
@@ -81,18 +112,21 @@ def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
 
-        # Target: 1 if positive return over 21d, else 0
-        y = (df["Return_21d"] > 0).astype(int)
+        # Target: 1 if excess return over cross-sectional market median >= 1.0% (100 bps alpha hurdle), else 0
+        market_bench_ret = df.groupby("Scan_Date")["Return_21d"].transform("median").fillna(0.0)
+        excess_ret = pd.to_numeric(df["Return_21d"], errors="coerce").fillna(0.0) - market_bench_ret
+        
+        y = (excess_ret >= 0.01).astype(int)
         X = df[FEATURE_COLS]
 
-        # Perform TimeSeriesSplit cross validation if enough data exists
+        # Perform Purged & Embargoed TimeSeries Cross-Validation
         if len(df) >= 30:
             n_splits = min(5, len(df) // 10)
-            tscv = TimeSeriesSplit(n_splits=n_splits)
+            ptscv = PurgedGroupTimeSeriesSplit(n_splits=n_splits, purge_window=21, embargo_window=10)
             cv_scores = []
             cv_aucs = []
             
-            for train_idx, val_idx in tscv.split(X):
+            for train_idx, val_idx in ptscv.split(X):
                 X_tr, X_val = X.iloc[train_idx], X.iloc[val_idx]
                 y_tr, y_val = y.iloc[train_idx], y.iloc[val_idx]
                 
@@ -107,7 +141,7 @@ def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
                     cv_aucs.append(roc_auc_score(y_val, probs))
             
             if cv_aucs:
-                log.info(f"[ML Engine] TimeSeries CV ({n_splits}-fold) - Acc: {np.mean(cv_scores):.2%}, ROC-AUC: {np.mean(cv_aucs):.4f}")
+                log.info(f"[ML Engine] Purged Group CV ({n_splits}-fold) - Acc: {np.mean(cv_scores):.2%}, ROC-AUC: {np.mean(cv_aucs):.4f}")
 
         # Train final model on full dataset
         model = HistGradientBoostingClassifier(
@@ -188,7 +222,7 @@ def predict_stock_alpha(stock_dict: dict, model: HistGradientBoostingClassifier 
                 _safe_float(stock_dict.get("RSI_Value"), 50.0),
                 _safe_float(stock_dict.get("ADX_Value"), 20.0),
             ]
-            X_sample = np.array([features])
+            X_sample = pd.DataFrame([features], columns=FEATURE_COLS)
             prob_raw = model.predict_proba(X_sample)[0][1]
             prob = float(np.round(prob_raw * 100, 1))
         except Exception as e:

@@ -412,19 +412,19 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
               <th className="py-2 px-2 text-[10px] font-medium cursor-pointer select-none uppercase tracking-wider glass-subtle" style={{color:'var(--text-3)',textAlign:'left',position:'sticky',left:0,zIndex:1}} onClick={()=>handleSort('Ticker')}>
                 <span className="inline-flex items-center gap-1"><InfoTooltip id="screener.ticker">Ticker</InfoTooltip>{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}</span>
               </th>
-              <SortHeader field="Sector" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline"><InfoTooltip id="screener.sector">Sector</InfoTooltip></span></SortHeader>
+              <SortHeader field="Sector" className="hidden md:table-cell" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.sector">Sector</InfoTooltip></SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.price">Price</InfoTooltip></SortHeader>
               <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.1d">1D</InfoTooltip></SortHeader>
               {isLoggedIn && <SortHeader field={scoreCol} align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.score">{horizonMode === 'long' ? 'Long Score' : 'Score'}</InfoTooltip></SortHeader>}
               <th className="py-2 px-2 font-medium text-[10px] text-center" style={{ color: 'var(--text-2)' }}><InfoTooltip id="screener.trend">Trend</InfoTooltip></th>
-              <SortHeader field="Tech_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden md:inline"><InfoTooltip id="screener.tech">Tech</InfoTooltip></span></SortHeader>
-              <SortHeader field="Fund_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline"><InfoTooltip id="screener.fund">Fund</InfoTooltip></span></SortHeader>
-              <SortHeader field="Research_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline"><InfoTooltip id="screener.research">Research</InfoTooltip></span></SortHeader>
-              <SortHeader field="Piotroski_F" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden lg:inline"><InfoTooltip id="screener.fscore">F-Score</InfoTooltip></span></SortHeader>
-              <SortHeader field="Momentum_12M" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline"><InfoTooltip id="screener.12m-mom">12M Mom</InfoTooltip></span></SortHeader>
-              <SortHeader field="Value_Score" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline"><InfoTooltip id="screener.value">Value</InfoTooltip></span></SortHeader>
-              <SortHeader field="Beta" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline"><InfoTooltip id="screener.beta">Beta</InfoTooltip></span></SortHeader>
-              <SortHeader field="P/E" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><span className="hidden xl:inline"><InfoTooltip id="screener.pe">P/E</InfoTooltip></span></SortHeader>
+              <SortHeader field="Tech_Score" className="hidden md:table-cell" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.tech">Tech</InfoTooltip></SortHeader>
+              <SortHeader field="Fund_Score" className="hidden lg:table-cell" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.fund">Fund</InfoTooltip></SortHeader>
+              <SortHeader field="Research_Score" className="hidden lg:table-cell" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.research">Research</InfoTooltip></SortHeader>
+              <SortHeader field="Piotroski_F" className="hidden lg:table-cell" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.fscore">F-Score</InfoTooltip></SortHeader>
+              <SortHeader field="Momentum_12M" className="hidden xl:table-cell" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.12m-mom">12M Mom</InfoTooltip></SortHeader>
+              <SortHeader field="Value_Score" className="hidden xl:table-cell" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.value">Value</InfoTooltip></SortHeader>
+              <SortHeader field="Beta" className="hidden xl:table-cell" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.beta">Beta</InfoTooltip></SortHeader>
+              <SortHeader field="P/E" className="hidden xl:table-cell" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.pe">P/E</InfoTooltip></SortHeader>
               {isLoggedIn && <SortHeader field={convCol} sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.conv">{horizonMode === 'long' ? 'L-Conv' : 'Conv'}</InfoTooltip></SortHeader>}
               <th className="py-2 px-2"></th>
             </tr>
