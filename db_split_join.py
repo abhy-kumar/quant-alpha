@@ -14,7 +14,10 @@ def split_db():
     # Remove old parts first
     for f in os.listdir(DATA_DIR):
         if f.startswith(PREFIX):
-            os.remove(os.path.join(DATA_DIR, f))
+            try:
+                os.remove(os.path.join(DATA_DIR, f))
+            except Exception:
+                pass
 
     with open(DB_PATH, "rb") as f:
         part_num = 0
