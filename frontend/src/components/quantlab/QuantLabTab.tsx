@@ -294,7 +294,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
   const max_sharpe = quantData.model_portfolios?.max_sharpe || {}
   const min_volatility = quantData.model_portfolios?.min_volatility || {}
 
-  // Inline TickerLink component — wraps a ticker string into a clickable button
+  // Inline TickerLink component: wraps a ticker string into a clickable button
   const TickerLink = ({ ticker }: { ticker: string }) => (
     <button
       onClick={() => onSelect(ticker)}
@@ -357,7 +357,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
       {backtestStats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
           {[
-            { icon: <TrendUp size={14} />, label: backtestModel === 'long' ? `CAGR · Long ${backtestHorizon.toUpperCase()}` : `CAGR · Short ${backtestHorizon.toUpperCase()}`, tooltipId: 'quant.cagr', value: `${backtestStats.cagr >= 0 ? '+' : ''}${backtestStats.cagr.toFixed(2)}%`, color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
+            { icon: <TrendUp size={14} />, label: backtestModel === 'long' ? `CAGR (Long ${backtestHorizon.toUpperCase()})` : `CAGR (Short ${backtestHorizon.toUpperCase()})`, tooltipId: 'quant.cagr', value: `${backtestStats.cagr >= 0 ? '+' : ''}${backtestStats.cagr.toFixed(2)}%`, color: backtestStats.cagr >= 0 ? 'var(--green)' : 'var(--red)' },
             { icon: <ChartLineDown size={14} />, label: 'Ann. Volatility', tooltipId: 'quant.volatility', value: `${backtestStats.volatility.toFixed(1)}%`, color: backtestStats.volatility <= 20 ? 'var(--green)' : 'var(--amber)' },
             { icon: <Target size={14} />, label: 'Sharpe Ratio', tooltipId: 'quant.sharpe', value: backtestStats.sharpe.toFixed(2), color: backtestStats.sharpe >= 1 ? 'var(--green)' : 'var(--text)' },
             { icon: <Warning size={14} />, label: 'Max Drawdown', tooltipId: 'quant.maxdd', value: `${backtestStats.max_drawdown.toFixed(2)}%`, color: 'var(--red)' },
@@ -529,7 +529,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                             const color  = val == null ? 'var(--text-3)' : isCAGR ? (val >= 0 ? 'var(--green)' : 'var(--red)') : isMDD ? 'var(--red)' : val >= 1 ? 'var(--green)' : 'var(--text)'
                             return (
                               <td key={metric} className="py-2.5 pr-4 text-right font-medium" style={{ color }}>
-                                {val == null ? '—' : isCAGR ? `${val >= 0 ? '+' : ''}${val.toFixed(2)}%` : isMDD ? `${val.toFixed(2)}%` : val.toFixed(2)}
+                                {val == null ? 'N/A' : isCAGR ? `${val >= 0 ? '+' : ''}${val.toFixed(2)}%` : isMDD ? `${val.toFixed(2)}%` : val.toFixed(2)}
                               </td>
                             )
                           })}
@@ -541,7 +541,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                             const color  = val == null ? 'var(--text-3)' : isCAGR ? (val >= 0 ? 'var(--green)' : 'var(--red)') : isMDD ? 'var(--red)' : val >= 1 ? 'var(--green)' : 'var(--text)'
                             return (
                               <td key={metric} className="py-2.5 pr-4 text-right font-medium" style={{ color }}>
-                                {val == null ? '—' : isCAGR ? `${val >= 0 ? '+' : ''}${val.toFixed(2)}%` : isMDD ? `${val.toFixed(2)}%` : val.toFixed(2)}
+                                {val == null ? 'N/A' : isCAGR ? `${val >= 0 ? '+' : ''}${val.toFixed(2)}%` : isMDD ? `${val.toFixed(2)}%` : val.toFixed(2)}
                               </td>
                             )
                           })}
@@ -555,18 +555,18 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
 
             {/* Monthly Returns Tear-Sheet Matrix */}
             {monthlyReturnsMatrix.length > 0 && (
-              <div style={{ borderTop: '1px solid var(--glass-border)' }}>
+              <div style={{ borderTop: '0.5px solid var(--glass-border)' }}>
                 <div className="section-band flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <GridFour size={14} style={{ color: 'var(--blue)' }} />
-                    <span className="typo-h3">Strategy Tear-Sheet · Monthly Return Matrix (%)</span>
+                    <span className="typo-h3">Strategy Tear-Sheet | Monthly Return Matrix (%)</span>
                   </div>
                   <span className="text-[10px] font-mono" style={{ color: 'var(--text-3)' }}>Walk-Forward Performance</span>
                 </div>
                 <div className="px-5 pb-5 overflow-x-auto scrollbar-none">
                   <table className="w-full text-[11px] text-center" style={{ borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <tr style={{ borderBottom: '0.5px solid var(--border)' }}>
                         <th className="py-2 pr-3 text-left typo-table-head">Year</th>
                         {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
                           <th key={m} className="py-2 px-1 typo-table-head text-center">{m}</th>
@@ -576,7 +576,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                     </thead>
                     <tbody>
                       {monthlyReturnsMatrix.map(r => (
-                        <tr key={r.year} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <tr key={r.year} style={{ borderBottom: '0.5px solid var(--border)' }}>
                           <td className="py-2 pr-3 text-left font-mono font-bold" style={{ color: 'var(--text)' }}>{r.year}</td>
                           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => {
                             const val = r.months[m]
@@ -584,7 +584,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                             const color = val == null ? 'var(--text-3)' : val > 0 ? 'var(--green)' : 'var(--red)'
                             return (
                               <td key={m} className="py-2 px-1 font-mono font-medium rounded" style={{ background: bg, color }}>
-                                {val == null ? '—' : `${val >= 0 ? '+' : ''}${val.toFixed(1)}`}
+                                {val == null ? 'N/A' : `${val >= 0 ? '+' : ''}${val.toFixed(1)}`}
                               </td>
                             )
                           })}
@@ -829,14 +829,14 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
             <div>
               <span className="typo-h2">Backtest Archive</span>
               <p className="typo-caption mt-0.5" style={{ color: 'var(--text-3)' }}>
-                Auto-updated every Saturday · {cachedRuns.length} snapshot{cachedRuns.length !== 1 ? 's' : ''} stored
+                Auto-updated every Saturday | {cachedRuns.length} snapshot{cachedRuns.length !== 1 ? 's' : ''} stored
               </p>
             </div>
           </div>
           <button
             onClick={() => loadRunIndex()}
             className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg transition-all"
-            style={{ background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)', color: 'var(--text-3)', cursor: 'pointer' }}
+            style={{ background: 'var(--glass-bg-subtle)', border: '0.5px solid var(--glass-border)', color: 'var(--text-3)', cursor: 'pointer' }}
           >
             <ArrowClockwise size={12} className={runsLoading ? 'animate-spin' : ''} />
             Refresh
@@ -857,7 +857,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
           </div>
         ) : (
           <div className="p-4">
-            {/* Group by date — show each date as a row of 4 model/horizon chips */}
+            {/* Group by date: show each date as a row of 4 model/horizon chips */}
             {(() => {
               const byDate = new Map<string, BacktestRunMeta[]>()
               for (const run of [...cachedRuns].sort((a, b) => b.as_of_date.localeCompare(a.as_of_date))) {
@@ -888,7 +888,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                           className="rounded-xl px-3 py-3 text-left transition-all"
                           style={{
                             background: isSelected ? 'var(--glass-bg-subtle)' : 'var(--glass-bg)',
-                            border: `1px solid ${isSelected ? 'var(--glass-border-strong)' : 'var(--glass-border)'}`,
+                            border: `0.5px solid ${isSelected ? 'var(--glass-border-strong)' : 'var(--glass-border)'}`,
                             cursor: run ? 'pointer' : 'default',
                             opacity: run ? 1 : 0.35,
                           }}
@@ -904,10 +904,10 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                           {run ? (
                             <>
                               <p className="text-sm font-bold tabular-nums leading-tight" style={{ color: typeof cagr === 'number' && cagr >= 0 ? 'var(--green)' : 'var(--red)' }}>
-                                {typeof cagr === 'number' ? `${cagr >= 0 ? '+' : ''}${cagr.toFixed(1)}%` : '—'}
+                                {typeof cagr === 'number' ? `${cagr >= 0 ? '+' : ''}${cagr.toFixed(1)}%` : 'N/A'}
                               </p>
                               <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-3)' }}>
-                                CAGR · Sharpe {typeof sharpe === 'number' ? sharpe.toFixed(2) : '—'}
+                                CAGR / Sharpe {typeof sharpe === 'number' ? sharpe.toFixed(2) : 'N/A'}
                               </p>
                             </>
                           ) : (
@@ -925,10 +925,10 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
 
         {/* Expanded selected run chart */}
         {selectedSlug && (
-          <div style={{ borderTop: '1px solid var(--glass-border)' }}>
-            <div className="px-5 py-3 flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--text-2)', borderBottom: '1px solid var(--glass-border)' }}>
+          <div style={{ borderTop: '0.5px solid var(--glass-border)' }}>
+            <div className="px-5 py-3 flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--text-2)', borderBottom: '0.5px solid var(--glass-border)' }}>
               <TrendUp size={13} style={{ color: 'var(--green)' }} />
-              Run Detail · <span className="font-mono" style={{ color: 'var(--text-3)' }}>{selectedSlug}</span>
+              Run Detail: <span className="font-mono" style={{ color: 'var(--text-3)' }}>{selectedSlug}</span>
             </div>
 
             {runDataLoading ? (
@@ -1056,7 +1056,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
               {/* Benchmark note */}
               <p className="text-[11px] mt-3 flex items-start gap-1.5" style={{ color: 'var(--text-3)' }}>
                 <Info size={12} className="shrink-0 mt-0.5" />
-                Benchmark is NIFTY 50 (^NSEI) from the same period. Nifty data coverage may be partial — benchmark returns are indicative.
+                Benchmark is NIFTY 50 (^NSEI) from the same period. Nifty data coverage may be partial, so benchmark returns are indicative.
                 All returns are gross of transaction costs and taxes.
               </p>
             </div>
@@ -1075,7 +1075,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
                   <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Why Walk-Forward?</p>
                 </div>
                 <p className="text-[12px] leading-relaxed" style={{ color: 'var(--text-2)' }}>
-                  The scanner has only been running since June 2026, so <code className="text-[11px] px-1 py-0.5 rounded" style={{ background: 'var(--surface-3)', color: 'var(--text)' }}>factor_history</code> has just ~25 scan dates — far too few to backtest meaningfully.
+                  The scanner has only been running since June 2026, so <code className="text-[11px] px-1 py-0.5 rounded" style={{ background: 'var(--surface-3)', color: 'var(--text)' }}>factor_history</code> has just ~25 scan dates, which is insufficient for long-term backtesting.
                   Instead, we replay the scoring engine on <strong style={{ color: 'var(--text)' }}>2 full years</strong> of daily OHLCV data
                   (Jun 2024 → Jul 2026, 519 trading days, 561 tickers), simulating exactly what the model would have said at each historical rebalance date.
                 </p>
@@ -1202,9 +1202,9 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
               </div>
               <ul className="space-y-1.5">
                 {[
-                  'Full 2-year price history from daily_ohlcv (Jun 2024 – Jul 2026)',
+                  'Full 2-year price history from daily_ohlcv (Jun 2024 to Jul 2026)',
                   'Monthly rebalance, equal-weight top-10 portfolio',
-                  'Point-in-time scoring — no look-ahead bias',
+                  'Point-in-time scoring without look-ahead bias',
                   'NIFTY 50 as the daily benchmark',
                   'CAGR, Sharpe, Info. Ratio, Max Drawdown, Win Rate',
                   'Cross-sectional momentum z-score normalisation',
@@ -1226,12 +1226,12 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
               </div>
               <ul className="space-y-1.5">
                 {[
-                  'Fundamental data (P/E, ROE, D/E) not available at historical dates — both models are purely price-signal based in the replay',
-                  'Transaction costs, brokerage, STT, and slippage are not deducted — live returns will be lower',
-                  'Universe is fixed to the current ~560 tickers — survivorship bias is possible (delisted stocks excluded)',
+                  'Fundamental data (P/E, ROE, D/E) not available at historical dates: both models are price-signal based in the replay',
+                  'Transaction costs, brokerage, STT, and slippage are not deducted, so live returns will be lower',
+                  'Universe is fixed to current ~560 tickers (delisted stocks excluded)',
                   'NIFTY 50 benchmark data may be partial; benchmark returns are indicative only',
                   'Small universe rebalances (< 10 valid stocks) fall back to previous holdings',
-                  'Results are in-sample for the price data window — out-of-sample performance is unknown',
+                  'Results are in-sample for the price data window; out-of-sample performance is unknown',
                 ].map(item => (
                   <li key={item} className="flex items-start gap-2 text-[11px]" style={{ color: 'var(--text-2)' }}>
                     <span className="shrink-0" style={{ color: 'var(--amber)', marginTop: 1 }}>⚠</span>
@@ -1247,17 +1247,17 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
             <p className="section-label mb-3">Methodology &amp; References</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {([
-                { ref: 'Jegadeesh & Titman (1993)', detail: 'Returns to Buying Winners and Selling Losers — 12-1 cross-sectional momentum.' },
+                { ref: 'Jegadeesh & Titman (1993)', detail: 'Returns to Buying Winners and Selling Losers (12-1 cross-sectional momentum).' },
                 { ref: 'Fama & French (1992, 1993)', detail: 'Three-factor model: Market, SMB, HML. Foundation for value and size factor weights.' },
-                { ref: 'Fama & French (2015)', detail: 'Five-factor model: adds RMW (profitability) and CMA (investment) — underpins Fund Score.' },
-                { ref: 'Baker, Bradley & Wurgler (2011)', detail: 'Benchmarks as limits to arbitrage — the low-volatility anomaly.' },
-                { ref: 'Frazzini & Pedersen (2014)', detail: 'Betting Against Beta — risk-adjusted returns of low-beta stocks.' },
-                { ref: 'Faber (2007)', detail: 'A Quantitative Approach to Tactical Asset Allocation — SMA-200 trend filter.' },
-                { ref: 'Novy-Marx (2013)', detail: 'The Other Side of Value — gross profitability as the strongest accounting predictor.' },
-                { ref: 'Bernard & Thomas (1989)', detail: 'Post-Earnings Announcement Drift (PEAD/SUE) — earnings surprise momentum.' },
-                { ref: 'Piotroski (2000)', detail: 'Value Investing: The Use of Historical Financial Statement Information — F-Score.' },
+                { ref: 'Fama & French (2015)', detail: 'Five-factor model: adds RMW (profitability) and CMA (investment), underpinning Fund Score.' },
+                { ref: 'Baker, Bradley & Wurgler (2011)', detail: 'Benchmarks as limits to arbitrage and the low-volatility anomaly.' },
+                { ref: 'Frazzini & Pedersen (2014)', detail: 'Betting Against Beta and risk-adjusted returns of low-beta stocks.' },
+                { ref: 'Faber (2007)', detail: 'A Quantitative Approach to Tactical Asset Allocation (SMA-200 trend filter).' },
+                { ref: 'Novy-Marx (2013)', detail: 'The Other Side of Value: gross profitability as an accounting predictor.' },
+                { ref: 'Bernard & Thomas (1989)', detail: 'Post-Earnings Announcement Drift (PEAD/SUE) and earnings surprise momentum.' },
+                { ref: 'Piotroski (2000)', detail: 'Value Investing: The Use of Historical Financial Statement Information (F-Score).' },
               ] as const).map(({ ref, detail }) => (
-                <div key={ref} className="p-3 rounded-lg" style={{ background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>
+                <div key={ref} className="p-3 rounded-lg" style={{ background: 'var(--glass-bg-subtle)', border: '0.5px solid var(--glass-border)' }}>
                   <p className="text-[11px] font-semibold mb-1" style={{ color: 'var(--text)' }}>{ref}</p>
                   <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-3)' }}>{detail}</p>
                 </div>
