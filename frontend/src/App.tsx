@@ -92,8 +92,8 @@ const Tape = memo(TapeInner)
 
 const TABS = [
   { id: 'charting', label: 'Charts', icon: ChartBar },
-  { id: 'picks', label: 'Signals', icon: TrendUp },
-  { id: 'fundamentals', label: 'Screen', icon: Database },
+  { id: 'picks', label: 'Picks & Signals', icon: TrendUp },
+  { id: 'fundamentals', label: 'Screener', icon: Database },
   { id: 'heatmap', label: 'Heatmap', icon: StackSimple },
   { id: 'quantlab', label: 'Quant Lab', icon: Pulse },
 ] as const
@@ -336,15 +336,11 @@ export default function App() {
         {/* Header - Web Application Navigation Bar */}
         <header className="glass-strong" style={{ borderBottom:'0.5px solid var(--glass-border)', borderRadius: 0 }}>
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center justify-between relative">
-            {/* Left: Brand Logo & Market Status */}
+            {/* Left: Brand Logo */}
             <div className="flex items-center gap-3">
               <button onClick={()=>setActiveTab('charting')} className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity">
-                <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-[26px] w-auto" />
+                <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-[36px] w-auto" />
               </button>
-              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium glass-subtle">
-                <span className={`w-2 h-2 rounded-full shrink-0 ${isDynamic ? 'pulse-glow' : ''}`} style={{ background: isDynamic ? 'var(--green)' : 'var(--amber)' }} />
-                <span style={{ color: 'var(--text-2)' }}>{isDynamic ? 'LIVE' : 'CLOSED'}</span>
-              </div>
             </div>
 
             {/* Desktop Center: Segmented Navigation Bar */}
@@ -442,7 +438,7 @@ export default function App() {
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
           {/* LIVE indicator */}
           <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
-            <div className={isDynamic ? 'pulse-glow' : ''} style={{ width:6, height:6, borderRadius:'50%',
+            <div className={isDynamic ? 'live-pulse-glow' : ''} style={{ width:6, height:6, borderRadius:'50%',
               background: isDynamic ? 'var(--amber)' : 'var(--text-3)',
               transition: 'background 300ms ease',
               boxShadow: isDynamic ? '0 0 4px var(--amber)' : 'none' }}/>

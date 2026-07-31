@@ -145,8 +145,8 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <SegmentedControl
           options={[
-            { key: 'short', label: 'Short-Term' },
-            { key: 'long', label: 'Long-Term' },
+            { key: 'short', label: 'Short-Term (Tactical)' },
+            { key: 'long', label: 'Long-Term (Fundamental)' },
           ]}
           value={horizon}
           onChange={(h) => setHorizon(h as 'short' | 'long')}
@@ -192,7 +192,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
             <GlassCard key={s.Ticker} onClick={()=>onSelect(s.Ticker)} className="cursor-pointer">
               <GlassCardHeader
                 title={s.Ticker.replace('.NS', '')}
-                subtitle={`#${i + 1} · ${s.Sector || 'Equities'}`}
+                subtitle={`#${i + 1} in ${s.Sector || 'Equities'}`}
                 badge={s.Conviction ? <ConvictionDots conviction={s.Conviction} /> : undefined}
               />
               <GlassCardContent className="p-4">
@@ -214,7 +214,7 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
                   }}>
                     {composite.toFixed(1)}
                   </span>
-                  <span style={{ fontSize:10, color:'var(--text-3)' }}>composite</span>
+                  <span style={{ fontSize:10, color:'var(--text-3)' }}>composite score</span>
                 </div>
               </div>
 

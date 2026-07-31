@@ -70,7 +70,7 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
           value={open ? query : selectedTicker.replace('.NS', '')}
           onFocus={() => { setOpen(true); setQuery('') }}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Search ticker or company..."
+          placeholder="Search by symbol or company name"
           className="bg-transparent text-sm outline-none w-full"
           style={{ color: 'var(--text)' }}
         />
@@ -126,7 +126,7 @@ const ChartTooltip = ({ active, payload, label }: any) => {
 }
 
 const Panel = ({ title, children }: { title: React.ReactNode; children: React.ReactNode }) => (
-  <div className="overflow-hidden card" data-liquid style={{ borderRadius: 'var(--radius-lg)' }}>
+  <div className="overflow-hidden card" style={{ borderRadius: 'var(--radius-lg)' }}>
     <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '0.5px solid var(--glass-border)', color: 'var(--text-2)' }}>
       {title}
     </div>
@@ -381,7 +381,7 @@ export default function ChartingTab({
 
         {/* Desktop: Technicals */}
         <GlassCard className="xl:block hidden">
-          <GlassCardHeader icon={TrendUp} title="Technical Snapshot" />
+          <GlassCardHeader icon={TrendUp} title="Technical Analysis" />
           <GlassCardContent className="p-4">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} tooltipId="chart.tech-score" />
@@ -406,7 +406,7 @@ export default function ChartingTab({
         <GlassCard className="xl:block hidden">
           <GlassCardHeader
             icon={BookOpen}
-            title="Research Factors"
+            title="Quantitative Factor Profile"
             badge={
               <span className="text-sm font-medium" style={{ color: Number(selectedAsset?.Research_Score) >= 7 ? 'var(--green)' : Number(selectedAsset?.Research_Score) < 4 ? 'var(--red)' : 'var(--text)' }}>
                 {num(selectedAsset?.Research_Score)}/10
@@ -429,7 +429,7 @@ export default function ChartingTab({
 
         {/* Desktop: Momentum */}
         <GlassCard className="xl:block hidden">
-          <GlassCardHeader icon={ChartBar} title="Momentum Profile" />
+          <GlassCardHeader icon={ChartBar} title="Momentum Breakdown" />
           <GlassCardContent className="p-4">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <InfoBlock label="1 Month" value={selectedAsset?.Momentum_1M != null ? `${(selectedAsset.Momentum_1M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_1M)} tooltipId="chart.mom-1m" />
@@ -523,7 +523,7 @@ export default function ChartingTab({
         ) : (
           <>
             {/* Classic Recharts View */}
-            <Panel title={<InfoTooltip id="chart.panel.price">{`${selectedTicker.replace('.NS', '')} - Price · SMA 50 · SMA 200 · Supertrend`}</InfoTooltip>}>
+            <Panel title={<InfoTooltip id="chart.panel.price">{`${selectedTicker.replace('.NS', '')} — Price & Moving Averages (SMA 50 / 200 / Supertrend)`}</InfoTooltip>}>
               <div className="chart-main" role="img" aria-label={`${selectedTicker} price chart`}>
                 {chartData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
@@ -554,7 +554,7 @@ export default function ChartingTab({
             </Panel>
 
             {/* RSI with reference lines */}
-            <Panel title={<InfoTooltip id="chart.panel.rsi">RSI(14) - 30 oversold · 70 overbought</InfoTooltip>}>
+            <Panel title={<InfoTooltip id="chart.panel.rsi">RSI (14) — 30 Oversold / 70 Overbought</InfoTooltip>}>
               <div className="chart-sub" role="img" aria-label={`${selectedTicker} RSI chart`}>
                 {chartData.length > 0 && (
                   <ResponsiveContainer width="100%" height="100%">
@@ -576,7 +576,7 @@ export default function ChartingTab({
             </Panel>
 
             {/* MACD with zero line */}
-            <Panel title={<InfoTooltip id="chart.panel.macd">MACD (12, 26, 9) - histogram · signal line</InfoTooltip>}>
+            <Panel title={<InfoTooltip id="chart.panel.macd">MACD (12, 26, 9) — Histogram & Signal</InfoTooltip>}>
               <div className="chart-sub" role="img" aria-label={`${selectedTicker} MACD chart`}>
                 {chartData.length > 0 && (
                   <ResponsiveContainer width="100%" height="100%">

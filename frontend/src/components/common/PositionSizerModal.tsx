@@ -40,10 +40,10 @@ export const PositionSizerModal: React.FC<PositionSizerModalProps> = ({ asset, i
             </div>
             <div>
               <h3 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
-                Position Sizer & Risk Management
+                Position Sizer
               </h3>
               <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-                {ticker} · Current Price: <strong className="font-mono text-[var(--text)]">₹{num(price)}</strong>
+                {ticker} — Current Price: <strong className="font-mono text-[var(--text)]">₹{num(price)}</strong>
               </p>
             </div>
           </div>
@@ -87,7 +87,7 @@ export const PositionSizerModal: React.FC<PositionSizerModalProps> = ({ asset, i
 
           <div>
             <label className="text-xs font-semibold block mb-1.5" style={{ color: 'var(--text-2)' }}>
-              Trailing Stop-Loss Threshold (%)
+              Trailing Stop-Loss (%)
             </label>
             <input
               type="number"
@@ -119,12 +119,12 @@ export const PositionSizerModal: React.FC<PositionSizerModalProps> = ({ asset, i
         {/* Output Calculation Breakdown */}
         <div className="card p-4 space-y-3">
           <div className="text-xs font-bold uppercase tracking-wider text-[var(--brand)] mb-2">
-            Recommended Execution Plan
+            Position Calculation
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="p-3 card">
-              <span className="text-[10px] text-[var(--text-3)] uppercase font-semibold">Recommended Share Qty</span>
+              <span className="text-[10px] text-[var(--text-3)] uppercase font-semibold">Calculated Shares</span>
               <div className="text-xl font-bold font-mono text-[var(--brand)] mt-1">
                 {recommendedShares.toLocaleString('en-IN')} <span className="text-xs font-normal">shares</span>
               </div>

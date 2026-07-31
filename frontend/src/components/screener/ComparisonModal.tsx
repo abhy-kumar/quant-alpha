@@ -77,10 +77,10 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
             <div className="h-4 w-px bg-white/10 mx-1" />
             <div>
               <h2 className="text-base font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
-                Stock Comparison Matrix
+                Stock Comparison
               </h2>
               <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>
-                Comparing {selectedAssets.length} stock{selectedAssets.length === 1 ? '' : 's'} across technical, fundamental, and quantitative factors
+                {selectedAssets.length} stock{selectedAssets.length === 1 ? '' : 's'} selected for comparison
               </p>
             </div>
           </div>
@@ -105,7 +105,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
               {/* Factor Radar Chart */}
               <div className="mb-6 card p-4">
                 <div className="text-xs font-semibold uppercase tracking-wider mb-2 text-center" style={{ color: 'var(--brand)' }}>
-                  Multi-Factor Dimension Spider Radar
+                  Factor Radar
                 </div>
                 <FactorRadarChart assets={selectedAssets} />
               </div>
@@ -157,7 +157,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                     className="py-1.5 px-4 text-[10px] font-bold uppercase tracking-wider"
                     style={{ color: 'var(--brand)' }}
                   >
-                    Overview & Valuation
+                    Valuation &amp; Profile
                   </td>
                 </tr>
                 {renderMetricRow('Price', (a) => `₹${num(a.Price)}`, 'chart.price')}
@@ -180,7 +180,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                     className="py-1.5 px-4 text-[10px] font-bold uppercase tracking-wider"
                     style={{ color: 'var(--blue)' }}
                   >
-                    Composite & Dimension Scores
+                    Composite &amp; Sub-Scores
                   </td>
                 </tr>
                 {renderMetricRow(
@@ -208,12 +208,12 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                     className="py-1.5 px-4 text-[10px] font-bold uppercase tracking-wider"
                     style={{ color: 'var(--amber)' }}
                   >
-                    Academic Quantitative Factors
+                    Quantitative Factors
                   </td>
                 </tr>
                 {renderMetricRow('Piotroski F-Score', (a) => `${a.Piotroski_F ?? '-'}/9`, 'chart.piotroski')}
                 {renderMetricRow('Gross Profit Score', (a) => num(a.Gross_Profit_Score), 'chart.gross-profit')}
-                {renderMetricRow('Value Factor Score', (a) => num(a.Value_Score), 'chart.value-score')}
+                {renderMetricRow('Value Score', (a) => num(a.Value_Score), 'chart.value-score')}
                 {renderMetricRow('Investment Factor', (a) => num(a.Investment_Score), 'chart.investment')}
                 {renderMetricRow('Earnings Quality', (a) => num(a.Earnings_Quality), 'chart.earnings-quality')}
                 {renderMetricRow('SUE Score', (a) => num(a.SUE_Score), 'chart.sue')}
@@ -225,7 +225,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                     className="py-1.5 px-4 text-[10px] font-bold uppercase tracking-wider"
                     style={{ color: 'var(--green)' }}
                   >
-                    Technicals & Risk
+                    Technicals &amp; Risk
                   </td>
                 </tr>
                 {renderMetricRow('RSI (14)', (a) => num(a.RSI_Value), 'chart.rsi')}
@@ -243,9 +243,9 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
         {/* Footer */}
         <div
           className="flex items-center justify-between px-6 py-3 text-xs glass"
-          style={{ borderTop: '1px solid var(--border)' }}
+          style={{ borderTop: '0.5px solid var(--border)' }}
         >
-          <span style={{ color: 'var(--text-3)' }}>Click any stock name to open its chart details</span>
+          <span style={{ color: 'var(--text-3)' }}>Click a stock to view its chart</span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 rounded-lg font-medium transition-colors"
@@ -254,7 +254,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
               color: '#ffffff',
             }}
           >
-            Close Matrix
+            Close
           </button>
         </div>
       </div>

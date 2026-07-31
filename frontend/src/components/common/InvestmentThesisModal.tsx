@@ -24,26 +24,26 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
   const isValuationAttractive = (asset.Value_Score || 0) >= 5.5
 
   const catalysts = [
-    isMomentumLeader && `Strong 12M price momentum (+${((asset.Momentum_12M || 0) * 100).toFixed(1)}%) supported by institutional volume inflows.`,
-    isHighQuality && `Robust financial health with Piotroski F-Score of ${asset.Piotroski_F}/9 and high earnings quality (${asset.Earnings_Quality}/10).`,
-    isValuationAttractive && `Attractive valuation metrics with Value Score of ${num(asset.Value_Score)}/10 vs sector peers.`,
-    asset.Sig_Supertrend === 1 && `Technical Supertrend signal remains in a confirmed bullish posture.`,
+    isMomentumLeader && `Strong 12M price momentum (+${((asset.Momentum_12M || 0) * 100).toFixed(1)}%) with high relative strength.`,
+    isHighQuality && `Solid financial health with Piotroski F-Score of ${asset.Piotroski_F}/9 and earnings quality of ${asset.Earnings_Quality}/10.`,
+    isValuationAttractive && `Attractive valuation metrics with Value Score of ${num(asset.Value_Score)}/10 relative to sector peers.`,
+    asset.Sig_Supertrend === 1 && `Technical Supertrend signal is in a bullish trend.`,
     asset["ROCE_%"] != null && Number(asset["ROCE_%"]) > 15 && `High return on capital employed (ROCE: ${Number(asset["ROCE_%"]).toFixed(1)}%).`,
   ].filter(Boolean)
 
   const risks = [
     asset.Beta != null && asset.Beta > 1.2 && `High beta volatility (${asset.Beta.toFixed(2)}x Nifty 50).`,
-    asset.Debt_to_Equity != null && asset.Debt_to_Equity > 1.5 && `Elevated financial leverage (Debt/Equity: ${asset.Debt_to_Equity.toFixed(2)}x).`,
+    asset.Debt_to_Equity != null && asset.Debt_to_Equity > 1.5 && `High Debt/Equity ratio (${asset.Debt_to_Equity.toFixed(2)}x).`,
     asset['P/E'] != null && Number(asset['P/E']) > 45 && `High P/E valuation multiple (${num(asset['P/E'])}x).`,
     asset['Promoter_Pledging_%'] != null && Number(asset['Promoter_Pledging_%']) > 15 && `Promoter share pledging alert (${asset['Promoter_Pledging_%']}%).`,
-    asset.Sig_RSI === -1 && `Overbought RSI technical reading cautioning potential near-term consolidation.`,
+    asset.Sig_RSI === -1 && `RSI > 70 indicates an overbought condition.`,
   ].filter(Boolean)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
       <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto glass-strong p-6 shadow-2xl rounded-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 mb-4" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+        <div className="flex items-center justify-between pb-4 mb-4" style={{ borderBottom: '0.5px solid var(--glass-border)' }}>
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl" style={{ background: 'var(--brand-soft)', color: 'var(--brand)' }}>
               <Lightning size={22} weight="duotone" />
@@ -54,7 +54,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
                 <span className={`badge ${getBadgeClass(asset.Conviction)}`}>{asset.Conviction || 'Hold'}</span>
               </div>
               <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-                {asset.Long_Name || ticker} · {asset.Sector || 'Equities'}
+                {asset.Long_Name || ticker} — {asset.Sector || 'Equities'}
               </p>
             </div>
           </div>
@@ -70,7 +70,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
         {/* Hero Score Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
           <div className="p-3 card text-center">
-            <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Composite Rank</span>
+            <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Composite Score</span>
             <div className={`text-lg font-bold font-mono mt-1 ${scoreColor(asset.Composite_Score)}`}>
               {num(asset.Composite_Score)}
             </div>
@@ -100,10 +100,10 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
           {/* Bullish Catalysts */}
           <div className="card p-4">
             <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--green)] mb-3">
-              <ShieldCheck size={16} weight="duotone" /> Key Bullish Catalysts
+              <ShieldCheck size={16} weight="duotone" /> Bullish Catalysts
             </h4>
             {catalysts.length === 0 ? (
-              <p className="text-xs text-[var(--text-3)]">Standard baseline factor profile without major outlier catalysts.</p>
+              <p className="text-xs text-[var(--text-3)]">No major bullish catalysts identified.</p>
             ) : (
               <ul className="space-y-2 text-xs text-[var(--text-2)]">
                 {catalysts.map((cat, idx) => (
@@ -119,10 +119,10 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
           {/* Key Risks */}
           <div className="card p-4">
             <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--red)] mb-3">
-              <Warning size={16} weight="duotone" /> Operational & Market Risks
+              <Warning size={16} weight="duotone" /> Key Risks
             </h4>
             {risks.length === 0 ? (
-              <p className="text-xs text-[var(--text-3)]">Low risk profile with conservative leverage and stable factor scores.</p>
+              <p className="text-xs text-[var(--text-3)]">No elevated risk factors detected.</p>
             ) : (
               <ul className="space-y-2 text-xs text-[var(--text-2)]">
                 {risks.map((r, idx) => (
@@ -140,7 +140,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
         {peerGroup.length > 0 && (
           <div className="card p-4">
             <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--brand)] mb-3">
-              <Scales size={16} weight="duotone" /> Sector Peer Benchmark Matrix
+              <Scales size={16} weight="duotone" /> Sector Peers
             </h4>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">

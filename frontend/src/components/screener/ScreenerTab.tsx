@@ -105,8 +105,8 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
           <div className="flex items-center gap-3">
             <SegmentedControl
               options={[
-                { key: 'short', label: 'Short-term' },
-                { key: 'long',  label: '1m–6m Horizon' },
+                { key: 'short', label: 'Short-Term' },
+                { key: 'long',  label: 'Long-Term (1M–6M)' },
               ]}
               value={horizonMode}
               onChange={(v) => {
@@ -116,7 +116,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 setSortDir('desc')
               }}
             />
-            <span className="text-xs hidden sm:inline" style={{ color: 'var(--text-3)' }}>9 Factors · Cross-Sectional Ranking</span>
+            <span className="text-xs hidden sm:inline" style={{ color: 'var(--text-3)' }}>9-Factor Quantitative Model | Cross-Sectional Ranking</span>
           </div>
         </div>
         {horizonMode === 'short' ? (
@@ -157,11 +157,11 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
             ))}
           </div>
         )}
-        <div className="mt-3 pt-2 flex flex-wrap gap-3 text-[11px]" style={{ borderTop: '1px solid var(--glass-border)', color: 'var(--text-3)' }}>
+        <div className="mt-3 pt-2 flex flex-wrap gap-3 text-[11px]" style={{ borderTop: '0.5px solid var(--glass-border)', color: 'var(--text-3)' }}>
           {horizonMode === 'short' ? (
-            <span>Composite: Tech 35% · Fund 25% · Research 40%</span>
+            <span>Composite Weights: Technical 35% | Fundamental 25% | Research 40%</span>
           ) : (
-            <span>Long Composite: Tech 15% · Fund 35% · Research (Long) 50% · 52W proximity embedded in momentum</span>
+            <span>Long Horizon: Technical 15% | Fundamental 35% | Research 50%</span>
           )}
         </div>
       </div>
@@ -169,7 +169,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
       {/* Search + Filter bar */}
       <div className="flex items-center justify-between gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-[200px]">
-          <input type="text" placeholder="Search ticker or company..." value={searchQuery}
+          <input type="text" placeholder="Search by symbol or company name" value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="glass-input w-full sm:w-[220px]"
           />
@@ -512,7 +512,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                       <div className="p-6" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--glass-border)' }}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                           <div>
-                            <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Technical Signals</h4>
+                            <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Technical Indicators</h4>
                             <div className="space-y-1.5 text-[11px]">
                               {[
                                 ['Price vs SMA50', row.Sig_Price_vs_SMA50, 'sig.price-sma50'], ['Price vs SMA200', row.Sig_Price_vs_SMA200, 'sig.price-sma200'],
@@ -531,7 +531,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                             </div>
                           </div>
                           <div>
-                            <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Research Factors</h4>
+                            <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Factor Scores</h4>
                             <div className="space-y-1.5 text-[11px]">
                               {[
                                 ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`, 'research.piotroski'],
@@ -541,7 +541,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                                 ['Investment Factor', `${num(row.Investment_Score)}/10`, 'research.investment'],
                                 ['SUE / Earnings Mom', `${num(row.SUE_Score)}/10`, 'research.sue'],
                                 ['Low Volatility', row.Vol_60D != null ? `${row.Vol_60D.toFixed(1)}%` : '-', 'research.low-vol'],
-                                ['Betting Against Beta', row.Beta != null ? `${row.Beta.toFixed(2)} Î²` : '-', 'research.bab'],
+                                ['Betting Against Beta', row.Beta != null ? `${row.Beta.toFixed(2)} β` : '-', 'research.bab'],
                                 ['Alpha (60D)', row.Alpha_60D != null ? `${row.Alpha_60D.toFixed(1)}%` : '-', 'research.alpha-60d'],
                                 ['12M Momentum', row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '-', 'research.12m-mom'],
                                 ['Risk-Adj Mom', num(row.Risk_Adj_Mom), 'research.risk-adj-mom'],
@@ -555,7 +555,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                             </div>
                           </div>
                           <div>
-                            <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Key Metrics</h4>
+                            <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Key Ratios</h4>
                             <div className="space-y-1.5 text-[11px]">
                               {[
                                 ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E']), 'metrics.pe'],
@@ -825,7 +825,7 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
                 color: '#ffffff',
               }}
             >
-              Compare Matrix
+              Compare Selected
             </button>
             <button
               onClick={() => setCompareTickers([])}

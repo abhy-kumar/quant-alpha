@@ -284,9 +284,9 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
 
   if (!quantData || (!quantData.backtest?.chart?.length && !hasWfData)) {
     return (
-      <div className="p-8 text-center card" style={{ borderRadius: 'var(--radius-xl)' }}>
-        <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>Quant Lab Initialization</h3>
-        <p style={{ color: 'var(--text-2)' }}>Insufficient history to run portfolio optimizations or backtests. Run the scanner for a few more days to collect data.</p>
+      <div className="p-8 text-center card" style={{ borderRadius: 'var(--radius-lg)' }}>
+        <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>Awaiting Scan History</h3>
+        <p style={{ color: 'var(--text-2)' }}>At least 5 trading days of scan history are required for backtesting and portfolio optimization.</p>
       </div>
     )
   }
@@ -317,7 +317,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
           />
           <GlassCardContent className="p-5 flex items-start gap-4">
             <p className="typo-body leading-relaxed" style={{ color: 'var(--text-2)' }}>
-              Institutional-grade quantitative portfolio tools. Analyzes top screening picks to optimize portfolio weights, tracks aggregate factor exposures, and visualizes historical backtested performance.
+              Backtest historical models, optimize portfolio allocations using Markowitz mean-variance theory, and monitor factor tilts across market regimes.
             </p>
           </GlassCardContent>
         </GlassCard>
@@ -381,14 +381,14 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
           <GlassCard>
             <GlassCardHeader
               icon={TrendUp}
-              title="Strategy Backtest · Top 10 Equal Weight"
+              title="Strategy Backtest | Top 10 Equal Weight"
               tooltipId="quant.backtest"
               action={
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                   <SegmentedControl
                     options={[
-                      { key: 'short', label: 'Short-term' },
-                      { key: 'long',  label: 'Long Horizon' },
+                      { key: 'short', label: 'Short-Term' },
+                      { key: 'long',  label: 'Long-Term (1M–6M)' },
                     ]}
                     value={backtestModel}
                     onChange={(v) => setBacktestModel(v as 'short' | 'long')}
@@ -425,18 +425,18 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
             />
             <GlassCardContent className="p-5 space-y-4">
             {!activeBacktest?.chart?.length && (
-              <div className="px-5 py-2 text-[11px]" style={{ background: 'var(--amber-bg)', borderBottom: '1px solid var(--glass-border)', color: 'var(--amber)' }}>
-                Walk-forward backtest data not yet generated. Run <code>python quant_engine.py</code> to produce it.
+              <div className="px-5 py-2 text-[11px]" style={{ background: 'var(--amber-bg)', borderBottom: '0.5px solid var(--glass-border)', color: 'var(--amber)' }}>
+                Walk-forward backtest data is not yet available for this model.
               </div>
             )}
             <div className="p-5" style={{ height: 320 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={windowedChart} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} tickMargin={10} minTickGap={30} />
-                  <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} domain={['auto', 'auto']} tickFormatter={(v) => typeof v === 'number' ? v.toFixed(1) : v} />
+                  <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }} tickMargin={10} minTickGap={30} />
+                  <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }} domain={['auto', 'auto']} tickFormatter={(v) => typeof v === 'number' ? v.toFixed(1) : v} />
                   <Tooltip content={<BacktestTooltip />} />
-                  <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '10px', color: 'var(--text-3)' }} />
+                  <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif', fontSize: '10px', color: 'var(--text-3)' }} />
                   <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
                   <Line type="monotone" dataKey="portfolio" name={backtestModel === 'long' ? 'Long Horizon Picks' : 'Alpha Picks'} stroke={backtestModel === 'long' ? 'var(--green)' : 'var(--brand)'} strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
                   <Line type="monotone" dataKey="benchmark" name="NIFTY 50" stroke="var(--text-3)" strokeWidth={1.5} dot={false} strokeDasharray="5 5" />
@@ -446,13 +446,13 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
 
             {/* Holdings Log toggle */}
             {holdings.length > 0 && (
-              <div style={{ borderTop: '1px solid var(--glass-border)' }}>
+              <div style={{ borderTop: '0.5px solid var(--glass-border)' }}>
                 <button
                   onClick={() => setShowHoldings(h => !h)}
                   className="w-full px-5 py-2.5 text-[11px] font-medium flex items-center justify-between transition-colors"
                   style={{ color: 'var(--text-3)', background: 'transparent' }}
                 >
-                  <span className="typo-caption">Holdings Log — rebalance history</span>
+                  <span className="typo-caption">Holdings Log (Rebalance History)</span>
                   <span style={{ color: 'var(--text-4)' }}>{showHoldings ? '▲ Hide' : '▼ Show'}</span>
                 </button>
                 {showHoldings && (
@@ -631,11 +631,11 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
             ))}
           </div>
 
-          {/* Markowitz Efficient Frontier Studio */}
+          {/* Markowitz Efficient Frontier */}
           <GlassCard>
             <GlassCardHeader
               icon={Target}
-              title="Markowitz Efficient Frontier Studio"
+              title="Efficient Frontier"
               badge={<span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>Mean-Variance Optimization</span>}
             />
             <GlassCardContent className="p-5" style={{ height: 260 }}>
@@ -666,11 +666,11 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
             </GlassCardFooter>
           </GlassCard>
 
-          {/* Monte Carlo 1,000-Path Forward Simulator & Crisis Stress Testing */}
+          {/* Monte Carlo Simulation */}
           <GlassCard>
             <GlassCardHeader
               icon={Lightning}
-              title="Monte Carlo Forward Simulator & Macro Stress Testing"
+              title="Monte Carlo Simulation"
               badge={<span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>1,000 Paths</span>}
             />
             <GlassCardContent className="p-5">
@@ -988,8 +988,8 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
             <BookOpen size={16} weight="duotone" style={{ color: 'var(--brand)' }} />
           </div>
           <div>
-            <span className="typo-h2">Walk-Forward Backtest · Methodology &amp; Results</span>
-            <p className="typo-caption mt-0.5" style={{ color: 'var(--text-3)' }}>How these backtests work, what they measure, and what the numbers actually mean</p>
+            <span className="typo-h2">Walk-Forward Backtest Methodology</span>
+            <p className="typo-caption mt-0.5" style={{ color: 'var(--text-3)' }}>Model methodology, performance metrics, and evaluation rules</p>
           </div>
         </div>
 
@@ -998,7 +998,7 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
           {/* - Results Summary grid - */}
           {horizonComparison && (
             <div>
-              <p className="section-label mb-3">Backtest Results · Top-10 Equal-Weight Portfolio vs NIFTY 50</p>
+              <p className="section-label mb-3">Backtest Results | Top-10 Equal-Weight Portfolio vs NIFTY 50</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {([
                   {
@@ -1243,8 +1243,8 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
           </div>
 
           {/* - Academic references - */}
-          <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: 20 }}>
-            <p className="section-label mb-3">Academic Foundations</p>
+          <div style={{ borderTop: '0.5px solid var(--glass-border)', paddingTop: 20 }}>
+            <p className="section-label mb-3">Methodology &amp; References</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {([
                 { ref: 'Jegadeesh & Titman (1993)', detail: 'Returns to Buying Winners and Selling Losers — 12-1 cross-sectional momentum.' },
