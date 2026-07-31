@@ -38,7 +38,7 @@ export const SortHeader = ({ field, children, align = 'left', className = '', so
   field: string; children: React.ReactNode; align?: 'left' | 'right'; className?: string;
   sortKey: string; sortDir: 'asc' | 'desc'; onSort: (k: string) => void;
 }) => (
-  <th className={`py-2.5 px-3 typo-table-head cursor-pointer select-none ${className}`}
+  <th className={`py-2 px-2 typo-table-head cursor-pointer select-none ${className}`}
     style={{ textAlign: align }} onClick={() => onSort(field)}>
     <span className="inline-flex items-center gap-1">
       {children}

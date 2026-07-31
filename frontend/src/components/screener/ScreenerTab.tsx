@@ -406,17 +406,17 @@ export default function ScreenerTab({ data, onSelect, expandedRow, setExpandedRo
         <table className="w-full text-left text-xs" style={{borderCollapse:'collapse'}}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
-              <th className="py-2 px-1 text-center w-8" style={{ color: 'var(--text-3)' }}>
+              <th className="py-2 px-2 text-center w-8" style={{ color: 'var(--text-3)' }}>
                 <span title="Select up to 4 stocks to compare"><Scales size={14} /></span>
               </th>
-              <th className="py-2 px-2 text-[10px] font-medium cursor-pointer select-none uppercase tracking-wider glass-subtle" style={{color:'var(--text-3)',textAlign:'left',position:'sticky',left:0,zIndex:1}} onClick={()=>handleSort('Ticker')}>
+              <th className="py-2 px-2 typo-table-head cursor-pointer select-none glass-subtle" style={{textAlign:'left',position:'sticky',left:0,zIndex:1}} onClick={()=>handleSort('Ticker')}>
                 <span className="inline-flex items-center gap-1"><InfoTooltip id="screener.ticker">Ticker</InfoTooltip>{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}</span>
               </th>
               <SortHeader field="Sector" className="hidden md:table-cell" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.sector">Sector</InfoTooltip></SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.price">Price</InfoTooltip></SortHeader>
               <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.1d">1D</InfoTooltip></SortHeader>
               {isLoggedIn && <SortHeader field={scoreCol} align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.score">{horizonMode === 'long' ? 'Long Score' : 'Score'}</InfoTooltip></SortHeader>}
-              <th className="py-2 px-2 font-medium text-[10px] text-center" style={{ color: 'var(--text-2)' }}><InfoTooltip id="screener.trend">Trend</InfoTooltip></th>
+              <th className="py-2 px-2 typo-table-head text-center"><InfoTooltip id="screener.trend">Trend</InfoTooltip></th>
               <SortHeader field="Tech_Score" className="hidden md:table-cell" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.tech">Tech</InfoTooltip></SortHeader>
               <SortHeader field="Fund_Score" className="hidden lg:table-cell" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.fund">Fund</InfoTooltip></SortHeader>
               <SortHeader field="Research_Score" className="hidden lg:table-cell" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.research">Research</InfoTooltip></SortHeader>
