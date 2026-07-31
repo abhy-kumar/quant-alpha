@@ -92,7 +92,7 @@ const Tape = memo(TapeInner)
 
 const TABS = [
   { id: 'charting', label: 'Charts', icon: ChartBar },
-  { id: 'picks', label: 'Picks & Signals', icon: TrendUp },
+  { id: 'picks', label: 'Signals', icon: TrendUp },
   { id: 'fundamentals', label: 'Screener', icon: Database },
   { id: 'heatmap', label: 'Heatmap', icon: StackSimple },
   { id: 'quantlab', label: 'Quant Lab', icon: Pulse },
