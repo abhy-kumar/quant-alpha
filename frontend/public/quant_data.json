@@ -1,27 +1,25 @@
 {
-  "last_updated": "2026-08-01 06:23:03",
+  "last_updated": "2026-08-02 23:39:58",
   "model_portfolios": {
     "max_sharpe": {
-      "EICHERMOT.NS": 0.6179,
-      "JAGSNPHARM.NS": 0.1927,
-      "CHENNPETRO.NS": 0.0899,
-      "LTFOODS.NS": 0.0882,
-      "LUPIN.NS": 0.0113
+      "EICHERMOT.NS": 0.5819,
+      "NATIONALUM.NS": 0.4181
     },
     "min_volatility": {
-      "LUPIN.NS": 0.3401,
-      "EICHERMOT.NS": 0.283,
-      "KTKBANK.NS": 0.1421,
-      "OFSS.NS": 0.0955,
-      "CHENNPETRO.NS": 0.0714,
-      "QUESS.NS": 0.049,
-      "JAGSNPHARM.NS": 0.013
+      "ICICIBANK.NS": 0.4034,
+      "SUNPHARMA.NS": 0.3439,
+      "EICHERMOT.NS": 0.07,
+      "GAIL.NS": 0.0576,
+      "LUPIN.NS": 0.0567,
+      "QUESS.NS": 0.035,
+      "NATIONALUM.NS": 0.0176,
+      "OFSS.NS": 0.0158
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 56.4,
+    "Quality": 58.1,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -754,7 +752,7 @@
       },
       {
         "from": "2026-07-31",
-        "to": "2026-07-31",
+        "to": "2026-08-03",
         "tickers": [
           "CHENNPETRO.NS",
           "LUPIN.NS",
@@ -766,6 +764,22 @@
           "MRPL.NS",
           "EICHERMOT.NS",
           "LTFOODS.NS"
+        ]
+      },
+      {
+        "from": "2026-08-03",
+        "to": "2026-07-31",
+        "tickers": [
+          "LUPIN.NS",
+          "OFSS.NS",
+          "SUNPHARMA.NS",
+          "QUESS.NS",
+          "MOTHERSON.NS",
+          "NATIONALUM.NS",
+          "EICHERMOT.NS",
+          "ICICIBANK.NS",
+          "GAIL.NS",
+          "SAIL.NS"
         ]
       }
     ],
@@ -1509,7 +1523,7 @@
       },
       {
         "from": "2026-07-31",
-        "to": "2026-07-31",
+        "to": "2026-08-03",
         "tickers": [
           "HEROMOTOCO.NS",
           "LUPIN.NS",
@@ -1519,6 +1533,22 @@
           "EICHERMOT.NS",
           "NAZARA.NS",
           "JAGSNPHARM.NS",
+          "BAJAJ-AUTO.NS",
+          "TECHM.NS"
+        ]
+      },
+      {
+        "from": "2026-08-03",
+        "to": "2026-07-31",
+        "tickers": [
+          "HEROMOTOCO.NS",
+          "OFSS.NS",
+          "LUPIN.NS",
+          "QUESS.NS",
+          "GAIL.NS",
+          "EICHERMOT.NS",
+          "NAZARA.NS",
+          "NATIONALUM.NS",
           "BAJAJ-AUTO.NS",
           "TECHM.NS"
         ]
@@ -6541,146 +6571,146 @@
     "breadth": 0.6281512605042017
   },
   "sector_allocation": {
-    "Energy": 20.0,
     "Healthcare": 20.0,
     "Consumer Cyclical": 20.0,
+    "Basic Materials": 20.0,
     "Technology": 10.0,
-    "Financial Services": 10.0,
     "Industrials": 10.0,
-    "Consumer Defensive": 10.0
+    "Financial Services": 10.0,
+    "Utilities": 10.0
   },
   "correlation_matrix": {
     "labels": [
-      "CHENNPETRO",
       "EICHERMOT",
-      "JAGSNPHARM",
-      "KTKBANK",
-      "LTFOODS",
+      "GAIL",
+      "ICICIBANK",
       "LUPIN",
       "MOTHERSON",
-      "MRPL",
+      "NATIONALUM",
       "OFSS",
-      "QUESS"
+      "QUESS",
+      "SAIL",
+      "SUNPHARMA"
     ],
     "matrix": [
       [
         1.0,
-        0.1,
-        0.04,
-        0.18,
-        0.04,
-        0.06,
-        0.21,
-        0.63,
-        -0.01,
-        0.02
-      ],
-      [
-        0.1,
-        1.0,
-        -0.02,
-        0.1,
-        0.37,
+        0.5,
+        0.43,
         0.13,
         0.28,
-        0.28,
+        0.03,
         0.19,
-        0.04
-      ],
-      [
         0.04,
-        -0.02,
-        1.0,
-        0.34,
-        0.13,
-        0.31,
-        0.12,
-        0.11,
-        -0.07,
-        0.05
+        -0.1,
+        0.15
       ],
       [
-        0.18,
-        0.1,
-        0.34,
+        0.5,
         1.0,
-        0.23,
-        0.32,
-        0.38,
-        0.25,
-        0.1,
+        0.39,
+        0.16,
+        0.2,
+        0.06,
+        0.19,
+        0.31,
+        0.18,
         0.02
       ],
       [
-        0.04,
-        0.37,
-        0.13,
-        0.23,
+        0.43,
+        0.39,
         1.0,
-        0.15,
-        0.27,
-        0.16,
+        0.3,
         0.18,
-        0.27
+        -0.1,
+        0.24,
+        0.14,
+        0.07,
+        0.21
       ],
       [
-        0.06,
         0.13,
-        0.31,
-        0.32,
-        0.15,
+        0.16,
+        0.3,
         1.0,
         0.09,
-        -0.05,
+        0.2,
         0.28,
+        0.26,
+        0.16,
         0.26
       ],
       [
-        0.21,
         0.28,
-        0.12,
-        0.38,
-        0.27,
-        0.09,
-        1.0,
-        0.27,
-        0.33,
-        0.18
-      ],
-      [
-        0.63,
-        0.28,
-        0.11,
-        0.25,
-        0.16,
-        -0.05,
-        0.27,
-        1.0,
-        0.09,
-        0.04
-      ],
-      [
-        -0.01,
-        0.19,
-        -0.07,
-        0.1,
+        0.2,
         0.18,
-        0.28,
-        0.33,
         0.09,
         1.0,
-        0.11
+        0.09,
+        0.33,
+        0.18,
+        0.26,
+        -0.05
       ],
       [
-        0.02,
+        0.03,
+        0.06,
+        -0.1,
+        0.2,
+        0.09,
+        1.0,
+        -0.02,
+        -0.21,
+        0.49,
+        0.17
+      ],
+      [
+        0.19,
+        0.19,
+        0.24,
+        0.28,
+        0.33,
+        -0.02,
+        1.0,
+        0.11,
+        0.15,
+        0.25
+      ],
+      [
         0.04,
-        0.05,
-        0.02,
-        0.27,
+        0.31,
+        0.14,
         0.26,
         0.18,
-        0.04,
+        -0.21,
         0.11,
+        1.0,
+        -0.01,
+        -0.02
+      ],
+      [
+        -0.1,
+        0.18,
+        0.07,
+        0.16,
+        0.26,
+        0.49,
+        0.15,
+        -0.01,
+        1.0,
+        -0.14
+      ],
+      [
+        0.15,
+        0.02,
+        0.21,
+        0.26,
+        -0.05,
+        0.17,
+        0.25,
+        -0.02,
+        -0.14,
         1.0
       ]
     ]
