@@ -1,27 +1,28 @@
 {
-  "last_updated": "2026-08-03 13:35:53",
+  "last_updated": "2026-08-03 18:29:02",
   "model_portfolios": {
     "max_sharpe": {
-      "NATIONALUM.NS": 0.4392,
-      "GLENMARK.NS": 0.2624,
-      "SPORTKING.NS": 0.1409,
-      "JSWSTEEL.NS": 0.0896,
-      "CHENNPETRO.NS": 0.0679
+      "NATIONALUM.NS": 0.4659,
+      "SPORTKING.NS": 0.1652,
+      "JSWSTEEL.NS": 0.1474,
+      "ICICIBANK.NS": 0.1399,
+      "CHENNPETRO.NS": 0.0815
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.4501,
-      "JSWSTEEL.NS": 0.2148,
-      "GAIL.NS": 0.0997,
-      "LUPIN.NS": 0.0916,
-      "CHENNPETRO.NS": 0.0542,
-      "QUESS.NS": 0.0466,
-      "OFSS.NS": 0.043
+      "ICICIBANK.NS": 0.4014,
+      "SUNPHARMA.NS": 0.3237,
+      "JSWSTEEL.NS": 0.0796,
+      "LUPIN.NS": 0.0555,
+      "CHENNPETRO.NS": 0.0471,
+      "GAIL.NS": 0.0431,
+      "QUESS.NS": 0.0325,
+      "OFSS.NS": 0.0171
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 58.6,
+    "Quality": 58.1,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -780,13 +781,13 @@
           "NATIONALUM.NS",
           "OFSS.NS",
           "SUNPHARMA.NS",
-          "LUPIN.NS",
           "JSWSTEEL.NS",
+          "LUPIN.NS",
           "GAIL.NS",
           "CHENNPETRO.NS",
-          "GLENMARK.NS",
-          "QUESS.NS",
-          "SPORTKING.NS"
+          "SPORTKING.NS",
+          "ICICIBANK.NS",
+          "QUESS.NS"
         ]
       }
     ],
@@ -1554,15 +1555,15 @@
         "to": "2026-08-03",
         "tickers": [
           "OFSS.NS",
-          "HEROMOTOCO.NS",
           "DEEPINDS.NS",
+          "HEROMOTOCO.NS",
           "CHENNPETRO.NS",
-          "SPORTKING.NS",
           "NATIONALUM.NS",
+          "SPORTKING.NS",
           "QUESS.NS",
           "LUPIN.NS",
-          "EICHERMOT.NS",
-          "NAZARA.NS"
+          "BAJAJ-AUTO.NS",
+          "EICHERMOT.NS"
         ]
       }
     ],
@@ -2830,12 +2831,12 @@
       },
       {
         "date": "2026-07-31",
-        "portfolio": 105.95,
+        "portfolio": 106.21,
         "benchmark": 100.0
       },
       {
         "date": "2026-08-03",
-        "portfolio": 108.37,
+        "portfolio": 108.34,
         "benchmark": 100.0
       }
     ],
@@ -3219,12 +3220,12 @@
       }
     ],
     "stats": {
-      "total_return": 8.37,
-      "cagr": 8.26,
-      "volatility": 30.02,
+      "total_return": 8.34,
+      "cagr": 8.23,
+      "volatility": 30.0,
       "sharpe": 0.06,
       "max_drawdown": -25.75,
-      "info_ratio": 0.28,
+      "info_ratio": 0.27,
       "win_rate": 52.6
     }
   },
@@ -3852,12 +3853,12 @@
       },
       {
         "date": "2026-07-31",
-        "portfolio": 132.58,
+        "portfolio": 132.91,
         "benchmark": 100.0
       },
       {
         "date": "2026-08-03",
-        "portfolio": 134.28,
+        "portfolio": 134.24,
         "benchmark": 100.0
       }
     ],
@@ -4067,12 +4068,12 @@
       }
     ],
     "stats": {
-      "total_return": 34.28,
-      "cagr": 78.94,
-      "volatility": 28.54,
+      "total_return": 34.24,
+      "cagr": 78.83,
+      "volatility": 28.51,
       "sharpe": 2.54,
       "max_drawdown": -15.21,
-      "info_ratio": 2.77,
+      "info_ratio": 2.76,
       "win_rate": 57.6
     }
   },
@@ -6577,25 +6578,26 @@
     }
   },
   "market_regime": {
-    "score": 2,
+    "score": 3,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.742056856187291
   },
   "sector_allocation": {
-    "Healthcare": 30.0,
     "Basic Materials": 20.0,
+    "Healthcare": 20.0,
     "Technology": 10.0,
     "Utilities": 10.0,
     "Energy": 10.0,
-    "Industrials": 10.0,
-    "Consumer Cyclical": 10.0
+    "Consumer Cyclical": 10.0,
+    "Financial Services": 10.0,
+    "Industrials": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "CHENNPETRO",
       "GAIL",
-      "GLENMARK",
+      "ICICIBANK",
       "JSWSTEEL",
       "LUPIN",
       "NATIONALUM",
@@ -6608,43 +6610,43 @@
       [
         1.0,
         0.16,
-        0.08,
+        -0.05,
         0.13,
         0.04,
         0.35,
         -0.0,
         0.06,
-        0.14,
+        0.13,
         -0.14
       ],
       [
         0.16,
         1.0,
-        0.1,
+        0.27,
         0.21,
         0.17,
         -0.03,
         0.16,
         0.23,
-        -0.01,
+        0.05,
         0.09
       ],
       [
-        0.08,
-        0.1,
+        -0.05,
+        0.27,
         1.0,
-        0.31,
-        0.42,
-        0.26,
-        0.35,
-        0.29,
+        0.37,
+        0.27,
+        -0.02,
+        0.25,
+        0.18,
         0.24,
-        0.42
+        0.14
       ],
       [
         0.13,
         0.21,
-        0.31,
+        0.37,
         1.0,
         0.17,
         0.53,
@@ -6656,31 +6658,31 @@
       [
         0.04,
         0.17,
-        0.42,
+        0.27,
         0.17,
         1.0,
         0.17,
         0.27,
         0.24,
-        0.05,
+        0.06,
         0.28
       ],
       [
         0.35,
         -0.03,
-        0.26,
+        -0.02,
         0.53,
         0.17,
         1.0,
         -0.0,
         -0.15,
-        0.41,
+        0.4,
         0.1
       ],
       [
         -0.0,
         0.16,
-        0.35,
+        0.25,
         0.16,
         0.27,
         -0.0,
@@ -6692,31 +6694,31 @@
       [
         0.06,
         0.23,
-        0.29,
+        0.18,
         0.03,
         0.24,
         -0.15,
         0.11,
         1.0,
-        0.12,
+        0.14,
         -0.04
       ],
       [
-        0.14,
-        -0.01,
+        0.13,
+        0.05,
         0.24,
         0.34,
-        0.05,
-        0.41,
+        0.06,
+        0.4,
         0.22,
-        0.12,
+        0.14,
         1.0,
         -0.07
       ],
       [
         -0.14,
         0.09,
-        0.42,
+        0.14,
         0.18,
         0.28,
         0.1,
