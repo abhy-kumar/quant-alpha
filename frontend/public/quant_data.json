@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-04 12:36:28",
+  "last_updated": "2026-08-04 18:30:37",
   "model_portfolios": {
     "max_sharpe": {
       "NATIONALUM.NS": 0.4663,
@@ -799,14 +799,14 @@
         "to": "2026-08-04",
         "tickers": [
           "OFSS.NS",
-          "LUPIN.NS",
           "NATIONALUM.NS",
+          "LUPIN.NS",
+          "SPORTKING.NS",
           "HINDZINC.NS",
           "SUNPHARMA.NS",
           "GAIL.NS",
-          "SPORTKING.NS",
-          "CHENNPETRO.NS",
           "JSWSTEEL.NS",
+          "CHENNPETRO.NS",
           "GLENMARK.NS"
         ]
       }
@@ -1596,8 +1596,8 @@
         "to": "2026-08-04",
         "tickers": [
           "OFSS.NS",
-          "HEROMOTOCO.NS",
           "DEEPINDS.NS",
+          "HEROMOTOCO.NS",
           "LUPIN.NS",
           "NATIONALUM.NS",
           "CHENNPETRO.NS",
@@ -5423,8 +5423,8 @@
           "CHOICEIN.NS",
           "BEL.NS",
           "FORTIS.NS",
-          "LAURUSLABS.NS",
-          "LaurusLabs.NS"
+          "LaurusLabs.NS",
+          "LAURUSLABS.NS"
         ],
         "weights": {
           "MFSL.NS": 0.1,
@@ -5435,8 +5435,8 @@
           "CHOICEIN.NS": 0.1,
           "BEL.NS": 0.1,
           "FORTIS.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
-          "LaurusLabs.NS": 0.1
+          "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1
         },
         "equity_ratio": 1.0
       },
@@ -5450,8 +5450,8 @@
           "CHOICEIN.NS",
           "BEL.NS",
           "FORTIS.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "RADICO.NS",
           "HDFCAMC.NS"
         ],
@@ -5462,8 +5462,8 @@
           "CHOICEIN.NS": 0.1,
           "BEL.NS": 0.1,
           "FORTIS.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
           "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1,
           "RADICO.NS": 0.1,
           "HDFCAMC.NS": 0.1
         },
@@ -6625,11 +6625,11 @@
     "breadth": 0.4559629161399073
   },
   "sector_allocation": {
-    "Healthcare": 30.0,
     "Basic Materials": 30.0,
+    "Healthcare": 30.0,
     "Technology": 10.0,
-    "Utilities": 10.0,
     "Consumer Cyclical": 10.0,
+    "Utilities": 10.0,
     "Energy": 10.0
   },
   "correlation_matrix": {
