@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-05 12:34:07",
+  "last_updated": "2026-08-05 18:15:28",
   "model_portfolios": {
     "max_sharpe": {
       "WELCORP.NS": 0.3362,
@@ -822,13 +822,13 @@
         "tickers": [
           "NATIONALUM.NS",
           "WELCORP.NS",
-          "SAIL.NS",
           "OFSS.NS",
           "GAIL.NS",
+          "SAIL.NS",
           "FEDERALBNK.NS",
-          "SUNPHARMA.NS",
-          "CHENNPETRO.NS",
           "LUPIN.NS",
+          "CHENNPETRO.NS",
+          "SUNPHARMA.NS",
           "RPTECH.NS"
         ]
       }
@@ -1639,14 +1639,14 @@
         "to": "2026-08-05",
         "tickers": [
           "WELCORP.NS",
+          "CASTROLIND.NS",
           "OFSS.NS",
           "NATIONALUM.NS",
           "HEROMOTOCO.NS",
           "LUPIN.NS",
-          "CHENNPETRO.NS",
           "GAIL.NS",
+          "CHENNPETRO.NS",
           "HINDZINC.NS",
-          "EICHERMOT.NS",
           "SAIL.NS"
         ]
       }
@@ -3927,7 +3927,7 @@
       },
       {
         "date": "2026-07-31",
-        "portfolio": 141.25,
+        "portfolio": 141.28,
         "benchmark": 100.0
       },
       {
@@ -5554,7 +5554,7 @@
           "INDIANB.NS",
           "TVSMOTOR.NS",
           "RBLBANK.NS",
-          "LaurusLabs.NS"
+          "LAURUSLABS.NS"
         ],
         "weights": {
           "CHOICEIN.NS": 0.1,
@@ -5566,7 +5566,7 @@
           "INDIANB.NS": 0.1,
           "TVSMOTOR.NS": 0.1,
           "RBLBANK.NS": 0.1,
-          "LaurusLabs.NS": 0.1
+          "LAURUSLABS.NS": 0.1
         },
         "equity_ratio": 1.0
       },
@@ -5580,7 +5580,7 @@
           "INDIANB.NS",
           "TVSMOTOR.NS",
           "RBLBANK.NS",
-          "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "ABCAPITAL.NS",
           "MUTHOOTFIN.NS",
           "SBC.NS"
@@ -5592,7 +5592,7 @@
           "INDIANB.NS": 0.1,
           "TVSMOTOR.NS": 0.1,
           "RBLBANK.NS": 0.1,
-          "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1,
           "ABCAPITAL.NS": 0.1,
           "MUTHOOTFIN.NS": 0.1,
           "SBC.NS": 0.1
@@ -5607,11 +5607,11 @@
           "MARUTI.NS",
           "TVSMOTOR.NS",
           "RBLBANK.NS",
-          "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "ABCAPITAL.NS",
           "MUTHOOTFIN.NS",
           "SBC.NS",
-          "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "ANANDRATHI.NS"
         ],
         "weights": {
@@ -5619,11 +5619,11 @@
           "MARUTI.NS": 0.1,
           "TVSMOTOR.NS": 0.1,
           "RBLBANK.NS": 0.1,
-          "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1,
           "ABCAPITAL.NS": 0.1,
           "MUTHOOTFIN.NS": 0.1,
           "SBC.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
+          "LaurusLabs.NS": 0.1,
           "ANANDRATHI.NS": 0.1
         },
         "equity_ratio": 1.0
@@ -5636,10 +5636,10 @@
           "MARUTI.NS",
           "TVSMOTOR.NS",
           "RBLBANK.NS",
-          "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "ABCAPITAL.NS",
           "SBC.NS",
-          "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "ANANDRATHI.NS",
           "AUBANK.NS"
         ],
@@ -5648,10 +5648,10 @@
           "MARUTI.NS": 0.1,
           "TVSMOTOR.NS": 0.1,
           "RBLBANK.NS": 0.1,
-          "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1,
           "ABCAPITAL.NS": 0.1,
           "SBC.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
+          "LaurusLabs.NS": 0.1,
           "ANANDRATHI.NS": 0.1,
           "AUBANK.NS": 0.1
         },
@@ -6458,8 +6458,8 @@
           "AUBANK.NS",
           "TVSMOTOR.NS",
           "MARUTI.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "SHRIRAMFIN.NS"
         ],
         "weights": {
@@ -6470,8 +6470,8 @@
           "AUBANK.NS": 0.1,
           "TVSMOTOR.NS": 0.1,
           "MARUTI.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
           "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1,
           "SHRIRAMFIN.NS": 0.1
         },
         "equity_ratio": 1.0
@@ -6662,7 +6662,7 @@
     }
   },
   "market_regime": {
-    "score": 2,
+    "score": 0,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.590623691921306
