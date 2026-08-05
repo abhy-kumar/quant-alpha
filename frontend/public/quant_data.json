@@ -1,28 +1,27 @@
 {
-  "last_updated": "2026-08-05 18:15:28",
+  "last_updated": "2026-08-05 23:39:57",
   "model_portfolios": {
     "max_sharpe": {
-      "WELCORP.NS": 0.3362,
-      "FEDERALBNK.NS": 0.3349,
-      "RPTECH.NS": 0.1835,
-      "NATIONALUM.NS": 0.1189,
-      "LUPIN.NS": 0.0264
+      "WELCORP.NS": 0.4655,
+      "RPTECH.NS": 0.2718,
+      "NATIONALUM.NS": 0.1679,
+      "LUPIN.NS": 0.0681,
+      "NAM-INDIA.NS": 0.0268
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.4924,
-      "FEDERALBNK.NS": 0.2585,
-      "GAIL.NS": 0.0718,
-      "LUPIN.NS": 0.0602,
-      "CHENNPETRO.NS": 0.0394,
-      "RPTECH.NS": 0.0366,
-      "OFSS.NS": 0.024,
-      "NATIONALUM.NS": 0.017
+      "SUNPHARMA.NS": 0.5276,
+      "GAIL.NS": 0.1434,
+      "LUPIN.NS": 0.1043,
+      "RPTECH.NS": 0.0703,
+      "OFSS.NS": 0.0677,
+      "CHENNPETRO.NS": 0.0555,
+      "NATIONALUM.NS": 0.0219
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 59.2,
+    "Quality": 59.7,
     "Low_Volatility": 45.0
   },
   "backtest": {
@@ -818,7 +817,7 @@
       },
       {
         "from": "2026-08-05",
-        "to": "2026-08-05",
+        "to": "2026-08-06",
         "tickers": [
           "NATIONALUM.NS",
           "WELCORP.NS",
@@ -830,6 +829,22 @@
           "CHENNPETRO.NS",
           "SUNPHARMA.NS",
           "RPTECH.NS"
+        ]
+      },
+      {
+        "from": "2026-08-06",
+        "to": "2026-08-05",
+        "tickers": [
+          "OFSS.NS",
+          "NATIONALUM.NS",
+          "WELCORP.NS",
+          "GAIL.NS",
+          "SAIL.NS",
+          "LUPIN.NS",
+          "SUNPHARMA.NS",
+          "CHENNPETRO.NS",
+          "RPTECH.NS",
+          "NAM-INDIA.NS"
         ]
       }
     ],
@@ -1636,7 +1651,7 @@
       },
       {
         "from": "2026-08-05",
-        "to": "2026-08-05",
+        "to": "2026-08-06",
         "tickers": [
           "WELCORP.NS",
           "CASTROLIND.NS",
@@ -1648,6 +1663,22 @@
           "CHENNPETRO.NS",
           "HINDZINC.NS",
           "SAIL.NS"
+        ]
+      },
+      {
+        "from": "2026-08-06",
+        "to": "2026-08-05",
+        "tickers": [
+          "WELCORP.NS",
+          "OFSS.NS",
+          "NATIONALUM.NS",
+          "HEROMOTOCO.NS",
+          "LUPIN.NS",
+          "CHENNPETRO.NS",
+          "GAIL.NS",
+          "HINDZINC.NS",
+          "SAIL.NS",
+          "EICHERMOT.NS"
         ]
       }
     ],
@@ -5554,7 +5585,7 @@
           "INDIANB.NS",
           "TVSMOTOR.NS",
           "RBLBANK.NS",
-          "LAURUSLABS.NS"
+          "LaurusLabs.NS"
         ],
         "weights": {
           "CHOICEIN.NS": 0.1,
@@ -5566,7 +5597,7 @@
           "INDIANB.NS": 0.1,
           "TVSMOTOR.NS": 0.1,
           "RBLBANK.NS": 0.1,
-          "LAURUSLABS.NS": 0.1
+          "LaurusLabs.NS": 0.1
         },
         "equity_ratio": 1.0
       },
@@ -5580,7 +5611,7 @@
           "INDIANB.NS",
           "TVSMOTOR.NS",
           "RBLBANK.NS",
-          "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "ABCAPITAL.NS",
           "MUTHOOTFIN.NS",
           "SBC.NS"
@@ -5592,7 +5623,7 @@
           "INDIANB.NS": 0.1,
           "TVSMOTOR.NS": 0.1,
           "RBLBANK.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
+          "LaurusLabs.NS": 0.1,
           "ABCAPITAL.NS": 0.1,
           "MUTHOOTFIN.NS": 0.1,
           "SBC.NS": 0.1
@@ -5607,11 +5638,11 @@
           "MARUTI.NS",
           "TVSMOTOR.NS",
           "RBLBANK.NS",
-          "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "ABCAPITAL.NS",
           "MUTHOOTFIN.NS",
           "SBC.NS",
-          "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "ANANDRATHI.NS"
         ],
         "weights": {
@@ -5619,11 +5650,11 @@
           "MARUTI.NS": 0.1,
           "TVSMOTOR.NS": 0.1,
           "RBLBANK.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
+          "LaurusLabs.NS": 0.1,
           "ABCAPITAL.NS": 0.1,
           "MUTHOOTFIN.NS": 0.1,
           "SBC.NS": 0.1,
-          "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1,
           "ANANDRATHI.NS": 0.1
         },
         "equity_ratio": 1.0
@@ -5636,10 +5667,10 @@
           "MARUTI.NS",
           "TVSMOTOR.NS",
           "RBLBANK.NS",
-          "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "ABCAPITAL.NS",
           "SBC.NS",
-          "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "ANANDRATHI.NS",
           "AUBANK.NS"
         ],
@@ -5648,10 +5679,10 @@
           "MARUTI.NS": 0.1,
           "TVSMOTOR.NS": 0.1,
           "RBLBANK.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
+          "LaurusLabs.NS": 0.1,
           "ABCAPITAL.NS": 0.1,
           "SBC.NS": 0.1,
-          "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1,
           "ANANDRATHI.NS": 0.1,
           "AUBANK.NS": 0.1
         },
@@ -6458,8 +6489,8 @@
           "AUBANK.NS",
           "TVSMOTOR.NS",
           "MARUTI.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "SHRIRAMFIN.NS"
         ],
         "weights": {
@@ -6470,8 +6501,8 @@
           "AUBANK.NS": 0.1,
           "TVSMOTOR.NS": 0.1,
           "MARUTI.NS": 0.1,
-          "LaurusLabs.NS": 0.1,
           "LAURUSLABS.NS": 0.1,
+          "LaurusLabs.NS": 0.1,
           "SHRIRAMFIN.NS": 0.1
         },
         "equity_ratio": 1.0
@@ -6672,15 +6703,15 @@
     "Technology": 20.0,
     "Healthcare": 20.0,
     "Utilities": 10.0,
-    "Financial Services": 10.0,
-    "Energy": 10.0
+    "Energy": 10.0,
+    "Financial Services": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "CHENNPETRO",
-      "FEDERALBNK",
       "GAIL",
       "LUPIN",
+      "NAM-INDIA",
       "NATIONALUM",
       "OFSS",
       "RPTECH",
@@ -6691,9 +6722,9 @@
     "matrix": [
       [
         1.0,
-        0.14,
         0.13,
         -0.02,
+        0.03,
         0.33,
         -0.02,
         -0.12,
@@ -6702,22 +6733,10 @@
         0.21
       ],
       [
-        0.14,
-        1.0,
-        0.03,
-        0.02,
-        -0.13,
-        0.1,
-        0.16,
-        -0.09,
-        -0.11,
-        -0.06
-      ],
-      [
         0.13,
-        0.03,
         1.0,
         0.08,
+        0.37,
         -0.05,
         0.15,
         0.02,
@@ -6727,9 +6746,9 @@
       ],
       [
         -0.02,
-        0.02,
         0.08,
         1.0,
+        0.24,
         0.15,
         0.24,
         0.02,
@@ -6738,9 +6757,21 @@
         0.2
       ],
       [
+        0.03,
+        0.37,
+        0.24,
+        1.0,
+        0.15,
+        0.21,
+        0.16,
+        0.29,
+        0.1,
+        0.12
+      ],
+      [
         0.33,
-        -0.13,
         -0.05,
+        0.15,
         0.15,
         1.0,
         0.01,
@@ -6751,9 +6782,9 @@
       ],
       [
         -0.02,
-        0.1,
         0.15,
         0.24,
+        0.21,
         0.01,
         1.0,
         0.13,
@@ -6763,9 +6794,9 @@
       ],
       [
         -0.12,
+        0.02,
+        0.02,
         0.16,
-        0.02,
-        0.02,
         -0.12,
         0.13,
         1.0,
@@ -6775,9 +6806,9 @@
       ],
       [
         0.12,
-        -0.09,
         0.18,
         0.13,
+        0.29,
         0.45,
         0.16,
         -0.02,
@@ -6787,9 +6818,9 @@
       ],
       [
         -0.1,
-        -0.11,
         0.11,
         0.48,
+        0.1,
         0.11,
         0.26,
         0.01,
@@ -6799,9 +6830,9 @@
       ],
       [
         0.21,
-        -0.06,
         -0.09,
         0.2,
+        0.12,
         0.38,
         0.09,
         0.12,
