@@ -21,7 +21,7 @@
     "patch-package": "^8.0.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "react-router-dom": "^7.18.1",
+    "react-router-dom": "7.11.0",
     "recharts": "^3.8.1",
     "yahoo-finance2": "^3.15.2"
   },
@@ -45,6 +45,14 @@
     "vite": "^8.0.12"
   },
   "overrides": {
-    "@hono/node-server": "^2.0.5"
+    "@hono/node-server": "^2.0.5",
+    "hono": "^4.12.35",
+    "ip-address": "^10.3.1",
+    "fast-uri": "^3.0.3",
+    "brace-expansion": "^2.0.1",
+    "react-router": "7.11.0"
   }
 }
+
+
+
