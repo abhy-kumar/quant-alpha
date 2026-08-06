@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useMemo, memo, lazy, Suspense, useRef, useCallback } from 'react'
+import React, { useEffect, useState, useMemo, memo, lazy, Suspense } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import axios from 'axios'
 import { TrendUp, ChartBar, StackSimple, Moon, Sun, WarningCircle, Database, Pulse, SignOut, LockSimple } from '@phosphor-icons/react'
 import { Analytics } from '@vercel/analytics/react'
 import type { DashboardData } from './types'
-
-console.log('[Alpha] App.tsx module loaded')
+import { useAuth } from './hooks/useAuth'
+import { useMarketData } from './hooks/useMarketData'
+import { useChartData } from './hooks/useChartData'
+import { useWatchlist } from './hooks/useWatchlist'
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -14,17 +15,27 @@ class ErrorBoundary extends React.Component<
   state = { error: null as Error | null }
   static getDerivedStateFromError(error: Error) { return { error } }
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error('[Alpha] ErrorBoundary caught:', error, info.componentStack)
+    if (import.meta.env.DEV) {
+      console.error('[Alpha] ErrorBoundary caught:', error, info.componentStack)
+    }
     this.setState({ error })
   }
   render() {
     if (this.state.error) {
       return (
-        <div style={{ padding: 40, fontFamily: 'monospace', whiteSpace: 'pre-wrap', background: '#fff', color: '#c00' }}>
-          <h2>Component Error</h2>
-          <p>{this.state.error.message}</p>
-          <pre>{this.state.error.stack}</pre>
-          <button onClick={() => this.setState({ error: null })} style={{ marginTop: 16, padding: '8px 16px', cursor: 'pointer' }}>Retry</button>
+        <div style={{ padding: 40, fontFamily: 'sans-serif', background: 'var(--surface-2)', color: 'var(--text)', borderRadius: 'var(--radius-lg)', margin: 20 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Something went wrong</h2>
+          <p style={{ fontSize: 14, color: 'var(--text-2)', marginBottom: 16 }}>
+            {import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred in this view.'}
+          </p>
+          {import.meta.env.DEV && (
+            <pre style={{ padding: 12, background: 'var(--surface-3)', borderRadius: 8, fontSize: 11, overflowX: 'auto', marginBottom: 16 }}>
+              {this.state.error.stack}
+            </pre>
+          )}
+          <button onClick={() => this.setState({ error: null })} className="btn-primary" style={{ padding: '8px 16px', cursor: 'pointer' }}>
+            Try Again
+          </button>
         </div>
       )
     }
@@ -98,67 +109,74 @@ const TABS = [
   { id: 'quantlab', label: 'Quant Lab', icon: Pulse },
 ] as const
 
+const TAB_PATHS: Record<string, string> = {
+  charting:     '/',
+  picks:        '/signals',
+  fundamentals: '/screen',
+  heatmap:      '/heatmap',
+  quantlab:     '/quant',
+}
+const PATH_TABS: Record<string, string> = Object.fromEntries(
+  Object.entries(TAB_PATHS).map(([id, path]) => [path, id])
+)
+
 export default function App() {
-  console.log('[Alpha] App component mounting')
-  const [data, setData] = useState<DashboardData[]>([])
-  const [scanUpdated, setScanUpdated] = useState('')
-  const [pricesUpdated, setPricesUpdated] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [niftyData, setNiftyData] = useState<{price:number;change_pct:number;is_up:boolean}|null>(null)
-  const [coveragePct, setCoveragePct] = useState<number|null>(null)
-  const [loadError, setLoadError] = useState<string|null>(null)
-  const [marketRegimeScore, setMarketRegimeScore] = useState<number|null>(null)
-  const [isDynamic, setIsDynamic] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Map tab IDs to URL paths
-  const TAB_PATHS: Record<string, string> = {
-    charting:     '/',
-    picks:        '/signals',
-    fundamentals: '/screen',
-    heatmap:      '/heatmap',
-    quantlab:     '/quant',
-  }
-  const PATH_TABS: Record<string, string> = Object.fromEntries(
-    Object.entries(TAB_PATHS).map(([id, path]) => [path, id])
-  )
-  // Derive active tab from URL, fall back to 'charting'
-  const activeTab = (PATH_TABS[location.pathname] ?? 'charting') as 'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab'
-  const setActiveTab = (id: 'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab') => navigate(TAB_PATHS[id] ?? '/')
-  const [fiiNet, setFiiNet] = useState<number|null>(null)
-  const [diiNet, setDiiNet] = useState<number|null>(null)
-  const [pcr, setPcr] = useState<number|null>(null)
+  const [selectedTicker, setSelectedTicker] = useState('')
+  const [horizon, setHorizon] = useState<'short'|'long'>('short')
+  const [expandedRow, setExpandedRow] = useState<string|null>(null)
+
+  const {
+    isLoggedIn,
+    showLogin,
+    setShowLogin,
+    loginEmail,
+    setLoginEmail,
+    loginPassword,
+    setLoginPassword,
+    loginError,
+    loginLoading,
+    loginRef,
+    handleLogin,
+    handleLogout,
+  } = useAuth()
+
+  const {
+    data,
+    scanUpdated,
+    pricesUpdated,
+    loading,
+    niftyData,
+    coveragePct,
+    loadError,
+    marketRegimeScore,
+    isDynamic,
+    fiiNet,
+    diiNet,
+    pcr,
+    scoreHistory,
+    flashTickers,
+    fetchData,
+  } = useMarketData(selectedTicker, setSelectedTicker)
+
+  const {
+    chartPeriod,
+    setChartPeriod,
+    chartInterval,
+    setChartInterval,
+    chartData,
+    chartLoading,
+  } = useChartData(selectedTicker)
+
+  const { watchlist, toggleWatchlist } = useWatchlist()
+
   const [isDark, setIsDark] = useState(() => {
     try { return localStorage.getItem('qa_dark') === 'true' } catch {}
     return window.matchMedia('(prefers-color-scheme: dark)').matches
   })
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    try { return localStorage.getItem('qa_auth') === 'true' } catch {}
-    return false
-  })
-  const [showLogin, setShowLogin] = useState(false)
-  const [loginEmail, setLoginEmail] = useState('')
-  const [loginPassword, setLoginPassword] = useState('')
-  const [loginError, setLoginError] = useState('')
-  const loginRef = useRef<HTMLDivElement>(null)
-  const [horizon, setHorizon] = useState<'short'|'long'>('short')
-  const [selectedTicker, setSelectedTicker] = useState('')
-  const [chartPeriod, setChartPeriod] = useState('1y')
-  const [chartInterval, setChartInterval] = useState('1d')
-  const [chartData, setChartData] = useState<any[]>([])
-  const [chartLoading, setChartLoading] = useState(false)
-  const [expandedRow, setExpandedRow] = useState<string|null>(null)
 
-  const [watchlist, setWatchlist] = useState<string[]>(() => {
-    try { const s = localStorage.getItem('qa_watchlist'); if (s) return JSON.parse(s) } catch {}
-    const wl = new URLSearchParams(window.location.search).get('watchlist')
-    return wl ? wl.split(',').map(t => t.toUpperCase().trim()) : []
-  })
-  const [scoreHistory, setScoreHistory] = useState<Record<string,{date:string;composite:number;tech:number;fund:number;research:number}[]>>({})
-  const [flashTickers, setFlashTickers] = useState<Record<string, 'up'|'down'>>({})
-
-  useEffect(() => { localStorage.setItem('qa_watchlist', JSON.stringify(watchlist)) }, [watchlist])
   useEffect(() => { localStorage.setItem('qa_dark', String(isDark)) }, [isDark])
   useEffect(() => { isDark ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark') }, [isDark])
 
@@ -174,110 +192,17 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const cached = sessionStorage.getItem('qa_score_history')
-    if (cached) { try { setScoreHistory(JSON.parse(cached)); return } catch {} }
-    fetch('/score_history.json?t='+Date.now()).then(r=>r.json()).then(d => {
-      setScoreHistory(d)
-      try { sessionStorage.setItem('qa_score_history', JSON.stringify(d)) } catch {}
-    }).catch(()=>{})
-  }, [])
-
-  useEffect(() => {
-    const ticker = new URLSearchParams(window.location.search).get('ticker')
-    if (ticker && data.length) {
-      setSelectedTicker(ticker.toUpperCase() + '.NS')
+    const tickerParam = new URLSearchParams(window.location.search).get('ticker')
+    if (tickerParam && data.length) {
+      setSelectedTicker(tickerParam.toUpperCase() + '.NS')
       navigate('/')
     }
-  }, [data])
+  }, [data, navigate])
 
-  const dataRef = React.useRef<DashboardData[]>([])
-  useEffect(() => { dataRef.current = data }, [data])
 
-  const fetchLive = async () => {
-    if (!dataRef.current.length) return
-    try {
-      console.log('[Alpha] fetchLive: calling /api/live_data with', dataRef.current.length, 'tickers')
-      const res = await axios.post('/api/live_data', { tickers: dataRef.current.map(d=>d.Ticker) })
-      if (res.data.status === 'ok') {
-        const lp = res.data.data
-        let changed = false
-        const newData = dataRef.current.map(d => {
-          const live = lp[d.Ticker]
-          if (!live) return d
-          const price = live.price || d.Price
-          const chg = live.change_pct ?? d["1d_Chg_%"]
-          if (price !== d.Price || chg !== d["1d_Chg_%"]) changed = true
-          return { ...d, Price: price, "1d_Chg_%": chg }
-        })
-        if (changed) setData(newData)
-        if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
-        setPricesUpdated(new Date().toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',hour12:true})+' IST')
-        setIsDynamic(!res.data.is_market_closed)
+  const activeTab = (PATH_TABS[location.pathname] ?? 'charting') as 'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab'
+  const setActiveTab = (id: 'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab') => navigate(TAB_PATHS[id] ?? '/')
 
-        const newFlash: Record<string, 'up'|'down'> = {}
-        newData.forEach((d, i) => {
-          const old = dataRef.current[i]
-          if (old && d.Price !== old.Price) newFlash[d.Ticker] = d.Price > old.Price ? 'up' : 'down'
-        })
-        if (Object.keys(newFlash).length) {
-          setFlashTickers(newFlash)
-          setTimeout(() => setFlashTickers({}), 800)
-        }
-
-        return res.data.is_market_closed ? 'closed' : 'ok'
-      }
-    } catch (e) { console.error('[Alpha] fetchLive error:', e); return 'err' }
-  }
-
-  const fetchData = async () => {
-    try {
-      console.log('[Alpha] fetchData: fetching /market_data.json')
-      const res = await axios.get(`/market_data.json?t=${Date.now()}`)
-      console.log('[Alpha] fetchData: response status =', res.data.status, ', data count =', res.data.data?.length)
-      if (res.data.status==='ok' && res.data.data.length>0) {
-        const d = res.data.data.sort((a:any,b:any)=>a.Ticker.localeCompare(b.Ticker))
-        setData(d); setScanUpdated(res.data.last_updated||'')
-        if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
-        setCoveragePct(res.data.coverage_pct??null); setMarketRegimeScore(res.data.market_regime_score??null)
-        setFiiNet(res.data.fii_net??null); setDiiNet(res.data.dii_net??null); setPcr(res.data.pcr??null)
-
-        setIsDynamic(res.data.is_dynamic||false); if (!selectedTicker) setSelectedTicker(d[0].Ticker)
-        setLoading(false); return true
-      }
-    } catch(e:any) { setLoadError(e.message||String(e)) }
-    setLoading(false); return false
-  }
-
-  useEffect(() => {
-    let liveId: ReturnType<typeof setInterval>
-    let dataId: ReturnType<typeof setInterval>
-    ;(async () => {
-      if (await fetchData()) {
-        setTimeout(async () => {
-          const s = await fetchLive()
-          if (s !== 'closed') liveId = setInterval(async () => { if (await fetchLive()==='closed') clearInterval(liveId) }, 3*60*1000)
-        }, 1000)
-
-        // Poll for major market scan updates every 15 minutes
-        dataId = setInterval(async () => {
-          await fetchData()
-        }, 15*60*1000)
-      }
-    })()
-    return () => {
-      clearInterval(liveId)
-      clearInterval(dataId)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!selectedTicker) return
-    setChartLoading(true)
-    axios.get(`/api/chart?ticker=${encodeURIComponent(selectedTicker)}&period=${chartPeriod}&interval=${chartInterval}`)
-      .then(r => setChartData(r.data.status==='ok'?r.data.data:[]))
-      .catch(() => setChartData([]))
-      .finally(() => setChartLoading(false))
-  }, [selectedTicker, chartPeriod, chartInterval])
 
   const topPicks = useMemo(() => {
     let f = [...data].filter(d => !d.Ticker.includes('BEES') && d.Sector!=='ETF')
@@ -286,38 +211,14 @@ export default function App() {
     return f.slice(0,3)
   }, [data, horizon])
 
-  const sectorMap = useMemo(() => { const m:Record<string,DashboardData[]>={}; data.forEach(d=>{const s=d.Sector||'Unknown';(m[s]=m[s]||[]).push(d)}); return m }, [data])
+  const sectorMap = useMemo(() => {
+    const m:Record<string,DashboardData[]>={}
+    data.forEach(d=>{const s=d.Sector||'Unknown';(m[s]=m[s]||[]).push(d)})
+    return m
+  }, [data])
+
   const selectedAsset = useMemo(() => data.find(d=>d.Ticker===selectedTicker)||null, [data, selectedTicker])
-  const ALL_TABS = TABS
-  const visibleTabs = isLoggedIn ? ALL_TABS : ALL_TABS.filter(t => t.id === 'fundamentals' || t.id === 'charting' || t.id === 'heatmap')
-
-  const handleLogin = useCallback(() => {
-    if (loginEmail === 'alpha@fms.edu' && loginPassword === 'alphakishakti') {
-      setIsLoggedIn(true)
-      setShowLogin(false)
-      setLoginEmail('')
-      setLoginPassword('')
-      setLoginError('')
-      try { localStorage.setItem('qa_auth', 'true') } catch {}
-    } else {
-      setLoginError('Invalid credentials')
-    }
-  }, [loginEmail, loginPassword])
-
-  const handleLogout = useCallback(() => {
-    setIsLoggedIn(false)
-    try { localStorage.removeItem('qa_auth') } catch {}
-    if (activeTab === 'picks' || activeTab === 'quantlab') setActiveTab('charting')
-  }, [activeTab])
-
-  useEffect(() => {
-    if (!showLogin) return
-    const handleClick = (e: MouseEvent) => {
-      if (loginRef.current && !loginRef.current.contains(e.target as Node)) setShowLogin(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [showLogin])
+  const visibleTabs = isLoggedIn ? TABS : TABS.filter(t => t.id === 'fundamentals' || t.id === 'charting' || t.id === 'heatmap')
 
   const peerGroup = useMemo(() => {
     if (!selectedAsset?.Sector||selectedAsset.Sector==='Unknown') return []
@@ -376,7 +277,7 @@ export default function App() {
                 <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
               </button>
               {isLoggedIn ? (
-                <button onClick={handleLogout} aria-label="Logout"
+                <button onClick={() => handleLogout(() => { if (activeTab === 'picks' || activeTab === 'quantlab') setActiveTab('charting') })} aria-label="Logout"
                   className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
                   style={{
                     color: 'var(--text-3)',
@@ -416,16 +317,16 @@ export default function App() {
                 }}>
                   <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Club Member Login</div>
                   <input type="email" placeholder="Email" value={loginEmail}
-                    onChange={e => { setLoginEmail(e.target.value); setLoginError('') }}
+                    onChange={e => setLoginEmail(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleLogin()}
                     className="glass-input" style={{ width: '100%', marginBottom: 8, fontSize: 12 }} />
                   <input type="password" placeholder="Password" value={loginPassword}
-                    onChange={e => { setLoginPassword(e.target.value); setLoginError('') }}
+                    onChange={e => setLoginPassword(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleLogin()}
                     className="glass-input" style={{ width: '100%', marginBottom: 8, fontSize: 12 }} />
                   {loginError && <div style={{ fontSize: 11, color: 'var(--red)', marginBottom: 8 }}>{loginError}</div>}
-                  <button onClick={handleLogin} className="btn-primary w-full text-xs py-2">
-                    Sign In
+                  <button onClick={handleLogin} disabled={loginLoading} className="btn-primary w-full text-xs py-2">
+                    {loginLoading ? 'Signing In...' : 'Sign In'}
                   </button>
                 </div>
               )}
@@ -433,7 +334,7 @@ export default function App() {
           </div>
         </header>
 
-        {/* Row 2: Market Data Sub-Header (Bloomberg-style) */}
+        {/* Row 2: Market Data Sub-Header */}
         <div className="glass-subtle" style={{ borderBottom:'0.5px solid var(--glass-border)', borderRadius: 0 }}>
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
           {/* LIVE indicator */}
@@ -542,7 +443,7 @@ export default function App() {
                 <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>
               </div>
               <div className={activeTab === 'fundamentals' ? 'block animate-fade-in' : 'hidden'}>
-                <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={t=>setWatchlist(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t])} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>
+                <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={toggleWatchlist} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>
               </div>
               <div className={activeTab === 'heatmap' ? 'block animate-fade-in' : 'hidden'}>
                 <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>
@@ -602,3 +503,4 @@ export default function App() {
     </div>
   )
 }
+

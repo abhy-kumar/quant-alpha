@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fetchChartData, type YahooInterval } from './api/chart'
 import liveDataHandler from './api/live_data'
+import loginHandler from './api/login'
 
 function chartApiDevPlugin(): Plugin {
   return {
@@ -67,9 +68,27 @@ function liveDataApiDevPlugin(): Plugin {
   }
 }
 
+function loginApiDevPlugin(): Plugin {
+  return {
+    name: 'login-api-dev',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url?.startsWith('/api/login')) {
+          next()
+          return
+        }
+        await loginHandler(req, res)
+      })
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), chartApiDevPlugin(), liveDataApiDevPlugin()],
+  plugins: [react(), chartApiDevPlugin(), liveDataApiDevPlugin(), loginApiDevPlugin()],
+  esbuild: {
+    drop: ['console', 'debugger'],
+  },
   build: {
     minify: 'terser',
   },
@@ -79,3 +98,4 @@ export default defineConfig({
     }
   }
 })
+

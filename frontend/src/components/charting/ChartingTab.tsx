@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import type { DashboardData } from '../../types'
+import type { DashboardData, ChartCandle, ScoreHistoryItem } from '../../types'
 import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
 import { MagnifyingGlass, Lightning, Calculator, User, TrendUp, BookOpen, ChartBar, ShieldCheck, Scales } from '@phosphor-icons/react'
 import {
@@ -14,7 +14,7 @@ interface Props {
   data: DashboardData[]
   selectedTicker: string
   setSelectedTicker: (t: string) => void
-  chartData: any[]
+  chartData: ChartCandle[]
   chartLoading: boolean
   chartPeriod: string
   setChartPeriod: (p: string) => void
@@ -23,7 +23,7 @@ interface Props {
   isDark: boolean
   peerGroup: DashboardData[]
   selectedAsset: DashboardData | null
-  scoreHistory: Record<string, {date: string; composite: number; composite_tech?: number; composite_fund?: number; tech: number; fund: number; research: number}[]>
+  scoreHistory: Record<string, ScoreHistoryItem[]>
   horizon: 'short'|'long'
   isLoggedIn?: boolean
 }
@@ -34,10 +34,14 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const filtered = data.filter(d => {
+  const filtered = useMemo(() => {
+    if (!query) return []
     const q = query.toUpperCase()
-    return d.Ticker.replace('.NS', '').includes(q) || (d.Long_Name || '').toUpperCase().includes(q) || (d.Sector || '').toUpperCase().includes(q)
-  }).slice(0, 20)
+    return data.filter(d =>
+      d.Ticker.replace('.NS', '').includes(q) || (d.Long_Name || '').toUpperCase().includes(q) || (d.Sector || '').toUpperCase().includes(q)
+    ).slice(0, 20)
+  }, [data, query])
+
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -590,7 +594,7 @@ export default function ChartingTab({
                         {chartData.map((entry, index) => (
                           <Cell
                             key={`macd-${index}`}
-                            fill={(entry.macd_hist ?? 0) >= 0
+                            fill={Number(entry.macd_hist ?? 0) >= 0
                               ? (isDark ? '#3DD68C' : '#0D7C3F')
                               : (isDark ? '#FF6B6B' : '#C92A2A')
                             }

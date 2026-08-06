@@ -223,3 +223,23 @@ export interface BacktestRunIndex {
   runs: BacktestRunMeta[]
   exported_at: string
 }
+
+export interface ChartCandle {
+  date: string
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+  [key: string]: number | string | undefined
+}
+
+export interface ScoreHistoryItem {
+  date: string
+  composite: number
+  composite_tech?: number
+  composite_fund?: number
+  tech: number
+  fund: number
+  research: number
+}

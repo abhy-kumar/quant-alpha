@@ -52,7 +52,9 @@ function rollingMean(values: (number | null)[], window: number): (number | null)
   return values.map((_, i) => {
     if (i < window - 1) return null
     const slice = values.slice(i - window + 1, i + 1)
-    return slice.reduce<number>((sum, value) => sum + (value ?? 0), 0) / window
+    // If any value in the window is null, the mean is undefined — return null
+    if (slice.some(v => v === null)) return null
+    return (slice as number[]).reduce((sum, v) => sum + v, 0) / window
   })
 }
 
@@ -60,8 +62,10 @@ function rollingStd(values: (number | null)[], window: number): (number | null)[
   return values.map((_, i) => {
     if (i < window - 1) return null
     const slice = values.slice(i - window + 1, i + 1)
-    const mean = slice.reduce<number>((sum, v) => sum + (v ?? 0), 0) / window
-    const variance = slice.reduce<number>((sum, v) => sum + ((v ?? 0) - mean) ** 2, 0) / (window - 1)
+    if (slice.some(v => v === null)) return null
+    const nums = slice as number[]
+    const mean = nums.reduce((sum, v) => sum + v, 0) / window
+    const variance = nums.reduce((sum, v) => sum + (v - mean) ** 2, 0) / (window - 1)
     return Math.sqrt(variance)
   })
 }
