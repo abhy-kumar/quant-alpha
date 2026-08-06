@@ -1,19 +1,19 @@
 {
-  "last_updated": "2026-08-06 04:16:57",
+  "last_updated": "2026-08-06 06:47:52",
   "model_portfolios": {
     "max_sharpe": {
-      "WELCORP.NS": 0.4852,
-      "RPTECH.NS": 0.2546,
-      "NATIONALUM.NS": 0.1686,
-      "LUPIN.NS": 0.0917
+      "WELCORP.NS": 0.4979,
+      "RPTECH.NS": 0.2562,
+      "NATIONALUM.NS": 0.1619,
+      "LUPIN.NS": 0.0839
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.52,
-      "GAIL.NS": 0.1356,
-      "LUPIN.NS": 0.0997,
+      "SUNPHARMA.NS": 0.5199,
+      "GAIL.NS": 0.1354,
+      "LUPIN.NS": 0.0995,
+      "RPTECH.NS": 0.0674,
       "OFSS.NS": 0.067,
-      "RPTECH.NS": 0.067,
-      "CHENNPETRO.NS": 0.0564,
+      "CHENNPETRO.NS": 0.0565,
       "HINDZINC.NS": 0.0516
     }
   },
@@ -222,7 +222,7 @@
       },
       {
         "date": "2026-08-06",
-        "portfolio": 106.34,
+        "portfolio": 106.67,
         "benchmark": 100.0
       }
     ],
@@ -839,27 +839,27 @@
         "from": "2026-08-06",
         "to": "2026-08-06",
         "tickers": [
-          "CHENNPETRO.NS",
-          "NATIONALUM.NS",
           "LUPIN.NS",
-          "OFSS.NS",
-          "WELCORP.NS",
-          "HINDZINC.NS",
+          "NATIONALUM.NS",
           "GAIL.NS",
           "SUNPHARMA.NS",
+          "RPTECH.NS",
+          "HINDZINC.NS",
+          "CHENNPETRO.NS",
           "SAIL.NS",
-          "RPTECH.NS"
+          "OFSS.NS",
+          "WELCORP.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": 6.34,
-      "cagr": 50.41,
-      "volatility": 13.75,
-      "sharpe": 3.19,
+      "total_return": 6.67,
+      "cagr": 53.54,
+      "volatility": 13.73,
+      "sharpe": 3.43,
       "max_drawdown": -3.33,
-      "info_ratio": 3.67,
-      "win_rate": 46.2
+      "info_ratio": 3.9,
+      "win_rate": 48.7
     }
   },
   "backtest_long": {
@@ -1061,7 +1061,7 @@
       },
       {
         "date": "2026-08-06",
-        "portfolio": 101.82,
+        "portfolio": 101.86,
         "benchmark": 100.0
       }
     ],
@@ -1679,25 +1679,25 @@
         "to": "2026-08-06",
         "tickers": [
           "WELCORP.NS",
-          "OFSS.NS",
           "CASTROLIND.NS",
+          "OFSS.NS",
           "LUPIN.NS",
           "NATIONALUM.NS",
           "HEROMOTOCO.NS",
-          "GAIL.NS",
           "CHENNPETRO.NS",
+          "GAIL.NS",
           "EICHERMOT.NS",
-          "HINDZINC.NS"
+          "SAIL.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": 1.82,
-      "cagr": 12.72,
+      "total_return": 1.86,
+      "cagr": 13.02,
       "volatility": 14.21,
-      "sharpe": 0.44,
+      "sharpe": 0.46,
       "max_drawdown": -6.27,
-      "info_ratio": 0.9,
+      "info_ratio": 0.92,
       "win_rate": 51.3
     }
   },
@@ -2960,7 +2960,7 @@
       },
       {
         "date": "2026-08-06",
-        "portfolio": 108.88,
+        "portfolio": 108.83,
         "benchmark": 100.0
       }
     ],
@@ -3344,8 +3344,8 @@
       }
     ],
     "stats": {
-      "total_return": 8.88,
-      "cagr": 8.76,
+      "total_return": 8.83,
+      "cagr": 8.72,
       "volatility": 31.47,
       "sharpe": 0.07,
       "max_drawdown": -32.15,
@@ -3982,7 +3982,7 @@
       },
       {
         "date": "2026-08-06",
-        "portfolio": 145.99,
+        "portfolio": 145.54,
         "benchmark": 100.0
       }
     ],
@@ -4192,12 +4192,12 @@
       }
     ],
     "stats": {
-      "total_return": 45.99,
-      "cagr": 112.81,
-      "volatility": 28.62,
-      "sharpe": 3.71,
+      "total_return": 45.54,
+      "cagr": 111.51,
+      "volatility": 28.64,
+      "sharpe": 3.67,
       "max_drawdown": -10.52,
-      "info_ratio": 3.94,
+      "info_ratio": 3.89,
       "win_rate": 58.4
     }
   },
@@ -4505,7 +4505,7 @@
       },
       {
         "date": "2025-10-31",
-        "portfolio": 105.73,
+        "portfolio": 105.72,
         "benchmark": 100.0
       },
       {
@@ -5460,7 +5460,7 @@
       },
       {
         "date": "2026-08-06",
-        "portfolio": 117.63,
+        "portfolio": 117.82,
         "benchmark": 100.0
       }
     ],
@@ -5535,8 +5535,8 @@
           "FORTIS.NS",
           "HDFCAMC.NS",
           "DALBHARAT.NS",
-          "LaurusLabs.NS",
-          "LAURUSLABS.NS"
+          "LAURUSLABS.NS",
+          "LaurusLabs.NS"
         ],
         "weights": {
           "ANURAS.NS": 0.1,
@@ -5547,8 +5547,8 @@
           "FORTIS.NS": 0.1,
           "HDFCAMC.NS": 0.1,
           "DALBHARAT.NS": 0.1,
-          "LaurusLabs.NS": 0.1,
-          "LAURUSLABS.NS": 0.1
+          "LAURUSLABS.NS": 0.1,
+          "LaurusLabs.NS": 0.1
         },
         "equity_ratio": 1.0
       },
@@ -5844,12 +5844,12 @@
       }
     ],
     "stats": {
-      "total_return": 17.63,
-      "cagr": 17.38,
+      "total_return": 17.82,
+      "cagr": 17.57,
       "volatility": 17.07,
-      "sharpe": 0.64,
+      "sharpe": 0.65,
       "max_drawdown": -15.31,
-      "info_ratio": 1.02,
+      "info_ratio": 1.03,
       "win_rate": 53.4
     }
   },
@@ -6482,7 +6482,7 @@
       },
       {
         "date": "2026-08-06",
-        "portfolio": 111.93,
+        "portfolio": 111.9,
         "benchmark": 100.0
       }
     ],
@@ -6499,8 +6499,8 @@
           "MARUTI.NS",
           "AUBANK.NS",
           "SHRIRAMFIN.NS",
-          "LaurusLabs.NS",
-          "LAURUSLABS.NS"
+          "LAURUSLABS.NS",
+          "LaurusLabs.NS"
         ],
         "weights": {
           "ANANDRATHI.NS": 0.1,
@@ -6511,8 +6511,8 @@
           "MARUTI.NS": 0.1,
           "AUBANK.NS": 0.1,
           "SHRIRAMFIN.NS": 0.1,
-          "LaurusLabs.NS": 0.1,
-          "LAURUSLABS.NS": 0.1
+          "LAURUSLABS.NS": 0.1,
+          "LaurusLabs.NS": 0.1
         },
         "equity_ratio": 1.0
       },
@@ -6692,12 +6692,12 @@
       }
     ],
     "stats": {
-      "total_return": 11.93,
-      "cagr": 25.22,
-      "volatility": 22.2,
+      "total_return": 11.9,
+      "cagr": 25.16,
+      "volatility": 22.21,
       "sharpe": 0.84,
       "max_drawdown": -15.1,
-      "info_ratio": 1.14,
+      "info_ratio": 1.13,
       "win_rate": 54.4
     }
   },
@@ -6711,8 +6711,8 @@
     "Basic Materials": 40.0,
     "Healthcare": 20.0,
     "Technology": 20.0,
-    "Energy": 10.0,
-    "Utilities": 10.0
+    "Utilities": 10.0,
+    "Energy": 10.0
   },
   "correlation_matrix": {
     "labels": [
@@ -6732,13 +6732,13 @@
         1.0,
         0.11,
         0.23,
-        -0.05,
+        -0.04,
         0.34,
         -0.05,
-        -0.14,
-        0.09,
         -0.15,
-        0.19
+        0.09,
+        -0.16,
+        0.18
       ],
       [
         0.11,
@@ -6750,7 +6750,7 @@
         -0.01,
         0.17,
         0.09,
-        -0.1
+        -0.09
       ],
       [
         0.23,
@@ -6762,19 +6762,19 @@
         0.09,
         0.56,
         -0.04,
-        0.29
+        0.28
       ],
       [
-        -0.05,
+        -0.04,
         0.07,
         0.02,
         1.0,
         0.14,
         0.23,
-        -0.02,
+        -0.01,
         0.13,
         0.48,
-        0.2
+        0.21
       ],
       [
         0.34,
@@ -6783,10 +6783,10 @@
         0.14,
         1.0,
         0.01,
-        -0.11,
+        -0.1,
         0.45,
         0.11,
-        0.38
+        0.37
       ],
       [
         -0.05,
@@ -6796,21 +6796,21 @@
         0.01,
         1.0,
         0.1,
-        0.13,
+        0.14,
         0.23,
-        0.08
+        0.07
       ],
       [
-        -0.14,
+        -0.15,
         -0.01,
         0.09,
-        -0.02,
-        -0.11,
+        -0.01,
+        -0.1,
         0.1,
         1.0,
-        -0.07,
+        -0.06,
         -0.05,
-        0.09
+        0.07
       ],
       [
         0.09,
@@ -6818,14 +6818,14 @@
         0.56,
         0.13,
         0.45,
-        0.13,
-        -0.07,
+        0.14,
+        -0.06,
         1.0,
         -0.12,
         0.3
       ],
       [
-        -0.15,
+        -0.16,
         0.09,
         -0.04,
         0.48,
@@ -6834,18 +6834,18 @@
         -0.05,
         -0.12,
         1.0,
-        0.12
+        0.13
       ],
       [
-        0.19,
-        -0.1,
-        0.29,
-        0.2,
-        0.38,
-        0.08,
-        0.09,
+        0.18,
+        -0.09,
+        0.28,
+        0.21,
+        0.37,
+        0.07,
+        0.07,
         0.3,
-        0.12,
+        0.13,
         1.0
       ]
     ]
