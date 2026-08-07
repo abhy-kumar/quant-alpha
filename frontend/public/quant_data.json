@@ -1,19 +1,20 @@
 {
-  "last_updated": "2026-08-07 05:54:42",
+  "last_updated": "2026-08-07 08:28:01",
   "model_portfolios": {
     "max_sharpe": {
-      "WELCORP.NS": 0.6333,
-      "NATIONALUM.NS": 0.3667
+      "WELCORP.NS": 0.4831,
+      "NATIONALUM.NS": 0.2849,
+      "BHARTIARTL.NS": 0.2321
     },
     "min_volatility": {
-      "SUNPHARMA.NS": 0.5223,
-      "GAIL.NS": 0.1513,
-      "LUPIN.NS": 0.0999,
-      "OFSS.NS": 0.065,
-      "SOTL.NS": 0.0592,
-      "NMDC.NS": 0.0368,
-      "HINDZINC.NS": 0.0347,
-      "AUROPHARMA.NS": 0.0239
+      "SUNPHARMA.NS": 0.3908,
+      "BHARTIARTL.NS": 0.3547,
+      "GAIL.NS": 0.0915,
+      "SOTL.NS": 0.0514,
+      "OFSS.NS": 0.0435,
+      "NMDC.NS": 0.028,
+      "HINDZINC.NS": 0.0274,
+      "NATIONALUM.NS": 0.0118
     }
   },
   "factor_exposures": {
@@ -226,7 +227,7 @@
       },
       {
         "date": "2026-08-07",
-        "portfolio": 103.8,
+        "portfolio": 103.0,
         "benchmark": 100.0
       }
     ],
@@ -781,24 +782,24 @@
         "tickers": [
           "OFSS.NS",
           "NATIONALUM.NS",
-          "LUPIN.NS",
           "WELCORP.NS",
           "HINDZINC.NS",
           "SUNPHARMA.NS",
           "GAIL.NS",
-          "AUROPHARMA.NS",
           "NMDC.NS",
+          "DIXON.NS",
+          "BHARTIARTL.NS",
           "SOTL.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": 3.8,
-      "cagr": 27.54,
-      "volatility": 12.14,
-      "sharpe": 1.73,
+      "total_return": 3.0,
+      "cagr": 21.26,
+      "volatility": 12.5,
+      "sharpe": 1.18,
       "max_drawdown": -3.32,
-      "info_ratio": 2.27,
+      "info_ratio": 1.7,
       "win_rate": 47.5
     }
   },
@@ -1006,7 +1007,7 @@
       },
       {
         "date": "2026-08-07",
-        "portfolio": 100.8,
+        "portfolio": 100.53,
         "benchmark": 100.0
       }
     ],
@@ -1561,24 +1562,24 @@
         "tickers": [
           "WELCORP.NS",
           "OFSS.NS",
-          "SOTL.NS",
           "HEROMOTOCO.NS",
-          "LUPIN.NS",
-          "NATIONALUM.NS",
+          "SOTL.NS",
           "INDIANB.NS",
-          "KTKBANK.NS",
+          "NATIONALUM.NS",
           "HINDZINC.NS",
-          "NMDC.NS"
+          "KTKBANK.NS",
+          "NMDC.NS",
+          "LUPIN.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": 0.8,
-      "cagr": 5.33,
-      "volatility": 14.15,
-      "sharpe": -0.08,
+      "total_return": 0.53,
+      "cagr": 3.51,
+      "volatility": 14.04,
+      "sharpe": -0.21,
       "max_drawdown": -6.72,
-      "info_ratio": 0.38,
+      "info_ratio": 0.25,
       "win_rate": 52.5
     }
   },
@@ -2841,7 +2842,7 @@
       },
       {
         "date": "2026-08-07",
-        "portfolio": 108.53,
+        "portfolio": 109.01,
         "benchmark": 100.0
       }
     ],
@@ -3225,12 +3226,12 @@
       }
     ],
     "stats": {
-      "total_return": 8.53,
-      "cagr": 8.46,
-      "volatility": 31.73,
-      "sharpe": 0.06,
+      "total_return": 9.01,
+      "cagr": 8.94,
+      "volatility": 31.74,
+      "sharpe": 0.08,
       "max_drawdown": -32.91,
-      "info_ratio": 0.27,
+      "info_ratio": 0.28,
       "win_rate": 54.2
     }
   },
@@ -3863,7 +3864,7 @@
       },
       {
         "date": "2026-08-07",
-        "portfolio": 140.78,
+        "portfolio": 141.03,
         "benchmark": 100.0
       }
     ],
@@ -4073,12 +4074,12 @@
       }
     ],
     "stats": {
-      "total_return": 40.78,
-      "cagr": 97.91,
+      "total_return": 41.03,
+      "cagr": 98.62,
       "volatility": 28.11,
-      "sharpe": 3.25,
+      "sharpe": 3.28,
       "max_drawdown": -10.8,
-      "info_ratio": 3.48,
+      "info_ratio": 3.51,
       "win_rate": 59.2
     }
   },
@@ -5341,7 +5342,7 @@
       },
       {
         "date": "2026-08-07",
-        "portfolio": 119.08,
+        "portfolio": 118.9,
         "benchmark": 100.0
       }
     ],
@@ -5725,12 +5726,12 @@
       }
     ],
     "stats": {
-      "total_return": 19.08,
-      "cagr": 18.92,
-      "volatility": 17.85,
-      "sharpe": 0.7,
+      "total_return": 18.9,
+      "cagr": 18.74,
+      "volatility": 17.84,
+      "sharpe": 0.69,
       "max_drawdown": -16.53,
-      "info_ratio": 1.06,
+      "info_ratio": 1.05,
       "win_rate": 57.4
     }
   },
@@ -6363,7 +6364,7 @@
       },
       {
         "date": "2026-08-07",
-        "portfolio": 113.49,
+        "portfolio": 113.56,
         "benchmark": 100.0
       }
     ],
@@ -6573,12 +6574,12 @@
       }
     ],
     "stats": {
-      "total_return": 13.49,
-      "cagr": 28.74,
+      "total_return": 13.56,
+      "cagr": 28.9,
       "volatility": 22.41,
-      "sharpe": 0.99,
+      "sharpe": 1.0,
       "max_drawdown": -15.19,
-      "info_ratio": 1.28,
+      "info_ratio": 1.29,
       "win_rate": 52.8
     }
   },
@@ -6590,16 +6591,17 @@
   },
   "sector_allocation": {
     "Basic Materials": 50.0,
-    "Healthcare": 30.0,
-    "Technology": 10.0,
-    "Utilities": 10.0
+    "Technology": 20.0,
+    "Healthcare": 10.0,
+    "Utilities": 10.0,
+    "Communication Services": 10.0
   },
   "correlation_matrix": {
     "labels": [
-      "AUROPHARMA",
+      "BHARTIARTL",
+      "DIXON",
       "GAIL",
       "HINDZINC",
-      "LUPIN",
       "NATIONALUM",
       "NMDC",
       "OFSS",
@@ -6610,122 +6612,122 @@
     "matrix": [
       [
         1.0,
-        -0.19,
-        0.04,
-        0.5,
-        -0.04,
+        0.16,
         0.17,
-        0.21,
+        0.25,
+        0.23,
+        0.26,
         -0.01,
-        0.39,
-        0.24
+        0.02,
+        0.58,
+        0.12
       ],
       [
-        -0.19,
+        0.16,
         1.0,
+        0.27,
         0.26,
-        0.09,
+        0.04,
+        0.17,
+        0.06,
+        0.16,
+        0.06,
+        0.2
+      ],
+      [
+        0.17,
+        0.27,
+        1.0,
+        0.25,
         -0.07,
         0.3,
-        0.16,
-        0.09,
+        0.14,
+        0.1,
         0.13,
-        -0.13
+        -0.12
       ],
       [
-        0.04,
+        0.25,
         0.26,
+        0.25,
         1.0,
-        0.07,
-        0.61,
-        0.46,
+        0.6,
+        0.45,
         0.06,
-        0.18,
-        -0.01,
+        0.17,
+        -0.02,
         0.27
       ],
       [
-        0.5,
-        0.09,
-        0.07,
-        1.0,
-        0.18,
-        0.2,
-        0.22,
-        0.06,
-        0.45,
-        0.21
-      ],
-      [
-        -0.04,
+        0.23,
+        0.04,
         -0.07,
-        0.61,
-        0.18,
+        0.6,
         1.0,
         0.46,
-        0.03,
+        0.02,
         0.12,
         0.15,
         0.37
       ],
       [
+        0.26,
         0.17,
         0.3,
-        0.46,
-        0.2,
+        0.45,
         0.46,
         1.0,
         0.23,
         0.07,
         0.23,
-        0.35
-      ],
-      [
-        0.21,
-        0.16,
-        0.06,
-        0.22,
-        0.03,
-        0.23,
-        1.0,
-        -0.11,
-        0.23,
-        0.07
+        0.36
       ],
       [
         -0.01,
-        0.09,
-        0.18,
         0.06,
+        0.14,
+        0.06,
+        0.02,
+        0.23,
+        1.0,
+        -0.11,
+        0.22,
+        0.08
+      ],
+      [
+        0.02,
+        0.16,
+        0.1,
+        0.17,
         0.12,
         0.07,
         -0.11,
         1.0,
-        -0.05,
+        -0.04,
         0.18
       ],
       [
-        0.39,
+        0.58,
+        0.06,
         0.13,
-        -0.01,
-        0.45,
+        -0.02,
         0.15,
         0.23,
-        0.23,
-        -0.05,
+        0.22,
+        -0.04,
         1.0,
-        0.13
+        0.14
       ],
       [
-        0.24,
-        -0.13,
+        0.12,
+        0.2,
+        -0.12,
         0.27,
-        0.21,
         0.37,
-        0.35,
-        0.07,
+        0.36,
+        0.08,
         0.18,
-        0.13,
+        0.14,
         1.0
       ]
     ]
