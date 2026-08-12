@@ -72,7 +72,7 @@ function computeStats(chart: { date: string; portfolio: number; benchmark: numbe
   }
 }
 
-export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
+function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
   const [quantData, setQuantData] = useState<QuantData | null>(null)
   const [loading, setLoading] = useState(true)
   const [backtestModel, setBacktestModel] = useState<'short' | 'long'>('short')
@@ -1271,3 +1271,6 @@ export default function QuantLabTab({ isDark, scanUpdated, onSelect }: Props) {
     </div>
   )
 }
+
+import { memo } from 'react'
+export default memo(QuantLabTabInner)

@@ -366,7 +366,7 @@
 
 /* Ticker tape */
 @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.tape { animation-name: scroll; animation-timing-function: linear; animation-iteration-count: infinite; }
+.tape { animation-name: scroll; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; }
 .tape:hover { animation-play-state: paused; }
 
 /* Shimmer loading */

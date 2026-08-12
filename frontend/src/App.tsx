@@ -126,7 +126,6 @@ export default function App() {
 
   const [selectedTicker, setSelectedTicker] = useState('')
   const [horizon, setHorizon] = useState<'short'|'long'>('short')
-  const [expandedRow, setExpandedRow] = useState<string|null>(null)
 
   const {
     isLoggedIn,
@@ -443,7 +442,7 @@ export default function App() {
                 <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>
               </div>
               <div className={activeTab === 'fundamentals' ? 'block animate-fade-in' : 'hidden'}>
-                <ScreenerTab data={data} onSelect={handleSelect} expandedRow={expandedRow} setExpandedRow={setExpandedRow} watchlist={watchlist} toggleWatchlist={toggleWatchlist} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>
+                <ScreenerTab data={data} onSelect={handleSelect} watchlist={watchlist} toggleWatchlist={toggleWatchlist} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>
               </div>
               <div className={activeTab === 'heatmap' ? 'block animate-fade-in' : 'hidden'}>
                 <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>

@@ -26,7 +26,7 @@ function getLegendColor(score: number, isDark: boolean) {
   return getHeatmapColor(score, isDark)
 }
 
-export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
+function HeatmapTabInner({ sectorMap, onSelect, isDark }: Props) {
   const [sortMode, setSortMode] = useState<'alpha'|'score'>('score')
 
   const sectorAvgScores = useMemo(() => {
@@ -128,3 +128,6 @@ export default function HeatmapTab({ sectorMap, onSelect, isDark }: Props) {
     </div>
   )
 }
+
+import { memo } from 'react'
+export default memo(HeatmapTabInner)

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, memo } from 'react'
 import type { DashboardData, ChartCandle, ScoreHistoryItem } from '../../types'
 import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
 import { MagnifyingGlass, Lightning, Calculator, User, TrendUp, BookOpen, ChartBar, ShieldCheck, Scales } from '@phosphor-icons/react'
@@ -147,7 +147,7 @@ const InfoBlock = ({ label, value, accent, tooltipId }: { label: string; value: 
   </div>
 )
 
-export default function ChartingTab({
+function ChartingTabInner({
   data, selectedTicker, setSelectedTicker, chartData, chartLoading,
   chartPeriod, setChartPeriod, chartInterval, setChartInterval,
   isDark, peerGroup, selectedAsset, scoreHistory, horizon, isLoggedIn = true
@@ -731,3 +731,5 @@ export default function ChartingTab({
     </>
   )
 }
+
+export default memo(ChartingTabInner)

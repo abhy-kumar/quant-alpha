@@ -112,7 +112,7 @@ function ScoreRadar({ s }: { s: DashboardData }) {
   )
 }
 
-export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: Props) {
+function SignalsTabInner({ topPicks, horizon, setHorizon, onSelect }: Props) {
   const avgScore = useMemo(() => {
     if (!topPicks.length) return 0
     const scoreKey = horizon === 'long' ? 'Composite_Score_Fund' : horizon === 'short' ? 'Composite_Score_Tech' : 'Composite_Score'
@@ -286,3 +286,6 @@ export default function SignalsTab({ topPicks, horizon, setHorizon, onSelect }: 
     </div>
   )
 }
+
+import { memo } from 'react'
+export default memo(SignalsTabInner)
