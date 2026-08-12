@@ -3,27 +3,61 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#6366f1" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)" />
-    <meta name="description" content="Free, research-backed quantitative stock screener for the NSE. Screens 150 stocks daily using 10 academic factors: Piotroski F-Score, Momentum, Value, Low Volatility, and more. By the Alpha Research and Investment Club, FMS Delhi.">
-    <meta name="keywords" content="NSE stock screener, quantitative research India, Piotroski F-Score, stock momentum NSE, NIFTY 50 analysis, FMS Delhi, quant investing India, factor investing NSE">
-    <meta name="author" content="Abhishek Kumar, Alpha Research and Investment Club">
-    <meta name="robots" content="index, follow">
+
+    <!-- DNS Prefetch & Preconnect for Performance Marketing & Core Web Vitals -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="https://va.vercel-scripts.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Primary Metadata & Open Graph -->
+    <meta name="description" content="Free, research-backed quantitative stock screener for the NSE India. Screens 150 stocks daily using 10 academic factors: Piotroski F-Score, Momentum, Value, Low Volatility, and more. Developed by Alpha Research Club, FMS Delhi.">
+    <meta name="keywords" content="NSE stock screener, quantitative research India, Piotroski F-Score, stock momentum NSE, NIFTY 50 analysis, FMS Delhi, quant investing India, factor investing NSE, stock trading signals India, algo trading NSE">
+    <meta name="author" content="Abhishek Kumar, Alpha Research and Investment Club, FMS Delhi">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="rating" content="General">
+    <meta name="coverage" content="Worldwide">
+    <meta name="target" content="all">
+    <meta name="geo.region" content="IN">
+    <meta name="geo.placename" content="New Delhi">
     <link rel="canonical" href="https://quant-alpha-sage.vercel.app">
+
+    <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://quant-alpha-sage.vercel.app">
-    <meta property="og:title" content="Alpha - Quantitative NSE Stock Research">
-    <meta property="og:description" content="Daily quantitative screening of 150 NSE stocks using 10 academic factors. Free, open-source, research-backed.">
+    <meta property="og:title" content="Alpha - Quantitative NSE Stock Research | FMS Delhi">
+    <meta property="og:description" content="Daily quantitative screening of 150 NSE stocks using 10 academic factors. 100% free, research-backed quantitative research platform.">
     <meta property="og:image" content="https://quant-alpha-sage.vercel.app/dashboard-preview.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:site_name" content="Alpha Research">
+    <meta property="og:image:alt" content="Alpha Quantitative Research Dashboard showing stock factor models and charts">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:site_name" content="Alpha Research Dashboard">
+    <meta property="og:locale" content="en_IN">
+
+    <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Alpha - Quantitative NSE Stock Research">
-    <meta name="twitter:description" content="Daily quantitative screening of 150 NSE stocks using 10 academic factors.">
+    <meta name="twitter:url" content="https://quant-alpha-sage.vercel.app">
+    <meta name="twitter:title" content="Alpha - Quantitative NSE Stock Research | FMS Delhi">
+    <meta name="twitter:description" content="Daily quantitative screening of 150 NSE stocks using 10 academic factors. 100% free, research-backed.">
     <meta name="twitter:image" content="https://quant-alpha-sage.vercel.app/dashboard-preview.png">
+    <meta name="twitter:site" content="@AlphaQuantFMS">
+    <meta name="twitter:creator" content="@abhy_kumar">
+
+    <!-- Mobile & PWA Optimization -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Alpha Quant">
+    <meta name="application-name" content="Alpha Quant Research">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- JSON-LD Structured Data Schema (Google Rich Snippets & AI Search) -->
     <script type="application/ld+json">
     [
       {
@@ -32,7 +66,7 @@
         "name": "Alpha Research Dashboard",
         "url": "https://quant-alpha-sage.vercel.app",
         "applicationCategory": "FinanceApplication",
-        "applicationSubCategory": "Stock Screener",
+        "applicationSubCategory": "Stock Screener & Quantitative Analytics",
         "description": "Quantitative stock screening for the National Stock Exchange of India using 10 academic research factors: Piotroski F-Score, Momentum, Value, Low Volatility, Gross Profitability, Earnings Quality, Betting Against Beta, Investment Factor, SUE, and Mean Reversion.",
         "operatingSystem": "Web",
         "browserRequirements": "Requires JavaScript",
@@ -68,12 +102,40 @@
         },
         "url": "https://quant-alpha-sage.vercel.app",
         "sameAs": ["https://github.com/abhy-kumar/quant-alpha"]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the Piotroski F-Score in stock screening?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The Piotroski F-Score is a 9-point financial health metric designed by Stanford Accounting Professor Joseph Piotroski. It evaluates profitability, leverage, liquidity, and operating efficiency to identify financially resilient stocks."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does Alpha calculate quantitative factor scores for NSE stocks?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Alpha processes 150 NSE stocks using cross-sectional percentile rankings across 10 academic quantitative factors including Momentum (12M/60D), Value (P/E, P/B, EV/EBITDA), Piotroski F-Score, Gross Profitability, Earnings Quality, SUE, and Betting Against Beta."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is the Alpha Quant Research Dashboard free for retail investors?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, Alpha Research Dashboard is 100% free and open-source, maintained by the Alpha Research & Investment Club at FMS Delhi for academic and educational quantitative research."
+            }
+          }
+        ]
       }
     ]
     </script>
     <title>Alpha - Quantitative Stock Research for NSE India | Alpha Research Club, FMS Delhi</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <script>
       try {

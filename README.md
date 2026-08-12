@@ -53,7 +53,15 @@
 ### 4. Macro Market Regime Detection (`engine/regime_engine.py`)
 - Calculates aggregate market breath percentage (% of NSE stocks above 200 SMA), India VIX volatility, and Nifty trend indices to output a dynamic 0–100 **Regime Score** (*Risk-On*, *Neutral*, *Risk-Off*).
 
-### 5. Institutional-Grade UI & Visualization (`frontend/src/`)
+### 5. Current-Gen SEO & Digital Marketing Architecture (`frontend/src/components/common/`)
+- **Dynamic Route & Ticker Metadata Engine (`SeoHead.tsx`)**: Dynamically updates `<title>`, `<meta name="description">`, `<link rel="canonical">`, Open Graph (`og:*`), and Twitter Cards (`twitter:*`) per route (`/`, `/signals`, `/screen`, `/heatmap`, `/quant`) and active stock ticker (`?ticker=RELIANCE.NS`).
+- **Rich JSON-LD Structured Data**: Injects dynamic `SoftwareApplication`, `FinancialProduct`, `Organization`, `BreadcrumbList`, and `FAQPage` schemas for Google Rich Snippets & "People Also Ask" ranking.
+- **Generative Engine Optimization (GEO) for AI Search**: Implements `public/llms.txt` and `public/llms-full.txt` adhering to the `llmstxt.org` standard for AI search engines (Perplexity, ChatGPT, Claude, Google SGE/Search Overviews).
+- **1-Click Viral Social Share Engine (`SocialShareModal.tsx`)**: Deep-link social sharing templates for WhatsApp, X (Twitter), LinkedIn, Telegram, and native mobile Web Share API.
+- **Growth Funnel & Newsletter Lead Capture (`NewsletterModal.tsx`)**: Institutional research brief subscription modal for community growth and investor retention.
+- **Core Web Vitals & Technical SEO**: DNS prefetching (`dns-prefetch`), resource preconnecting (`fonts.googleapis.com`, `va.vercel-scripts.com`), PWA touch tags, multi-route XML sitemap (`sitemap.xml`) with image tags, and bot-friendly crawler routing (`robots.txt`).
+
+### 6. Institutional-Grade UI & Visualization (`frontend/src/`)
 - **Mobile-First Ergonomic Interface**: Fixed glassmorphic **Bottom Navigation Dock** on mobile viewports (`< md`), slide-up **Filter Drawer / Bottom Sheet** for stock screening, touch-optimized pill selectors, and clean mobile header layout.
 - **TradingView Canvas Charting**: Built on `@tradingview/lightweight-charts` with real-time indicators (SMA 50/200, Supertrend, Bollinger Bands, RSI, MACD) and log/linear scaling.
 - **Stock Comparison Matrix**: Comparative evaluation drawer analyzing up to 4 assets across 20+ dimensions.
@@ -123,7 +131,8 @@ stock-dashboard/
 │   │   ├── dashboard-preview.png                 # Public web asset preview image
 │   │   ├── favicon.svg                           # Website favicon SVG
 │   │   ├── icons.svg                             # PWA icon set manifest
-│   │   ├── llms.txt                              # Standard text descriptor for LLM crawlers
+│   │   ├── llms.txt                              # Summary descriptor for LLM crawlers
+│   │   ├── llms-full.txt                         # Full technical manual for AI Search engines
 │   │   ├── logo-dark.svg                         # Dark theme logo vector
 │   │   ├── logo-light.svg                        # Light theme logo vector
 │   │   ├── manifest.json                         # Web App Manifest specification
@@ -138,6 +147,9 @@ stock-dashboard/
 │   │   │   │   ├── ChartingTab.tsx               # Full-screen interactive charting view
 │   │   │   │   └── TradingViewChart.tsx          # Lightweight Charts canvas integration
 │   │   │   ├── common/
+│   │   │   │   ├── NewsletterModal.tsx           # Institutional newsletter & community growth modal
+│   │   │   │   ├── SeoHead.tsx                   # Dynamic route title, meta, canonical & JSON-LD component
+│   │   │   │   ├── SocialShareModal.tsx          # 1-click social growth share modal
 │   │   │   │   └── shared.tsx                    # Shared UI primitives, tooltips & segmented controls
 │   │   │   ├── heatmap/
 │   │   │   │   └── HeatmapTab.tsx                # Dynamic sector treemap & heatmap component

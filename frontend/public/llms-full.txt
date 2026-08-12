@@ -1,0 +1,100 @@
+# Alpha - Quantitative NSE Stock Research (Full Specification)
+# llms-full.txt - Comprehensive Machine-Readable Technical Manual for AI Agents and LLM Crawlers
+# Standard Specification: https://llmstxt.org
+
+> Alpha is a fully automated, research-backed quantitative stock analysis and research platform for the National Stock Exchange of India (NSE). It evaluates 150 liquid NSE equities daily using a 10-factor academic model and publishes the results as an open-access dashboard.
+
+---
+
+## 1. System Overview
+
+- **Target Market**: National Stock Exchange of India (NSE), National Capital Territory of Delhi / India equities.
+- **Stock Universe**: Top 150 liquid NSE stocks selected by 60-day average daily turnover.
+- **Scanning Schedule**: GitHub Actions automated pipeline running 3x daily on weekdays (Pre-Open 08:30 IST, Mid-Day 12:30 IST, Post-Market 17:30 IST).
+- **Core Value Proposition**: Systematic factor-based security selection removing emotional bias using peer-reviewed academic literature.
+
+---
+
+## 2. Academic Quantitative Factors & Mathematical Formulation
+
+### 1. Piotroski F-Score (Piotroski, 2000 - Journal of Accounting Research)
+9-point binary fundamental health score evaluating:
+- **Profitability**: Net Income > 0 (+1), Operating Cash Flow > 0 (+1), ROA > 0 (+1), CFO > Net Income (+1)
+- **Leverage & Liquidity**: Lower Debt/Assets YoY (+1), Higher Current Ratio YoY (+1), Zero Dilution (+1)
+- **Operating Efficiency**: Higher Gross Margin YoY (+1), Higher Asset Turnover YoY (+1)
+
+### 2. Gross Profitability (Novy-Marx, 2013 - Journal of Financial Economics)
+- Formulated as `Gross Profit / Total Assets`.
+- Identifies high-quality productive firms whose earnings are non-accrual driven.
+
+### 3. Earnings Quality & Accruals (Sloan, 1996 - Accounting Review)
+- Measures cash flow component of net income: `(CFO - Net Income) / Total Assets`.
+- Penalizes firms with high accounting accruals and earnings manipulation.
+
+### 4. Multi-Horizon Momentum (Jegadeesh & Titman, 1993 - Journal of Finance)
+- 12-Month Momentum (`12M_Mom` excluding last month to avoid 1-month reversal).
+- 60-Day Short-Term Momentum and Risk-Adjusted Momentum (`Momentum / Volatility`).
+
+### 5. Value Factor Composite (Fama & French, 1992, 1993 - Journal of Finance)
+- Cross-sectional composite ranking of Book-to-Market (B/M), Earnings-to-Price (E/P), and Cash Flow-to-Price (CF/P).
+
+### 6. Low Volatility Anomaly (Baker, Bradley & Wurgler, 2011 - Financial Analysts Journal)
+- 60-Day Annualized Volatility (`Vol_60D`). High-volatility stocks receive lower percentile scores.
+
+### 7. Betting Against Beta (Frazzini & Pedersen, 2014 - Journal of Financial Economics)
+- Market Beta computed against NIFTY 50 index (`Beta_60D`). Levered low-beta securities outperform high-beta securities risk-adjusted.
+
+### 8. Investment Factor (Titman, Wei & Xie, 2004 - Journal of Financial and Quantitative Analysis)
+- Year-over-Year Capital Expenditure Growth (`CapEx / Total Assets`). Excess CapEx leads to long-term underperformance.
+
+### 9. Standardized Unanticipated Earnings / SUE (Bernard & Thomas, 1989 - Journal of Accounting & Economics)
+- Quarterly Earnings Surprise scaled by standard deviation of prior earnings shocks.
+
+### 10. Short-Term Mean Reversion (De Bondt & Thaler, 1985)
+- Z-score of 60-day price deviation from moving averages (`Z_Score_60D`).
+
+---
+
+## 3. Signal Scoring & Conviction Categories
+
+Alpha classifies stocks into 5 conviction tiers based on Composite Score:
+- **Strong Buy**: Composite Score ≥ 7.5/10 with Piotroski F-Score ≥ 6 and Positive Technical Signals.
+- **Buy**: Composite Score ≥ 6.2/10 with Positive Factor Support.
+- **Hold**: Composite Score 4.5 to 6.1/10. Neutral factor profile.
+- **Caution**: Composite Score 3.0 to 4.4/10. Weak fundamental or momentum breakdown.
+- **Avoid**: Composite Score < 3.0/10 or Piotroski F-Score ≤ 3.
+
+---
+
+## 4. API Specification for Developers & AI Agents
+
+### Endpoint 1: Live Market Ticker & Macro Indicators
+- **URL**: `GET https://quant-alpha-sage.vercel.app/api/live_data`
+- **Response Format**: JSON
+- **Keys**: `status`, `nifty_50` (price, change_pct, is_up), `fii_net` (INR Cr), `dii_net` (INR Cr), `pcr`, `is_market_closed`, `data` (dictionary of LTP per ticker).
+
+### Endpoint 2: Full Scan Dataset
+- **URL**: `GET https://quant-alpha-sage.vercel.app/market_data.json`
+- **Response Format**: JSON Array of 150 objects.
+- **Fields per stock**: `Ticker`, `Price`, `1d_Chg_%`, `Composite_Score`, `Composite_Score_Long`, `Piotroski_F`, `Value_Score`, `Tech_Score`, `Fund_Score`, `Research_Score`, `Conviction`, `Sector`, `Beta`, `RSI_Value`, `Sig_Price_vs_SMA50`, `Sig_Price_vs_SMA200`, `Sig_MACD_Cross`, `Sig_Supertrend`, `Bull_Count`, `Bear_Count`.
+
+### Endpoint 3: Interactive OHLCV Charting
+- **URL**: `GET https://quant-alpha-sage.vercel.app/api/chart?ticker=RELIANCE.NS&period=6m&interval=1d`
+- **Response Format**: JSON Array of candles (`time`, `open`, `high`, `low`, `close`, `volume`, `rsi`, `macd`).
+
+---
+
+## 5. Machine Learning Dataset Structure
+
+The backend maintains an SQLite database `market_scans.db` with 3 core tables:
+1. `factor_history`: 62 feature columns recorded on every scan.
+2. `outcome_tracking`: 5d, 10d, 21d, 63d, 126d, 252d forward returns.
+3. `regime_history`: India market regime classification and Nifty breadth metrics.
+
+---
+
+## 6. Citation & Institutional Attribution
+
+Maintained by **Alpha Research & Investment Club**, Faculty of Management Studies (FMS), University of Delhi, India.
+- Web: https://quant-alpha-sage.vercel.app
+- Code: https://github.com/abhy-kumar/quant-alpha

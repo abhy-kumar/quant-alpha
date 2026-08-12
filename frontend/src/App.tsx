@@ -7,6 +7,10 @@ import { useAuth } from './hooks/useAuth'
 import { useMarketData } from './hooks/useMarketData'
 import { useChartData } from './hooks/useChartData'
 import { useWatchlist } from './hooks/useWatchlist'
+import { SeoHead } from './components/common/SeoHead'
+import { SocialShareModal } from './components/common/SocialShareModal'
+import { NewsletterModal } from './components/common/NewsletterModal'
+import { ShareNetwork, EnvelopeSimple } from '@phosphor-icons/react'
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -126,6 +130,8 @@ export default function App() {
 
   const [selectedTicker, setSelectedTicker] = useState('')
   const [horizon, setHorizon] = useState<'short'|'long'>('short')
+  const [isShareOpen, setIsShareOpen] = useState(false)
+  const [isNewsletterOpen, setIsNewsletterOpen] = useState(false)
 
   const {
     isLoggedIn,
@@ -230,6 +236,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background:'var(--bg-gradient)' }}>
+      <SeoHead activeTab={activeTab} selectedTicker={selectedTicker} selectedAsset={selectedAsset} />
       <Tape data={data} />
 
       <div>
@@ -261,6 +268,32 @@ export default function App() {
 
             {/* Right: Mode & Auth Controls */}
             <div className="flex items-center gap-1.5" ref={loginRef} style={{ position: 'relative' }}>
+              <button onClick={() => setIsShareOpen(true)} title="Share Quant Research" aria-label="Share Quant Research"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
+                style={{
+                  color: 'var(--brand)',
+                  background: 'var(--brand-soft)',
+                  border: '0.5px solid var(--glass-border)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  boxShadow: 'var(--glass-shadow)',
+                  cursor: 'pointer',
+                }}>
+                <ShareNetwork size={13} weight="duotone" /><span className="hidden sm:inline">Share</span>
+              </button>
+              <button onClick={() => setIsNewsletterOpen(true)} title="Subscribe to Quant Brief" aria-label="Subscribe to Quant Brief"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
+                style={{
+                  color: 'var(--text-2)',
+                  background: 'var(--glass-bg-subtle)',
+                  border: '0.5px solid var(--glass-border)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  boxShadow: 'var(--glass-shadow)',
+                  cursor: 'pointer',
+                }}>
+                <EnvelopeSimple size={13} weight="duotone" /><span className="hidden sm:inline">Brief</span>
+              </button>
               <button onClick={()=>setIsDark(!isDark)} aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
                 style={{
@@ -498,6 +531,8 @@ export default function App() {
           </div>
         </div>
       </footer>
+      <SocialShareModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} asset={selectedAsset} />
+      <NewsletterModal isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />
       <Analytics />
     </div>
   )
