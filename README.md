@@ -53,19 +53,27 @@
 ### 4. Macro Market Regime Detection (`engine/regime_engine.py`)
 - Calculates aggregate market breath percentage (% of NSE stocks above 200 SMA), India VIX volatility, and Nifty trend indices to output a dynamic 0–100 **Regime Score** (*Risk-On*, *Neutral*, *Risk-Off*).
 
-### 5. Current-Gen SEO & Digital Marketing Architecture (`frontend/src/components/common/`)
+### 5. Defensive Recommendation Engine & Concurrency Layer (`engine/recommendation.py` & `data_pipeline/`)
+- **Unprofitable Firm Valuation Penalties**: Firms with negative or zero earnings ($P/E \le 0$) receive an explicit valuation floor penalty (`val_sub = 1.0`), preventing loss-making companies from bypassing fundamental scoring.
+- **Growth Ratio Sanitization**: Defensive normalizers automatically scale percentage inputs ($> 3.0$) into decimal ratios for PEG and SUE calculations, avoiding metric distortions.
+- **Trend-Aware Bollinger Breakouts**: High Bollinger Band %B ($> 0.95$) is dynamically recognized as a bullish momentum breakout when in a confirmed uptrend ($ADX > 25$, Supertrend bullish).
+- **High-Concurrency SQLite Architecture**: Database connections in `data_pipeline.py` and `quant_engine.py` are fortified with Write-Ahead Logging (`PRAGMA journal_mode=WAL;`), `PRAGMA synchronous=NORMAL;`, and `busy_timeout=5000;` to eliminate database write lock contention.
+
+### 6. Current-Gen SEO & Digital Marketing Architecture (`frontend/src/components/common/`)
 - **Dynamic Route & Ticker Metadata Engine (`SeoHead.tsx`)**: Dynamically updates `<title>`, `<meta name="description">`, `<link rel="canonical">`, Open Graph (`og:*`), and Twitter Cards (`twitter:*`) per route (`/`, `/signals`, `/screen`, `/heatmap`, `/quant`) and active stock ticker (`?ticker=RELIANCE.NS`).
 - **Rich JSON-LD Structured Data**: Injects dynamic `SoftwareApplication`, `FinancialProduct`, `Organization`, `BreadcrumbList`, and `FAQPage` schemas for Google Rich Snippets & "People Also Ask" ranking.
 - **Generative Engine Optimization (GEO) for AI Search**: Implements `public/llms.txt` and `public/llms-full.txt` adhering to the `llmstxt.org` standard for AI search engines (Perplexity, ChatGPT, Claude, Google SGE/Search Overviews).
 - **1-Click Viral Social Share Engine (`SocialShareModal.tsx`)**: Deep-link social sharing templates for WhatsApp, X (Twitter), LinkedIn, Telegram, and native mobile Web Share API.
-- **Growth Funnel & Newsletter Lead Capture (`NewsletterModal.tsx`)**: Institutional research brief subscription modal for community growth and investor retention.
+- **Growth Funnel & Research Dispatch Capture (`NewsletterModal.tsx`)**: Institutional research dispatch subscription modal for community growth and investor retention.
 - **Core Web Vitals & Technical SEO**: DNS prefetching (`dns-prefetch`), resource preconnecting (`fonts.googleapis.com`, `va.vercel-scripts.com`), PWA touch tags, multi-route XML sitemap (`sitemap.xml`) with image tags, and bot-friendly crawler routing (`robots.txt`).
 
-### 6. Institutional-Grade UI & Visualization (`frontend/src/`)
-- **Mobile-First Ergonomic Interface**: Fixed glassmorphic **Bottom Navigation Dock** on mobile viewports (`< md`), slide-up **Filter Drawer / Bottom Sheet** for stock screening, touch-optimized pill selectors, and clean mobile header layout.
+### 7. Modern Apple HIG Interface & UX Architecture (`frontend/src/`)
+- **Centered Floating Segmented Control**: Mathematically centered 5-tab pill navigation bar (`rounded-full`, `blur(24px) saturate(180%)`) matching macOS & visionOS floating toolbar standards.
+- **Apple Human Interface System**: Custom Apple HIG range sliders with 4px frosted tracks and elevated circular thumbs, unified pill buttons (`rounded-full`), and pure SF Pro typography optical tracking.
+- **Interactive Multi-Metric Screener**: Live slider drawer filtering by Min ROE %, Max P/E, Min/Max RSI(14), Market Cap, Piotroski, D/E, and Sector with rich multi-factor CSV export.
+- **Global Keyboard Navigation**: Instant tab switching via keys `1` through `5`, and quick search focus via key `/`.
+- **Institutional Analysis Modals**: 1-Click Institutional Investment Thesis Modal and Dynamic Position Sizer & Risk Management Calculator.
 - **TradingView Canvas Charting**: Built on `@tradingview/lightweight-charts` with real-time indicators (SMA 50/200, Supertrend, Bollinger Bands, RSI, MACD) and log/linear scaling.
-- **Stock Comparison Matrix**: Comparative evaluation drawer analyzing up to 4 assets across 20+ dimensions.
-- **macOS Design System**: Crafted with San Francisco typography hierarchy, translucent glassmorphism materials (`backdrop-blur-xl`), and dark/light adaptive color palettes.
 
 ---
 
@@ -102,7 +110,7 @@ stock-dashboard/
 ├── data_pipeline/
 │   ├── __init__.py                               # Python package marker
 │   ├── data_fetcher.py                           # Financial statements & yfinance historical ingestion
-│   ├── data_pipeline.py                          # SQLite database schema, migrations & outcome tracking
+│   ├── data_pipeline.py                          # SQLite database schema, WAL mode, migrations & outcome tracking
 │   ├── live_updater.py                           # Real-time intra-day price updater
 │   └── nse_fetcher.py                            # NSE Bhavcopy downloader & liquid universe filter
 ├── engine/
@@ -111,15 +119,16 @@ stock-dashboard/
 │   ├── indicators.py                             # Technical indicators (RSI, MACD, Supertrend, ADX, Ichimoku)
 │   ├── ml_engine.py                              # Walk-Forward ML Alpha classifier & probability engine
 │   ├── quant_engine.py                           # Mean-variance portfolio optimizer (Sharpe / Min Vol)
-│   ├── recommendation.py                         # Conviction badge generator & technical signal summary
+│   ├── recommendation.py                         # Conviction badge generator, growth normalizer & signal math
 │   ├── regime_engine.py                          # Market regime scoring engine (VIX, Breadth, Nifty Trend)
-│   ├── research_factors.py                       # Academic research factors (Piotroski, Novy-Marx, Fama-French)
+│   ├── research_factors.py                       # Academic research factors (Piotroski, Novy-Marx, Fama-French, SUE)
 │   ├── scanner.py                                # Main orchestration engine for market scans
 │   └── scoring.py                                # Composite & sector-neutral z-score calculator
 ├── frontend/
 │   ├── api/
 │   │   ├── chart.ts                              # Vercel serverless proxy endpoint for historical OHLCV data
-│   │   └── live_data.ts                          # Vercel serverless proxy endpoint for live quotes
+│   │   ├── live_data.ts                          # Vercel serverless proxy endpoint for live quotes
+│   │   └── login.ts                              # Vercel serverless endpoint for authentication
 │   ├── public/
 │   │   ├── backtest_runs/                        # Static JSON backtest runs served to frontend
 │   │   │   ├── index.json                        # Index manifest of exported backtest snapshots
@@ -147,26 +156,36 @@ stock-dashboard/
 │   │   │   │   ├── ChartingTab.tsx               # Full-screen interactive charting view
 │   │   │   │   └── TradingViewChart.tsx          # Lightweight Charts canvas integration
 │   │   │   ├── common/
-│   │   │   │   ├── NewsletterModal.tsx           # Institutional newsletter & community growth modal
+│   │   │   │   ├── GlassCard.tsx                 # Glassmorphic card container component
+│   │   │   │   ├── InvestmentThesisModal.tsx     # Institutional investment thesis modal
+│   │   │   │   ├── NewsletterModal.tsx           # Institutional research dispatch subscription modal
+│   │   │   │   ├── PositionSizerModal.tsx        # Risk management & position sizing calculator modal
 │   │   │   │   ├── SeoHead.tsx                   # Dynamic route title, meta, canonical & JSON-LD component
 │   │   │   │   ├── SocialShareModal.tsx          # 1-click social growth share modal
 │   │   │   │   └── shared.tsx                    # Shared UI primitives, tooltips & segmented controls
 │   │   │   ├── heatmap/
 │   │   │   │   └── HeatmapTab.tsx                # Dynamic sector treemap & heatmap component
 │   │   │   ├── quantlab/
+│   │   │   │   ├── MonteCarloChart.tsx           # Monte Carlo simulation area chart component
 │   │   │   │   └── QuantLabTab.tsx               # Portfolio optimizer, backtest studio & factor exposure
 │   │   │   ├── screener/
 │   │   │   │   ├── ComparisonModal.tsx           # Multi-asset side-by-side comparison modal
-│   │   │   │   └── ScreenerTab.tsx               # Primary quantitative screening matrix table
+│   │   │   │   └── ScreenerTab.tsx               # Primary quantitative screening matrix table & filter drawer
 │   │   │   ├── signals/
 │   │   │   │   └── SignalsTab.tsx                # Conviction signals & top pick trade cards
 │   │   │   └── LiquidGlassRoot.tsx               # Glassmorphism container wrapper
 │   │   ├── data/
 │   │   │   └── tooltipContent.ts                 # Explanatory financial tooltips dictionary
+│   │   ├── hooks/
+│   │   │   ├── useAuth.ts                        # Authentication state controller hook
+│   │   │   ├── useChartData.ts                   # Historical OHLCV fetching & caching hook
+│   │   │   ├── useMarketData.ts                  # Market data live updater & WebSocket polling hook
+│   │   │   └── useWatchlist.ts                   # User watchlist state persistence hook
 │   │   ├── utils/
+│   │   │   ├── exportUtils.ts                    # CSV data exporter utility
 │   │   │   └── formatters.ts                     # Currency, percentage & numeric formatting utilities
 │   │   ├── App.tsx                               # Application root component, navigation & state controller
-│   │   ├── index.css                             # Global CSS variables, design tokens & typography rules
+│   │   ├── index.css                             # Global CSS variables, Apple HIG tokens & typography rules
 │   │   ├── main.tsx                              # React DOM application entrypoint
 │   │   └── types.ts                              # TypeScript interface definitions & data contracts
 │   ├── .gitignore                                # Frontend build artifacts & local environment exclusions
@@ -190,6 +209,7 @@ stock-dashboard/
 │   ├── test_data_collection.py                   # Tests for NSE/yfinance ingestion functions
 │   ├── test_e2e_recommendation.py                # End-to-end integration test for scanner pipeline
 │   ├── test_indicators.py                        # Unit tests for technical indicator math
+│   ├── test_recommendation_edge_cases.py         # Unit tests for growth sanitization, loss penalties & DB pragmas
 │   ├── test_research_factors.py                  # Unit tests for academic research factor scoring
 │   └── test_scoring.py                           # Unit tests for sector normalization & composite z-scores
 ├── .gitignore                                    # Git exclusion rules (DB binary, virtual environments)
@@ -235,7 +255,7 @@ Due to GitHub's 50MB file size limit for repositories, the primary SQLite databa
 ## Local Setup & Development
 
 ### 1. Prerequisites
-- Python 3.12+
+- Python 3.12+ (or Python 3.14)
 - Node.js 20+ & npm
 
 ### 2. Environment Initialization
@@ -261,7 +281,7 @@ python db_split_join.py join
 
 ### 3. Backend Execution & Testing
 ```bash
-# Execute unit test suite (73 tests)
+# Execute unit test suite (78 tests)
 python -m pytest tests/
 
 # Run full market scan engine
