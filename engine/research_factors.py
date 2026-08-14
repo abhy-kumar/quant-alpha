@@ -221,6 +221,11 @@ def compute_investment_factor(info: dict) -> float:
     debt_eq = _safe_float(info.get("debtToEquity"), default=np.nan)
     roe = _safe_float(info.get("returnOnEquity"), default=np.nan)
 
+    if not np.isnan(asset_growth) and abs(asset_growth) > 3.0:
+        asset_growth = asset_growth / 100.0
+    if not np.isnan(earnings_growth) and abs(earnings_growth) > 3.0:
+        earnings_growth = earnings_growth / 100.0
+
     if not np.isnan(asset_growth):
         # Conservative investment: low or negative asset growth = good
         if asset_growth < 0.05:
@@ -240,6 +245,8 @@ def compute_investment_factor(info: dict) -> float:
     else:
         # Fallback: use revenue growth as proxy
         rev_growth = _safe_float(info.get("revenueGrowth"), default=np.nan)
+        if not np.isnan(rev_growth) and abs(rev_growth) > 3.0:
+            rev_growth = rev_growth / 100.0
         if not np.isnan(rev_growth) and not np.isnan(earnings_growth) and not np.isnan(roe):
             if roe > 0.15 and 0.05 <= rev_growth <= 0.25 and earnings_growth > 0:
                 score = 8.0
@@ -284,6 +291,11 @@ def compute_sue_factor(info: dict, df: pd.DataFrame) -> float:
     rev_growth = _safe_float(info.get("revenueGrowth"), default=np.nan)
     trailing_pe = _safe_float(info.get("trailingPE"), default=np.nan)
     forward_pe = _safe_float(info.get("forwardPE"), default=np.nan)
+
+    if not np.isnan(earnings_growth) and abs(earnings_growth) > 3.0:
+        earnings_growth = earnings_growth / 100.0
+    if not np.isnan(rev_growth) and abs(rev_growth) > 3.0:
+        rev_growth = rev_growth / 100.0
 
     # Base: sigmoid on earnings growth, centered at 10% growth
     if not np.isnan(earnings_growth):

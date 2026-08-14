@@ -12,7 +12,11 @@ logger = logging.getLogger("quant_engine")
 DB_PATH = "data/market_scans.db"
 
 def _get_conn():
-    return sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10.0)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    conn.execute("PRAGMA busy_timeout=5000")
+    return conn
 
 def fetch_latest_top_picks(limit=15):
     """Fetch the top stocks from the latest scan based on Composite_Score."""

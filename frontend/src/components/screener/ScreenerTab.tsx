@@ -247,6 +247,10 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
   const [selectedConvictions, setSelectedConvictions] = useState<string[]>([])
   const [minMarketCap, setMinMarketCap] = useState(0)
   const [maxDE, setMaxDE] = useState(999)
+  const [minROE, setMinROE] = useState(0)
+  const [maxPE, setMaxPE] = useState(999)
+  const [minRSI, setMinRSI] = useState(0)
+  const [maxRSI, setMaxRSI] = useState(100)
 
   const availableSectors = useMemo(() => {
     const set = new Set<string>()
@@ -274,6 +278,10 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
       if (selectedConvictions.length > 0 && !selectedConvictions.includes((d as any)[convCol])) return false
       if (minMarketCap > 0 && Number(d.Market_Cap_B) < minMarketCap) return false
       if (maxDE < 999 && Number(d.Debt_to_Equity) > maxDE) return false
+      if (minROE > 0 && Number(d['ROE_%']) < minROE) return false
+      if (maxPE < 999 && (Number(d['P/E']) > maxPE || Number(d['P/E']) <= 0)) return false
+      if (minRSI > 0 && Number(d.RSI_Value) < minRSI) return false
+      if (maxRSI < 100 && Number(d.RSI_Value) > maxRSI) return false
       return true
     })
     arr.sort((a, b) => {
@@ -285,13 +293,18 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
       return sortDir === 'asc' ? (Number(av) || 0) - (Number(bv) || 0) : (Number(bv) || 0) - (Number(av) || 0)
     })
     return arr
-  }, [data, sortKey, sortDir, minComposite, minPiotroski, selectedSectors, selectedConvictions, minMarketCap, maxDE, deferredSearch, minValue, maxBeta, scoreCol, convCol])
+  }, [data, sortKey, sortDir, minComposite, minPiotroski, selectedSectors, selectedConvictions, minMarketCap, maxDE, minROE, maxPE, minRSI, maxRSI, deferredSearch, minValue, maxBeta, scoreCol, convCol])
 
-  const activeFilterCount = [minComposite > 0, minPiotroski > 0, minValue > 0, maxBeta < 3, selectedSectors.length > 0, selectedConvictions.length > 0, minMarketCap > 0, maxDE < 999, searchQuery.length > 0].filter(Boolean).length
+  const activeFilterCount = [
+    minComposite > 0, minPiotroski > 0, minValue > 0, maxBeta < 3,
+    selectedSectors.length > 0, selectedConvictions.length > 0, minMarketCap > 0,
+    maxDE < 999, minROE > 0, maxPE < 999, minRSI > 0, maxRSI < 100, searchQuery.length > 0
+  ].filter(Boolean).length
 
   const clearFilters = () => {
     setMinComposite(0); setMinPiotroski(0); setMinValue(0); setMaxBeta(3)
-    setSelectedSectors([]); setSelectedConvictions([]); setMinMarketCap(0); setMaxDE(999); setSearchQuery('')
+    setSelectedSectors([]); setSelectedConvictions([]); setMinMarketCap(0); setMaxDE(999)
+    setMinROE(0); setMaxPE(999); setMinRSI(0); setMaxRSI(100); setSearchQuery('')
   }
 
   const toggleSector = (s: string) => setSelectedSectors(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
@@ -387,8 +400,20 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 Conviction: horizonMode === 'long' ? d.Conviction_Long : d.Conviction,
                 Price: d.Price,
                 Change_Pct: d["1d_Chg_%"],
+                Tech_Score: d.Tech_Score,
+                Fund_Score: d.Fund_Score,
+                Research_Score: d.Research_Score,
                 Piotroski_F: d.Piotroski_F,
+                Gross_Profit_Score: d.Gross_Profit_Score,
+                Earnings_Quality: d.Earnings_Quality,
+                Value_Score: d.Value_Score,
+                PE: d["P/E"],
+                ROE_Pct: d["ROE_%"],
+                ROCE_Pct: d["ROCE_%"],
+                Debt_to_Equity: d.Debt_to_Equity,
                 RSI: d.RSI_Value,
+                Momentum_12M: d.Momentum_12M,
+                Beta: d.Beta,
                 Volume_Signal: d.Sig_Volume,
               }))
               exportToCSV(`QuantAlpha_Screener_${horizonMode}_${new Date().toISOString().slice(0, 10)}.csv`, exportData)
@@ -433,7 +458,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               </button>
             )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min composite: {minComposite.toFixed(1)}</label>
               <input type="range" min="0" max="10" step="0.5" value={minComposite} onChange={e => setMinComposite(Number(e.target.value))} className="w-full" aria-label="Minimum composite score" />
@@ -459,6 +484,22 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               <input type="range" min="0" max="3" step="0.1" value={maxBeta} onChange={e => setMaxBeta(Number(e.target.value) >= 2.9 ? 3 : Number(e.target.value))} className="w-full" aria-label="Maximum beta" />
             </div>
             <div>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min ROE: {minROE > 0 ? `${minROE}%` : 'Any'}</label>
+              <input type="range" min="0" max="35" step="5" value={minROE} onChange={e => setMinROE(Number(e.target.value))} className="w-full" aria-label="Minimum ROE percentage" />
+            </div>
+            <div>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max P/E: {maxPE >= 999 ? 'Any' : maxPE}</label>
+              <input type="range" min="10" max="100" step="5" value={maxPE >= 999 ? 100 : maxPE} onChange={e => setMaxPE(Number(e.target.value) >= 100 ? 999 : Number(e.target.value))} className="w-full" aria-label="Maximum P/E ratio" />
+            </div>
+            <div>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min RSI(14): {minRSI > 0 ? minRSI : 'Any'}</label>
+              <input type="range" min="0" max="70" step="5" value={minRSI} onChange={e => setMinRSI(Number(e.target.value))} className="w-full" aria-label="Minimum RSI" />
+            </div>
+            <div>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max RSI(14): {maxRSI < 100 ? maxRSI : 'Any'}</label>
+              <input type="range" min="30" max="100" step="5" value={maxRSI} onChange={e => setMaxRSI(Number(e.target.value))} className="w-full" aria-label="Maximum RSI" />
+            </div>
+            <div className="sm:col-span-2">
               <label className="text-xs mb-2 block" style={{ color: 'var(--text-2)' }}>Sectors</label>
               <div className="flex flex-wrap gap-1.5">
                 {availableSectors.map(s => (
@@ -477,7 +518,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               </div>
             </div>
             {isLoggedIn && (
-            <div>
+            <div className="sm:col-span-2">
               <label className="text-xs mb-2 block" style={{ color: 'var(--text-2)' }}>Conviction</label>
               <div className="flex flex-wrap gap-1.5">
                 {CONVICTION_OPTIONS.map(c => (

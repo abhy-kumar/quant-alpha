@@ -204,6 +204,30 @@ export default function App() {
     }
   }, [data, navigate])
 
+  // Global keyboard shortcuts (1-5 for tab navigation, / to focus search)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT'
+      if (isInput) return
+
+      if (e.key === '1') { e.preventDefault(); setActiveTab('picks') }
+      else if (e.key === '2') { e.preventDefault(); setActiveTab('fundamentals') }
+      else if (e.key === '3') { e.preventDefault(); setActiveTab('charting') }
+      else if (e.key === '4') { e.preventDefault(); setActiveTab('heatmap') }
+      else if (e.key === '5') { e.preventDefault(); setActiveTab('quantlab') }
+      else if (e.key === '/') {
+        e.preventDefault()
+        const searchInput = document.querySelector<HTMLInputElement>('input[placeholder*="Search"]')
+        if (searchInput) {
+          searchInput.focus()
+          searchInput.select()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isLoggedIn, navigate])
 
   const activeTab = (PATH_TABS[location.pathname] ?? 'charting') as 'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab'
   const setActiveTab = (id: 'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab') => navigate(TAB_PATHS[id] ?? '/')

@@ -44,6 +44,12 @@ def compute_fund_score(
     sub_scores  = {}
     sub_weights = {}
 
+    # ── Growth input sanitization (convert percentage to decimal if needed) ──
+    if not np.isnan(eps_growth) and abs(eps_growth) > 3.0:
+        eps_growth = eps_growth / 100.0
+    if not np.isnan(rev_growth) and abs(rev_growth) > 3.0:
+        rev_growth = rev_growth / 100.0
+
     # ── ROE ──────────────────────────────────────────────────────────────────
     # Profitability factor (Fama & French 2015, RMW factor)
     # Sigmoid centered at sector median (or 15% absolute); scale 0.25
@@ -65,8 +71,11 @@ def compute_fund_score(
 
     # ── Valuation ─────────────────────────────────────────────────────────────
     # PEG preferred (anchors valuation to growth); falls back to P/E vs sector
+    # Loss-making firms (P/E <= 0) receive a penalized valuation score of 1.0
     val_sub = np.nan
-    if not np.isnan(pe) and not np.isnan(eps_growth) and eps_growth > 0:
+    if not np.isnan(pe) and pe <= 0:
+        val_sub = 1.0  # Explicit penalty for loss-making / negative earnings
+    elif not np.isnan(pe) and not np.isnan(eps_growth) and eps_growth > 0:
         peg = pe / (eps_growth * 100)
         # PEG<1 excellent, PEG=1 fair, PEG>2 expensive
         val_sub = 10.0 / (1 + np.exp(3.5 * (peg - 1.0)))
@@ -180,16 +189,6 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
     k, d  = _safe_float(latest["Stoch_%K"]), _safe_float(latest["Stoch_%D"])
     sig_stoch = 1 if (k < 20 and k > d) else (-1 if (k > 80 and k < d) else 0)
 
-    bb_b     = _safe_float(latest["BB_%B"])
-    sig_bb   = 1 if bb_b < 0.05 else (-1 if bb_b > 0.95 else 0)
-
-    cci      = _safe_float(latest["CCI"])
-    sig_cci  = 1 if cci < -100 else (-1 if cci > 100 else 0)
-
-    price_up  = close > _safe_float(prev["Close"])
-    vol_above = _safe_float(latest["Volume"]) > _safe_float(latest["VOL_MA20"])
-    sig_vol   = 1 if (price_up and vol_above) else (-1 if (not price_up and vol_above) else 0)
-
     adx      = _safe_float(latest["ADX"])
     plus_di  = _safe_float(latest["Plus_DI"])
     minus_di = _safe_float(latest["Minus_DI"])
@@ -197,6 +196,21 @@ def compute_tech_score(latest: pd.Series, prev: pd.Series, df: pd.DataFrame, nif
         1  if adx > 25 and plus_di  > minus_di else
         -1 if adx > 25 and minus_di > plus_di  else 0
     )
+
+    bb_b     = _safe_float(latest["BB_%B"])
+    if bullish_regime and adx > 25 and plus_di > minus_di:
+        # Strong upward trend breakout (band walking) - do not penalize high %B
+        sig_bb = 1 if bb_b > 0.95 else (1 if bb_b < 0.05 else 0)
+    else:
+        # Range-bound / mean-reverting regime
+        sig_bb = 1 if bb_b < 0.05 else (-1 if bb_b > 0.95 else 0)
+
+    cci      = _safe_float(latest["CCI"])
+    sig_cci  = 1 if cci < -100 else (-1 if cci > 100 else 0)
+
+    price_up  = close > _safe_float(prev["Close"])
+    vol_above = _safe_float(latest["Volume"]) > _safe_float(latest["VOL_MA20"])
+    sig_vol   = 1 if (price_up and vol_above) else (-1 if (not price_up and vol_above) else 0)
 
     vpt = _safe_float(latest.get("VPT", np.nan))
     vpt_ema = _safe_float(latest.get("VPT_EMA20", np.nan))
