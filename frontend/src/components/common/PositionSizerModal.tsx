@@ -49,7 +49,7 @@ export const PositionSizerModal: React.FC<PositionSizerModalProps> = ({ asset, i
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl transition-colors hover:bg-white/10"
+            className="p-2 rounded-full transition-colors hover:bg-white/10"
             style={{ color: 'var(--text-3)' }}
           >
             <X size={20} />

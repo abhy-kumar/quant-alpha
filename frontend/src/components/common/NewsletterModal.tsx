@@ -35,17 +35,17 @@ export function NewsletterModal({ isOpen, onClose }: Props) {
             <CheckCircle size={48} weight="duotone" className="text-[var(--green)] mx-auto" />
             <h3 className="text-base font-bold" style={{ color: 'var(--text)' }}>You're Subscribed!</h3>
             <p className="text-xs" style={{ color: 'var(--text-2)' }}>
-              Welcome to the Alpha Quant Intelligence Brief. You will receive weekly factor score breakdowns and market regime updates.
+              Welcome to the Alpha Quant Research Dispatch. You will receive weekly academic factor score breakdowns and market regime updates.
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl text-[var(--brand)]" style={{ background: 'var(--brand-soft)' }}>
-                <EnvelopeSimple size={24} weight="duotone" />
+              <div className="p-3 rounded-full text-[var(--brand)]" style={{ background: 'var(--brand-soft)' }}>
+                <EnvelopeSimple size={22} weight="duotone" />
               </div>
               <div>
-                <h3 className="text-base font-bold" style={{ color: 'var(--text)' }}>Alpha Quant Intelligence Brief</h3>
+                <h3 className="text-base font-bold" style={{ color: 'var(--text)' }}>Alpha Quant Research Dispatch</h3>
                 <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>By Alpha Research Club, FMS Delhi</p>
               </div>
             </div>
@@ -61,9 +61,9 @@ export function NewsletterModal({ isOpen, onClose }: Props) {
                 placeholder="Enter your institutional or personal email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="glass-input w-full text-xs py-2.5 px-3 rounded-xl"
+                className="glass-input w-full text-xs py-2.5 px-4 rounded-full"
               />
-              <button type="submit" className="w-full btn-primary text-xs py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2">
+              <button type="submit" className="w-full btn-primary text-xs py-2.5 rounded-full font-semibold flex items-center justify-center gap-2">
                 <Sparkle size={15} weight="fill" /> Join 2,500+ Quant Researchers & Traders
               </button>
             </div>

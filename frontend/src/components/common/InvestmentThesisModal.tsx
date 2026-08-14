@@ -51,10 +51,10 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{ticker}</h3>
-                <span className={`badge ${getBadgeClass(asset.Conviction)}`}>{asset.Conviction || 'Hold'}</span>
+                <span className={`badge rounded-full px-3 py-0.5 ${getBadgeClass(asset.Conviction)}`}>{asset.Conviction || 'Hold'}</span>
                 {asset.ML_Conviction && (
-                  <span className="badge text-[10px]" style={{ background: 'var(--brand-soft)', color: 'var(--brand)', border: '0.5px solid var(--glass-border)' }}>
-                    ML: {asset.ML_Conviction}
+                  <span className="badge rounded-full px-3 py-0.5 text-[10px]" style={{ background: 'var(--brand-soft)', color: 'var(--brand)', border: '0.5px solid var(--glass-border)' }}>
+                    Quant Model: {asset.ML_Conviction}
                   </span>
                 )}
               </div>
@@ -65,7 +65,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl transition-colors hover:bg-white/10"
+            className="p-2 rounded-full transition-colors hover:bg-white/10"
             style={{ color: 'var(--text-3)' }}
           >
             <X size={20} />

@@ -202,14 +202,14 @@ function ChartingTabInner({
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => setIsThesisOpen(true)}
-            className="btn-glass text-xs py-2 px-3 w-full"
-            title="Generate 1-click Investment Thesis"
+            className="btn-glass text-xs py-2 px-3.5 w-full rounded-full"
+            title="Institutional Investment Thesis"
           >
             <Lightning size={14} weight="duotone" className="text-[var(--brand)]" /> Thesis
           </button>
           <button
             onClick={() => setIsSizerOpen(true)}
-            className="btn-glass text-xs py-2 px-3 w-full"
+            className="btn-glass text-xs py-2 px-3.5 w-full rounded-full"
             title="Calculate Risk & Position Size"
           >
             <Calculator size={14} weight="duotone" className="text-[var(--brand)]" /> Position Sizer

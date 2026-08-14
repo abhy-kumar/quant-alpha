@@ -274,18 +274,19 @@ export default function App() {
               </button>
             </div>
 
-            {/* Desktop Center: Segmented Navigation Bar */}
-            <nav className="hidden md:flex items-center p-1 rounded-xl glass-subtle" style={{ border: '0.5px solid var(--glass-border)' }}>
+            {/* Desktop Center: Segmented Navigation Bar - Truly Centered */}
+            <nav className="hidden md:flex items-center p-1 rounded-full glass-subtle absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 shadow-sm"
+              style={{ border: '0.5px solid var(--glass-border)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)' }}>
               {visibleTabs.map(tab => (
                 <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg transition-all duration-150"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-medium rounded-full transition-all duration-200"
                   style={{
                     color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
                     background: activeTab===tab.id ? 'var(--glass-bg-strong)' : 'transparent',
                     border: activeTab===tab.id ? '0.5px solid var(--glass-border-strong)' : '0.5px solid transparent',
-                    boxShadow: activeTab===tab.id ? '0 1px 3px rgba(0,0,0,0.08), var(--glass-highlight)' : 'none',
+                    boxShadow: activeTab===tab.id ? '0 1px 4px rgba(0,0,0,0.12), inset 0 0.5px 0 rgba(255,255,255,0.15)' : 'none',
                   }}>
-                  <tab.icon size={14} weight="duotone" />{tab.label}
+                  <tab.icon size={13} weight="duotone" />{tab.label}
                 </button>
               ))}
             </nav>
@@ -293,39 +294,39 @@ export default function App() {
             {/* Right: Mode & Auth Controls */}
             <div className="flex items-center gap-1.5" ref={loginRef} style={{ position: 'relative' }}>
               <button onClick={() => setIsShareOpen(true)} title="Share Quant Research" aria-label="Share Quant Research"
-                className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
                 style={{
                   color: 'var(--brand)',
                   background: 'var(--brand-soft)',
                   border: '0.5px solid var(--glass-border)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
                   boxShadow: 'var(--glass-shadow)',
                   cursor: 'pointer',
                 }}>
                 <ShareNetwork size={13} weight="duotone" /><span className="hidden sm:inline">Share</span>
               </button>
-              <button onClick={() => setIsNewsletterOpen(true)} title="Subscribe to Quant Brief" aria-label="Subscribe to Quant Brief"
-                className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
+              <button onClick={() => setIsNewsletterOpen(true)} title="Subscribe to Research Brief" aria-label="Subscribe to Research Brief"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
                 style={{
                   color: 'var(--text-2)',
                   background: 'var(--glass-bg-subtle)',
                   border: '0.5px solid var(--glass-border)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
                   boxShadow: 'var(--glass-shadow)',
                   cursor: 'pointer',
                 }}>
                 <EnvelopeSimple size={13} weight="duotone" /><span className="hidden sm:inline">Brief</span>
               </button>
               <button onClick={()=>setIsDark(!isDark)} aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
                 style={{
                   color: 'var(--text-3)',
                   background: 'var(--glass-bg-subtle)',
                   border: '0.5px solid var(--glass-border)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
                   boxShadow: 'var(--glass-shadow)',
                   cursor: 'pointer',
                 }}>
@@ -334,13 +335,13 @@ export default function App() {
               </button>
               {isLoggedIn ? (
                 <button onClick={() => handleLogout(() => { if (activeTab === 'picks' || activeTab === 'quantlab') setActiveTab('charting') })} aria-label="Logout"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
                   style={{
                     color: 'var(--text-3)',
                     background: 'var(--glass-bg-subtle)',
                     border: '0.5px solid var(--glass-border)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
                     boxShadow: 'var(--glass-shadow)',
                     cursor: 'pointer',
                   }}>
@@ -348,13 +349,13 @@ export default function App() {
                 </button>
               ) : (
                 <button onClick={()=>setShowLogin(!showLogin)} aria-label="Login"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 text-[11px] font-medium rounded-lg transition-all duration-200"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
                   style={{
                     color: 'var(--text-3)',
                     background: 'var(--glass-bg-subtle)',
                     border: '0.5px solid var(--glass-border)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
                     boxShadow: 'var(--glass-shadow)',
                     cursor: 'pointer',
                   }}>

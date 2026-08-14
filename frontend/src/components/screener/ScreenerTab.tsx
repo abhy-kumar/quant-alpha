@@ -206,10 +206,10 @@ const ScreenerRow = memo(function ScreenerRow({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={(e) => { e.stopPropagation(); onThesis(row) }} className="btn-glass text-xs py-1 px-3" title="Generate 1-click Investment Thesis">
+                  <button onClick={(e) => { e.stopPropagation(); onThesis(row) }} className="btn-glass text-xs py-1 px-3.5 rounded-full" title="Institutional Investment Thesis">
                     <Lightning size={13} weight="duotone" className="text-[var(--brand)]" /> Thesis
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); onSizer(row) }} className="btn-glass text-xs py-1 px-3" title="Calculate Risk & Position Size">
+                  <button onClick={(e) => { e.stopPropagation(); onSizer(row) }} className="btn-glass text-xs py-1 px-3.5 rounded-full" title="Calculate Risk & Position Size">
                     <Calculator size={13} weight="duotone" className="text-[var(--brand)]" /> Position Sizer
                   </button>
                 </div>
@@ -418,20 +418,20 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               }))
               exportToCSV(`QuantAlpha_Screener_${horizonMode}_${new Date().toISOString().slice(0, 10)}.csv`, exportData)
             }}
-            className="btn-glass text-xs py-1.5 px-2.5 sm:px-3"
+            className="btn-glass text-xs py-1.5 px-3.5 rounded-full"
             title="Export filtered securities to CSV"
           >
             <DownloadSimple size={14} weight="bold" /> <span className="hidden sm:inline">Export CSV</span>
           </button>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 text-[12px] sm:text-[13px] font-medium rounded-xl transition-all duration-200"
+            className="flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 text-[12px] sm:text-[13px] font-medium rounded-full transition-all duration-200"
             style={{
               background: showFilters ? 'var(--brand)' : 'var(--glass-bg)',
               color: showFilters ? '#fff' : 'var(--text-2)',
-              border: `1px solid ${showFilters ? 'var(--brand)' : 'var(--glass-border)'}`,
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
+              border: `0.5px solid ${showFilters ? 'var(--brand)' : 'var(--glass-border)'}`,
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
               boxShadow: showFilters ? '0 4px 12px rgba(110, 168, 254, 0.3)' : 'var(--glass-shadow)',
             }}
           >
@@ -453,7 +453,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
           <div className="flex items-center justify-between mb-4">
             <span className="section-label" style={{ color: 'var(--brand)' }}>Filters</span>
             {activeFilterCount > 0 && (
-              <button onClick={clearFilters} className="flex items-center gap-1 text-xs transition-colors" style={{ color: 'var(--text-3)' }}>
+              <button onClick={clearFilters} className="flex items-center gap-1 text-xs transition-colors hover:opacity-80" style={{ color: 'var(--text-3)' }}>
                 <X size={12} weight="light" /> Clear all
               </button>
             )}
@@ -503,14 +503,14 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               <label className="text-xs mb-2 block" style={{ color: 'var(--text-2)' }}>Sectors</label>
               <div className="flex flex-wrap gap-1.5">
                 {availableSectors.map(s => (
-                  <button key={s} onClick={() => toggleSector(s)} className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all duration-200" style={selectedSectors.includes(s) ? {
+                  <button key={s} onClick={() => toggleSector(s)} className="px-3 py-1 text-[11px] font-medium rounded-full transition-all duration-200" style={selectedSectors.includes(s) ? {
                     background: 'var(--brand)', color: '#fff',
-                    border: '1px solid var(--brand)',
+                    border: '0.5px solid var(--brand)',
                     boxShadow: '0 2px 8px rgba(110, 168, 254, 0.3)',
                   } : {
                     background: 'var(--glass-bg-subtle)', color: 'var(--text-2)',
-                    border: '1px solid var(--glass-border)',
-                    backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                    border: '0.5px solid var(--glass-border)',
+                    backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
                   }}>
                     {s}
                   </button>
@@ -522,14 +522,14 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               <label className="text-xs mb-2 block" style={{ color: 'var(--text-2)' }}>Conviction</label>
               <div className="flex flex-wrap gap-1.5">
                 {CONVICTION_OPTIONS.map(c => (
-                  <button key={c} onClick={() => toggleConviction(c)} className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all duration-200" style={selectedConvictions.includes(c) ? {
+                  <button key={c} onClick={() => toggleConviction(c)} className="px-3 py-1 text-[11px] font-medium rounded-full transition-all duration-200" style={selectedConvictions.includes(c) ? {
                     background: 'var(--brand)', color: '#fff',
-                    border: '1px solid var(--brand)',
+                    border: '0.5px solid var(--brand)',
                     boxShadow: '0 2px 8px rgba(110, 168, 254, 0.3)',
                   } : {
                     background: 'var(--glass-bg-subtle)', color: 'var(--text-2)',
-                    border: '1px solid var(--glass-border)',
-                    backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                    border: '0.5px solid var(--glass-border)',
+                    backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
                   }}>
                     {c}
                   </button>

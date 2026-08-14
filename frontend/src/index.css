@@ -224,38 +224,43 @@
   .segmented-control {
     display: inline-flex;
     position: relative;
-    background: rgba(120, 120, 128, 0.14);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 9px;
-    padding: 2px;
+    background: rgba(120, 120, 128, 0.12);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 0.5px solid var(--glass-border);
+    border-radius: 9999px;
+    padding: 3px;
   }
   .segmented-control .seg-indicator {
     position: absolute;
-    top: 2px;
-    bottom: 2px;
-    border-radius: 7px;
+    top: 3px;
+    bottom: 3px;
+    border-radius: 9999px;
     background: #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0.5px 1px rgba(0, 0, 0, 0.08);
-    transition: left 200ms var(--ease-out), width 200ms var(--ease-out);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12), 0 0.5px 1px rgba(0, 0, 0, 0.08);
+    transition: left 220ms var(--ease-out), width 220ms var(--ease-out);
     z-index: 0;
   }
   .dark .segmented-control .seg-indicator {
-    background: #2c2c2e;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.12);
+    background: var(--surface-3);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.14);
   }
   .segmented-control button {
-    padding: 4px 12px;
+    padding: 4px 14px;
     font-size: 12px;
     font-weight: 500;
-    border-radius: 7px;
+    letter-spacing: -0.01em;
+    border-radius: 9999px;
     border: none;
     cursor: pointer;
-    transition: color 150ms ease;
+    transition: color 150ms ease, opacity 150ms ease;
     background: transparent;
     color: var(--text-3);
     position: relative;
     z-index: 1;
+  }
+  .segmented-control button:hover {
+    color: var(--text-2);
   }
   .segmented-control button.active {
     color: var(--text);
@@ -264,19 +269,20 @@
 
   /* macOS HIG Controls & Push Buttons */
   .glass-input {
-    background: rgba(120, 120, 128, 0.1);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(120, 120, 128, 0.08);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 0.5px solid var(--glass-border);
-    border-radius: 8px;
-    padding: 6px 10px;
+    border-radius: 9999px;
+    padding: 6px 14px;
     font-size: 12px;
     color: var(--text);
     outline: none;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
   }
   .glass-input:focus {
     border-color: var(--brand);
+    background: rgba(120, 120, 128, 0.12);
     box-shadow: 0 0 0 3px var(--brand-soft);
   }
 
@@ -284,16 +290,17 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    padding: 5px 12px;
+    gap: 6px;
+    padding: 5px 14px;
     font-size: 12px;
     font-weight: 500;
-    border-radius: 8px;
+    letter-spacing: -0.01em;
+    border-radius: 9999px;
     background: var(--glass-bg);
     color: var(--text);
     border: 0.5px solid var(--glass-border);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
     box-shadow: var(--glass-shadow);
     transition: all 180ms var(--ease-out);
     cursor: pointer;
@@ -301,6 +308,7 @@
   .btn-glass:hover {
     background: var(--glass-bg-strong);
     border-color: var(--glass-border-strong);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08), var(--glass-highlight);
   }
   .btn-glass:active {
     transform: scale(0.97);
@@ -310,11 +318,12 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    padding: 5px 12px;
+    gap: 6px;
+    padding: 5px 14px;
     font-size: 12px;
     font-weight: 600;
-    border-radius: 8px;
+    letter-spacing: -0.01em;
+    border-radius: 9999px;
     background: var(--brand);
     color: #ffffff;
     border: 0.5px solid var(--brand);
@@ -331,6 +340,64 @@
     transform: scale(0.97);
   }
 
+  /* Apple Human Interface Native Range Slider Styling */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    height: 20px;
+    width: 100%;
+  }
+  input[type="range"]:focus {
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 9999px;
+    background: rgba(120, 120, 128, 0.24);
+  }
+  .dark input[type="range"]::-webkit-slider-runnable-track {
+    background: rgba(255, 255, 255, 0.16);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.2);
+    margin-top: -6px;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+  input[type="range"]:hover::-webkit-slider-thumb {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  }
+  input[type="range"]:active::-webkit-slider-thumb {
+    transform: scale(1.18);
+  }
+  input[type="range"]::-moz-range-track {
+    height: 4px;
+    border-radius: 9999px;
+    background: rgba(120, 120, 128, 0.24);
+  }
+  .dark input[type="range"]::-moz-range-track {
+    background: rgba(255, 255, 255, 0.16);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: none;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 120ms ease;
+  }
+  input[type="range"]:active::-moz-range-thumb {
+    transform: scale(1.18);
+  }
+
   .glass-pill {
     display: inline-flex;
     align-items: center;
@@ -340,9 +407,9 @@
     font-weight: 600;
     border-radius: 999px;
     background: var(--glass-bg-subtle);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 0.5px solid var(--glass-border);
   }
 
   .conviction-dots {
