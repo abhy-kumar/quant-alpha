@@ -1001,6 +1001,41 @@ def export_backtest_index():
     _ensure_cache_table()
     os.makedirs(RUNS_DIR, exist_ok=True)
 
+    # Sync any static JSON files on disk into backtest_cache table if missing
+    try:
+        conn_sync = sqlite3.connect(DB_PATH)
+        for fname in os.listdir(RUNS_DIR):
+            if fname == "index.json" or not fname.endswith(".json"):
+                continue
+            fpath = os.path.join(RUNS_DIR, fname)
+            try:
+                with open(fpath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                as_of = data.get("as_of_date")
+                model = data.get("model")
+                horizon = data.get("horizon")
+                if as_of and model and horizon:
+                    conn_sync.execute("""
+                        INSERT OR IGNORE INTO backtest_cache
+                        (as_of_date, model, horizon, created_at, data_start, data_end, n_chart_pts, stats_json, chart_json, holdings_json)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        as_of, model, horizon,
+                        data.get("created_at", ""),
+                        data.get("data_start", ""),
+                        data.get("data_end", ""),
+                        len(data.get("chart", [])),
+                        json.dumps(data.get("stats", {})),
+                        json.dumps(data.get("chart", [])),
+                        json.dumps(data.get("holdings", []))
+                    ))
+            except Exception:
+                pass
+        conn_sync.commit()
+        conn_sync.close()
+    except Exception:
+        pass
+
     conn = sqlite3.connect(DB_PATH)
     rows = conn.execute(
         """SELECT as_of_date, model, horizon, created_at,
