@@ -678,59 +678,59 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
       {/* Interactive Crosshair HUD Banner */}
       <div
-        className="px-3 py-1.5 rounded-lg flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-mono glass-subtle min-h-[30px]"
+        className="px-3 rounded-lg flex flex-nowrap items-center gap-x-3 text-[11px] font-mono glass-subtle h-[32px] min-h-[32px] max-h-[32px] overflow-x-auto scrollbar-none whitespace-nowrap shrink-0"
         style={{ color: 'var(--text-2)', border: '1px solid var(--glass-border)' }}
       >
         {hudInfo.time ? (
           <>
-            <span className="font-sans text-xs font-medium" style={{ color: 'var(--text)' }}>
+            <span className="font-sans text-xs font-medium shrink-0" style={{ color: 'var(--text)' }}>
               {hudInfo.time}
             </span>
-            <span>
+            <span className="shrink-0">
               O: <strong style={{ color: 'var(--text)' }}>{formatNum(hudInfo.open)}</strong>
             </span>
-            <span>
+            <span className="shrink-0">
               H: <strong style={{ color: 'var(--text)' }}>{formatNum(hudInfo.high)}</strong>
             </span>
-            <span>
+            <span className="shrink-0">
               L: <strong style={{ color: 'var(--text)' }}>{formatNum(hudInfo.low)}</strong>
             </span>
-            <span>
+            <span className="shrink-0">
               C: <strong style={{ color: 'var(--text)' }}>{formatNum(hudInfo.close)}</strong>
             </span>
             {hudInfo.chgPct !== undefined && (
-              <span className={hudInfo.chgPct >= 0 ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
+              <span className={`shrink-0 ${hudInfo.chgPct >= 0 ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}`}>
                 ({hudInfo.chgPct >= 0 ? '+' : ''}
                 {hudInfo.chgPct.toFixed(2)}%)
               </span>
             )}
-            <span>
+            <span className="shrink-0">
               Vol: <strong style={{ color: 'var(--text)' }}>{formatVol(hudInfo.volume)}</strong>
             </span>
 
             {showSma50 && hudInfo.sma50 && (
-              <span className="text-blue-400">
+              <span className="text-blue-400 shrink-0">
                 SMA50: <strong>{formatNum(hudInfo.sma50)}</strong>
               </span>
             )}
             {showSma200 && hudInfo.sma200 && (
-              <span className="text-amber-400">
+              <span className="text-amber-400 shrink-0">
                 SMA200: <strong>{formatNum(hudInfo.sma200)}</strong>
               </span>
             )}
             {showSupertrend && hudInfo.supertrend && (
-              <span className="text-cyan-400">
+              <span className="text-cyan-400 shrink-0">
                 ST: <strong>{formatNum(hudInfo.supertrend)}</strong>
               </span>
             )}
             {showRsi && hudInfo.rsi && (
-              <span className="text-purple-400">
+              <span className="text-purple-400 shrink-0">
                 RSI: <strong>{formatNum(hudInfo.rsi, 1)}</strong>
               </span>
             )}
           </>
         ) : (
-          <span style={{ color: 'var(--text-3)' }} className="font-sans">
+          <span style={{ color: 'var(--text-3)' }} className="font-sans shrink-0">
             Hover over the chart to inspect prices and indicators
           </span>
         )}
