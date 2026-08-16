@@ -42,24 +42,40 @@
 - **Ensemble Classifier**: Fits a `HistGradientBoostingClassifier` on historical scan outcome records in SQLite (`market_scans.db`).
 - **Probability Outperformance**: Computes real-time outperformance probability ($P(\text{Return}_{21d} > \text{Nifty}_{21d})$) and maps stocks into conviction tiers (*Strong Alpha*, *Moderate Alpha*, *Neutral*, *Low Alpha*).
 
-### 2. Sector-Neutral Multi-Factor Scoring (`engine/scoring.py` & `engine/research_factors.py`)
-- **Sector Z-Score Normalization**: Evaluates technical, fundamental, and quantitative factor metrics relative to industry sector medians.
-- **Outlier Mitigation**: Applies continuous non-linear mapping $5.0 + 4.5 \times \tanh(Z / 1.5)$ to bound z-scores between $0.5$ and $9.5$ without losing ordinal rank resolution.
+### 2. Sector-Neutral Multi-Factor Scoring & Z-Score Normalization (`engine/scoring.py` & `engine/recommendation.py`)
+- **Cross-Sectional Sector Z-Score Normalization**: Evaluates fundamental metrics (P/E, ROE, ROCE, Debt/Equity) relative to empirical industry sector distributions ($\mu_{\text{sector}}, \sigma_{\text{sector}}$).
+- **Outlier Mitigation**: Applies continuous non-linear mapping $5.0 + 4.5 \times \tanh(Z / 1.8)$ to bound z-scores between $0.5$ and $9.8$ without discrete cliff-edge distortions.
+- **Dynamic Market-Regime Adaptive Factor Weighting**: Dynamically shifts factor weights between Momentum & Technical Breakouts in **Risk-On Bull** markets ($VIX < 14, Nifty > 200\text{SMA}$) and Piotroski Quality, Low Beta & Debt Safety in **Risk-Off Bear** regimes.
 
-### 3. Walk-Forward Portfolio Backtesting Studio (`engine/backtest_engine.py`)
+### 3. Forensic Accounting & Red-Flag Circuit Breakers (`engine/recommendation.py`)
+- **Disqualifier Detection**: Hard circuit breakers scan for promoter pledging ($> 20\%$), severe leverage distress ($D/E > 2.5\text{x}$ with negative ROE), deep operational insolvency ($\text{ROE} < -15\%$), and blow-off tops ($Z_{60} > 2.5, RSI > 80$).
+- **Safety Gating**: Automatically caps conviction ratings at **"Caution"** or **"Avoid"** and attaches forensic warning badges across the Screener and Investment Thesis modals.
+
+### 4. ATR Volatility Execution & Position Sizing Engine (`engine/recommendation.py` & `frontend/`)
+- **Stock-Specific Trade Plans**: Generates exact execution parameters based on 14-day Average True Range (ATR):
+  - **Dynamic Stop-Loss**: $\text{Entry} - (2.0 \times \text{ATR}_{14})$
+  - **Target 1 (50% Partial Trim)**: $\text{Entry} + (2.5 \times \text{ATR}_{14})$
+  - **Target 2 (Runner)**: $\text{Entry} + (4.5 \times \text{ATR}_{14})$
+  - **Chandelier Trailing Exit**: $\text{Highest High}_{22} - (3.0 \times \text{ATR}_{14})$
+- **Auto ATR Position Sizer Modal**: Calculates precise portfolio capital allocation and share count based on dollar risk per share.
+
+### 5. Multi-Horizon Dual Recommendation Profiles
+- **⚡ Tactical Swing Radar (1W–1M Horizon)**: Short-term momentum breakouts, RSI swing setups, VPT volume surges, and 52-week high leadership.
+- **🏛 Strategic Compounder (6M–2Y Horizon)**: Long-horizon Fama-French profitability, Piotroski F-Score $\ge 7$, ROCE $> 20\%$, and Novy-Marx Gross Profitability.
+
+### 6. Sub-Minute Fast Live Market Polling & Edge Architecture (`frontend/src/hooks/useMarketData.ts`)
+- **15-Second In-Memory Polling**: Sub-minute price refreshing during active NSE trading hours (9:15 AM – 3:30 PM IST) with reactive green/red live tick flash animations.
+- **10-Second Vercel Edge Cache**: Optimized `Cache-Control: s-maxage=10, stale-while-revalidate=20` to guarantee fresh quotes without hitting rate limits.
+- **Smart Focus Refresh**: Automatically triggers immediate background updates when focusing or switching back to the browser tab.
+
+### 7. Walk-Forward Portfolio Backtesting Studio (`engine/backtest_engine.py`)
 - **Look-Ahead-Free Rebalancing**: Replays signals strictly using point-in-time data across 2-year OHLCV price histories (monthly rebalance, Top-10 equal-weight).
 - **Multi-Model & Multi-Horizon Evaluation**: Supports Short-Term (Technical + Momentum) and Long-Term (Jegadeesh-Titman + Low Volatility) scoring across 1Y ($252$ trading days) and 6M ($126$ trading days) horizons.
 
-### 4. Macro Market Regime Detection (`engine/regime_engine.py`)
-- Calculates aggregate market breath percentage (% of NSE stocks above 200 SMA), India VIX volatility, and Nifty trend indices to output a dynamic 0–100 **Regime Score** (*Risk-On*, *Neutral*, *Risk-Off*).
+### 8. Macro Market Regime Detection (`engine/regime_engine.py`)
+- Calculates aggregate market breadth percentage (% of NSE stocks above 200 SMA), India VIX volatility, and Nifty trend indices to output a dynamic 0–100 **Regime Score** (*Risk-On*, *Neutral*, *Risk-Off*).
 
-### 5. Defensive Recommendation Engine & Concurrency Layer (`engine/recommendation.py` & `data_pipeline/`)
-- **Unprofitable Firm Valuation Penalties**: Firms with negative or zero earnings ($P/E \le 0$) receive an explicit valuation floor penalty (`val_sub = 1.0`), preventing loss-making companies from bypassing fundamental scoring.
-- **Growth Ratio Sanitization**: Defensive normalizers automatically scale percentage inputs ($> 3.0$) into decimal ratios for PEG and SUE calculations, avoiding metric distortions.
-- **Trend-Aware Bollinger Breakouts**: High Bollinger Band %B ($> 0.95$) is dynamically recognized as a bullish momentum breakout when in a confirmed uptrend ($ADX > 25$, Supertrend bullish).
-- **High-Concurrency SQLite Architecture**: Database connections in `data_pipeline.py` and `quant_engine.py` are fortified with Write-Ahead Logging (`PRAGMA journal_mode=WAL;`), `PRAGMA synchronous=NORMAL;`, and `busy_timeout=5000;` to eliminate database write lock contention.
-
-### 6. Current-Gen SEO & Digital Marketing Architecture (`frontend/src/components/common/`)
+### 9. Current-Gen SEO & Digital Marketing Architecture (`frontend/src/components/common/`)
 - **Dynamic Route & Ticker Metadata Engine (`SeoHead.tsx`)**: Dynamically updates `<title>`, `<meta name="description">`, `<link rel="canonical">`, Open Graph (`og:*`), and Twitter Cards (`twitter:*`) per route (`/`, `/signals`, `/screen`, `/heatmap`, `/quant`) and active stock ticker (`?ticker=RELIANCE.NS`).
 - **Rich JSON-LD Structured Data**: Injects dynamic `SoftwareApplication`, `FinancialProduct`, `Organization`, `BreadcrumbList`, and `FAQPage` schemas for Google Rich Snippets & "People Also Ask" ranking.
 - **Generative Engine Optimization (GEO) for AI Search**: Implements `public/llms.txt` and `public/llms-full.txt` adhering to the `llmstxt.org` standard for AI search engines (Perplexity, ChatGPT, Claude, Google SGE/Search Overviews).
@@ -67,11 +83,11 @@
 - **Growth Funnel & Research Dispatch Capture (`NewsletterModal.tsx`)**: Institutional research dispatch subscription modal for community growth and investor retention.
 - **Core Web Vitals & Technical SEO**: DNS prefetching (`dns-prefetch`), resource preconnecting (`fonts.googleapis.com`, `va.vercel-scripts.com`), PWA touch tags, multi-route XML sitemap (`sitemap.xml`) with image tags, and bot-friendly crawler routing (`robots.txt`).
 
-### 7. Modern Apple HIG Interface & UX Architecture (`frontend/src/`)
+### 10. Modern Apple HIG Interface & Institutional Modals (`frontend/src/`)
+- **1-Click Institutional Equity Factsheet (PDF Tear-Sheet Generator)**: Produces an exact 1-page A4 Wall Street / Dalal Street factsheet with 10-factor radar polygons, key financial metrics, valuation multiples, and risk profiles.
+- **10-Factor Multi-Dimensional Radar Polygon Chart**: Compares 10 academic factors simultaneously against sector peer group benchmarks.
 - **Centered Floating Segmented Control**: Mathematically centered 5-tab pill navigation bar (`rounded-full`, `blur(24px) saturate(180%)`) matching macOS & visionOS floating toolbar standards.
-- **Apple Human Interface System**: Custom Apple HIG range sliders with 4px frosted tracks and elevated circular thumbs, unified pill buttons (`rounded-full`), and pure SF Pro typography optical tracking.
 - **Interactive Multi-Metric Screener**: Live slider drawer filtering by Min ROE %, Max P/E, Min/Max RSI(14), Market Cap, Piotroski, D/E, and Sector with rich multi-factor CSV export.
-- **Institutional Analysis Modals**: 1-Click Institutional Investment Thesis Modal, Dynamic Position Sizer & Risk Management Calculator, 10-Factor Multi-Dimensional Radar Polygon Chart Modal, and 1-Click Institutional Equity Factsheet (PDF / Print Generator).
 - **TradingView Canvas Charting**: Built on `@tradingview/lightweight-charts` with real-time indicators (SMA 50/200, Supertrend, Bollinger Bands, RSI, MACD) and log/linear scaling.
 
 ---
@@ -212,6 +228,7 @@ stock-dashboard/
 │   ├── test_e2e_recommendation.py                # End-to-end integration test for scanner pipeline
 │   ├── test_indicators.py                        # Unit tests for technical indicator math
 │   ├── test_recommendation_edge_cases.py         # Unit tests for growth sanitization, loss penalties & DB pragmas
+│   ├── test_recommendation_enhancements.py       # Unit tests for forensic red flags, ATR execution & sector Z-scores
 │   ├── test_research_factors.py                  # Unit tests for academic research factor scoring
 │   └── test_scoring.py                           # Unit tests for sector normalization & composite z-scores
 ├── .gitignore                                    # Git exclusion rules (DB binary, virtual environments)
@@ -283,8 +300,8 @@ python db_split_join.py join
 
 ### 3. Backend Execution & Testing
 ```bash
-# Execute unit test suite (78 tests)
-python -m pytest tests/
+# Execute full unit & integration test suite (82 tests)
+pytest tests/ -v
 
 # Run full market scan engine
 python -m engine.scanner
