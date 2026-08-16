@@ -526,35 +526,86 @@ html { overflow-y: scroll; }
 }
 
 /* ===============================================================
-   INSTITUTIONAL FACTSHEET PRINT STYLES
+   INSTITUTIONAL FACTSHEET PRINT STYLES (EXACT 1-PAGE A4 FORMAT)
    =============================================================== */
 @media print {
-  body {
+  @page {
+    size: A4 portrait;
+    margin: 6mm 8mm;
+  }
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
     background: #ffffff !important;
     color: #111827 !important;
+    font-size: 10.5px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  body > * {
+    display: none !important;
+  }
+  #root, #root > div {
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
   }
   header, nav, footer, .tape, .print\:hidden {
     display: none !important;
   }
+  .factsheet-modal-overlay {
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    inset: auto !important;
+  }
   .factsheet-container {
+    position: static !important;
     max-height: none !important;
+    max-width: 100% !important;
     overflow: visible !important;
     box-shadow: none !important;
     border: none !important;
     background: #ffffff !important;
     padding: 0 !important;
+    margin: 0 !important;
   }
   #factsheet-printable-area {
+    position: static !important;
+    display: block !important;
     border: 1px solid #e5e7eb !important;
     background: #ffffff !important;
     color: #111827 !important;
-    padding: 20px !important;
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
     box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-before: avoid !important;
+    page-break-after: avoid !important;
   }
   #factsheet-printable-area .card {
     background: #f9fafb !important;
     border: 1px solid #e5e7eb !important;
     color: #111827 !important;
+    box-shadow: none !important;
+  }
+  #factsheet-printable-area text {
+    fill: #374151 !important;
   }
 }
 

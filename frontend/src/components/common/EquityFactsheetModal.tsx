@@ -47,14 +47,14 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-md animate-fade-in" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md animate-fade-in factsheet-modal-overlay" onClick={onClose}>
       <div
-        className="relative w-full max-w-4xl max-h-[95vh] overflow-y-auto card p-4 sm:p-6 shadow-2xl rounded-2xl animate-scale-up factsheet-container"
+        className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto card p-4 sm:p-6 shadow-2xl rounded-2xl animate-scale-up factsheet-container"
         style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Top Control Bar (Hidden on Print) */}
-        <div className="flex items-center justify-between pb-3 mb-4 print:hidden border-b border-[var(--glass-border)]">
+        <div className="flex items-center justify-between pb-3 mb-3 print:hidden border-b border-[var(--glass-border)]">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-xl text-[var(--brand)]" style={{ background: 'var(--brand-soft)' }}>
               <FileText size={20} weight="duotone" />
@@ -89,25 +89,25 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
         </div>
 
         {/* Printable Factsheet Content Area */}
-        <div id="factsheet-printable-area" className="p-4 sm:p-6 rounded-xl space-y-4" style={{ background: 'var(--surface-2)', border: '1px solid var(--glass-border)' }}>
+        <div id="factsheet-printable-area" className="p-3 sm:p-5 rounded-xl space-y-3" style={{ background: 'var(--surface-2)', border: '1px solid var(--glass-border)' }}>
           {/* Institutional Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[var(--glass-border)]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2.5 border-b border-[var(--glass-border)]">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] tracking-wider uppercase font-bold text-[var(--brand)] font-mono">ALPHA QUANT RESEARCH</span>
                 <span className="text-[10px] text-[var(--text-3)]">•</span>
                 <span className="text-[10px] text-[var(--text-3)]">FMS Delhi Quant Club</span>
               </div>
-              <h1 className="text-xl sm:text-2xl font-black mt-0.5" style={{ color: 'var(--text)' }}>
-                {ticker} <span className="text-sm font-normal text-[var(--text-2)]">({asset.Long_Name || ticker})</span>
+              <h1 className="text-lg sm:text-xl font-black mt-0.5" style={{ color: 'var(--text)' }}>
+                {ticker} <span className="text-xs font-normal text-[var(--text-2)]">({asset.Long_Name || ticker})</span>
               </h1>
-              <p className="text-[11px] text-[var(--text-3)] mt-0.5">
+              <p className="text-[10px] text-[var(--text-3)] mt-0.5">
                 NSE India • {asset.Sector || 'Equities'} • {asset.Industry || 'Industry N/A'}
               </p>
             </div>
 
             <div className="text-left sm:text-right">
-              <div className="text-2xl font-black font-mono" style={{ color: 'var(--text)' }}>{cmp}</div>
+              <div className="text-xl font-black font-mono" style={{ color: 'var(--text)' }}>{cmp}</div>
               <div className={`text-xs font-bold font-mono ${colorCode(asset['1d_Chg_%'])}`}>
                 {chg} (1D)
               </div>
@@ -118,46 +118,46 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
           </div>
 
           {/* Hero Conviction & Scoring Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div className="p-2.5 card text-center rounded-xl">
-              <span className="text-[9px] uppercase font-semibold text-[var(--text-3)] block">Conviction Tier</span>
-              <span className={`badge mt-1 inline-block ${getBadgeClass(asset.Conviction)}`}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="p-2 card text-center rounded-xl">
+              <span className="text-[8.5px] uppercase font-semibold text-[var(--text-3)] block">Conviction Tier</span>
+              <span className={`badge mt-0.5 inline-block text-[11px] ${getBadgeClass(asset.Conviction)}`}>
                 {asset.Conviction || 'Hold'}
               </span>
             </div>
-            <div className="p-2.5 card text-center rounded-xl">
-              <span className="text-[9px] uppercase font-semibold text-[var(--text-3)] block">Composite Score</span>
-              <span className={`text-base font-bold font-mono mt-0.5 block ${scoreColor(asset.Composite_Score)}`}>
+            <div className="p-2 card text-center rounded-xl">
+              <span className="text-[8.5px] uppercase font-semibold text-[var(--text-3)] block">Composite Score</span>
+              <span className={`text-sm font-bold font-mono mt-0.5 block ${scoreColor(asset.Composite_Score)}`}>
                 {num(asset.Composite_Score)}/10
               </span>
             </div>
-            <div className="p-2.5 card text-center rounded-xl">
-              <span className="text-[9px] uppercase font-semibold text-[var(--text-3)] block">Piotroski F-Score</span>
-              <span className="text-base font-bold font-mono mt-0.5 block" style={{ color: 'var(--text)' }}>
+            <div className="p-2 card text-center rounded-xl">
+              <span className="text-[8.5px] uppercase font-semibold text-[var(--text-3)] block">Piotroski F-Score</span>
+              <span className="text-sm font-bold font-mono mt-0.5 block" style={{ color: 'var(--text)' }}>
                 {asset.Piotroski_F ?? '-'}/9
               </span>
             </div>
-            <div className="p-2.5 card text-center rounded-xl">
-              <span className="text-[9px] uppercase font-semibold text-[var(--text-3)] block">Technical Score</span>
-              <span className={`text-base font-bold font-mono mt-0.5 block ${colorCode(asset.Tech_Score)}`}>
+            <div className="p-2 card text-center rounded-xl">
+              <span className="text-[8.5px] uppercase font-semibold text-[var(--text-3)] block">Technical Score</span>
+              <span className={`text-sm font-bold font-mono mt-0.5 block ${colorCode(asset.Tech_Score)}`}>
                 {num(asset.Tech_Score)}
               </span>
             </div>
           </div>
 
           {/* Core Visuals: 10-Factor Spider Radar & Key Dimension Checklist */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Embedded Radar Chart */}
-            <div className="p-3 card rounded-xl flex flex-col items-center justify-center">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-[var(--brand)] mb-1">
+            <div className="p-2.5 card rounded-xl flex flex-col items-center justify-center">
+              <span className="text-[9.5px] uppercase font-bold tracking-wider text-[var(--brand)] mb-1">
                 10-Factor Academic DNA Polygon
               </span>
-              <FactorRadarChart asset={asset} peerGroup={peerGroup} size={260} showLegend={true} />
+              <FactorRadarChart asset={asset} peerGroup={peerGroup} size={210} showLegend={true} />
             </div>
 
             {/* Financial Health & Valuation Table */}
-            <div className="p-3.5 card rounded-xl flex flex-col justify-between">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-[var(--brand)] mb-2">
+            <div className="p-2.5 card rounded-xl flex flex-col justify-between">
+              <span className="text-[9.5px] uppercase font-bold tracking-wider text-[var(--brand)] mb-1.5">
                 Financial Health & Valuation Matrix
               </span>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
