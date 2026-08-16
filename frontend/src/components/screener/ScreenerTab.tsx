@@ -79,7 +79,7 @@ const ScreenerRow = memo(function ScreenerRow({
             <span>{row.Ticker.replace('.NS', '')}</span>
             {row.Red_Flags && row.Red_Flags.length > 0 && (
               <span className="inline-flex items-center text-[10px] px-1 py-0.5 rounded bg-amber-500/20 text-amber-300 font-normal border border-amber-500/40" title={`Forensic Flags: ${row.Red_Flags.join('; ')}`}>
-                ⚠️ {row.Red_Flags.length}
+                Flagged ({row.Red_Flags.length})
               </span>
             )}
           </div>
@@ -135,7 +135,7 @@ const ScreenerRow = memo(function ScreenerRow({
               {/* Forensic Red Flags Alert */}
               {row.Red_Flags && row.Red_Flags.length > 0 && (
                 <div className="mb-4 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300 flex items-center gap-2">
-                  <span className="font-bold">⚠️ Forensic Flags:</span>
+                  <span className="font-bold">Forensic Flags:</span>
                   <span className="text-amber-200">{row.Red_Flags.join(' • ')}</span>
                 </div>
               )}

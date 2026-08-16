@@ -57,12 +57,12 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
                 </span>
                 {asset.Tactical_Conviction && (
                   <span className={`badge rounded-full px-2.5 py-0.5 text-[11px] ${getBadgeClass(asset.Tactical_Conviction)}`}>
-                    ⚡ Tactical (1W-1M): {asset.Tactical_Conviction}
+                    Tactical (1W-1M): {asset.Tactical_Conviction}
                   </span>
                 )}
                 {asset.Conviction_Long && (
                   <span className={`badge rounded-full px-2.5 py-0.5 text-[11px] ${getBadgeClass(asset.Conviction_Long)}`}>
-                    🏛 Strategic (6M-2Y): {asset.Conviction_Long}
+                    Strategic (6M-2Y): {asset.Conviction_Long}
                   </span>
                 )}
               </div>
@@ -143,7 +143,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
         {asset.ATR_Stop && (
           <div className="card p-3.5 mb-5 bg-[var(--surface-2)]">
             <div className="text-xs font-bold uppercase tracking-wider text-[var(--brand)] mb-2 flex items-center justify-between">
-              <span>⚡ Volatility Execution Parameters (ATR-14)</span>
+              <span>Volatility Execution Parameters (ATR-14)</span>
               <span className="text-[10px] text-[var(--text-3)] font-mono">ATR: ₹{num(asset.ATR_Value)}</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
@@ -180,7 +180,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
               <ul className="space-y-2 text-xs text-[var(--text-2)]">
                 {catalysts.map((cat, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="text-[var(--green)] font-bold">✓</span>
+                    <span className="text-[var(--green)] font-bold">[+]</span>
                     <span>{cat}</span>
                   </li>
                 ))}
@@ -199,7 +199,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
               <ul className="space-y-2 text-xs text-[var(--text-2)]">
                 {risks.map((r, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="text-[var(--red)] font-bold">⚠</span>
+                    <span className="text-[var(--red)] font-bold">[-]</span>
                     <span>{r}</span>
                   </li>
                 ))}

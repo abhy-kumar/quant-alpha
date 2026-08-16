@@ -60,8 +60,8 @@
 - **Auto ATR Position Sizer Modal**: Calculates precise portfolio capital allocation and share count based on dollar risk per share.
 
 ### 5. Multi-Horizon Dual Recommendation Profiles
-- **⚡ Tactical Swing Radar (1W–1M Horizon)**: Short-term momentum breakouts, RSI swing setups, VPT volume surges, and 52-week high leadership.
-- **🏛 Strategic Compounder (6M–2Y Horizon)**: Long-horizon Fama-French profitability, Piotroski F-Score $\ge 7$, ROCE $> 20\%$, and Novy-Marx Gross Profitability.
+- **Tactical Swing Radar (1W–1M Horizon)**: Short-term momentum breakouts, RSI swing setups, VPT volume surges, and 52-week high leadership.
+- **Strategic Compounder (6M–2Y Horizon)**: Long-horizon Fama-French profitability, Piotroski F-Score $\ge 7$, ROCE $> 20\%$, and Novy-Marx Gross Profitability.
 
 ### 6. Sub-Minute Fast Live Market Polling & Edge Architecture (`frontend/src/hooks/useMarketData.ts`)
 - **15-Second In-Memory Polling**: Sub-minute price refreshing during active NSE trading hours (9:15 AM – 3:30 PM IST) with reactive green/red live tick flash animations.
