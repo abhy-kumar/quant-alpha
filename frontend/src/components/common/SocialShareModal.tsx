@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Copy, Check, ShareNetwork, WhatsappLogo, TwitterLogo, LinkedinLogo, PaperPlaneTilt } from '@phosphor-icons/react'
 import type { DashboardData } from '../../types'
 
@@ -55,9 +56,9 @@ export function SocialShareModal({ isOpen, onClose, asset, title }: Props) {
   const liUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`
   const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-md card p-6 rounded-2xl shadow-2xl relative animate-scale-up" style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)' }} onClick={e => e.stopPropagation()}>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 pt-12 sm:pt-20 bg-black/80 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-md card p-6 rounded-2xl shadow-2xl relative my-auto sm:my-0" style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)' }} onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/10 text-[var(--text-3)] transition-colors">
           <X size={18} />
         </button>
@@ -120,6 +121,7 @@ export function SocialShareModal({ isOpen, onClose, asset, title }: Props) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

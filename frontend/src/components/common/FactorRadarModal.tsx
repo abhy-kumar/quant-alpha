@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import type { DashboardData } from '../../types'
 import { FactorRadarChart, extractFactorDimensions } from './FactorRadarChart'
 import { X, Sparkle, TrendUp, WarningOctagon, Info } from '@phosphor-icons/react'
@@ -24,9 +25,9 @@ export const FactorRadarModal: React.FC<Props> = ({ asset, isOpen, onClose, peer
   const strengths = sortedFactors.slice(0, 3)
   const weaknesses = sortedFactors.slice(-2).reverse()
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in" onClick={onClose}>
-      <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto card p-6 shadow-2xl rounded-2xl animate-scale-up" style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)' }} onClick={e => e.stopPropagation()}>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center p-3 sm:p-6 sm:pt-10 overflow-y-auto bg-black/80 backdrop-blur-md" onClick={onClose}>
+      <div className="relative w-full max-w-2xl card p-5 sm:p-6 shadow-2xl rounded-2xl my-auto sm:my-0" style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)' }} onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: '0.5px solid var(--glass-border)' }}>
           <div className="flex items-center gap-3">
@@ -108,6 +109,7 @@ export const FactorRadarModal: React.FC<Props> = ({ asset, isOpen, onClose, peer
           <span>Factor scores are cross-sectionally ranked (0 to 10) against 150 top NSE liquid equities using point-in-time financial and market data.</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

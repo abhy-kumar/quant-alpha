@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { DashboardData } from '../../types'
 import { FactorRadarChart } from './FactorRadarChart'
 import { formatNum as num, colorCode, scoreColor, getBadgeClass } from '../../utils/formatters'
@@ -46,10 +47,10 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
     } catch {}
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md animate-fade-in factsheet-modal-overlay" onClick={onClose}>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center p-3 sm:p-6 sm:pt-8 overflow-y-auto bg-black/80 backdrop-blur-md factsheet-modal-overlay" onClick={onClose}>
       <div
-        className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto card p-4 sm:p-6 shadow-2xl rounded-2xl animate-scale-up factsheet-container"
+        className="relative w-full max-w-4xl card p-4 sm:p-6 shadow-2xl rounded-2xl factsheet-container my-auto sm:my-0"
         style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)' }}
         onClick={e => e.stopPropagation()}
       >
@@ -148,11 +149,11 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
           {/* Core Visuals: 10-Factor Spider Radar & Key Dimension Checklist */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Embedded Radar Chart */}
-            <div className="p-2.5 card rounded-xl flex flex-col items-center justify-center">
-              <span className="text-[9.5px] uppercase font-bold tracking-wider text-[var(--brand)] mb-1">
+            <div className="p-2 card rounded-xl flex flex-col items-center justify-center">
+              <span className="text-[9px] uppercase font-bold tracking-wider text-[var(--brand)] mb-0.5">
                 10-Factor Academic DNA Polygon
               </span>
-              <FactorRadarChart asset={asset} peerGroup={peerGroup} size={210} showLegend={true} />
+              <FactorRadarChart asset={asset} peerGroup={peerGroup} size={185} showLegend={true} />
             </div>
 
             {/* Financial Health & Valuation Table */}
@@ -246,6 +247,7 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

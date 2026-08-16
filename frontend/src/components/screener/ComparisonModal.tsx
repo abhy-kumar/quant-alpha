@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 import type { DashboardData } from '../../types'
 import { num, colorCode, scoreColor, InfoTooltip } from '../common/shared'
 import { X, Minus } from '@phosphor-icons/react'
@@ -53,10 +54,10 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
     )
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-xl animate-fade-in">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center p-3 sm:p-6 sm:pt-8 overflow-y-auto bg-black/80 backdrop-blur-xl" onClick={onClose}>
       <div
-        className="relative w-full max-w-5xl max-h-[90vh] flex flex-col card overflow-hidden shadow-2xl"
+        className="relative w-full max-w-5xl flex flex-col card overflow-hidden shadow-2xl my-auto sm:my-0"
         style={{
           borderRadius: 'var(--radius-xl)',
           background: 'var(--surface)',
@@ -258,6 +259,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

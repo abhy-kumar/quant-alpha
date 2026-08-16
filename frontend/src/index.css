@@ -531,47 +531,37 @@ html { overflow-y: scroll; }
 @media print {
   @page {
     size: A4 portrait;
-    margin: 6mm 8mm;
+    margin: 6mm 6mm 6mm 6mm;
   }
   html, body {
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
     color: #111827 !important;
-    font-size: 10.5px !important;
+    font-size: 10px !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     height: auto !important;
     min-height: 0 !important;
-    overflow: visible !important;
+    overflow: hidden !important;
   }
-  body > * {
+  body > *:not(.factsheet-modal-overlay) {
     display: none !important;
   }
-  #root, #root > div {
+  body > .factsheet-modal-overlay {
     display: block !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    height: auto !important;
-    min-height: 0 !important;
-    overflow: visible !important;
-  }
-  header, nav, footer, .tape, .print\:hidden {
-    display: none !important;
-  }
-  .factsheet-modal-overlay {
     position: static !important;
-    display: block !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
     height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     overflow: visible !important;
-    inset: auto !important;
+    z-index: 99999 !important;
   }
   .factsheet-container {
     position: static !important;
@@ -584,14 +574,19 @@ html { overflow-y: scroll; }
     padding: 0 !important;
     margin: 0 !important;
   }
+  .print\:hidden {
+    display: none !important;
+  }
   #factsheet-printable-area {
     position: static !important;
     display: block !important;
-    border: 1px solid #e5e7eb !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    border: 1px solid #d1d5db !important;
     background: #ffffff !important;
     color: #111827 !important;
-    padding: 12px 16px !important;
-    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    border-radius: 6px !important;
     box-shadow: none !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
@@ -606,6 +601,11 @@ html { overflow-y: scroll; }
   }
   #factsheet-printable-area text {
     fill: #374151 !important;
+  }
+  #factsheet-printable-area svg {
+    max-height: 190px !important;
+    width: auto !important;
+    margin: 0 auto !important;
   }
 }
 

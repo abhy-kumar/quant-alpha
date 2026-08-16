@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { DashboardData } from '../../types'
 import { formatNum as num } from '../../utils/formatters'
 import { X, Calculator } from '@phosphor-icons/react'
@@ -29,9 +30,9 @@ export const PositionSizerModal: React.FC<PositionSizerModalProps> = ({ asset, i
   const positionPctOfAccount = accountCapital > 0 ? (totalPositionValue / accountCapital) * 100 : 0
   const expectedProfit = recommendedShares * (targetPrice - price)
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto glass-strong p-6 shadow-2xl rounded-2xl">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center p-3 sm:p-6 sm:pt-10 overflow-y-auto bg-black/80 backdrop-blur-md" onClick={onClose}>
+      <div className="relative w-full max-w-xl card p-5 sm:p-6 shadow-2xl rounded-2xl my-auto sm:my-0" style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)' }} onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between pb-4 mb-4" style={{ borderBottom: '1px solid var(--glass-border)' }}>
           <div className="flex items-center gap-3">
@@ -154,6 +155,7 @@ export const PositionSizerModal: React.FC<PositionSizerModalProps> = ({ asset, i
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
