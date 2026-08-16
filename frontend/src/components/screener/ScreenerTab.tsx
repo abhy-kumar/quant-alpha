@@ -6,8 +6,10 @@ import { Info, Funnel, X, Star, Scales, DownloadSimple } from '@phosphor-icons/r
 import { ComparisonModal } from './ComparisonModal'
 import { InvestmentThesisModal } from '../common/InvestmentThesisModal'
 import { PositionSizerModal } from '../common/PositionSizerModal'
+import { FactorRadarModal } from '../common/FactorRadarModal'
+import { EquityFactsheetModal } from '../common/EquityFactsheetModal'
 import { exportToCSV } from '../../utils/exportUtils'
-import { Lightning, Calculator } from '@phosphor-icons/react'
+import { Lightning, Calculator, Sparkle, FileText } from '@phosphor-icons/react'
 
 interface Props {
   data: DashboardData[]
@@ -37,13 +39,15 @@ interface RowProps {
   onToggleWatchlist: (ticker: string) => void
   onThesis: (row: DashboardData) => void
   onSizer: (row: DashboardData) => void
+  onRadar: (row: DashboardData) => void
+  onFactsheet: (row: DashboardData) => void
 }
 
 const ScreenerRow = memo(function ScreenerRow({
   row, isExpanded, flashColor, isChecked, isWatched,
   isLoggedIn, scoreCol, convCol, scoreHistory,
   onToggleExpand, onSelect, onToggleCompare, onToggleWatchlist,
-  onThesis, onSizer,
+  onThesis, onSizer, onRadar, onFactsheet,
 }: RowProps) {
   return (
     <React.Fragment>
@@ -205,12 +209,18 @@ const ScreenerRow = memo(function ScreenerRow({
                     <span className="font-medium font-mono" style={{color:'var(--text)'}}>{num(row.RS_Percentile)}%</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={(e) => { e.stopPropagation(); onThesis(row) }} className="btn-glass text-xs py-1 px-3.5 rounded-full" title="Institutional Investment Thesis">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button onClick={(e) => { e.stopPropagation(); onThesis(row) }} className="btn-glass text-xs py-1 px-3 rounded-full" title="Institutional Investment Thesis">
                     <Lightning size={13} weight="duotone" className="text-[var(--brand)]" /> Thesis
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); onSizer(row) }} className="btn-glass text-xs py-1 px-3.5 rounded-full" title="Calculate Risk & Position Size">
-                    <Calculator size={13} weight="duotone" className="text-[var(--brand)]" /> Position Sizer
+                  <button onClick={(e) => { e.stopPropagation(); onSizer(row) }} className="btn-glass text-xs py-1 px-3 rounded-full" title="Calculate Risk & Position Size">
+                    <Calculator size={13} weight="duotone" className="text-[var(--brand)]" /> Sizer
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); onRadar(row) }} className="btn-glass text-xs py-1 px-3 rounded-full" title="10-Factor Radar Polygon Chart">
+                    <Sparkle size={13} weight="duotone" className="text-[var(--brand)]" /> Radar
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); onFactsheet(row) }} className="btn-glass text-xs py-1 px-3 rounded-full font-medium" title="1-Page Printable Equity Research Factsheet">
+                    <FileText size={13} weight="duotone" className="text-[var(--brand)]" /> Factsheet
                   </button>
                 </div>
               </div>
@@ -234,6 +244,8 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
   const [isCompareOpen, setIsCompareOpen] = useState(false)
   const [thesisAsset, setThesisAsset] = useState<DashboardData | null>(null)
   const [sizerAsset, setSizerAsset] = useState<DashboardData | null>(null)
+  const [radarAsset, setRadarAsset] = useState<DashboardData | null>(null)
+  const [factsheetAsset, setFactsheetAsset] = useState<DashboardData | null>(null)
 
   // Active score and conviction column names driven by the horizon toggle
   const scoreCol   = horizonMode === 'long' ? 'Composite_Score_Long' : 'Composite_Score'
@@ -690,6 +702,8 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 onToggleWatchlist={toggleWatchlist}
                 onThesis={setThesisAsset}
                 onSizer={setSizerAsset}
+                onRadar={setRadarAsset}
+                onFactsheet={setFactsheetAsset}
               />
             ))}
           </tbody>
@@ -866,6 +880,22 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                       })}
                     </div>
                   </div>
+
+                  {/* Mobile Actions */}
+                  <div className="px-3 py-2.5 flex items-center gap-1.5 flex-wrap border-t border-[var(--glass-border)]">
+                    <button onClick={(e) => { e.stopPropagation(); setThesisAsset(row) }} className="btn-glass text-[11px] py-1 px-2.5 rounded-full flex items-center gap-1">
+                      <Lightning size={12} weight="duotone" className="text-[var(--brand)]" /> Thesis
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); setSizerAsset(row) }} className="btn-glass text-[11px] py-1 px-2.5 rounded-full flex items-center gap-1">
+                      <Calculator size={12} weight="duotone" className="text-[var(--brand)]" /> Sizer
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); setRadarAsset(row) }} className="btn-glass text-[11px] py-1 px-2.5 rounded-full flex items-center gap-1">
+                      <Sparkle size={12} weight="duotone" className="text-[var(--brand)]" /> Radar
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); setFactsheetAsset(row) }} className="btn-glass text-[11px] py-1 px-2.5 rounded-full flex items-center gap-1">
+                      <FileText size={12} weight="duotone" className="text-[var(--brand)]" /> Factsheet
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -936,6 +966,22 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
         asset={sizerAsset}
         isOpen={sizerAsset !== null}
         onClose={() => setSizerAsset(null)}
+      />
+
+      {/* 10-Factor Radar / Spider Chart Modal */}
+      <FactorRadarModal
+        asset={radarAsset}
+        isOpen={radarAsset !== null}
+        onClose={() => setRadarAsset(null)}
+        peerGroup={radarAsset ? data.filter(d => d.Sector === radarAsset.Sector).slice(0, 5) : []}
+      />
+
+      {/* 1-Click Institutional Equity Factsheet PDF Modal */}
+      <EquityFactsheetModal
+        asset={factsheetAsset}
+        isOpen={factsheetAsset !== null}
+        onClose={() => setFactsheetAsset(null)}
+        peerGroup={factsheetAsset ? data.filter(d => d.Sector === factsheetAsset.Sector).slice(0, 5) : []}
       />
     </div>
   )

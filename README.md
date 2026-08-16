@@ -71,8 +71,7 @@
 - **Centered Floating Segmented Control**: Mathematically centered 5-tab pill navigation bar (`rounded-full`, `blur(24px) saturate(180%)`) matching macOS & visionOS floating toolbar standards.
 - **Apple Human Interface System**: Custom Apple HIG range sliders with 4px frosted tracks and elevated circular thumbs, unified pill buttons (`rounded-full`), and pure SF Pro typography optical tracking.
 - **Interactive Multi-Metric Screener**: Live slider drawer filtering by Min ROE %, Max P/E, Min/Max RSI(14), Market Cap, Piotroski, D/E, and Sector with rich multi-factor CSV export.
-- **Global Keyboard Navigation**: Instant tab switching via keys `1` through `5`, and quick search focus via key `/`.
-- **Institutional Analysis Modals**: 1-Click Institutional Investment Thesis Modal and Dynamic Position Sizer & Risk Management Calculator.
+- **Institutional Analysis Modals**: 1-Click Institutional Investment Thesis Modal, Dynamic Position Sizer & Risk Management Calculator, 10-Factor Multi-Dimensional Radar Polygon Chart Modal, and 1-Click Institutional Equity Factsheet (PDF / Print Generator).
 - **TradingView Canvas Charting**: Built on `@tradingview/lightweight-charts` with real-time indicators (SMA 50/200, Supertrend, Bollinger Bands, RSI, MACD) and log/linear scaling.
 
 ---
@@ -156,6 +155,9 @@ stock-dashboard/
 │   │   │   │   ├── ChartingTab.tsx               # Full-screen interactive charting view
 │   │   │   │   └── TradingViewChart.tsx          # Lightweight Charts canvas integration
 │   │   │   ├── common/
+│   │   │   │   ├── EquityFactsheetModal.tsx      # 1-click institutional printable factsheet (PDF tear-sheet)
+│   │   │   │   ├── FactorRadarChart.tsx          # 10-dimensional academic factor radar / spider chart component
+│   │   │   │   ├── FactorRadarModal.tsx          # Expanded factor radar & strengths modal
 │   │   │   │   ├── GlassCard.tsx                 # Glassmorphic card container component
 │   │   │   │   ├── InvestmentThesisModal.tsx     # Institutional investment thesis modal
 │   │   │   │   ├── NewsletterModal.tsx           # Institutional research dispatch subscription modal

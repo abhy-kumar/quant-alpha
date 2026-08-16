@@ -1,13 +1,15 @@
 import { useState, useRef, useEffect, useMemo, memo } from 'react'
 import type { DashboardData, ChartCandle, ScoreHistoryItem } from '../../types'
 import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
-import { MagnifyingGlass, Lightning, Calculator, User, TrendUp, BookOpen, ChartBar, ShieldCheck, Scales } from '@phosphor-icons/react'
 import {
   ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine
 } from 'recharts'
 import { TradingViewChart } from './TradingViewChart'
 import { InvestmentThesisModal } from '../common/InvestmentThesisModal'
 import { PositionSizerModal } from '../common/PositionSizerModal'
+import { FactorRadarModal } from '../common/FactorRadarModal'
+import { EquityFactsheetModal } from '../common/EquityFactsheetModal'
+import { MagnifyingGlass, Lightning, Calculator, User, TrendUp, BookOpen, ChartBar, ShieldCheck, Scales, Sparkle, FileText } from '@phosphor-icons/react'
 
 
 interface Props {
@@ -164,6 +166,8 @@ function ChartingTabInner({
   const [chartEngine, setChartEngine] = useState<'tradingview' | 'classic'>('tradingview')
   const [isThesisOpen, setIsThesisOpen] = useState(false)
   const [isSizerOpen, setIsSizerOpen] = useState(false)
+  const [isRadarOpen, setIsRadarOpen] = useState(false)
+  const [isFactsheetOpen, setIsFactsheetOpen] = useState(false)
 
   const tvChartData = useMemo(() => {
     return chartData.map((d: any) => ({
@@ -202,17 +206,31 @@ function ChartingTabInner({
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => setIsThesisOpen(true)}
-            className="btn-glass text-xs py-2 px-3.5 w-full rounded-full"
+            className="btn-glass text-xs py-1.5 px-3 w-full rounded-xl flex items-center justify-center gap-1.5"
             title="Institutional Investment Thesis"
           >
-            <Lightning size={14} weight="duotone" className="text-[var(--brand)]" /> Thesis
+            <Lightning size={13} weight="duotone" className="text-[var(--brand)]" /> Thesis
           </button>
           <button
             onClick={() => setIsSizerOpen(true)}
-            className="btn-glass text-xs py-2 px-3.5 w-full rounded-full"
+            className="btn-glass text-xs py-1.5 px-3 w-full rounded-xl flex items-center justify-center gap-1.5"
             title="Calculate Risk & Position Size"
           >
-            <Calculator size={14} weight="duotone" className="text-[var(--brand)]" /> Position Sizer
+            <Calculator size={13} weight="duotone" className="text-[var(--brand)]" /> Sizer
+          </button>
+          <button
+            onClick={() => setIsRadarOpen(true)}
+            className="btn-glass text-xs py-1.5 px-3 w-full rounded-xl flex items-center justify-center gap-1.5"
+            title="10-Factor Radar Polygon Chart"
+          >
+            <Sparkle size={13} weight="duotone" className="text-[var(--brand)]" /> Radar
+          </button>
+          <button
+            onClick={() => setIsFactsheetOpen(true)}
+            className="btn-glass text-xs py-1.5 px-3 w-full rounded-xl flex items-center justify-center gap-1.5 font-medium"
+            title="1-Page Printable Equity Research Factsheet"
+          >
+            <FileText size={13} weight="duotone" className="text-[var(--brand)]" /> Factsheet
           </button>
         </div>
 
@@ -727,6 +745,20 @@ function ChartingTabInner({
       asset={selectedAsset}
       isOpen={isSizerOpen}
       onClose={() => setIsSizerOpen(false)}
+    />
+
+    <FactorRadarModal
+      asset={selectedAsset}
+      isOpen={isRadarOpen}
+      onClose={() => setIsRadarOpen(false)}
+      peerGroup={peerGroup}
+    />
+
+    <EquityFactsheetModal
+      asset={selectedAsset}
+      isOpen={isFactsheetOpen}
+      onClose={() => setIsFactsheetOpen(false)}
+      peerGroup={peerGroup}
     />
     </>
   )

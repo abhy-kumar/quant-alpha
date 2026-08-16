@@ -525,3 +525,37 @@ html { overflow-y: scroll; }
   }
 }
 
+/* ===============================================================
+   INSTITUTIONAL FACTSHEET PRINT STYLES
+   =============================================================== */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+  header, nav, footer, .tape, .print\:hidden {
+    display: none !important;
+  }
+  .factsheet-container {
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+  #factsheet-printable-area {
+    border: 1px solid #e5e7eb !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+  }
+  #factsheet-printable-area .card {
+    background: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+    color: #111827 !important;
+  }
+}
+
+
