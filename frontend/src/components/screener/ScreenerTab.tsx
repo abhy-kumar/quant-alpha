@@ -75,7 +75,14 @@ const ScreenerRow = memo(function ScreenerRow({
           onMouseEnter={e => (e.currentTarget.style.color = 'var(--brand)')}
           onMouseLeave={e => (e.currentTarget.style.color = 'var(--text)')}
         >
-          {row.Ticker.replace('.NS', '')}
+          <div className="flex items-center gap-1.5">
+            <span>{row.Ticker.replace('.NS', '')}</span>
+            {row.Red_Flags && row.Red_Flags.length > 0 && (
+              <span className="inline-flex items-center text-[10px] px-1 py-0.5 rounded bg-amber-500/20 text-amber-300 font-normal border border-amber-500/40" title={`Forensic Flags: ${row.Red_Flags.join('; ')}`}>
+                ⚠️ {row.Red_Flags.length}
+              </span>
+            )}
+          </div>
         </td>
         <td className="py-2 px-2 hidden md:table-cell" style={{ color: 'var(--text-2)' }}>{row.Sector || '-'}</td>
         <td className="py-2 px-2 text-right font-mono" style={{ color: 'var(--text)' }}>{num(row.Price)}</td>
@@ -125,6 +132,14 @@ const ScreenerRow = memo(function ScreenerRow({
             transition: 'max-height var(--dur-slow) var(--ease-out)',
           }}>
             <div className="p-6" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--glass-border)' }}>
+              {/* Forensic Red Flags Alert */}
+              {row.Red_Flags && row.Red_Flags.length > 0 && (
+                <div className="mb-4 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300 flex items-center gap-2">
+                  <span className="font-bold">⚠️ Forensic Flags:</span>
+                  <span className="text-amber-200">{row.Red_Flags.join(' • ')}</span>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div>
                   <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Technical Indicators</h4>
@@ -170,7 +185,7 @@ const ScreenerRow = memo(function ScreenerRow({
                   </div>
                 </div>
                 <div>
-                  <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Key Ratios</h4>
+                  <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Key Ratios & Trade Plan</h4>
                   <div className="space-y-1.5 text-[11px]">
                     {[
                       ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E']), 'metrics.pe'],
@@ -178,11 +193,11 @@ const ScreenerRow = memo(function ScreenerRow({
                       ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-', 'metrics.roe'],
                       ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-', 'metrics.roce'],
                       ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-', 'metrics.de'],
-                      ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
-                      ['Div Yield', row['Div_Yield_%'] != null ? `${row['Div_Yield_%'].toFixed(2)}%` : '-', 'metrics.div-yield'],
-                      ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-', 'metrics.promoter'],
+                      ['ATR Stop (2×ATR)', row.ATR_Stop ? `₹${num(row.ATR_Stop)}` : '-', 'metrics.atr-stop'],
+                      ['ATR Target 1', row.ATR_Target1 ? `₹${num(row.ATR_Target1)}` : '-', 'metrics.atr-t1'],
+                      ['ATR Target 2', row.ATR_Target2 ? `₹${num(row.ATR_Target2)}` : '-', 'metrics.atr-t2'],
+                      ['Chandelier Exit', row.ATR_Chandelier ? `₹${num(row.ATR_Chandelier)}` : '-', 'metrics.chandelier'],
                       ['Sharpe', num(row.Sharpe), 'metrics.sharpe'],
-                      ['Max DD', num(row['Max_Drawdown_%']), 'metrics.max-dd'],
                     ].map(([label, val, tooltipId]) => (
                       <div key={label as string} className="flex items-center justify-between py-0.5">
                         <span style={{ color: 'var(--text-2)' }}><InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip></span>

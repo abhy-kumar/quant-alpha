@@ -16,8 +16,17 @@ export interface DashboardData {
   Composite_Score_Fund: number
   Composite_Score_Mom: number
   Composite_Score_Long: number
+  Tactical_Score?: number
   Conviction: string
   Conviction_Long: string
+  Tactical_Conviction?: string
+  Red_Flags?: string[]
+  ATR_Stop?: number
+  ATR_Target1?: number
+  ATR_Target2?: number
+  ATR_Chandelier?: number
+  ATR_Risk_Pct?: number
+  ATR_Value?: number
   ML_Alpha_Prob?: number
   ML_Conviction?: string
   Scan_Time: string

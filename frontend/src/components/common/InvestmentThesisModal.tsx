@@ -1,7 +1,7 @@
 import React from 'react'
 import { createPortal } from 'react-dom'
 import type { DashboardData } from '../../types'
-import { formatNum as num, colorCode, scoreColor, getBadgeClass } from '../../utils/formatters'
+import { formatNum as num, scoreColor, getBadgeClass } from '../../utils/formatters'
 import { X, Lightning, ShieldCheck, Warning, Scales } from '@phosphor-icons/react'
 
 interface InvestmentThesisModalProps {
@@ -50,17 +50,24 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
               <Lightning size={22} weight="duotone" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{ticker}</h3>
-                <span className={`badge rounded-full px-3 py-0.5 ${getBadgeClass(asset.Conviction)}`}>{asset.Conviction || 'Hold'}</span>
-                {asset.ML_Conviction && (
-                  <span className="badge rounded-full px-3 py-0.5 text-[10px]" style={{ background: 'var(--brand-soft)', color: 'var(--brand)', border: '0.5px solid var(--glass-border)' }}>
-                    Quant Model: {asset.ML_Conviction}
+                <span className={`badge rounded-full px-3 py-0.5 ${getBadgeClass(asset.Conviction)}`}>
+                  Balanced: {asset.Conviction || 'Hold'}
+                </span>
+                {asset.Tactical_Conviction && (
+                  <span className={`badge rounded-full px-2.5 py-0.5 text-[11px] ${getBadgeClass(asset.Tactical_Conviction)}`}>
+                    ⚡ Tactical (1W-1M): {asset.Tactical_Conviction}
+                  </span>
+                )}
+                {asset.Conviction_Long && (
+                  <span className={`badge rounded-full px-2.5 py-0.5 text-[11px] ${getBadgeClass(asset.Conviction_Long)}`}>
+                    🏛 Strategic (6M-2Y): {asset.Conviction_Long}
                   </span>
                 )}
               </div>
-              <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-                {asset.Long_Name || ticker} — {asset.Sector || 'Equities'}
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
+                {asset.Long_Name || ticker} — {asset.Sector || 'Equities'} | CMP: <strong className="font-mono text-[var(--text)]">₹{num(asset.Price)}</strong>
               </p>
             </div>
           </div>
@@ -73,24 +80,49 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
           </button>
         </div>
 
+        {/* Forensic Red Flags or Clean Audit Status */}
+        {asset.Red_Flags && asset.Red_Flags.length > 0 ? (
+          <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-xs text-amber-300">
+            <Warning size={18} className="shrink-0 mt-0.5 text-amber-400" />
+            <div>
+              <div className="font-bold text-amber-300">Forensic Disqualifiers Flagged ({asset.Red_Flags.length})</div>
+              <div className="mt-1 text-[11px] text-amber-200/90 flex flex-wrap gap-2">
+                {asset.Red_Flags.map((flag, idx) => (
+                  <span key={idx} className="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40">
+                    {flag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-4 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs text-emerald-300">
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={18} weight="fill" className="text-emerald-400" />
+              <span className="font-semibold text-emerald-200">Forensic & Governance Safety: Clean</span>
+            </div>
+            <span className="text-[10px] text-emerald-400/80">0 Pledging & Debt Disqualifiers</span>
+          </div>
+        )}
+
         {/* Hero Score Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
           <div className="p-3 card text-center">
-            <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Composite Score</span>
+            <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Composite</span>
             <div className={`text-lg font-bold font-mono mt-1 ${scoreColor(asset.Composite_Score)}`}>
               {num(asset.Composite_Score)}
             </div>
           </div>
           <div className="p-3 card text-center">
-            <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Technical</span>
-            <div className={`text-lg font-bold font-mono mt-1 ${colorCode(asset.Tech_Score)}`}>
-              {num(asset.Tech_Score)}
+            <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Tactical (Tech)</span>
+            <div className={`text-lg font-bold font-mono mt-1 ${scoreColor(asset.Tactical_Score || asset.Composite_Score_Tech)}`}>
+              {num(asset.Tactical_Score || asset.Composite_Score_Tech)}
             </div>
           </div>
           <div className="p-3 card text-center">
-            <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Fundamental</span>
-            <div className="text-lg font-bold font-mono mt-1 text-[var(--text)]">
-              {num(asset.Fund_Score)}
+            <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--text-3)]">Strategic (Fund)</span>
+            <div className={`text-lg font-bold font-mono mt-1 ${scoreColor(asset.Composite_Score_Long || asset.Fund_Score)}`}>
+              {num(asset.Composite_Score_Long || asset.Fund_Score)}
             </div>
           </div>
           <div className="p-3 card text-center">
@@ -106,6 +138,34 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
             </div>
           </div>
         </div>
+
+        {/* ATR Volatility Trade Setup */}
+        {asset.ATR_Stop && (
+          <div className="card p-3.5 mb-5 bg-[var(--surface-2)]">
+            <div className="text-xs font-bold uppercase tracking-wider text-[var(--brand)] mb-2 flex items-center justify-between">
+              <span>⚡ Volatility Execution Parameters (ATR-14)</span>
+              <span className="text-[10px] text-[var(--text-3)] font-mono">ATR: ₹{num(asset.ATR_Value)}</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div>
+                <span className="text-[10px] text-[var(--text-3)]">Stop-Loss (2×ATR):</span>
+                <div className="font-mono font-bold text-[var(--red)] text-sm">₹{num(asset.ATR_Stop)}</div>
+              </div>
+              <div>
+                <span className="text-[10px] text-[var(--text-3)]">Target 1 (1:1.25):</span>
+                <div className="font-mono font-bold text-[var(--green)] text-sm">₹{num(asset.ATR_Target1)}</div>
+              </div>
+              <div>
+                <span className="text-[10px] text-[var(--text-3)]">Target 2 (Runner):</span>
+                <div className="font-mono font-bold text-[var(--green)] text-sm">₹{num(asset.ATR_Target2)}</div>
+              </div>
+              <div>
+                <span className="text-[10px] text-[var(--text-3)]">Chandelier Trail:</span>
+                <div className="font-mono font-bold text-amber-400 text-sm">₹{num(asset.ATR_Chandelier)}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Catalysts & Risks */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">

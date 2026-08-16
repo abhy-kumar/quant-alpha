@@ -26,7 +26,12 @@ import numpy as np
 import pandas as pd
 
 from utils import _safe_float, log
-from engine.recommendation import compute_fund_score, get_conviction_rating
+from engine.recommendation import (
+    compute_fund_score,
+    get_conviction_rating,
+    check_forensic_red_flags,
+    generate_atr_trade_plan,
+)
 from engine.research_factors import compute_research_composite
 
 
@@ -47,13 +52,26 @@ def compute_rs_score(tech: dict) -> tuple[float, list]:
 
 
 def compute_sector_medians(raw_data: dict, sector_data: dict) -> dict:
-    """Compute median PE, ROE, and Debt/Equity for each sector."""
+    """Compute distribution statistics (median, mean, std) for PE, ROE, ROCE, and Debt/Equity for each sector."""
     sector_medians = {}
     for sec, metrics in sector_data.items():
+        pe_vals   = [v for v in metrics.get('pe', []) if not np.isnan(v) and 0 < v < 200]
+        roe_vals  = [v for v in metrics.get('roe', []) if not np.isnan(v) and abs(v) < 150]
+        debt_vals = [v for v in metrics.get('debt_eq', []) if not np.isnan(v) and 0 <= v < 1000]
+        roce_vals = [v for v in metrics.get('roce', []) if not np.isnan(v) and abs(v) < 150]
+
         sector_medians[sec] = {
-            'pe': np.median(metrics['pe']) if metrics['pe'] else np.nan,
-            'roe': np.median(metrics['roe']) if metrics['roe'] else np.nan,
-            'debt_eq': np.median(metrics['debt_eq']) if metrics['debt_eq'] else np.nan
+            'pe': np.median(pe_vals) if pe_vals else np.nan,
+            'pe_mean': np.mean(pe_vals) if pe_vals else np.nan,
+            'pe_std': np.std(pe_vals) if len(pe_vals) > 1 else np.nan,
+            'roe': np.median(roe_vals) if roe_vals else np.nan,
+            'roe_mean': np.mean(roe_vals) if roe_vals else np.nan,
+            'roe_std': np.std(roe_vals) if len(roe_vals) > 1 else np.nan,
+            'debt_eq': np.median(debt_vals) if debt_vals else np.nan,
+            'debt_mean': np.mean(debt_vals) if debt_vals else np.nan,
+            'debt_std': np.std(debt_vals) if len(debt_vals) > 1 else np.nan,
+            'roce_mean': np.mean(roce_vals) if roce_vals else np.nan,
+            'roce_std': np.std(roce_vals) if len(roce_vals) > 1 else np.nan,
         }
     return sector_medians
 
@@ -263,12 +281,23 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         item["quality_reasons"] = reasons
 
     # ── Convex Regime Factor Weight Allocation (Lambda in [0, 1]) ───────────────
-    # Bull regime (regime_score=+5): Tech 35%, Fund 15%, Research 50% (Momentum-oriented)
-    # Bear regime (regime_score=-5): Tech 25%, Fund 50%, Research 25% (Quality/Value-oriented)
+    # Bull regime (regime_score=+5): Tech 40%, Research 40% (Momentum-oriented), Fund 20%
+    # Bear regime (regime_score=-5): Fund 50% (Quality/Value-oriented), Research 30% (Low Vol), Tech 20%
     lambda_regime = max(0.0, min(1.0, (float(regime_score) + 5.0) / 10.0))
-    w_tech = lambda_regime * 0.35 + (1.0 - lambda_regime) * 0.25
-    w_fund = lambda_regime * 0.15 + (1.0 - lambda_regime) * 0.50
-    w_res  = lambda_regime * 0.50 + (1.0 - lambda_regime) * 0.25
+    w_tech = lambda_regime * 0.40 + (1.0 - lambda_regime) * 0.20
+    w_fund = lambda_regime * 0.20 + (1.0 - lambda_regime) * 0.50
+    w_res  = lambda_regime * 0.40 + (1.0 - lambda_regime) * 0.30
+
+    # ── Compute forensic red flags and ATR trade plans for all stocks ──────────
+    for item in final_rows:
+        info = item["info"]
+        df = item.get("df")
+        price = _safe_float(item["latest"]["Close"]) if "latest" in item and "Close" in item["latest"] else _safe_float(item.get("pe", 100))
+        atr = _safe_float(item["latest"].get("ATR", np.nan)) if "latest" in item else np.nan
+        h22 = _safe_float(df["High"].iloc[-22:].max()) if (df is not None and len(df) >= 22) else price
+        
+        item["red_flags"] = check_forensic_red_flags(info, df, item.get("met", {}))
+        item["trade_plan"] = generate_atr_trade_plan(price, atr, h22)
 
     # ── Compute composite scores using ranked values ────────────────────────
     for item in final_rows:
@@ -306,9 +335,6 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         item["composite_score_mom"]   = min(10.0, raw_composite_mom)
 
         # ── Long-Horizon Quality Penalty ─────────────────────────────────────────
-        # Omits the z-score overbought gate: at 6m, stocks near 52W highs
-        # (high z-scores) are the strongest performers (IC@126d = +0.103).
-        # Keeps: P/E, negative ROE, and extreme D/E gates.
         quality_mult_long = 1.0
         if not item.get("is_etf"):
             info_l = item["info"]
@@ -345,17 +371,31 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
             norm_tech=item.get("norm_tech"),
             fund_score=item.get("fund_score"),
             research_composite=item["research"].get("research_composite"),
+            red_flags=item.get("red_flags", []),
         )
         item["conviction"] = conviction
 
-        # Long-horizon conviction: no weekly_bullish gate (irrelevant at 1m-6m)
+        # Long-horizon conviction
         conviction_long = get_conviction_rating(
             comp_long_pctile, regime_score, weekly_bullish=True,
             norm_tech=item.get("norm_tech"),
             fund_score=item.get("fund_score"),
             research_composite=item.get("research_composite_long_raw"),
+            red_flags=item.get("red_flags", []),
         )
         item["conviction_long"] = conviction_long
+
+        # Tactical Swing conviction (1W–1M short horizon)
+        comp_tech_score = item.get("composite_score_tech", 5.0)
+        tactical_pctile = sum(all_comp_scores <= comp_tech_score) / len(all_comp_scores) * 100 if len(all_comp_scores) > 0 else 50.0
+        tactical_conviction = get_conviction_rating(
+            tactical_pctile, regime_score, weekly_bullish=weekly_bullish,
+            norm_tech=item.get("norm_tech"),
+            fund_score=item.get("fund_score"),
+            research_composite=item["research"].get("research_composite"),
+            red_flags=item.get("red_flags", []),
+        )
+        item["tactical_conviction"] = tactical_conviction
 
     # ── Call ML Alpha Engine ─────────────────────────────────────────────────
     try:
@@ -477,6 +517,14 @@ def build_output_row(item: dict) -> dict:
         "Promoter_Pledging_%": np.nan if is_etf else _safe_float(info.get("promoter_pledging")),
         "Conviction":       item["conviction"],
         "Conviction_Long":  item.get("conviction_long", item["conviction"]),
+        "Tactical_Score":   round(_safe_float(item.get("composite_score_tech", 5.0)), 2),
+        "Tactical_Conviction": item.get("tactical_conviction", item["conviction"]),
+        "Red_Flags":        item.get("red_flags", []),
+        "ATR_Stop":         item.get("trade_plan", {}).get("atr_stop", np.nan),
+        "ATR_Target1":      item.get("trade_plan", {}).get("atr_target1", np.nan),
+        "ATR_Target2":      item.get("trade_plan", {}).get("atr_target2", np.nan),
+        "ATR_Chandelier":   item.get("trade_plan", {}).get("atr_chandelier", np.nan),
+        "ATR_Risk_Pct":     item.get("trade_plan", {}).get("atr_risk_pct", np.nan),
         "RS_Percentile":    round(item["rs_pctile"], 1) if not np.isnan(item.get("rs_pctile", np.nan)) else None,
         "RSI_Value":        round(_safe_float(latest.get("RSI", np.nan)), 2),
         "MACD_Value":       round(_safe_float(latest.get("MACD", np.nan)), 4),
