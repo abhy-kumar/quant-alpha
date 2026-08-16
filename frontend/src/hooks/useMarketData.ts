@@ -158,7 +158,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
           if (status !== 'closed') {
             liveId = setInterval(async () => {
               if ((await fetchLive()) === 'closed') clearInterval(liveId)
-            }, 3 * 60 * 1000)
+            }, 15 * 1000)
           }
         }, 1000)
 
@@ -170,17 +170,19 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
 
     init()
 
-    const handleVisibilityChange = () => {
+    const handleActiveState = () => {
       if (document.visibilityState === 'visible') {
         fetchLive()
       }
     }
-    document.addEventListener('visibilitychange', handleVisibilityChange)
+    document.addEventListener('visibilitychange', handleActiveState)
+    window.addEventListener('focus', handleActiveState)
 
     return () => {
       clearInterval(liveId)
       clearInterval(dataId)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      document.removeEventListener('visibilitychange', handleActiveState)
+      window.removeEventListener('focus', handleActiveState)
     }
   }, [fetchData, fetchLive])
 

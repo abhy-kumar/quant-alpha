@@ -41,7 +41,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     if (isMarketClosed) {
       res.setHeader('Cache-Control', 's-maxage=21600, stale-while-revalidate=86400')
     } else {
-      res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120')
+      res.setHeader('Cache-Control', 's-maxage=10, stale-while-revalidate=20')
     }
 
     let tickers: string | string[] | undefined
