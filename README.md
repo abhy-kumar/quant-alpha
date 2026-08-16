@@ -63,19 +63,24 @@
 - **Tactical Swing Radar (1W–1M Horizon)**: Short-term momentum breakouts, RSI swing setups, VPT volume surges, and 52-week high leadership.
 - **Strategic Compounder (6M–2Y Horizon)**: Long-horizon Fama-French profitability, Piotroski F-Score $\ge 7$, ROCE $> 20\%$, and Novy-Marx Gross Profitability.
 
-### 6. Sub-Minute Fast Live Market Polling & Edge Architecture (`frontend/src/hooks/useMarketData.ts`)
+### 6. Portfolio Optimization & Equal Risk Contribution (`engine/quant_engine.py`)
+- **Three-Way Allocation Engine**: Computes **Max Sharpe** (tangency portfolio maximizing risk-adjusted alpha), **Min Volatility** (quadratic risk-minimization), and **Risk Parity (Equal Risk Contribution / ERC)** equalizing the marginal risk contribution across assets to eliminate single-stock volatility concentration.
+- **Historical Macro Crisis Stress-Testing**: Simulates portfolio drawdown sensitivities against major historical shocks (2020 Covid Liquidity Shock, 2022 Global Rate Hike, 2024 Election Volatility, High-Multiple Valuation Resets).
+- **Factor Information Coefficient (IC) Efficacy Monitor**: Tracks rolling 3-month Spearman rank Information Coefficients ($\text{IC} = \text{corr}(\text{Factor}_t, \text{Return}_{t+21d})$) and t-statistics across academic factors.
+
+### 7. Sub-Minute Fast Live Market Polling & Edge Architecture (`frontend/src/hooks/useMarketData.ts`)
 - **15-Second In-Memory Polling**: Sub-minute price refreshing during active NSE trading hours (9:15 AM – 3:30 PM IST) with reactive green/red live tick flash animations.
 - **10-Second Vercel Edge Cache**: Optimized `Cache-Control: s-maxage=10, stale-while-revalidate=20` to guarantee fresh quotes without hitting rate limits.
 - **Smart Focus Refresh**: Automatically triggers immediate background updates when focusing or switching back to the browser tab.
 
-### 7. Walk-Forward Portfolio Backtesting Studio (`engine/backtest_engine.py`)
+### 8. Walk-Forward Portfolio Backtesting Studio (`engine/backtest_engine.py`)
 - **Look-Ahead-Free Rebalancing**: Replays signals strictly using point-in-time data across 2-year OHLCV price histories (monthly rebalance, Top-10 equal-weight).
 - **Multi-Model & Multi-Horizon Evaluation**: Supports Short-Term (Technical + Momentum) and Long-Term (Jegadeesh-Titman + Low Volatility) scoring across 1Y ($252$ trading days) and 6M ($126$ trading days) horizons.
 
-### 8. Macro Market Regime Detection (`engine/regime_engine.py`)
+### 9. Macro Market Regime Detection (`engine/regime_engine.py`)
 - Calculates aggregate market breadth percentage (% of NSE stocks above 200 SMA), India VIX volatility, and Nifty trend indices to output a dynamic 0–100 **Regime Score** (*Risk-On*, *Neutral*, *Risk-Off*).
 
-### 9. Current-Gen SEO & Digital Marketing Architecture (`frontend/src/components/common/`)
+### 10. Current-Gen SEO & Digital Marketing Architecture (`frontend/src/components/common/`)
 - **Dynamic Route & Ticker Metadata Engine (`SeoHead.tsx`)**: Dynamically updates `<title>`, `<meta name="description">`, `<link rel="canonical">`, Open Graph (`og:*`), and Twitter Cards (`twitter:*`) per route (`/`, `/signals`, `/screen`, `/heatmap`, `/quant`) and active stock ticker (`?ticker=RELIANCE.NS`).
 - **Rich JSON-LD Structured Data**: Injects dynamic `SoftwareApplication`, `FinancialProduct`, `Organization`, `BreadcrumbList`, and `FAQPage` schemas for Google Rich Snippets & "People Also Ask" ranking.
 - **Generative Engine Optimization (GEO) for AI Search**: Implements `public/llms.txt` and `public/llms-full.txt` adhering to the `llmstxt.org` standard for AI search engines (Perplexity, ChatGPT, Claude, Google SGE/Search Overviews).
@@ -83,11 +88,12 @@
 - **Growth Funnel & Research Dispatch Capture (`NewsletterModal.tsx`)**: Institutional research dispatch subscription modal for community growth and investor retention.
 - **Core Web Vitals & Technical SEO**: DNS prefetching (`dns-prefetch`), resource preconnecting (`fonts.googleapis.com`, `va.vercel-scripts.com`), PWA touch tags, multi-route XML sitemap (`sitemap.xml`) with image tags, and bot-friendly crawler routing (`robots.txt`).
 
-### 10. Modern Apple HIG Interface & Institutional Modals (`frontend/src/`)
+### 11. Modern Apple HIG Interface & Institutional Modals (`frontend/src/`)
+- **1-Click Strategy Presets**: Screener drawer presets for Buffett-Munger Quality, Minervini Stage 2 Breakouts, PEAD Momentum, Defensive Low-Beta, and Deep Value Moats.
 - **1-Click Institutional Equity Factsheet (PDF Tear-Sheet Generator)**: Produces an exact 1-page A4 Wall Street / Dalal Street factsheet with 10-factor radar polygons, key financial metrics, valuation multiples, and risk profiles.
 - **10-Factor Multi-Dimensional Radar Polygon Chart**: Compares 10 academic factors simultaneously against sector peer group benchmarks.
+- **Interactive Correlation Matrix Heatmap**: Displays pairwise asset co-movement and diversification matrices in Quant Lab.
 - **Centered Floating Segmented Control**: Mathematically centered 5-tab pill navigation bar (`rounded-full`, `blur(24px) saturate(180%)`) matching macOS & visionOS floating toolbar standards.
-- **Interactive Multi-Metric Screener**: Live slider drawer filtering by Min ROE %, Max P/E, Min/Max RSI(14), Market Cap, Piotroski, D/E, and Sector with rich multi-factor CSV export.
 - **TradingView Canvas Charting**: Built on `@tradingview/lightweight-charts` with real-time indicators (SMA 50/200, Supertrend, Bollinger Bands, RSI, MACD) and log/linear scaling.
 
 ---
@@ -230,6 +236,7 @@ stock-dashboard/
 │   ├── test_recommendation_edge_cases.py         # Unit tests for growth sanitization, loss penalties & DB pragmas
 │   ├── test_recommendation_enhancements.py       # Unit tests for forensic red flags, ATR execution & sector Z-scores
 │   ├── test_research_factors.py                  # Unit tests for academic research factor scoring
+│   ├── test_risk_parity_and_backtest.py          # Unit tests for Risk Parity, Factor IC & Scenario Stress Tests
 │   └── test_scoring.py                           # Unit tests for sector normalization & composite z-scores
 ├── .gitignore                                    # Git exclusion rules (DB binary, virtual environments)
 ├── CODE_OF_CONDUCT.md                            # Contributor code of conduct specification
@@ -300,7 +307,7 @@ python db_split_join.py join
 
 ### 3. Backend Execution & Testing
 ```bash
-# Execute full unit & integration test suite (82 tests)
+# Execute full unit & integration test suite (88 tests)
 pytest tests/ -v
 
 # Run full market scan engine

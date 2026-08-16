@@ -293,6 +293,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
 
   const max_sharpe = quantData.model_portfolios?.max_sharpe || {}
   const min_volatility = quantData.model_portfolios?.min_volatility || {}
+  const risk_parity = quantData.model_portfolios?.risk_parity || {}
 
   // Inline TickerLink component: wraps a ticker string into a clickable button
   const TickerLink = ({ ticker }: { ticker: string }) => (
@@ -602,10 +603,11 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
           </GlassCard>
 
           {/* Model Portfolios */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { title: 'Max Sharpe Portfolio', tooltipId: 'quant.max-sharpe', icon: Target, data: max_sharpe, accent: 'var(--brand)', iconColor: 'var(--brand)' },
-              { title: 'Min Volatility Portfolio', tooltipId: 'quant.min-vol', icon: Scales, data: min_volatility, accent: 'var(--amber)', iconColor: 'var(--amber)' },
+              { title: 'Max Sharpe', tooltipId: 'quant.max-sharpe', icon: Target, data: max_sharpe, accent: 'var(--brand)', iconColor: 'var(--brand)' },
+              { title: 'Min Volatility', tooltipId: 'quant.min-vol', icon: Scales, data: min_volatility, accent: 'var(--amber)', iconColor: 'var(--amber)' },
+              { title: 'Risk Parity (ERC)', tooltipId: 'quant.risk-parity', icon: ChartPieSlice, data: risk_parity, accent: 'var(--blue)', iconColor: 'var(--blue)' },
             ].map(port => (
               <GlassCard key={port.title}>
                 <GlassCardHeader
@@ -614,18 +616,22 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                   title={port.title}
                   tooltipId={port.tooltipId}
                 />
-                <GlassCardContent className="p-5 space-y-3 max-h-56 overflow-y-auto scrollbar-none">
-                  {Object.entries(port.data).map(([ticker, weight]) => (
-                    <div key={ticker}>
-                      <div className="flex justify-between text-xs mb-1.5" style={{ color: 'var(--text-2)' }}>
-                        <TickerLink ticker={ticker} />
-                        <span className="typo-num-sm">{(Number(weight) * 100).toFixed(1)}%</span>
+                <GlassCardContent className="p-4 space-y-2.5 max-h-56 overflow-y-auto scrollbar-none">
+                  {Object.entries(port.data).length === 0 ? (
+                    <p className="text-xs text-[var(--text-3)]">No weights allocated.</p>
+                  ) : (
+                    Object.entries(port.data).map(([ticker, weight]) => (
+                      <div key={ticker}>
+                        <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-2)' }}>
+                          <TickerLink ticker={ticker} />
+                          <span className="typo-num-sm">{(Number(weight) * 100).toFixed(1)}%</span>
+                        </div>
+                        <div className="h-1 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                          <div className="h-full rounded-full" style={{ width: `${Number(weight) * 100}%`, background: port.accent }} />
+                        </div>
                       </div>
-                      <div className="h-1 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                        <div className="h-full rounded-full" style={{ width: `${Number(weight) * 100}%`, background: port.accent }} />
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </GlassCardContent>
               </GlassCard>
             ))}
@@ -677,6 +683,47 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
               <MonteCarloChart cagr={backtestStats?.cagr || 15} volatility={backtestStats?.volatility || 18} isDark={isDark} />
             </GlassCardContent>
           </GlassCard>
+
+          {/* Macro Scenario Stress-Testing */}
+          {quantData.scenario_stress_tests && quantData.scenario_stress_tests.length > 0 && (
+            <GlassCard>
+              <GlassCardHeader
+                icon={Warning}
+                iconColor="var(--amber)"
+                title="Macro Scenario Stress-Testing"
+                badge={<span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>Historical Crises</span>}
+              />
+              <GlassCardContent className="p-5 overflow-x-auto scrollbar-none">
+                <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <th className="typo-table-head py-2 pr-4 text-left">Shock Event</th>
+                      <th className="typo-table-head py-2 pr-4 text-left hidden sm:table-cell">Period</th>
+                      <th className="typo-table-head py-2 pr-4 text-right">Benchmark</th>
+                      <th className="typo-table-head py-2 pr-4 text-right">Simulated Portfolio</th>
+                      <th className="typo-table-head py-2 text-right">Factor Resilience</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {quantData.scenario_stress_tests.map((s, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td className="py-2.5 pr-4 font-medium" style={{ color: 'var(--text)' }}>{s.event_name}</td>
+                        <td className="py-2.5 pr-4 hidden sm:table-cell text-[10px]" style={{ color: 'var(--text-3)' }}>{s.period}</td>
+                        <td className="py-2.5 pr-4 text-right font-mono font-medium text-[var(--red)]">{s.benchmark_shock_pct.toFixed(1)}%</td>
+                        <td className="py-2.5 pr-4 text-right font-mono font-bold" style={{ color: s.simulated_portfolio_pct > s.benchmark_shock_pct ? 'var(--green)' : 'var(--red)' }}>
+                          {s.simulated_portfolio_pct.toFixed(1)}%
+                        </td>
+                        <td className="py-2.5 text-right font-medium text-[10px]" style={{ color: 'var(--brand-light)' }}>{s.factor_resilience}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </GlassCardContent>
+              <GlassCardFooter className="typo-caption text-center px-4 pb-4 text-[var(--text-3)] border-none">
+                Simulated multi-factor sensitivity based on portfolio beta, Piotroski quality dampener, and historical drawdown distribution.
+              </GlassCardFooter>
+            </GlassCard>
+          )}
         </div>
 
         {/* Right column */}
@@ -809,6 +856,42 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
               </GlassCardContent>
             </GlassCard>
             )}
+
+          {/* Factor Information Coefficient (IC) Monitor */}
+          {quantData.factor_ic_monitor && quantData.factor_ic_monitor.length > 0 && (
+            <GlassCard>
+              <GlassCardHeader
+                icon={BookOpen}
+                iconColor="var(--brand)"
+                title="Factor IC Efficacy Monitor"
+                badge={<span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>Rolling 3M</span>}
+              />
+              <GlassCardContent className="p-5 space-y-3">
+                {quantData.factor_ic_monitor.map((f) => (
+                  <div key={f.factor} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-medium" style={{ color: 'var(--text)' }}>{f.factor}</span>
+                      <span className="font-mono text-[11px]" style={{ color: f.ic_current >= 0.10 ? 'var(--green)' : 'var(--text-2)' }}>
+                        IC: +{f.ic_current.toFixed(3)} (t={f.t_stat.toFixed(1)})
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${Math.min(100, Math.max(10, f.ic_current * 400))}%`,
+                          background: f.ic_current >= 0.10 ? 'var(--green)' : 'var(--brand)'
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </GlassCardContent>
+              <GlassCardFooter className="typo-caption text-center px-4 pb-4 text-[var(--text-3)] border-none">
+                Spearman rank Information Coefficient: corr(Factor_t, Return_t+21d). IC &gt; 0.05 indicates statistical predictive power.
+              </GlassCardFooter>
+            </GlassCard>
+          )}
 
           </div>
         </div>

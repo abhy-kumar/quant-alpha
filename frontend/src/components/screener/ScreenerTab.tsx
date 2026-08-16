@@ -328,10 +328,72 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
     maxDE < 999, minROE > 0, maxPE < 999, minRSI > 0, maxRSI < 100, searchQuery.length > 0
   ].filter(Boolean).length
 
+  const [activePreset, setActivePreset] = useState<string | null>(null)
+
+  const applyPreset = (presetKey: string) => {
+    if (activePreset === presetKey) {
+      clearFilters()
+      return
+    }
+    setActivePreset(presetKey)
+    if (presetKey === 'buffett') {
+      setMinComposite(6.5)
+      setMinPiotroski(7)
+      setMinROE(20)
+      setMaxDE(0.6)
+      setMaxPE(40)
+      setMinValue(0)
+      setMaxBeta(3)
+      setMinRSI(0)
+      setMaxRSI(100)
+    } else if (presetKey === 'minervini') {
+      setMinComposite(6.0)
+      setMinPiotroski(5)
+      setMinROE(10)
+      setMaxDE(999)
+      setMaxPE(60)
+      setMinValue(0)
+      setMaxBeta(2.5)
+      setMinRSI(55)
+      setMaxRSI(100)
+    } else if (presetKey === 'pead') {
+      setMinComposite(6.5)
+      setMinPiotroski(6)
+      setMinROE(15)
+      setMaxDE(1.5)
+      setMaxPE(35)
+      setMinValue(5.0)
+      setMaxBeta(3)
+      setMinRSI(0)
+      setMaxRSI(100)
+    } else if (presetKey === 'defensive') {
+      setMinComposite(5.5)
+      setMinPiotroski(6)
+      setMinROE(12)
+      setMaxDE(0.5)
+      setMaxPE(30)
+      setMinValue(0)
+      setMaxBeta(0.8)
+      setMinRSI(0)
+      setMaxRSI(100)
+    } else if (presetKey === 'value') {
+      setMinComposite(6.0)
+      setMinPiotroski(6)
+      setMinROE(12)
+      setMaxDE(0.5)
+      setMaxPE(20)
+      setMinValue(7.0)
+      setMaxBeta(3)
+      setMinRSI(0)
+      setMaxRSI(100)
+    }
+  }
+
   const clearFilters = () => {
     setMinComposite(0); setMinPiotroski(0); setMinValue(0); setMaxBeta(3)
     setSelectedSectors([]); setSelectedConvictions([]); setMinMarketCap(0); setMaxDE(999)
     setMinROE(0); setMaxPE(999); setMinRSI(0); setMaxRSI(100); setSearchQuery('')
+    setActivePreset(null)
   }
 
   const toggleSector = (s: string) => setSelectedSectors(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
@@ -477,7 +539,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
       {/* Desktop Filters inline panel */}
       <div className="hidden sm:block filter-panel" data-open={showFilters ? 'true' : 'false'}>
         <div className="p-5 card" style={{ borderRadius: 'var(--radius-xl)' }}>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <span className="section-label" style={{ color: 'var(--brand)' }}>Filters</span>
             {activeFilterCount > 0 && (
               <button onClick={clearFilters} className="flex items-center gap-1 text-xs transition-colors hover:opacity-80" style={{ color: 'var(--text-3)' }}>
@@ -485,6 +547,36 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               </button>
             )}
           </div>
+
+          {/* Strategy Presets */}
+          <div className="mb-4 pb-3" style={{ borderBottom: '0.5px solid var(--glass-border)' }}>
+            <span className="text-[10px] uppercase font-semibold tracking-wider block mb-2" style={{ color: 'var(--text-3)' }}>
+              1-Click Strategy Presets
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { id: 'buffett', label: 'Buffett-Munger Quality', desc: 'ROE > 20%, F-Score >= 7, Low Debt' },
+                { id: 'minervini', label: 'Minervini Stage 2', desc: 'RSI > 55, High Momentum Stage 2' },
+                { id: 'pead', label: 'PEAD Momentum', desc: 'Accelerating growth, SUE & Value' },
+                { id: 'defensive', label: 'Defensive Low-Beta', desc: 'Beta < 0.8, High quality & safety' },
+                { id: 'value', label: 'Deep Value Moats', desc: 'P/E < 20, High Value Score & ROCE' },
+              ].map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => applyPreset(p.id)}
+                  className={`px-3 py-1 text-xs rounded-full transition-all ${
+                    activePreset === p.id
+                      ? 'bg-[var(--brand)] text-white font-medium shadow-sm'
+                      : 'bg-[var(--surface-2)] text-[var(--text-2)] hover:text-[var(--text)] border border-[var(--border)]'
+                  }`}
+                  title={p.desc}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min composite: {minComposite.toFixed(1)}</label>

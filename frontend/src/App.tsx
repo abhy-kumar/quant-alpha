@@ -395,13 +395,13 @@ export default function App() {
         <div className="glass-subtle" style={{ borderBottom:'0.5px solid var(--glass-border)', borderRadius: 0 }}>
           <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
           {/* LIVE indicator */}
-          <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
             <div className={isDynamic ? 'live-pulse-glow' : ''} style={{ width:6, height:6, borderRadius:'50%',
-              background: isDynamic ? 'var(--amber)' : 'var(--text-3)',
+              background: isDynamic ? 'var(--green)' : 'var(--text-3)',
               transition: 'background 300ms ease',
-              boxShadow: isDynamic ? '0 0 4px var(--amber)' : 'none' }}/>
-            <span style={{ fontSize:11, color:'var(--text-3)', letterSpacing:'0.08em', fontWeight:600 }}>
-              {isDynamic ? 'LIVE' : 'CLOSED'}
+              boxShadow: isDynamic ? '0 0 6px var(--green)' : 'none' }}/>
+            <span style={{ fontSize:11, color: isDynamic ? 'var(--green)' : 'var(--text-3)', letterSpacing:'0.04em', fontWeight:600 }}>
+              NSE: {isDynamic ? 'LIVE (15s)' : 'CLOSED'}
             </span>
           </div>
 

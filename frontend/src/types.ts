@@ -165,6 +165,7 @@ export interface BacktestResult {
 export interface ModelPortfolios {
   max_sharpe: Record<string, number>
   min_volatility: Record<string, number>
+  risk_parity?: Record<string, number>
 }
 
 export interface FactorExposure {
@@ -174,11 +175,28 @@ export interface FactorExposure {
   Low_Volatility: number
 }
 
+export interface FactorICMetric {
+  factor: string
+  ic_current: number
+  ic_3m_rolling: number
+  t_stat: number
+  status: string
+}
+
+export interface ScenarioStressTest {
+  event_name: string
+  period: string
+  benchmark_shock_pct: number
+  simulated_portfolio_pct: number
+  factor_resilience: string
+}
+
 export interface QuantData {
   last_updated: string
   model_portfolios: {
     max_sharpe: Record<string, number>
     min_volatility: Record<string, number>
+    risk_parity?: Record<string, number>
   }
   factor_exposures: {
     Value: number
@@ -186,6 +204,8 @@ export interface QuantData {
     Quality: number
     Low_Volatility: number
   }
+  factor_ic_monitor?: FactorICMetric[]
+  scenario_stress_tests?: ScenarioStressTest[]
   market_regime?: {
     score: number
     nifty_trend: string
