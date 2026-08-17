@@ -40,33 +40,33 @@
 
 ### 1. Machine Learning Walk-Forward Engine (`engine/ml_engine.py`)
 - **Ensemble Classifier**: Fits a `HistGradientBoostingClassifier` on historical scan outcome records in SQLite (`market_scans.db`).
-- **Probability Outperformance**: Computes real-time outperformance probability ($P(\text{Return}_{21d} > \text{Nifty}_{21d})$) and maps stocks into conviction tiers (*Strong Alpha*, *Moderate Alpha*, *Neutral*, *Low Alpha*).
+- **Probability Outperformance**: Computes real-time outperformance probability `P(Return_21d > Nifty_21d)` and maps stocks into conviction tiers (*Strong Alpha*, *Moderate Alpha*, *Neutral*, *Low Alpha*).
 
 ### 2. Sector-Neutral Multi-Factor Scoring & Z-Score Normalization (`engine/scoring.py` & `engine/recommendation.py`)
-- **Cross-Sectional Sector Z-Score Normalization**: Evaluates fundamental metrics (P/E, ROE, ROCE, Debt/Equity) relative to empirical industry sector distributions ($\mu_{\text{sector}}, \sigma_{\text{sector}}$).
-- **Outlier Mitigation**: Applies continuous non-linear mapping $5.0 + 4.5 \times \tanh(Z / 1.8)$ to bound z-scores between $0.5$ and $9.8$ without discrete cliff-edge distortions.
-- **Dynamic Market-Regime Adaptive Factor Weighting**: Dynamically shifts factor weights between Momentum & Technical Breakouts in **Risk-On Bull** markets ($VIX < 14, Nifty > 200\text{SMA}$) and Piotroski Quality, Low Beta & Debt Safety in **Risk-Off Bear** regimes.
+- **Cross-Sectional Sector Z-Score Normalization**: Evaluates fundamental metrics (P/E, ROE, ROCE, Debt/Equity) relative to empirical industry sector distributions (`mean_sector, std_sector`).
+- **Outlier Mitigation**: Applies continuous non-linear mapping `5.0 + 4.5 * tanh(Z / 1.8)` to bound z-scores between 0.5 and 9.8 without discrete cliff-edge distortions.
+- **Dynamic Market-Regime Adaptive Factor Weighting**: Dynamically shifts factor weights between Momentum & Technical Breakouts in **Risk-On Bull** markets (`VIX < 14, Nifty > 200 SMA`) and Piotroski Quality, Low Beta & Debt Safety in **Risk-Off Bear** regimes.
 
 ### 3. Forensic Accounting & Red-Flag Circuit Breakers (`engine/recommendation.py`)
-- **Disqualifier Detection**: Hard circuit breakers scan for promoter pledging ($> 20\%$), severe leverage distress ($D/E > 2.5\text{x}$ with negative ROE), deep operational insolvency ($\text{ROE} < -15\%$), and blow-off tops ($Z_{60} > 2.5, RSI > 80$).
+- **Disqualifier Detection**: Hard circuit breakers scan for promoter pledging (> 20%), severe leverage distress (D/E > 2.5x with negative ROE), deep operational insolvency (ROE < -15%), and blow-off tops (Z_60 > 2.5, RSI > 80).
 - **Safety Gating**: Automatically caps conviction ratings at **"Caution"** or **"Avoid"** and attaches forensic warning badges across the Screener and Investment Thesis modals.
 
 ### 4. ATR Volatility Execution & Position Sizing Engine (`engine/recommendation.py` & `frontend/`)
 - **Stock-Specific Trade Plans**: Generates exact execution parameters based on 14-day Average True Range (ATR):
-  - **Dynamic Stop-Loss**: $\text{Entry} - (2.0 \times \text{ATR}_{14})$
-  - **Target 1 (50% Partial Trim)**: $\text{Entry} + (2.5 \times \text{ATR}_{14})$
-  - **Target 2 (Runner)**: $\text{Entry} + (4.5 \times \text{ATR}_{14})$
-  - **Chandelier Trailing Exit**: $\text{Highest High}_{22} - (3.0 \times \text{ATR}_{14})$
+  - **Dynamic Stop-Loss**: `Entry - (2.0 x ATR_14)`
+  - **Target 1 (50% Partial Trim)**: `Entry + (2.5 x ATR_14)`
+  - **Target 2 (Runner)**: `Entry + (4.5 x ATR_14)`
+  - **Chandelier Trailing Exit**: `Highest High_22 - (3.0 x ATR_14)`
 - **Auto ATR Position Sizer Modal**: Calculates precise portfolio capital allocation and share count based on dollar risk per share.
 
 ### 5. Multi-Horizon Dual Recommendation Profiles
 - **Tactical Swing Radar (1W–1M Horizon)**: Short-term momentum breakouts, RSI swing setups, VPT volume surges, and 52-week high leadership.
-- **Strategic Compounder (6M–2Y Horizon)**: Long-horizon Fama-French profitability, Piotroski F-Score $\ge 7$, ROCE $> 20\%$, and Novy-Marx Gross Profitability.
+- **Strategic Compounder (6M–2Y Horizon)**: Long-horizon Fama-French profitability, Piotroski F-Score >= 7, ROCE > 20%, and Novy-Marx Gross Profitability.
 
 ### 6. Portfolio Optimization & Equal Risk Contribution (`engine/quant_engine.py`)
 - **Three-Way Allocation Engine**: Computes **Max Sharpe** (tangency portfolio maximizing risk-adjusted alpha), **Min Volatility** (quadratic risk-minimization), and **Risk Parity (Equal Risk Contribution / ERC)** equalizing the marginal risk contribution across assets to eliminate single-stock volatility concentration.
 - **Historical Macro Crisis Stress-Testing**: Simulates portfolio drawdown sensitivities against major historical shocks (2020 Covid Liquidity Shock, 2022 Global Rate Hike, 2024 Election Volatility, High-Multiple Valuation Resets).
-- **Factor Information Coefficient (IC) Efficacy Monitor**: Tracks rolling 3-month Spearman rank Information Coefficients ($\text{IC} = \text{corr}(\text{Factor}_t, \text{Return}_{t+21d})$) and t-statistics across academic factors.
+- **Factor Information Coefficient (IC) Efficacy Monitor**: Tracks rolling 3-month Spearman rank Information Coefficients (`IC = corr(Factor_t, Return_t+21d)`) and t-statistics across academic factors.
 
 ### 7. Sub-Minute Fast Live Market Polling & Edge Architecture (`frontend/src/hooks/useMarketData.ts`)
 - **15-Second In-Memory Polling**: Sub-minute price refreshing during active NSE trading hours (9:15 AM – 3:30 PM IST) with reactive green/red live tick flash animations.
@@ -75,7 +75,7 @@
 
 ### 8. Walk-Forward Portfolio Backtesting Studio (`engine/backtest_engine.py`)
 - **Look-Ahead-Free Rebalancing**: Replays signals strictly using point-in-time data across 2-year OHLCV price histories (monthly rebalance, Top-10 equal-weight).
-- **Multi-Model & Multi-Horizon Evaluation**: Supports Short-Term (Technical + Momentum) and Long-Term (Jegadeesh-Titman + Low Volatility) scoring across 1Y ($252$ trading days) and 6M ($126$ trading days) horizons.
+- **Multi-Model & Multi-Horizon Evaluation**: Supports Short-Term (Technical + Momentum) and Long-Term (Jegadeesh-Titman + Low Volatility) scoring across 1Y (252 trading days) and 6M (126 trading days) horizons.
 
 ### 9. Macro Market Regime Detection (`engine/regime_engine.py`)
 - Calculates aggregate market breadth percentage (% of NSE stocks above 200 SMA), India VIX volatility, and Nifty trend indices to output a dynamic 0–100 **Regime Score** (*Risk-On*, *Neutral*, *Risk-Off*).
