@@ -54,21 +54,39 @@ export function extractFactorDimensions(asset: DashboardData): FactorDimension[]
 }
 
 interface Props {
-  asset: DashboardData
+  asset?: DashboardData
+  assets?: DashboardData[]
   peerGroup?: DashboardData[]
   size?: number
   showLegend?: boolean
   className?: string
 }
 
-export function FactorRadarChart({ asset, peerGroup = [], size = 320, showLegend = true, className = '' }: Props) {
+const COMPARISON_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4']
+
+export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, showLegend = true, className = '' }: Props) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
-  const factors = useMemo(() => extractFactorDimensions(asset), [asset])
+  const activeAsset = asset || (assets && assets.length > 0 ? assets[0] : null)
+  const isMultiAsset = Boolean(assets && assets.length > 0)
+
+  const factors = useMemo(() => {
+    if (activeAsset) return extractFactorDimensions(activeAsset)
+    return []
+  }, [activeAsset])
+
+  const multiAssetFactors = useMemo(() => {
+    if (!assets || assets.length === 0) return []
+    return assets.map((a, idx) => ({
+      asset: a,
+      color: COMPARISON_COLORS[idx % COMPARISON_COLORS.length],
+      dims: extractFactorDimensions(a),
+    }))
+  }, [assets])
 
   // Sector peer benchmark factors
   const peerFactors = useMemo(() => {
-    if (!peerGroup || peerGroup.length === 0) return null
+    if (!peerGroup || peerGroup.length === 0 || !factors.length) return null
     const allDims = peerGroup.map(p => extractFactorDimensions(p))
     return factors.map((f, i) => {
       const avg = allDims.reduce((acc, dims) => acc + dims[i].score, 0) / allDims.length
@@ -76,9 +94,11 @@ export function FactorRadarChart({ asset, peerGroup = [], size = 320, showLegend
     })
   }, [peerGroup, factors])
 
+  if (!activeAsset && (!assets || assets.length === 0)) return null
+
   const center = size / 2
   const maxRadius = (size - 76) / 2
-  const numFactors = factors.length
+  const numFactors = factors.length || 10
   const levels = [2, 4, 6, 8, 10]
 
   const getCoordinates = (index: number, score: number) => {
@@ -90,7 +110,7 @@ export function FactorRadarChart({ asset, peerGroup = [], size = 320, showLegend
     }
   }
 
-  // Stock Polygon Path
+  // Stock Polygon Path (for single asset)
   const stockPoints = factors.map((f, i) => {
     const { x, y } = getCoordinates(i, f.score)
     return `${x},${y}`
@@ -102,7 +122,7 @@ export function FactorRadarChart({ asset, peerGroup = [], size = 320, showLegend
     return `${x},${y}`
   }).join(' ') : ''
 
-  const gradientId = `radar-grad-${asset.Ticker.replace(/[^a-zA-Z0-9]/g, '')}`
+  const gradientId = `radar-grad-${(activeAsset?.Ticker || 'radar').replace(/[^a-zA-Z0-9]/g, '')}`
 
   return (
     <div className={`flex flex-col items-center select-none ${className}`}>
@@ -171,8 +191,8 @@ export function FactorRadarChart({ asset, peerGroup = [], size = 320, showLegend
             )
           })}
 
-          {/* Sector Benchmark Polygon (Dashed Amber) */}
-          {peerPoints && (
+          {/* Sector Benchmark Polygon (Dashed Amber) - Single Asset Mode */}
+          {!isMultiAsset && peerPoints && (
             <polygon
               points={peerPoints}
               fill="rgba(245, 158, 11, 0.08)"
@@ -183,15 +203,36 @@ export function FactorRadarChart({ asset, peerGroup = [], size = 320, showLegend
             />
           )}
 
-          {/* Stock Quant Polygon (Glowing Brand) */}
-          <polygon
-            points={stockPoints}
-            fill={`url(#${gradientId})`}
-            stroke="var(--brand)"
-            strokeWidth="2.2"
-            filter="url(#radar-glow)"
-            style={{ transition: 'all 400ms var(--ease-out)' }}
-          />
+          {/* Single Stock Polygon */}
+          {!isMultiAsset && (
+            <polygon
+              points={stockPoints}
+              fill={`url(#${gradientId})`}
+              stroke="var(--brand)"
+              strokeWidth="2.2"
+              filter="url(#radar-glow)"
+              style={{ transition: 'all 400ms var(--ease-out)' }}
+            />
+          )}
+
+          {/* Multi-Asset Polygons */}
+          {isMultiAsset && multiAssetFactors.map(({ asset: a, color, dims }) => {
+            const pts = dims.map((d, i) => {
+              const { x, y } = getCoordinates(i, d.score)
+              return `${x},${y}`
+            }).join(' ')
+            return (
+              <polygon
+                key={a.Ticker}
+                points={pts}
+                fill={color}
+                fillOpacity={0.15}
+                stroke={color}
+                strokeWidth="2"
+                style={{ transition: 'all 400ms var(--ease-out)' }}
+              />
+            )
+          })}
 
           {/* Factor Node Vertices & Interaction Dots */}
           {factors.map((f, i) => {
@@ -256,17 +297,27 @@ export function FactorRadarChart({ asset, peerGroup = [], size = 320, showLegend
 
       {/* Legend */}
       {showLegend && (
-        <div className="flex items-center justify-center gap-4 mt-2 text-[11px]" style={{ color: 'var(--text-3)' }}>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full" style={{ background: 'var(--brand)' }} />
-            <span className="font-medium" style={{ color: 'var(--text)' }}>{asset.Ticker.replace('.NS', '')} Factor DNA</span>
-          </div>
-          {peerGroup && peerGroup.length > 0 && (
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-0.5 border-b-2 border-dashed border-[var(--amber)]" />
-              <span>{asset.Sector || 'Sector'} Avg Benchmark</span>
-            </div>
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-2 text-[11px]" style={{ color: 'var(--text-3)' }}>
+          {!isMultiAsset && activeAsset && (
+            <>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full" style={{ background: 'var(--brand)' }} />
+                <span className="font-medium" style={{ color: 'var(--text)' }}>{activeAsset.Ticker.replace('.NS', '')} Factor DNA</span>
+              </div>
+              {peerGroup && peerGroup.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-0.5 border-b-2 border-dashed border-[var(--amber)]" />
+                  <span>{activeAsset.Sector || 'Sector'} Avg Benchmark</span>
+                </div>
+              )}
+            </>
           )}
+          {isMultiAsset && multiAssetFactors.map(({ asset: a, color }) => (
+            <div key={a.Ticker} className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
+              <span className="font-medium" style={{ color: 'var(--text)' }}>{a.Ticker.replace('.NS', '')}</span>
+            </div>
+          ))}
         </div>
       )}
     </div>

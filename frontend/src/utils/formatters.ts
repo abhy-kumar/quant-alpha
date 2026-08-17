@@ -1,64 +1,57 @@
 /**
  * formatters.ts
- * -------------
- * Centralized formatting utilities and color helpers for Quant Alpha UI.
- * Single source of truth for numeric formatting, currency, volume, and score color coding.
+ * Standard financial and number formatting utilities.
  */
 
-export const formatNum = (val: any, decimals = 2): string => {
-  if (val === undefined || val === null || val === '' || isNaN(Number(val))) return 'N/A'
-  return Number(val).toLocaleString('en-IN', {
+export function formatNum(v: any, decimals = 1): string {
+  if (v == null || isNaN(Number(v))) return '-'
+  return Number(v).toFixed(decimals)
+}
+
+export function colorCode(v: any, pos = 'text-[var(--green)]', neg = 'text-[var(--red)]', zero = 'text-[var(--text-3)]'): string {
+  const n = Number(v)
+  if (isNaN(n) || n === 0) return zero
+  return n > 0 ? pos : neg
+}
+
+export function scoreColor(s: number | null | undefined): string {
+  if (s == null || isNaN(Number(s))) return 'text-[var(--text-3)]'
+  const n = Number(s)
+  if (n >= 7) return 'text-[var(--green)]'
+  if (n >= 4) return 'text-[var(--brand)]'
+  return 'text-[var(--red)]'
+}
+
+export function getBadgeClass(conviction: string | null | undefined): string {
+  if (!conviction) return 'badge-neutral'
+  const c = conviction.toLowerCase()
+  if (c.includes('strong buy')) return 'badge-strong-buy'
+  if (c.includes('buy')) return 'badge-buy'
+  if (c.includes('caution')) return 'badge-caution'
+  if (c.includes('avoid')) return 'badge-avoid'
+  return 'badge-neutral'
+}
+
+export function formatINR(value: number | undefined | null, decimals = 2): string {
+  if (value == null || isNaN(Number(value))) return '-'
+  return Number(value).toLocaleString('en-IN', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   })
 }
 
-export const formatCurrency = (val: any, symbol = '₹', decimals = 2): string => {
-  if (val === undefined || val === null || val === '' || isNaN(Number(val))) return 'N/A'
-  return `${symbol}${Number(val).toLocaleString('en-IN', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  })}`
+export function formatPercent(value: number | undefined | null, decimals = 1, showSign = true): string {
+  if (value == null || isNaN(Number(value))) return '-'
+  const n = Number(value)
+  const sign = showSign && n > 0 ? '+' : ''
+  return `${sign}${n.toFixed(decimals)}%`
 }
 
-export const formatVolume = (vol?: number): string => {
-  if (!vol || isNaN(vol)) return '-'
-  if (vol >= 1e7) return `${(vol / 1e7).toFixed(2)}Cr`
-  if (vol >= 1e5) return `${(vol / 1e5).toFixed(2)}L`
-  if (vol >= 1e3) return `${(vol / 1e3).toFixed(1)}k`
-  return vol.toString()
-}
-
-export const formatPercent = (val: any, decimals = 2, showSign = true): string => {
-  if (val === undefined || val === null || val === '' || isNaN(Number(val))) return '-'
-  const numVal = Number(val)
-  const sign = showSign && numVal > 0 ? '+' : ''
-  return `${sign}${numVal.toFixed(decimals)}%`
-}
-
-export const colorCode = (v: any): string => {
-  const numVal = Number(v)
-  if (isNaN(numVal) || numVal === 0) return ''
-  return numVal > 0 ? 'text-[var(--green)]' : 'text-[var(--red)]'
-}
-
-export const scoreColor = (v: any): string => {
-  const n = Number(v)
-  if (isNaN(n)) return 'text-[var(--text-3)]'
-  return n >= 7 ? 'text-[var(--green)]' : n >= 4 ? 'text-[var(--brand)]' : 'text-[var(--red)]'
-}
-
-export const getBadgeClass = (conviction?: string): string => {
-  switch (conviction) {
-    case 'Strong Buy':
-      return 'badge-strong-buy'
-    case 'Buy':
-      return 'badge-buy'
-    case 'Caution':
-      return 'badge-caution'
-    case 'Avoid':
-      return 'badge-avoid'
-    default:
-      return 'badge-hold'
+export function formatMarketCap(capInBillions: number | undefined | null): string {
+  if (capInBillions == null || isNaN(Number(capInBillions))) return '-'
+  const n = Number(capInBillions)
+  if (n >= 1000) {
+    return `₹${(n / 1000).toFixed(2)}T`
   }
+  return `₹${n.toFixed(1)}B`
 }

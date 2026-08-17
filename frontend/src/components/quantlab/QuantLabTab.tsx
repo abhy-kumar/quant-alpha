@@ -1,27 +1,22 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull } from '../../types'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine, ScatterChart, Scatter, ZAxis } from 'recharts'
-import { Flask, Target, Scales, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise, DownloadSimple } from '@phosphor-icons/react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
+import { Flask, Target, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise, DownloadSimple } from '@phosphor-icons/react'
 import { SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent, GlassCardFooter } from '../common/shared'
 import { exportToCSV } from '../../utils/exportUtils'
+import { getRechartsTooltipStyle } from '../../utils/chartThemes'
 import { MonteCarloChart } from './MonteCarloChart'
+import { ModelPortfoliosCard } from './ModelPortfoliosCard'
+import { EfficientFrontierCard } from './EfficientFrontierCard'
+import { ScenarioStressCard } from './ScenarioStressCard'
+import { FactorICMonitorCard } from './FactorICMonitorCard'
+import { CorrelationHeatmapCard } from './CorrelationHeatmapCard'
 
 interface Props {
   isDark: boolean
   scanUpdated?: string
   onSelect: (ticker: string) => void
 }
-
-const tooltipStyle = (isDark: boolean) => ({
-  backgroundColor: isDark ? '#09090b' : '#ffffff',
-  borderColor: isDark ? '#18181b' : '#E4E7EC',
-  borderRadius: 'var(--radius)',
-  fontFamily: 'Inter, system-ui, sans-serif',
-  fontSize: '12px',
-  color: isDark ? '#E8ECF2' : '#1A1D26',
-  boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.08)',
-  padding: '10px 14px',
-})
 
 // Recompute backtest stats from a windowed slice of chart data
 function computeStats(chart: { date: string; portfolio: number; benchmark: number }[]) {
@@ -251,7 +246,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
     if (!active || !payload?.length) return null
     const holding = holdings.find(h => label >= h.from && label < h.to)
     return (
-      <div style={{ ...tooltipStyle(isDark), minWidth: 180 }}>
+      <div style={{ ...getRechartsTooltipStyle(isDark), minWidth: 180 }}>
         <p className="text-[11px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>{label}</p>
         {payload.map((p: any) => (
           <p key={p.dataKey} className="text-xs" style={{ color: p.color }}>
@@ -294,17 +289,6 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
   const max_sharpe = quantData.model_portfolios?.max_sharpe || {}
   const min_volatility = quantData.model_portfolios?.min_volatility || {}
   const risk_parity = quantData.model_portfolios?.risk_parity || {}
-
-  // Inline TickerLink component: wraps a ticker string into a clickable button
-  const TickerLink = ({ ticker }: { ticker: string }) => (
-    <button
-      onClick={() => onSelect(ticker)}
-      className="ticker-link"
-      title={`View ${ticker.replace('.NS', '')} chart`}
-    >
-      {ticker.replace('.NS', '')}
-    </button>
-  )
 
   return (
     <div className="space-y-5">
@@ -603,74 +587,15 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
           </GlassCard>
 
           {/* Model Portfolios */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { title: 'Max Sharpe', tooltipId: 'quant.max-sharpe', icon: Target, data: max_sharpe, accent: 'var(--brand)', iconColor: 'var(--brand)' },
-              { title: 'Min Volatility', tooltipId: 'quant.min-vol', icon: Scales, data: min_volatility, accent: 'var(--amber)', iconColor: 'var(--amber)' },
-              { title: 'Risk Parity (ERC)', tooltipId: 'quant.risk-parity', icon: ChartPieSlice, data: risk_parity, accent: 'var(--blue)', iconColor: 'var(--blue)' },
-            ].map(port => (
-              <GlassCard key={port.title}>
-                <GlassCardHeader
-                  icon={port.icon}
-                  iconColor={port.iconColor}
-                  title={port.title}
-                  tooltipId={port.tooltipId}
-                />
-                <GlassCardContent className="p-4 space-y-2.5 max-h-56 overflow-y-auto scrollbar-none">
-                  {Object.entries(port.data).length === 0 ? (
-                    <p className="text-xs text-[var(--text-3)]">No weights allocated.</p>
-                  ) : (
-                    Object.entries(port.data).map(([ticker, weight]) => (
-                      <div key={ticker}>
-                        <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-2)' }}>
-                          <TickerLink ticker={ticker} />
-                          <span className="typo-num-sm">{(Number(weight) * 100).toFixed(1)}%</span>
-                        </div>
-                        <div className="h-1 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                          <div className="h-full rounded-full" style={{ width: `${Number(weight) * 100}%`, background: port.accent }} />
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </GlassCardContent>
-              </GlassCard>
-            ))}
-          </div>
+          <ModelPortfoliosCard
+            maxSharpe={max_sharpe}
+            minVolatility={min_volatility}
+            riskParity={risk_parity}
+            onSelectTicker={onSelect}
+          />
 
           {/* Markowitz Efficient Frontier */}
-          <GlassCard>
-            <GlassCardHeader
-              icon={Target}
-              title="Efficient Frontier"
-              badge={<span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>Mean-Variance Optimization</span>}
-            />
-            <GlassCardContent className="p-5" style={{ height: 260 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
-                  <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" />
-                  <XAxis type="number" dataKey="volatility" name="Ann. Volatility (%)" unit="%" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10 }} />
-                  <YAxis type="number" dataKey="return" name="Expected Return (%)" unit="%" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10 }} />
-                  <ZAxis type="number" dataKey="sharpe" range={[40, 120]} name="Sharpe Ratio" />
-                  <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }) => {
-                    if (!active || !payload?.length) return null
-                    const d = payload[0].payload
-                    return (
-                      <div style={{ ...tooltipStyle(isDark), minWidth: 150 }}>
-                        <p className="font-semibold text-xs mb-1" style={{ color: 'var(--brand)' }}>Simulated Portfolio</p>
-                        <p className="text-[11px]" style={{ color: 'var(--text)' }}>Volatility: <strong>{d.volatility}%</strong></p>
-                        <p className="text-[11px]" style={{ color: 'var(--green)' }}>Expected Return: <strong>+{d.return}%</strong></p>
-                        <p className="text-[11px]" style={{ color: 'var(--blue)' }}>Sharpe Ratio: <strong>{d.sharpe}</strong></p>
-                      </div>
-                    )
-                  }} />
-                  <Scatter name="Frontier Portfolios" data={efficientFrontierPoints} fill="var(--brand)" />
-                </ScatterChart>
-              </ResponsiveContainer>
-            </GlassCardContent>
-            <GlassCardFooter className="px-5 pb-4 text-[11px] text-center text-[var(--text-3)] border-none">
-              Optimal Tangency Portfolio maxes Sharpe ratio at ~18.0% volatility.
-            </GlassCardFooter>
-          </GlassCard>
+          <EfficientFrontierCard points={efficientFrontierPoints} isDark={isDark} />
 
           {/* Monte Carlo Simulation */}
           <GlassCard>
@@ -685,45 +610,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
           </GlassCard>
 
           {/* Macro Scenario Stress-Testing */}
-          {quantData.scenario_stress_tests && quantData.scenario_stress_tests.length > 0 && (
-            <GlassCard>
-              <GlassCardHeader
-                icon={Warning}
-                iconColor="var(--amber)"
-                title="Macro Scenario Stress-Testing"
-                badge={<span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>Historical Crises</span>}
-              />
-              <GlassCardContent className="p-5 overflow-x-auto scrollbar-none">
-                <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                      <th className="typo-table-head py-2 pr-4 text-left">Shock Event</th>
-                      <th className="typo-table-head py-2 pr-4 text-left hidden sm:table-cell">Period</th>
-                      <th className="typo-table-head py-2 pr-4 text-right">Benchmark</th>
-                      <th className="typo-table-head py-2 pr-4 text-right">Simulated Portfolio</th>
-                      <th className="typo-table-head py-2 text-right">Factor Resilience</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {quantData.scenario_stress_tests.map((s, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td className="py-2.5 pr-4 font-medium" style={{ color: 'var(--text)' }}>{s.event_name}</td>
-                        <td className="py-2.5 pr-4 hidden sm:table-cell text-[10px]" style={{ color: 'var(--text-3)' }}>{s.period}</td>
-                        <td className="py-2.5 pr-4 text-right font-mono font-medium text-[var(--red)]">{s.benchmark_shock_pct.toFixed(1)}%</td>
-                        <td className="py-2.5 pr-4 text-right font-mono font-bold" style={{ color: s.simulated_portfolio_pct > s.benchmark_shock_pct ? 'var(--green)' : 'var(--red)' }}>
-                          {s.simulated_portfolio_pct.toFixed(1)}%
-                        </td>
-                        <td className="py-2.5 text-right font-medium text-[10px]" style={{ color: 'var(--brand-light)' }}>{s.factor_resilience}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </GlassCardContent>
-              <GlassCardFooter className="typo-caption text-center px-4 pb-4 text-[var(--text-3)] border-none">
-                Simulated multi-factor sensitivity based on portfolio beta, Piotroski quality dampener, and historical drawdown distribution.
-              </GlassCardFooter>
-            </GlassCard>
-          )}
+          <ScenarioStressCard scenarios={quantData.scenario_stress_tests || []} />
         </div>
 
         {/* Right column */}
@@ -743,7 +630,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                   <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" horizontal={false} vertical={true} />
                   <XAxis type="number" domain={[0, 100]} stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} />
                   <YAxis dataKey="subject" type="category" stroke="var(--border)" tick={{ fontSize: 11, fill: 'var(--text-2)', fontFamily: 'Inter, system-ui, sans-serif' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={tooltipStyle(isDark)} cursor={{ fill: 'var(--surface-2)' }} />
+                  <Tooltip contentStyle={getRechartsTooltipStyle(isDark)} cursor={{ fill: 'var(--surface-2)' }} />
                   <Bar dataKey="A" name="Exposure" fill="var(--green)" radius={[0, 4, 4, 0]} barSize={20} />
                 </BarChart>
               </ResponsiveContainer>
@@ -776,7 +663,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                         return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                       })}
                     </Pie>
-                    <Tooltip contentStyle={tooltipStyle(isDark)} formatter={(value: any) => `${Number(value).toFixed(1)}%`} />
+                    <Tooltip contentStyle={getRechartsTooltipStyle(isDark)} formatter={(value: any) => `${Number(value).toFixed(1)}%`} />
                   </PieChart>
                 </ResponsiveContainer>
               </GlassCardContent>
@@ -796,102 +683,15 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
 
           {/* Correlation Matrix */}
           {quantData.correlation_matrix && quantData.correlation_matrix.labels.length > 0 && (
-            <GlassCard>
-              <GlassCardHeader
-                icon={GridFour}
-                iconColor="var(--amber)"
-                title="Asset Correlation"
-                tooltipId="quant.correlation"
-              />
-              <GlassCardContent className="p-5 overflow-x-auto scrollbar-none">
-                <table className="w-full" style={{ borderSpacing: '2px', borderCollapse: 'separate' }}>
-                  <thead>
-                    <tr>
-                      <th className="p-1 text-[10px] font-medium" style={{ color: 'var(--text-3)', width: 40 }} />
-                      {quantData.correlation_matrix.labels.map(l => (
-                        <th key={l} className="p-1 text-[9px] font-medium" style={{ color: 'var(--text-3)', height: 28, width: 24, textAlign: 'center' }}>
-                          <button
-                            onClick={() => onSelect(l)}
-                            className="ticker-link"
-                            style={{ fontSize: '9px' }}
-                            title={`View ${l.replace('.NS', '')} chart`}
-                          >
-                            {l.substring(0, 4)}
-                          </button>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {quantData.correlation_matrix.matrix.map((row, i) => (
-                      <tr key={i}>
-                        <td className="p-1 text-[10px] font-medium text-right" style={{ color: 'var(--text-3)' }}>
-                          <button
-                            onClick={() => onSelect(quantData.correlation_matrix!.labels[i])}
-                            className="ticker-link"
-                            style={{ fontSize: '10px' }}
-                            title={`View ${quantData.correlation_matrix!.labels[i].replace('.NS', '')} chart`}
-                          >
-                            {quantData.correlation_matrix!.labels[i].substring(0, 4)}
-                          </button>
-                        </td>
-                        {row.map((val, j) => {
-                          let bg = 'transparent'
-                          let color = 'var(--text)'
-                          if (val === 1) { bg = isDark ? '#1F2937' : '#F3F4F6'; color = 'var(--text-3)' }
-                          else if (val > 0.5) { bg = `rgba(16, 185, 129, ${val * 0.8})`; color = '#fff' }
-                          else if (val > 0) { bg = `rgba(16, 185, 129, ${val * 0.4})`; color = isDark ? '#fff' : '#000' }
-                          else if (val < -0.5) { bg = `rgba(239, 68, 68, ${Math.abs(val) * 0.8})`; color = '#fff' }
-                          else if (val < 0) { bg = `rgba(239, 68, 68, ${Math.abs(val) * 0.4})`; color = isDark ? '#fff' : '#000' }
-                          return (
-                            <td key={j} className="p-1 text-[9px] text-center rounded-sm transition-colors" style={{ backgroundColor: bg, color }}>
-                              {val.toFixed(2)}
-                            </td>
-                          )
-                        })}
-                      </tr>
-                    ))}
-                </tbody>
-                </table>
-              </GlassCardContent>
-            </GlassCard>
-            )}
+            <CorrelationHeatmapCard
+              correlationMatrix={quantData.correlation_matrix}
+              isDark={isDark}
+              onSelectTicker={onSelect}
+            />
+          )}
 
           {/* Factor Information Coefficient (IC) Monitor */}
-          {quantData.factor_ic_monitor && quantData.factor_ic_monitor.length > 0 && (
-            <GlassCard>
-              <GlassCardHeader
-                icon={BookOpen}
-                iconColor="var(--brand)"
-                title="Factor IC Efficacy Monitor"
-                badge={<span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>Rolling 3M</span>}
-              />
-              <GlassCardContent className="p-5 space-y-3">
-                {quantData.factor_ic_monitor.map((f) => (
-                  <div key={f.factor} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium" style={{ color: 'var(--text)' }}>{f.factor}</span>
-                      <span className="font-mono text-[11px]" style={{ color: f.ic_current >= 0.10 ? 'var(--green)' : 'var(--text-2)' }}>
-                        IC: +{f.ic_current.toFixed(3)} (t={f.t_stat.toFixed(1)})
-                      </span>
-                    </div>
-                    <div className="h-1.5 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${Math.min(100, Math.max(10, f.ic_current * 400))}%`,
-                          background: f.ic_current >= 0.10 ? 'var(--green)' : 'var(--brand)'
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </GlassCardContent>
-              <GlassCardFooter className="typo-caption text-center px-4 pb-4 text-[var(--text-3)] border-none">
-                Spearman rank Information Coefficient: corr(Factor_t, Return_t+21d). IC &gt; 0.05 indicates statistical predictive power.
-              </GlassCardFooter>
-            </GlassCard>
-          )}
+          <FactorICMonitorCard factorIcs={quantData.factor_ic_monitor || []} />
 
           </div>
         </div>
@@ -1044,7 +844,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                         <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
                         <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} tickMargin={8} minTickGap={30} />
                         <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} domain={['auto', 'auto']} tickFormatter={v => typeof v === 'number' ? v.toFixed(0) : v} />
-                        <Tooltip contentStyle={tooltipStyle(isDark)} />
+                        <Tooltip contentStyle={getRechartsTooltipStyle(isDark)} />
                         <Legend verticalAlign="top" height={28} align="right" wrapperStyle={{ fontSize: '10px', color: 'var(--text-3)', fontFamily: 'Inter, system-ui, sans-serif' }} />
                         <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
                         <Line type="monotone" dataKey="portfolio" name={selectedRunData.model === 'long' ? 'Long Horizon' : 'Alpha Picks'} stroke={selectedRunData.model === 'long' ? 'var(--green)' : 'var(--brand)'} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />

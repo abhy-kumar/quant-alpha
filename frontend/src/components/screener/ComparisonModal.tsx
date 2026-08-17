@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import type { DashboardData } from '../../types'
 import { num, colorCode, scoreColor, InfoTooltip } from '../common/shared'
 import { X, Minus } from '@phosphor-icons/react'
-import { FactorRadarChart } from './FactorRadarChart'
+import { FactorRadarChart } from '../common/FactorRadarChart'
 
 interface ComparisonModalProps {
   isOpen: boolean

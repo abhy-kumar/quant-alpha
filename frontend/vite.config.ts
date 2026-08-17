@@ -83,14 +83,16 @@ function loginApiDevPlugin(): Plugin {
   }
 }
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), chartApiDevPlugin(), liveDataApiDevPlugin(), loginApiDevPlugin()],
-  esbuild: {
-    drop: ['console', 'debugger'],
-  },
   build: {
     minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
   },
   resolve: {
     alias: {
