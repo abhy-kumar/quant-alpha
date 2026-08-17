@@ -190,8 +190,13 @@ stock-dashboard/
 │   │   │   ├── heatmap/
 │   │   │   │   └── HeatmapTab.tsx                # Dynamic sector treemap & heatmap component
 │   │   │   ├── quantlab/
+│   │   │   │   ├── CorrelationHeatmapCard.tsx    # Pairwise asset correlation matrix heatmap card
+│   │   │   │   ├── EfficientFrontierCard.tsx     # Markowitz Mean-Variance Efficient Frontier scatter card
+│   │   │   │   ├── FactorICMonitorCard.tsx       # 3-Month rolling Factor Information Coefficient monitor card
+│   │   │   │   ├── ModelPortfoliosCard.tsx       # 3-way Max Sharpe, Min Volatility & Risk Parity allocation card
 │   │   │   │   ├── MonteCarloChart.tsx           # Monte Carlo simulation area chart component
-│   │   │   │   └── QuantLabTab.tsx               # Portfolio optimizer, backtest studio & factor exposure
+│   │   │   │   ├── QuantLabTab.tsx               # Portfolio optimizer, backtest studio & factor exposure
+│   │   │   │   └── ScenarioStressCard.tsx        # Historical macro crisis scenario stress-testing card
 │   │   │   ├── screener/
 │   │   │   │   ├── ComparisonModal.tsx           # Multi-asset side-by-side comparison modal
 │   │   │   │   └── ScreenerTab.tsx               # Primary quantitative screening matrix table & filter drawer
@@ -203,9 +208,10 @@ stock-dashboard/
 │   │   ├── hooks/
 │   │   │   ├── useAuth.ts                        # Authentication state controller hook
 │   │   │   ├── useChartData.ts                   # Historical OHLCV fetching & caching hook
-│   │   │   ├── useMarketData.ts                  # Market data live updater & WebSocket polling hook
+│   │   │   ├── useMarketData.ts                  # Market data live updater & 15s polling hook
 │   │   │   └── useWatchlist.ts                   # User watchlist state persistence hook
 │   │   ├── utils/
+│   │   │   ├── chartThemes.ts                    # Shared Recharts theme tokens & tooltip styling
 │   │   │   ├── exportUtils.ts                    # CSV data exporter utility
 │   │   │   └── formatters.ts                     # Currency, percentage & numeric formatting utilities
 │   │   ├── App.tsx                               # Application root component, navigation & state controller
