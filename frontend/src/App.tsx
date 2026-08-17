@@ -75,8 +75,9 @@ function TabSkeleton() {
   )
 }
 
-function TapeInner({ data }: { data: DashboardData[] }) {
+function TapeInner({ data, flashTickers }: { data: DashboardData[]; flashTickers?: Record<string, 'up' | 'down'> }) {
   const items = useMemo(() => data.map(d => ({
+    ticker: d.Ticker,
     t: d.Ticker.replace('.NS', ''),
     p: Number(d.Price) || 0,
     c: Number(d['1d_Chg_%']) || 0,
@@ -88,8 +89,15 @@ function TapeInner({ data }: { data: DashboardData[] }) {
   return (
     <div className="overflow-hidden glass-subtle" style={{ borderBottom: '0.5px solid var(--glass-border)' }}>
       <div className="tape flex w-max whitespace-nowrap scrollbar-none" style={{ animation: `scroll ${duration}s linear infinite` }}>
-          {[...items, ...items].map((x, i) => (
-            <span key={i} className="inline-flex items-center px-4 py-1.5 text-[11px] shrink-0">
+        {[...items, ...items].map((x, i) => {
+          const flash = flashTickers?.[x.ticker]
+          return (
+            <span
+              key={i}
+              className={`inline-flex items-center px-4 py-1.5 text-[11px] shrink-0 transition-colors duration-500 rounded ${
+                flash === 'up' ? 'bg-emerald-500/20' : flash === 'down' ? 'bg-rose-500/20' : ''
+              }`}
+            >
               <span className="font-semibold" style={{ color: 'var(--text)' }}>{x.t}</span>
               <span style={{ color: 'var(--text-3)', opacity: 0.4, margin: '0 8px' }}>·</span>
               <span className="flex items-center gap-2">
@@ -97,9 +105,10 @@ function TapeInner({ data }: { data: DashboardData[] }) {
                 <span className="font-mono text-right w-[60px] shrink-0 font-medium" style={{ color: x.c >= 0 ? 'var(--green)' : 'var(--red)' }}>{x.c >= 0 ? '▲' : '▼'} {Math.abs(x.c).toFixed(2)}%</span>
               </span>
             </span>
-          ))}
-        </div>
+          )
+        })}
       </div>
+    </div>
   )
 }
 
@@ -261,7 +270,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background:'var(--bg-gradient)' }}>
       <SeoHead activeTab={activeTab} selectedTicker={selectedTicker} selectedAsset={selectedAsset} />
-      <Tape data={data} />
+      <Tape data={data} flashTickers={flashTickers} />
 
       <div>
         {/* Header - Web Application Navigation Bar */}

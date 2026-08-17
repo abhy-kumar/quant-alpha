@@ -67,7 +67,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
     if (document.visibilityState === 'hidden') return
 
     try {
-      const res = await axios.post('/api/live_data', {
+      const res = await axios.post(`/api/live_data?t=${Date.now()}`, {
         tickers: dataRef.current.map(d => d.Ticker),
       })
 
@@ -87,7 +87,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
         if (changed) setData(newData)
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
         setPricesUpdated(
-          new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true }) + ' IST'
+          new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true }) + ' IST'
         )
         setIsDynamic(!res.data.is_market_closed)
 
@@ -100,7 +100,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
         })
         if (Object.keys(newFlash).length) {
           setFlashTickers(newFlash)
-          setTimeout(() => setFlashTickers({}), 800)
+          setTimeout(() => setFlashTickers({}), 1200)
         }
 
         return res.data.is_market_closed ? 'closed' : 'ok'
@@ -154,13 +154,13 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
     const init = async () => {
       if (await fetchData()) {
         setTimeout(async () => {
-          const status = await fetchLive()
-          if (status !== 'closed') {
-            liveId = setInterval(async () => {
-              if ((await fetchLive()) === 'closed') clearInterval(liveId)
-            }, 15 * 1000)
-          }
+          await fetchLive()
         }, 1000)
+
+        // Continuous 15s interval polling that does not terminate
+        liveId = setInterval(async () => {
+          await fetchLive()
+        }, 15 * 1000)
 
         dataId = setInterval(async () => {
           await fetchData()

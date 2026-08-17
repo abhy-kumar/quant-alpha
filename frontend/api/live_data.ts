@@ -26,22 +26,21 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   }
 
   try {
-    const currentUTC = new Date()
-    const istOffset = 5.5 * 60 * 60 * 1000
-    const istTime = new Date(currentUTC.getTime() + istOffset)
-
-    const day = istTime.getUTCDay()
-    const hour = istTime.getUTCHours()
-    const minute = istTime.getUTCMinutes()
+    const istString = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    const istDate = new Date(istString)
+    const day = istDate.getDay() // 0 = Sun, 6 = Sat
+    const hour = istDate.getHours()
+    const minute = istDate.getMinutes()
 
     const isWeekend = day === 0 || day === 6
     const isOutsideMarketHours = hour < 9 || (hour === 9 && minute < 15) || hour > 15 || (hour === 15 && minute >= 30)
     const isMarketClosed = isWeekend || isOutsideMarketHours
 
+    // Keep edge cache short so market transitions and live quotes are always fresh
     if (isMarketClosed) {
-      res.setHeader('Cache-Control', 's-maxage=21600, stale-while-revalidate=86400')
+      res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120')
     } else {
-      res.setHeader('Cache-Control', 's-maxage=10, stale-while-revalidate=20')
+      res.setHeader('Cache-Control', 'public, s-maxage=5, stale-while-revalidate=10')
     }
 
     let tickers: string | string[] | undefined
