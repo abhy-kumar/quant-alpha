@@ -1,40 +1,39 @@
 {
-  "last_updated": "2026-08-18 17:22:30",
+  "last_updated": "2026-08-18 23:15:15",
   "model_portfolios": {
     "max_sharpe": {
-      "NATIONALUM.NS": 0.5433,
-      "IOLCP.NS": 0.2792,
-      "IPCALAB.NS": 0.1619,
-      "MINDACORP.NS": 0.0156
+      "NATIONALUM.NS": 0.4156,
+      "INDOBORAX.NS": 0.2872,
+      "IOLCP.NS": 0.1838,
+      "IPCALAB.NS": 0.1134
     },
     "min_volatility": {
-      "BAJAJ-AUTO.NS": 0.2751,
-      "KAJARIACER.NS": 0.2058,
-      "IPCALAB.NS": 0.2043,
-      "OFSS.NS": 0.088,
-      "GARFIBRES.NS": 0.0722,
-      "KPIL.NS": 0.0652,
-      "NATIONALUM.NS": 0.0442,
-      "PIXTRANS.NS": 0.035,
-      "MINDACORP.NS": 0.0102
+      "KAJARIACER.NS": 0.260973902609739,
+      "IPCALAB.NS": 0.2572742725727427,
+      "OFSS.NS": 0.1282871712828717,
+      "KPIL.NS": 0.10238976102389762,
+      "NATIONALUM.NS": 0.07029297070292971,
+      "INDOBORAX.NS": 0.0655934406559344,
+      "MINDACORP.NS": 0.0646935306469353,
+      "PIXTRANS.NS": 0.04869513048695131
     },
     "risk_parity": {
-      "BAJAJ-AUTO.NS": 0.13358664133586642,
-      "IPCALAB.NS": 0.1320867913208679,
-      "KAJARIACER.NS": 0.12088791120887911,
-      "OFSS.NS": 0.10118988101189881,
-      "KPIL.NS": 0.0956904309569043,
-      "GARFIBRES.NS": 0.0942905709429057,
-      "NATIONALUM.NS": 0.0866913308669133,
-      "MINDACORP.NS": 0.0846915308469153,
-      "PIXTRANS.NS": 0.08139186081391861,
-      "IOLCP.NS": 0.06949305069493052
+      "IPCALAB.NS": 0.146,
+      "KAJARIACER.NS": 0.1294,
+      "OFSS.NS": 0.1095,
+      "KPIL.NS": 0.1007,
+      "NATIONALUM.NS": 0.0941,
+      "MINDACORP.NS": 0.0935,
+      "INDOBORAX.NS": 0.0906,
+      "PIXTRANS.NS": 0.0866,
+      "MSTCLTD.NS": 0.0754,
+      "IOLCP.NS": 0.0742
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 60.8,
+    "Quality": 63.1,
     "Low_Volatility": 45.0
   },
   "factor_ic_monitor": [
@@ -917,7 +916,7 @@
       },
       {
         "from": "2026-08-18",
-        "to": "2026-08-18",
+        "to": "2026-08-19",
         "tickers": [
           "OFSS.NS",
           "PIXTRANS.NS",
@@ -929,6 +928,22 @@
           "IPCALAB.NS",
           "MINDACORP.NS",
           "GARFIBRES.NS"
+        ]
+      },
+      {
+        "from": "2026-08-19",
+        "to": "2026-08-18",
+        "tickers": [
+          "OFSS.NS",
+          "KAJARIACER.NS",
+          "NATIONALUM.NS",
+          "IOLCP.NS",
+          "KPIL.NS",
+          "MSTCLTD.NS",
+          "IPCALAB.NS",
+          "MINDACORP.NS",
+          "INDOBORAX.NS",
+          "PIXTRANS.NS"
         ]
       }
     ],
@@ -1748,7 +1763,7 @@
       },
       {
         "from": "2026-08-18",
-        "to": "2026-08-18",
+        "to": "2026-08-19",
         "tickers": [
           "OFSS.NS",
           "CHENNPETRO.NS",
@@ -1760,6 +1775,22 @@
           "MARKSANS.NS",
           "NATIONALUM.NS",
           "IOLCP.NS"
+        ]
+      },
+      {
+        "from": "2026-08-19",
+        "to": "2026-08-18",
+        "tickers": [
+          "OFSS.NS",
+          "CHENNPETRO.NS",
+          "EXPLEOSOL.NS",
+          "GNFC.NS",
+          "MARKSANS.NS",
+          "KAJARIACER.NS",
+          "HUHTAMAKI.NS",
+          "PIXTRANS.NS",
+          "KPIL.NS",
+          "KRBL.NS"
         ]
       }
     ],
@@ -3134,8 +3165,8 @@
           "CARTRADE.NS",
           "GARUDA.NS",
           "THYROCARE.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "SYRMA.NS",
           "MUTHOOTFIN.NS"
         ],
@@ -3146,8 +3177,8 @@
           "CARTRADE.NS": 0.1,
           "GARUDA.NS": 0.1,
           "THYROCARE.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
           "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1,
           "SYRMA.NS": 0.1,
           "MUTHOOTFIN.NS": 0.1
         },
@@ -3159,8 +3190,8 @@
         "tickers": [
           "CUPID.NS",
           "LTF.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "MUTHOOTFIN.NS",
           "TATSILV.NS",
           "SMLMAH.NS",
@@ -3171,8 +3202,8 @@
         "weights": {
           "CUPID.NS": 0.1,
           "LTF.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
           "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1,
           "MUTHOOTFIN.NS": 0.1,
           "TATSILV.NS": 0.1,
           "SMLMAH.NS": 0.1,
@@ -3368,8 +3399,8 @@
           "HFCL.NS",
           "SANSERA.NS",
           "CPPLUS.NS",
-          "LAURUSLABS.NS",
-          "LaurusLabs.NS"
+          "LaurusLabs.NS",
+          "LAURUSLABS.NS"
         ],
         "weights": {
           "CUPID.NS": 0.1,
@@ -3380,8 +3411,8 @@
           "HFCL.NS": 0.1,
           "SANSERA.NS": 0.1,
           "CPPLUS.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
-          "LaurusLabs.NS": 0.1
+          "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1
         },
         "equity_ratio": 1.0
       },
@@ -6569,8 +6600,8 @@
           "ANANDRATHI.NS",
           "SBC.NS",
           "LTF.NS",
-          "LaurusLabs.NS",
           "LAURUSLABS.NS",
+          "LaurusLabs.NS",
           "HEROMOTOCO.NS",
           "TVSMOTOR.NS"
         ],
@@ -6581,8 +6612,8 @@
           "ANANDRATHI.NS": 0.1,
           "SBC.NS": 0.1,
           "LTF.NS": 0.1,
-          "LaurusLabs.NS": 0.1,
           "LAURUSLABS.NS": 0.1,
+          "LaurusLabs.NS": 0.1,
           "HEROMOTOCO.NS": 0.1,
           "TVSMOTOR.NS": 0.1
         },
@@ -6687,8 +6718,8 @@
           "BHARATFORG.NS",
           "HINDALCO.NS",
           "MCX.NS",
-          "LAURUSLABS.NS",
-          "LaurusLabs.NS"
+          "LaurusLabs.NS",
+          "LAURUSLABS.NS"
         ],
         "weights": {
           "SBC.NS": 0.1,
@@ -6699,8 +6730,8 @@
           "BHARATFORG.NS": 0.1,
           "HINDALCO.NS": 0.1,
           "MCX.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
-          "LaurusLabs.NS": 0.1
+          "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1
         },
         "equity_ratio": 1.0
       },
@@ -6712,8 +6743,8 @@
           "BHARATFORG.NS",
           "HINDALCO.NS",
           "MCX.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "HINDCOPPER.NS",
           "POLYCAB.NS",
           "BELRISE.NS",
@@ -6724,8 +6755,8 @@
           "BHARATFORG.NS": 0.1,
           "HINDALCO.NS": 0.1,
           "MCX.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
           "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1,
           "HINDCOPPER.NS": 0.1,
           "POLYCAB.NS": 0.1,
           "BELRISE.NS": 0.1,
@@ -6739,8 +6770,8 @@
         "tickers": [
           "ANANDRATHI.NS",
           "BHARATFORG.NS",
-          "LAURUSLABS.NS",
           "LaurusLabs.NS",
+          "LAURUSLABS.NS",
           "SYRMA.NS",
           "ADANIENSOL.NS",
           "JBCHEPHARM.NS",
@@ -6751,8 +6782,8 @@
         "weights": {
           "ANANDRATHI.NS": 0.1,
           "BHARATFORG.NS": 0.1,
-          "LAURUSLABS.NS": 0.1,
           "LaurusLabs.NS": 0.1,
+          "LAURUSLABS.NS": 0.1,
           "SYRMA.NS": 0.1,
           "ADANIENSOL.NS": 0.1,
           "JBCHEPHARM.NS": 0.1,
@@ -6780,21 +6811,21 @@
     "breadth": 0.4107005388760585
   },
   "sector_allocation": {
-    "Industrials": 30.0,
-    "Consumer Cyclical": 30.0,
+    "Industrials": 40.0,
+    "Basic Materials": 20.0,
     "Healthcare": 20.0,
     "Technology": 10.0,
-    "Basic Materials": 10.0
+    "Consumer Cyclical": 10.0
   },
   "correlation_matrix": {
     "labels": [
-      "BAJAJ-AUTO",
-      "GARFIBRES",
+      "INDOBORAX",
       "IOLCP",
       "IPCALAB",
       "KAJARIACER",
       "KPIL",
       "MINDACORP",
+      "MSTCLTD",
       "NATIONALUM",
       "OFSS",
       "PIXTRANS"
@@ -6802,120 +6833,120 @@
     "matrix": [
       [
         1.0,
-        -0.1,
-        -0.01,
-        0.06,
-        -0.05,
-        -0.09,
-        0.05,
-        0.04,
-        -0.16,
-        -0.03
-      ],
-      [
-        -0.1,
-        1.0,
         0.17,
+        -0.03,
+        0.25,
+        0.05,
+        0.28,
+        -0.07,
         0.08,
-        0.01,
-        0.19,
-        0.16,
-        0.19,
-        0.08,
-        0.03
+        0.06,
+        0.12
       ],
       [
-        -0.01,
         0.17,
         1.0,
         0.03,
         -0.05,
         -0.03,
         0.07,
+        0.03,
         0.08,
         0.07,
         0.07
       ],
       [
-        0.06,
-        0.08,
+        -0.03,
         0.03,
         1.0,
         0.01,
         0.12,
         -0.02,
+        0.05,
         0.07,
         -0.0,
         -0.02
       ],
       [
-        -0.05,
-        0.01,
+        0.25,
         -0.05,
         0.01,
         1.0,
         0.25,
         0.13,
+        0.09,
         0.19,
         0.17,
         0.14
       ],
       [
-        -0.09,
-        0.19,
+        0.05,
         -0.03,
         0.12,
         0.25,
         1.0,
         0.27,
+        0.29,
         0.24,
         0.0,
         0.02
       ],
       [
-        0.05,
-        0.16,
+        0.28,
         0.07,
         -0.02,
         0.13,
         0.27,
         1.0,
+        0.36,
         0.13,
         0.23,
         0.08
       ],
       [
-        0.04,
-        0.19,
+        -0.07,
+        0.03,
+        0.05,
+        0.09,
+        0.29,
+        0.36,
+        1.0,
+        0.05,
+        0.03,
+        -0.04
+      ],
+      [
+        0.08,
         0.08,
         0.07,
         0.19,
         0.24,
         0.13,
+        0.05,
         1.0,
         -0.03,
         0.07
       ],
       [
-        -0.16,
-        0.08,
+        0.06,
         0.07,
         -0.0,
         0.17,
         0.0,
         0.23,
+        0.03,
         -0.03,
         1.0,
         0.17
       ],
       [
-        -0.03,
-        0.03,
+        0.12,
         0.07,
         -0.02,
         0.14,
         0.02,
         0.08,
+        -0.04,
         0.07,
         0.17,
         1.0
