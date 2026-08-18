@@ -1,16 +1,19 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull } from '../../types'
+import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull, DashboardData, StrategyRuleConfig, StrategyBacktestResult } from '../../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
 import { Flask, Target, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise, DownloadSimple } from '@phosphor-icons/react'
 import { SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent, GlassCardFooter } from '../common/shared'
 import { exportToCSV } from '../../utils/exportUtils'
 import { getRechartsTooltipStyle } from '../../utils/chartThemes'
+import { STRATEGY_PRESETS, filterUniverse, simulateStrategy } from '../../utils/strategyEngine'
 import { MonteCarloChart } from './MonteCarloChart'
 import { ModelPortfoliosCard } from './ModelPortfoliosCard'
 import { EfficientFrontierCard } from './EfficientFrontierCard'
 import { ScenarioStressCard } from './ScenarioStressCard'
 import { FactorICMonitorCard } from './FactorICMonitorCard'
 import { CorrelationHeatmapCard } from './CorrelationHeatmapCard'
+import { StrategyBuilderDrawer } from './StrategyBuilderDrawer'
+import { StrategyTearSheet } from './StrategyTearSheet'
 
 interface Props {
   isDark: boolean
@@ -74,6 +77,12 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
   const [backtestHorizon, setBacktestHorizon] = useState<'1y' | '6m'>('1y')
   const [showHoldings, setShowHoldings] = useState(false)
 
+  // - Strategy Sandbox State -
+  const [activeLabView, setActiveLabView]     = useState<'standard' | 'sandbox'>('standard')
+  const [marketStocks, setMarketStocks]       = useState<DashboardData[]>([])
+  const [strategyConfig, setStrategyConfig]   = useState<StrategyRuleConfig>(STRATEGY_PRESETS.momentum)
+  const [activePreset, setActivePreset]       = useState<string | null>('momentum')
+
   // - Backtest archive state -
   const [cachedRuns, setCachedRuns]           = useState<BacktestRunMeta[]>([])
   const [runsLoading, setRunsLoading]         = useState(false)
@@ -92,6 +101,15 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
         console.error('Failed to load quant data', e)
         setLoading(false)
       })
+
+    fetch('/market_data.json?t=' + Date.now())
+      .then(r => r.json())
+      .then(d => {
+        if (d?.data && Array.isArray(d.data)) {
+          setMarketStocks(d.data)
+        }
+      })
+      .catch(() => {})
   }, [scanUpdated])
 
   // Load cached custom backtest index
@@ -208,6 +226,28 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
     return points
   }, [])
 
+  // - Strategy Sandbox Calculation Memos -
+  const handleSelectPreset = useCallback((presetKey: string) => {
+    if (STRATEGY_PRESETS[presetKey]) {
+      setActivePreset(presetKey)
+      setStrategyConfig(STRATEGY_PRESETS[presetKey])
+    }
+  }, [])
+
+  const handleConfigChange = useCallback((newCfg: StrategyRuleConfig) => {
+    setActivePreset(null)
+    setStrategyConfig(newCfg)
+  }, [])
+
+  const filteredMatches = useMemo(() => {
+    return filterUniverse(marketStocks, strategyConfig)
+  }, [marketStocks, strategyConfig])
+
+  const sandboxResult: StrategyBacktestResult = useMemo(() => {
+    const benchmarkSeries = (quantData?.backtest_short_1y?.chart ?? quantData?.backtest?.chart ?? [])
+    return simulateStrategy(marketStocks, benchmarkSeries, strategyConfig)
+  }, [marketStocks, quantData, strategyConfig])
+
   // Generate monthly return matrix from active backtest chart data
   const monthlyReturnsMatrix = useMemo(() => {
     if (!activeBacktest?.chart?.length) return []
@@ -292,20 +332,61 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
 
   return (
     <div className="space-y-5">
-      {/* Header row: description + regime */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <GlassCard className="lg:col-span-2">
-          <GlassCardHeader
-            icon={Flask}
-            title="Quant Lab Overview"
-            badge={<span className="typo-caption text-[var(--text-3)]">Last calculated: {quantData.last_updated}</span>}
+      {/* Top View Mode Switcher: Standard Models vs Interactive Strategy Sandbox */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-1)]">
+        <div className="flex items-center gap-2.5 px-1">
+          <Flask size={20} weight="duotone" className="text-[var(--brand)]" />
+          <div>
+            <span className="text-xs font-semibold block" style={{ color: 'var(--text)' }}>
+              Quantitative Studio
+            </span>
+            <span className="text-[10px] block" style={{ color: 'var(--text-3)' }}>
+              {activeLabView === 'standard' ? 'Institutional Model Portfolios, Factor Efficacy & Regime' : 'Custom Multi-Factor Strategy Rule Sandbox & Tear Sheet'}
+            </span>
+          </div>
+        </div>
+        <SegmentedControl
+          value={activeLabView}
+          onChange={(v: any) => setActiveLabView(v)}
+          options={[
+            { key: 'standard', label: 'Model Portfolios & Factors' },
+            { key: 'sandbox', label: 'Strategy Builder & Sandbox' },
+          ]}
+        />
+      </div>
+
+      {activeLabView === 'sandbox' ? (
+        <div className="space-y-5">
+          <StrategyBuilderDrawer
+            config={strategyConfig}
+            onChange={handleConfigChange}
+            activePreset={activePreset}
+            onSelectPreset={handleSelectPreset}
+            matchingCount={filteredMatches.length}
+            totalUniverseCount={marketStocks.length || 560}
           />
-          <GlassCardContent className="p-5 flex items-start gap-4">
-            <p className="typo-body leading-relaxed" style={{ color: 'var(--text-2)' }}>
-              Backtest historical models, optimize portfolio allocations using Markowitz mean-variance theory, and monitor factor tilts across market regimes.
-            </p>
-          </GlassCardContent>
-        </GlassCard>
+          <StrategyTearSheet
+            result={sandboxResult}
+            isDark={isDark}
+            onSelectTicker={onSelect}
+          />
+        </div>
+      ) : (
+        <>
+          {/* Header row: description + regime */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <GlassCard className="lg:col-span-2">
+              <GlassCardHeader
+                icon={Flask}
+                title="Quant Lab Overview"
+                badge={<span className="typo-caption text-[var(--text-3)]">Last calculated: {quantData.last_updated}</span>}
+              />
+              <GlassCardContent className="p-5 flex items-start gap-4">
+                <p className="typo-body leading-relaxed" style={{ color: 'var(--text-2)' }}>
+                  Backtest historical models, optimize portfolio allocations using Markowitz mean-variance theory, and monitor factor tilts across market regimes.
+                </p>
+              </GlassCardContent>
+            </GlassCard>
 
         {quantData.market_regime && (
           <GlassCard>
@@ -1095,7 +1176,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                   'Volume confirmation via VPT signal',
                 ].map(item => (
                   <li key={item} className="flex items-start gap-2 text-[11px]" style={{ color: 'var(--text-2)' }}>
-                    <span className="shrink-0" style={{ color: 'var(--green)', marginTop: 1 }}>✓</span>
+                    <span className="shrink-0 font-mono text-[10px] font-bold" style={{ color: 'var(--green)', marginTop: 1 }}>[+]</span>
                     {item}
                   </li>
                 ))}
@@ -1117,7 +1198,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                   'Results are in-sample for the price data window; out-of-sample performance is unknown',
                 ].map(item => (
                   <li key={item} className="flex items-start gap-2 text-[11px]" style={{ color: 'var(--text-2)' }}>
-                    <span className="shrink-0" style={{ color: 'var(--amber)', marginTop: 1 }}>⚠</span>
+                    <span className="shrink-0 font-mono text-[10px] font-bold" style={{ color: 'var(--amber)', marginTop: 1 }}>[-]</span>
                     {item}
                   </li>
                 ))}
@@ -1150,6 +1231,8 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
 
         </div>
       </div>
+      </>
+      )}
 
     </div>
   )

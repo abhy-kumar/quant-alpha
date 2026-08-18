@@ -272,3 +272,79 @@ export interface ScoreHistoryItem {
   fund: number
   research: number
 }
+
+// ---------------------------------------------------------------------------
+// Interactive Strategy Builder & Backtest Sandbox types
+// ---------------------------------------------------------------------------
+
+export interface StrategyRuleConfig {
+  name: string
+  description?: string
+  minPiotroski: number
+  minRoe: number
+  maxDebtEquity: number
+  maxPe: number
+  minMomentumRank: number
+  minRsi: number
+  maxRsi: number
+  requireTrend50Sma: boolean
+  requireVptSurge: boolean
+  topN: number
+  rebalanceDays: number
+  weightingScheme: 'equal' | 'volatility_parity' | 'score_weighted'
+  stopLossAtr: number // 0 for none, or 1.5, 2.0, 2.5, 3.0
+  takeProfitPct: number // 0 for none, or 15, 25, 50
+}
+
+export interface StrategyTradeRecord {
+  ticker: string
+  entryDate: string
+  exitDate: string
+  entryPrice: number
+  exitPrice: number
+  returnPct: number
+  holdingDays: number
+  exitReason: 'Rebalance' | 'Stop-Loss' | 'Take-Profit'
+}
+
+export interface StrategyBacktestStats {
+  totalReturn: number
+  cagr: number
+  annualVol: number
+  sharpeRatio: number
+  sortinoRatio: number
+  calmarRatio: number
+  maxDrawdown: number
+  winRate: number
+  profitFactor: number
+  totalTrades: number
+  avgTradeReturn: number
+  benchmarkReturn: number
+  benchmarkCagr: number
+  alpha: number
+  beta: number
+}
+
+export interface StrategyBacktestResult {
+  config: StrategyRuleConfig
+  chart: {
+    date: string
+    portfolio: number
+    benchmark: number
+    drawdown: number
+    benchmarkDrawdown: number
+  }[]
+  stats: StrategyBacktestStats
+  monthlyReturns: {
+    year: number
+    months: (number | null)[]
+    total: number
+  }[]
+  alphaDecay: {
+    horizonDays: number
+    label: string
+    excessReturnPct: number
+    winRatePct: number
+  }[]
+  trades: StrategyTradeRecord[]
+}

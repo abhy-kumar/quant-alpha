@@ -77,10 +77,15 @@
 - **Look-Ahead-Free Rebalancing**: Replays signals strictly using point-in-time data across 2-year OHLCV price histories (monthly rebalance, Top-10 equal-weight).
 - **Multi-Model & Multi-Horizon Evaluation**: Supports Short-Term (Technical + Momentum) and Long-Term (Jegadeesh-Titman + Low Volatility) scoring across 1Y (252 trading days) and 6M (126 trading days) horizons.
 
-### 9. Macro Market Regime Detection (`engine/regime_engine.py`)
+### 9. Interactive Strategy Builder & Quantitative Sandbox (`frontend/src/utils/strategyEngine.ts`)
+- **Custom Multi-Factor Rule Creator**: Construct trading systems by combining fundamental safety filters (Piotroski F-Score >= 7, ROE, D/E, P/E) with technical breakout triggers (Momentum percentile, RSI allowed range, 50-Day SMA trend alignment, VPT volume surge).
+- **1-Click Strategy Presets**: Instant load presets for *Momentum Alpha Breakout*, *Buffett-Piotroski Quality Compounder*, *Mean-Reversion Value Rebound*, *Defensive Low-Vol Yield*, and *GARP Acceleration*.
+- **Institutional Performance Tear Sheet**: Real-time vectorized simulation engine generates equity growth curves vs NIFTY 50, underwater drawdown profiles, monthly returns calendar heatmap matrices, forward alpha decay horizon curves (5d, 21d, 63d, 126d), and trade-by-trade logs with CSV export.
+
+### 10. Macro Market Regime Detection (`engine/regime_engine.py`)
 - Calculates aggregate market breadth percentage (% of NSE stocks above 200 SMA), India VIX volatility, and Nifty trend indices to output a dynamic 0–100 **Regime Score** (*Risk-On*, *Neutral*, *Risk-Off*).
 
-### 10. Current-Gen SEO & Digital Marketing Architecture (`frontend/src/components/common/`)
+### 11. Current-Gen SEO & Digital Marketing Architecture (`frontend/src/components/common/`)
 - **Dynamic Route & Ticker Metadata Engine (`SeoHead.tsx`)**: Dynamically updates `<title>`, `<meta name="description">`, `<link rel="canonical">`, Open Graph (`og:*`), and Twitter Cards (`twitter:*`) per route (`/`, `/signals`, `/screen`, `/heatmap`, `/quant`) and active stock ticker (`?ticker=RELIANCE.NS`).
 - **Rich JSON-LD Structured Data**: Injects dynamic `SoftwareApplication`, `FinancialProduct`, `Organization`, `BreadcrumbList`, and `FAQPage` schemas for Google Rich Snippets & "People Also Ask" ranking.
 - **Generative Engine Optimization (GEO) for AI Search**: Implements `public/llms.txt` and `public/llms-full.txt` adhering to the `llmstxt.org` standard for AI search engines (Perplexity, ChatGPT, Claude, Google SGE/Search Overviews).
@@ -196,7 +201,9 @@ stock-dashboard/
 │   │   │   │   ├── ModelPortfoliosCard.tsx       # 3-way Max Sharpe, Min Volatility & Risk Parity allocation card
 │   │   │   │   ├── MonteCarloChart.tsx           # Monte Carlo simulation area chart component
 │   │   │   │   ├── QuantLabTab.tsx               # Portfolio optimizer, backtest studio & factor exposure
-│   │   │   │   └── ScenarioStressCard.tsx        # Historical macro crisis scenario stress-testing card
+│   │   │   │   ├── ScenarioStressCard.tsx        # Historical macro crisis scenario stress-testing card
+│   │   │   │   ├── StrategyBuilderDrawer.tsx     # Interactive multi-factor strategy rule builder control drawer
+│   │   │   │   └── StrategyTearSheet.tsx         # Comprehensive strategy performance report & trade log
 │   │   │   ├── screener/
 │   │   │   │   ├── ComparisonModal.tsx           # Multi-asset side-by-side comparison modal
 │   │   │   │   └── ScreenerTab.tsx               # Primary quantitative screening matrix table & filter drawer
@@ -213,7 +220,8 @@ stock-dashboard/
 │   │   ├── utils/
 │   │   │   ├── chartThemes.ts                    # Shared Recharts theme tokens & tooltip styling
 │   │   │   ├── exportUtils.ts                    # CSV data exporter utility
-│   │   │   └── formatters.ts                     # Currency, percentage & numeric formatting utilities
+│   │   │   ├── formatters.ts                     # Currency, percentage & numeric formatting utilities
+│   │   │   └── strategyEngine.ts                 # Fast vectorized multi-factor strategy simulation engine
 │   │   ├── App.tsx                               # Application root component, navigation & state controller
 │   │   ├── index.css                             # Global CSS variables, Apple HIG tokens & typography rules
 │   │   ├── main.tsx                              # React DOM application entrypoint
@@ -243,7 +251,8 @@ stock-dashboard/
 │   ├── test_recommendation_enhancements.py       # Unit tests for forensic red flags, ATR execution & sector Z-scores
 │   ├── test_research_factors.py                  # Unit tests for academic research factor scoring
 │   ├── test_risk_parity_and_backtest.py          # Unit tests for Risk Parity, Factor IC & Scenario Stress Tests
-│   └── test_scoring.py                           # Unit tests for sector normalization & composite z-scores
+│   ├── test_scoring.py                           # Unit tests for sector normalization & composite z-scores
+│   └── test_strategy_engine.py                   # Unit tests for strategy simulation & drawdown math
 ├── .gitignore                                    # Git exclusion rules (DB binary, virtual environments)
 ├── CODE_OF_CONDUCT.md                            # Contributor code of conduct specification
 ├── LICENSE                                       # Project license specification (Apache 2.0 + Commons Clause)
