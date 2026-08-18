@@ -9,6 +9,8 @@ Handles all free NSE data sources:
 No API keys, no paid subscriptions.
 """
 
+import os
+import sqlite3
 import requests
 import pandas as pd
 import numpy as np
@@ -217,20 +219,65 @@ def get_market_breadth(bhav_df: pd.DataFrame) -> dict:
     }
 
 
-def get_liquid_universe(top_n: int = 150) -> list[str]:
+def get_liquid_universe(top_n: int = 500, include_db_universe: bool = True) -> list[str]:
     """
-    Return top `top_n` NSE equity symbols (by turnover) as 'SYMBOL.NS' strings.
-    Falls back to a hardcoded Nifty 50 list if the bhav copy cannot be fetched.
+    Return comprehensive liquid NSE equity symbols in 'SYMBOL.NS' format.
+    
+    1. Loads the core tracked universe from SQLite database (Nifty 500 / tracked equities).
+    2. Downloads NSE Bhav Copy to capture current turnover volume leaders.
+    3. Merges and deduplicates symbols while ensuring high-quality coverage (e.g. OFSS, BOSCHLTD, etc.).
+    4. Falls back gracefully to _FALLBACK_SYMBOLS if data sources are unreachable.
     """
-    bhav_df, _ = download_bhav_copy()
+    tickers_set = set()
+    ordered_tickers: list[str] = []
 
-    if not bhav_df.empty and "TURNOVER_LACS" in bhav_df.columns:
-        bhav_df = bhav_df.dropna(subset=["SYMBOL", "TURNOVER_LACS"])
-        top     = bhav_df.nlargest(top_n, "TURNOVER_LACS")
-        return (top["SYMBOL"].str.strip() + ".NS").tolist()
+    def _add_ticker(sym: str):
+        s = sym.strip()
+        if not s:
+            return
+        if not s.endswith(".NS"):
+            s = s + ".NS"
+        if s not in tickers_set:
+            tickers_set.add(s)
+            ordered_tickers.append(s)
 
-    # ── Hardcoded fallback: Nifty 50 + a selection of liquid midcaps ─────────
-    return [s + ".NS" for s in _FALLBACK_SYMBOLS]
+    # 1. Load core tracked universe from database if requested
+    if include_db_universe:
+        db_path = "data/market_scans.db"
+        if os.path.exists(db_path):
+            try:
+                conn = sqlite3.connect(db_path)
+                # Read from daily_ohlcv and factor_history
+                rows = conn.execute("SELECT DISTINCT Ticker FROM daily_ohlcv WHERE Ticker LIKE '%.NS'").fetchall()
+                if not rows:
+                    rows = conn.execute("SELECT DISTINCT Ticker FROM factor_history WHERE Ticker LIKE '%.NS'").fetchall()
+                conn.close()
+                for (t,) in rows:
+                    _add_ticker(t)
+                logger.info(f"Loaded {len(ordered_tickers)} core tickers from database.")
+            except Exception as e:
+                logger.debug(f"Could not load universe from DB: {e}")
+
+    # 2. Download NSE Bhav Copy to append top daily turnover leaders
+    try:
+        bhav_df, _ = download_bhav_copy()
+        if not bhav_df.empty and "TURNOVER_LACS" in bhav_df.columns:
+            bhav_df = bhav_df.dropna(subset=["SYMBOL", "TURNOVER_LACS"])
+            top_bhav = bhav_df.nlargest(max(top_n, 200), "TURNOVER_LACS")
+            for sym in top_bhav["SYMBOL"].dropna():
+                _add_ticker(str(sym).strip())
+            logger.info(f"Merged Bhav copy turnover leaders. Total universe: {len(ordered_tickers)}")
+    except Exception as e:
+        logger.debug(f"Bhav copy merge failed: {e}")
+
+    # 3. Fallback if universe is empty
+    if not ordered_tickers:
+        for s in _FALLBACK_SYMBOLS:
+            _add_ticker(s)
+
+    if top_n > 0 and len(ordered_tickers) > top_n:
+        return ordered_tickers[:top_n]
+    return ordered_tickers
 
 
 _FALLBACK_SYMBOLS = [

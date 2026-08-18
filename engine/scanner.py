@@ -101,25 +101,42 @@ def _fetch_ohlcv_batch(tickers: list, progress_callback=None) -> tuple[dict, int
 
 
 def _fetch_info_batch(ohlcv_results: dict, progress_callback=None) -> tuple[dict, int]:
-    """Fetch fundamental info for all valid tickers in parallel."""
+    """Fetch fundamental info for all valid tickers in parallel with safe fallback."""
     valid_tickers = list(ohlcv_results.keys())
     total = len(valid_tickers)
     info_results = {}
 
     def fetch_job(ticker, df):
+        sym = ticker.replace(".NS", "").replace(".BO", "")
+        df_high = _safe_float(df["High"].max()) if df is not None and not df.empty else np.nan
+        df_low = _safe_float(df["Low"].min()) if df is not None and not df.empty else np.nan
         try:
             info = fetch_fundamentals(ticker)
+            if not info or not isinstance(info, dict):
+                info = cache_manager.get("fundamentals", sym) or {}
             fifty_two_high = _safe_float(info.get("fiftyTwoWeekHigh"))
             fifty_two_low = _safe_float(info.get("fiftyTwoWeekLow"))
-            df_high = _safe_float(df["High"].max()) if df is not None and not df.empty else np.nan
-            df_low = _safe_float(df["Low"].min()) if df is not None and not df.empty else np.nan
-            base_high = np.nanmax([df_high, fifty_two_high]) if not np.isnan(np.nanmax([df_high, fifty_two_high])) else np.nan
-            base_low = np.nanmin([df_low, fifty_two_low]) if not np.isnan(np.nanmin([df_low, fifty_two_low])) else np.nan
+            base_high = np.nanmax([df_high, fifty_two_high]) if not np.isnan(np.nanmax([df_high, fifty_two_high])) else df_high
+            base_low = np.nanmin([df_low, fifty_two_low]) if not np.isnan(np.nanmin([df_low, fifty_two_low])) else df_low
             ath, ath_source = get_ath(ticker, base_high)
             atl, atl_source = get_atl(ticker, base_low)
             return ticker, info, ath, ath_source, atl, atl_source, None
         except Exception as e:
-            return ticker, None, None, None, None, None, e
+            # Fallback to cached fundamentals or safe neutral defaults
+            cached_info = cache_manager.get("fundamentals", sym) or {}
+            base_high = df_high
+            base_low = df_low
+            ath, ath_source = get_ath(ticker, base_high)
+            atl, atl_source = get_atl(ticker, base_low)
+            fallback_info = {
+                "shortName": ticker.replace(".NS", ""),
+                "sector": cached_info.get("sector", "Other"),
+                "industry": cached_info.get("industry", "Other"),
+                "fiftyTwoWeekHigh": base_high,
+                "fiftyTwoWeekLow": base_low,
+                **cached_info
+            }
+            return ticker, fallback_info, ath, ath_source, atl, atl_source, e
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS_FUNDAMENTALS) as executor:
         futures = {executor.submit(fetch_job, t, ohlcv_results[t]): t for t in valid_tickers}
@@ -128,8 +145,8 @@ def _fetch_info_batch(ohlcv_results: dict, progress_callback=None) -> tuple[dict
             t, info, ath, ath_source, atl, atl_source, err = future.result()
             if info is not None:
                 info_results[t] = {"info": info, "ath": ath, "ath_source": ath_source, "atl": atl, "atl_source": atl_source}
-            else:
-                log.warning(f"Info failed for {t}: {err}")
+            if err:
+                log.debug(f"Info notice for {t}: {err}")
             completed += 1
             if progress_callback:
                 progress_callback(total + completed, total * 2, f"Fetching Info {t}")
@@ -328,7 +345,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
     nifty_df, vix_df, fii_dii, pcr_data, breadth_pct = _fetch_market_indicators()
 
     log.info("Fetching universe tickers...")
-    tickers = get_liquid_universe(top_n=150)
+    tickers = get_liquid_universe(top_n=500)
     total = len(tickers)
 
     log.info(f"Fetching OHLCV for {total} tickers...")
