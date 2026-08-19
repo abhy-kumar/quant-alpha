@@ -66,7 +66,20 @@ Alpha classifies stocks into 5 conviction tiers based on Composite Score:
 
 ---
 
-## 4. API Specification for Developers & AI Agents
+## 4. Machine Learning Alpha Engine & Risk Management
+
+- **Walk-Forward ML Classifier**: `HistGradientBoostingClassifier` trained on historical SQLite outcome records. Predicts probability of 21-day alpha outperformance against NIFTY 50 (`P(Return_21d > Nifty_21d)`).
+- **Conviction Tiers**: Strong Alpha (>65%), Moderate Alpha (55-65%), Neutral (45-55%), Low Alpha (<45%).
+- **ATR Volatility Sizing**: Trade execution parameters calculated dynamically using 14-day Average True Range:
+  - Dynamic Stop-Loss: Entry - (2.0 × ATR_14)
+  - Target 1 (Partial Trim): Entry + (2.5 × ATR_14)
+  - Target 2 (Runner): Entry + (4.5 × ATR_14)
+  - Chandelier Trailing Exit: Highest High_22 - (3.0 × ATR_14)
+- **Institutional Equity Factsheet**: 1-click 1-page A4 PDF fact sheet generator with 10-factor radar polygons and valuation metrics.
+
+---
+
+## 5. API Specification for Developers & AI Agents
 
 ### Endpoint 1: Live Market Ticker & Macro Indicators
 - **URL**: `GET https://quant-alpha-sage.vercel.app/api/live_data`
@@ -84,7 +97,7 @@ Alpha classifies stocks into 5 conviction tiers based on Composite Score:
 
 ---
 
-## 5. Machine Learning Dataset Structure
+## 6. Machine Learning Dataset Structure
 
 The backend maintains an SQLite database `market_scans.db` with 3 core tables:
 1. `factor_history`: 62 feature columns recorded on every scan.
@@ -93,7 +106,7 @@ The backend maintains an SQLite database `market_scans.db` with 3 core tables:
 
 ---
 
-## 6. Citation & Institutional Attribution
+## 7. Citation & Institutional Attribution
 
 Maintained by **Alpha Research & Investment Club**, Faculty of Management Studies (FMS), University of Delhi, India.
 - Web: https://quant-alpha-sage.vercel.app

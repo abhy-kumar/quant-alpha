@@ -11,10 +11,13 @@
 
 - Screens 150 NSE stocks three times daily (pre-open, mid-day, post-market) via GitHub Actions
 - Computes 14 technical signals, 10 fundamental metrics, and 10 academic research factors per stock
+- Runs Walk-Forward ML Alpha Classifier (`HistGradientBoostingClassifier`) predicting 21-day outperformance probabilities
 - Classifies stocks by research-backed composite scoring: Strong Buy, Buy, Hold, Caution, Avoid
+- Provides ATR-based volatility risk management, stop-loss calculations, and auto position sizing
+- Generates 1-page institutional PDF Equity Factsheets with 10-factor radar polygons
 - Detects Indian market regime (bullish / neutral / bearish) using 5 India-specific signals
-- Stores all data in a growing SQLite database for machine learning training
-- Provides live intraday price overlays via Vercel serverless functions (every 3 min, market hours)
+- Stores all data in a growing SQLite database for walk-forward machine learning training
+- Provides live sub-minute price overlays via Vercel serverless functions (every 15s during active NSE market hours)
 
 ## Academic Research Factors
 

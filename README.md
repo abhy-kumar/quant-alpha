@@ -85,15 +85,23 @@
 ### 10. Macro Market Regime Detection (`engine/regime_engine.py`)
 - Calculates aggregate market breadth percentage (% of NSE stocks above 200 SMA), India VIX volatility, and Nifty trend indices to output a dynamic 0–100 **Regime Score** (*Risk-On*, *Neutral*, *Risk-Off*).
 
-### 11. Current-Gen SEO & Digital Marketing Architecture (`frontend/src/components/common/`)
+### 11. Current-Gen Technical SEO & Generative Engine Optimization (GEO) (`frontend/`)
 - **Dynamic Route & Ticker Metadata Engine (`SeoHead.tsx`)**: Dynamically updates `<title>`, `<meta name="description">`, `<link rel="canonical">`, Open Graph (`og:*`), and Twitter Cards (`twitter:*`) per route (`/`, `/signals`, `/screen`, `/heatmap`, `/quant`) and active stock ticker (`?ticker=RELIANCE.NS`).
-- **Rich JSON-LD Structured Data**: Injects dynamic `SoftwareApplication`, `FinancialProduct`, `Organization`, `BreadcrumbList`, and `FAQPage` schemas for Google Rich Snippets & "People Also Ask" ranking.
-- **Generative Engine Optimization (GEO) for AI Search**: Implements `public/llms.txt` and `public/llms-full.txt` adhering to the `llmstxt.org` standard for AI search engines (Perplexity, ChatGPT, Claude, Google SGE/Search Overviews).
+- **Comprehensive JSON-LD Structured Data**:
+  - `WebSite` with `SearchAction` (Sitelinks Searchbox for stock tickers)
+  - `Dataset` schema for `market_data.json` & `quant_data.json` for Google Dataset Search indexation
+  - `WebApplication` & `EducationalOrganization` schemas
+  - Dynamic `BreadcrumbList` & ticker-level `FinancialProduct` / `ItemPage` schemas
+  - `FAQPage` for Google Rich Snippets & "People Also Ask" ranking
+- **Crawler & Zero-JS Indexability**: Full semantic `<noscript>` crawler fallback body with platform overview, 10 academic research factor breakdown, FAQ, and direct route links.
+- **Core Web Vitals Performance**: Non-render-blocking Google Fonts loading (`rel="preload" as="style"`), DNS prefetching (`dns-prefetch`), resource preconnecting (`fonts.googleapis.com`, `va.vercel-scripts.com`), and PWA touch tags.
+- **Search Console Compliance**: Multi-route XML sitemap (`sitemap.xml`) with ISO 8601 `<lastmod>` timestamps and image tags, and bot-friendly crawler routing (`robots.txt`).
+- **Internal Link Equity Distribution**: Footer internal linking matrix connecting all primary SPA routes.
+- **Generative Engine Optimization (GEO) for AI Search**: Implements `public/llms.txt` and `public/llms-full.txt` adhering to the `llmstxt.org` standard for AI search engines (Perplexity, ChatGPT, Claude, Google Search Overviews).
 - **1-Click Viral Social Share Engine (`SocialShareModal.tsx`)**: Deep-link social sharing templates for WhatsApp, X (Twitter), LinkedIn, Telegram, and native mobile Web Share API.
 - **Growth Funnel & Research Dispatch Capture (`NewsletterModal.tsx`)**: Institutional research dispatch subscription modal for community growth and investor retention.
-- **Core Web Vitals & Technical SEO**: DNS prefetching (`dns-prefetch`), resource preconnecting (`fonts.googleapis.com`, `va.vercel-scripts.com`), PWA touch tags, multi-route XML sitemap (`sitemap.xml`) with image tags, and bot-friendly crawler routing (`robots.txt`).
 
-### 11. Modern Apple HIG Interface & Institutional Modals (`frontend/src/`)
+### 12. Modern Apple HIG Interface & Institutional Modals (`frontend/src/`)
 - **1-Click Strategy Presets**: Screener drawer presets for Buffett-Munger Quality, Minervini Stage 2 Breakouts, PEAD Momentum, Defensive Low-Beta, and Deep Value Moats.
 - **1-Click Institutional Equity Factsheet (PDF Tear-Sheet Generator)**: Produces an exact 1-page A4 Wall Street / Dalal Street factsheet with 10-factor radar polygons, key financial metrics, valuation multiples, and risk profiles.
 - **10-Factor Multi-Dimensional Radar Polygon Chart**: Compares 10 academic factors simultaneously against sector peer group benchmarks.

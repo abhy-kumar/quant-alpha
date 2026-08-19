@@ -17,7 +17,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <!-- Primary Metadata & Open Graph -->
-    <meta name="description" content="Free, research-backed quantitative stock screener for the NSE India. Screens 150 stocks daily using 10 academic factors: Piotroski F-Score, Momentum, Value, Low Volatility, and more. Developed by Alpha Research Club, FMS Delhi.">
+    <meta name="description" content="Free quantitative stock screener for NSE India. Daily scans of 150 stocks using 10 academic factors, Piotroski F-Score, ML alpha signals, and backtesting.">
     <meta name="keywords" content="NSE stock screener, quantitative research India, Piotroski F-Score, stock momentum NSE, NIFTY 50 analysis, FMS Delhi, quant investing India, factor investing NSE, stock trading signals India, algo trading NSE">
     <meta name="author" content="Abhishek Kumar, Alpha Research and Investment Club, FMS Delhi">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -26,25 +26,26 @@
     <meta name="target" content="all">
     <meta name="geo.region" content="IN">
     <meta name="geo.placename" content="New Delhi">
+    <meta name="revisit-after" content="1 days">
     <link rel="canonical" href="https://quant-alpha-sage.vercel.app">
 
     <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://quant-alpha-sage.vercel.app">
-    <meta property="og:title" content="Alpha - Quantitative NSE Stock Research | FMS Delhi">
-    <meta property="og:description" content="Daily quantitative screening of 150 NSE stocks using 10 academic factors. 100% free, research-backed quantitative research platform.">
+    <meta property="og:title" content="Alpha - NSE Stock Screener & Quantitative Research">
+    <meta property="og:description" content="Free quantitative stock screener for NSE India. Daily scans of 150 stocks using 10 academic factors, Piotroski F-Score, and ML alpha models.">
     <meta property="og:image" content="https://quant-alpha-sage.vercel.app/dashboard-preview.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Alpha Quantitative Research Dashboard showing stock factor models and charts">
     <meta property="og:image:type" content="image/png">
-    <meta property="og:site_name" content="Alpha Research Dashboard">
+    <meta property="og:site_name" content="Alpha Quant Research">
     <meta property="og:locale" content="en_IN">
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://quant-alpha-sage.vercel.app">
-    <meta name="twitter:title" content="Alpha - Quantitative NSE Stock Research | FMS Delhi">
+    <meta name="twitter:title" content="Alpha - NSE Stock Screener & Quantitative Research">
     <meta name="twitter:description" content="Daily quantitative screening of 150 NSE stocks using 10 academic factors. 100% free, research-backed.">
     <meta name="twitter:image" content="https://quant-alpha-sage.vercel.app/dashboard-preview.png">
     <meta name="twitter:site" content="@AlphaQuantFMS">
@@ -57,9 +58,24 @@
     <meta name="application-name" content="Alpha Quant Research">
     <meta name="format-detection" content="telephone=no">
 
-    <!-- JSON-LD Structured Data Schema (Google Rich Snippets & AI Search) -->
+    <!-- JSON-LD Structured Data Schema (Google Rich Snippets, Dataset Search & AI Search) -->
     <script type="application/ld+json">
     [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Alpha Quantitative NSE Stock Research",
+        "alternateName": "Quant Alpha",
+        "url": "https://quant-alpha-sage.vercel.app",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://quant-alpha-sage.vercel.app/?ticker={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      },
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
@@ -76,11 +92,14 @@
           "14 technical signals with Wilder-smoothed indicators",
           "10 academic research factors (Piotroski, Momentum, Value, Low Volatility, BAB, SUE)",
           "Multi-factor composite scoring with 4 horizon variants",
-          "Live intraday price overlay every 3 minutes during market hours",
-          "India market regime detection (Nifty, VIX, FII/DII, PCR, breadth)",
+          "Walk-Forward Machine Learning Alpha model with probability forecasting",
+          "ATR Volatility Position Sizer & Dynamic Risk Management",
+          "Institutional 1-page PDF Equity Factsheet Generator",
+          "Live intraday price overlay every 15 seconds during active market hours",
+          "India market regime detection (Nifty, VIX, FII/DII flows, PCR, breadth)",
           "ML-ready SQLite database accumulating daily feature vectors and forward returns",
-          "Interactive charting with Price, RSI, MACD overlays",
-          "Sector heatmap and factor lab with conviction accuracy tracking"
+          "Interactive TradingView charting with RSI, MACD, Moving Average overlays",
+          "Sector heatmap and factor lab with strategy backtesting studio"
         ],
         "screenshot": "https://quant-alpha-sage.vercel.app/dashboard-preview.png",
         "author": {
@@ -91,6 +110,32 @@
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
         "codeRepository": "https://github.com/abhy-kumar/quant-alpha",
         "programmingLanguage": ["Python", "TypeScript"]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        "name": "Alpha NSE Quantitative Stock Factor & Market Scan Dataset",
+        "description": "Daily cross-sectional factor rankings, Piotroski F-Scores, financial metrics, and momentum indicators for 150 National Stock Exchange of India (NSE) equities.",
+        "url": "https://quant-alpha-sage.vercel.app/market_data.json",
+        "keywords": ["NSE India", "Piotroski F-Score", "Quantitative Finance", "Factor Investing", "Stock Screener"],
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "isAccessibleForFree": true,
+        "creator": {
+          "@type": "Organization",
+          "name": "Alpha Research and Investment Club, FMS Delhi"
+        },
+        "distribution": [
+          {
+            "@type": "DataDownload",
+            "encodingFormat": "application/json",
+            "contentUrl": "https://quant-alpha-sage.vercel.app/market_data.json"
+          },
+          {
+            "@type": "DataDownload",
+            "encodingFormat": "application/json",
+            "contentUrl": "https://quant-alpha-sage.vercel.app/quant_data.json"
+          }
+        ]
       },
       {
         "@context": "https://schema.org",
@@ -135,8 +180,10 @@
       }
     ]
     </script>
-    <title>Alpha - Quantitative Stock Research for NSE India | Alpha Research Club, FMS Delhi</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <title>Alpha - NSE Stock Screener & Quantitative Research | FMS Delhi</title>
+    <!-- Non-render-blocking Google Fonts loading for Core Web Vitals optimization -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"></noscript>
     <script>
       try {
         var dark = localStorage.getItem('qa_dark');
@@ -163,6 +210,36 @@
     </script>
   </head>
   <body>
+    <noscript>
+      <div style="max-width:960px;margin:32px auto;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1e293b;line-height:1.6;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
+        <h1 style="font-size:24px;font-weight:700;color:#0f172a;margin-bottom:12px;">Alpha Quantitative NSE Stock Research Platform</h1>
+        <p style="font-size:15px;color:#334155;margin-bottom:16px;">
+          Alpha is an open-access, research-backed quantitative equity analysis platform developed for the Alpha Research &amp; Investment Club at the Faculty of Management Studies (FMS), University of Delhi. The system scans the top 150 liquid stocks on the National Stock Exchange of India (NSE) daily using 10 peer-reviewed academic factors, machine learning alpha models, and dynamic market regime detection.
+        </p>
+        <h2 style="font-size:18px;font-weight:600;color:#0f172a;margin-top:20px;margin-bottom:8px;">10 Academic Quantitative Factors</h2>
+        <ul style="padding-left:20px;margin-bottom:16px;color:#475569;">
+          <li><strong>Piotroski F-Score (2000):</strong> 9-point fundamental accounting health and solvency assessment.</li>
+          <li><strong>Gross Profitability (Novy-Marx, 2013):</strong> Gross profit scaled by total assets for quality growth.</li>
+          <li><strong>Earnings Quality &amp; Accruals (Sloan, 1996):</strong> Cash flow vs accounting accruals verification.</li>
+          <li><strong>Multi-Horizon Momentum (Jegadeesh &amp; Titman, 1993):</strong> 12-month and 60-day relative strength.</li>
+          <li><strong>Value Factor Composite (Fama &amp; French, 1992):</strong> Multi-metric B/M, E/P, and CF/P ranking.</li>
+          <li><strong>Low Volatility Anomaly (Baker et al., 2011):</strong> Risk-adjusted volatility penalty.</li>
+          <li><strong>Betting Against Beta (Frazzini &amp; Pedersen, 2014):</strong> Low-beta risk-adjusted alpha.</li>
+          <li><strong>Investment Factor (Titman et al., 2004):</strong> Prudent capital expenditure discipline.</li>
+          <li><strong>Standardized Unexpected Earnings / SUE (Bernard &amp; Thomas, 1989):</strong> Post-earnings announcement drift.</li>
+          <li><strong>Mean Reversion (De Bondt &amp; Thaler, 1985):</strong> 60-day statistical price deviation recovery.</li>
+        </ul>
+        <h2 style="font-size:18px;font-weight:600;color:#0f172a;margin-top:20px;margin-bottom:8px;">Platform Navigation</h2>
+        <p style="color:#475569;">
+          <a href="/" style="color:#4f46e5;font-weight:500;text-decoration:underline;">Technical Stock Charts</a> |
+          <a href="/signals" style="color:#4f46e5;font-weight:500;text-decoration:underline;">Quantitative Signals</a> |
+          <a href="/screen" style="color:#4f46e5;font-weight:500;text-decoration:underline;">150 Stock Screener</a> |
+          <a href="/heatmap" style="color:#4f46e5;font-weight:500;text-decoration:underline;">Sector Heatmap</a> |
+          <a href="/quant" style="color:#4f46e5;font-weight:500;text-decoration:underline;">Quant Backtesting Lab</a> |
+          <a href="/llms.txt" style="color:#4f46e5;font-weight:500;text-decoration:underline;">Machine-Readable LLM API</a>
+        </p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
