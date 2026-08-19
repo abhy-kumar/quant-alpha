@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useDeferredValue, memo } from 'react'
+import React, { useState, useMemo, useDeferredValue, useEffect, memo } from 'react'
 import type { DashboardData } from '../../types'
 import { num, colorCode, scoreColor, getSignalLabel, getBadgeClass, SortHeader, MiniSparkline, InfoTooltip } from '../common/shared'
 import { SegmentedControl } from '../common/shared'
-import { Info, Funnel, X, Star, Scales, DownloadSimple } from '@phosphor-icons/react'
+import { Info, Funnel, X, Star, Scales, DownloadSimple, CaretLeft, CaretRight, CaretDoubleLeft, CaretDoubleRight } from '@phosphor-icons/react'
 import { ComparisonModal } from './ComparisonModal'
 import { InvestmentThesisModal } from '../common/InvestmentThesisModal'
 import { PositionSizerModal } from '../common/PositionSizerModal'
@@ -279,11 +279,28 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
   const [minRSI, setMinRSI] = useState(0)
   const [maxRSI, setMaxRSI] = useState(100)
 
+  const [pageSize, setPageSize] = useState<number>(50)
+  const [currentPage, setCurrentPage] = useState<number>(1)
+
+  // Defensive deduplication of data
+  const uniqueData = useMemo(() => {
+    const seen = new Set<string>()
+    const deduped: DashboardData[] = []
+    for (const d of data) {
+      const sym = d.Ticker ? String(d.Ticker).toUpperCase() : ''
+      if (sym && !seen.has(sym)) {
+        seen.add(sym)
+        deduped.push(d.Ticker === sym ? d : { ...d, Ticker: sym })
+      }
+    }
+    return deduped
+  }, [data])
+
   const availableSectors = useMemo(() => {
     const set = new Set<string>()
-    data.forEach(d => { if (d.Sector && d.Sector !== 'Unknown' && d.Sector !== 'ETF') set.add(d.Sector) })
+    uniqueData.forEach(d => { if (d.Sector && d.Sector !== 'Unknown' && d.Sector !== 'ETF') set.add(d.Sector) })
     return Array.from(set).sort()
-  }, [data])
+  }, [uniqueData])
 
   const handleSort = (key: string) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -292,7 +309,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
 
   const filteredData = useMemo(() => {
     const stringFields = new Set(['Ticker', 'Sector', 'Conviction', 'Conviction_Long', 'Industry', 'Long_Name', 'ST_Signal'])
-    let arr = data.filter(d => {
+    let arr = uniqueData.filter(d => {
       if (deferredSearch) {
         const q = deferredSearch.toUpperCase()
         if (!d.Ticker.replace('.NS','').includes(q) && !(d.Long_Name||'').toUpperCase().includes(q)) return false
@@ -320,7 +337,19 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
       return sortDir === 'asc' ? (Number(av) || 0) - (Number(bv) || 0) : (Number(bv) || 0) - (Number(av) || 0)
     })
     return arr
-  }, [data, sortKey, sortDir, minComposite, minPiotroski, selectedSectors, selectedConvictions, minMarketCap, maxDE, minROE, maxPE, minRSI, maxRSI, deferredSearch, minValue, maxBeta, scoreCol, convCol])
+  }, [uniqueData, sortKey, sortDir, minComposite, minPiotroski, selectedSectors, selectedConvictions, minMarketCap, maxDE, minROE, maxPE, minRSI, maxRSI, deferredSearch, minValue, maxBeta, scoreCol, convCol])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [deferredSearch, minComposite, minPiotroski, selectedSectors, selectedConvictions, minMarketCap, maxDE, minROE, maxPE, minRSI, maxRSI, minValue, maxBeta, horizonMode, pageSize])
+
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / pageSize))
+  const validCurrentPage = Math.min(currentPage, totalPages)
+  const paginatedData = useMemo(() => {
+    if (pageSize >= 9999) return filteredData
+    const start = (validCurrentPage - 1) * pageSize
+    return filteredData.slice(start, start + pageSize)
+  }, [filteredData, validCurrentPage, pageSize])
 
   const activeFilterCount = [
     minComposite > 0, minPiotroski > 0, minValue > 0, maxBeta < 3,
@@ -791,7 +820,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((row) => (
+            {paginatedData.map((row) => (
               <ScreenerRow
                 key={row.Ticker}
                 row={row}
@@ -821,7 +850,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
 
       {/* Mobile card view */}
       <div className="sm:hidden space-y-2">
-        {filteredData.map((row) => (
+        {paginatedData.map((row) => (
           <div key={row.Ticker} className="card" style={{
             borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
@@ -1009,6 +1038,81 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
           </div>
         ))}
       </div>
+
+      {/* Pagination Controls */}
+      {filteredData.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 card text-xs" style={{ borderRadius: 'var(--radius-xl)' }}>
+          <div className="flex items-center gap-2" style={{ color: 'var(--text-3)' }}>
+            <span>
+              Showing <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{Math.min((validCurrentPage - 1) * pageSize + 1, filteredData.length)}</span>–<span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{Math.min(validCurrentPage * pageSize, filteredData.length)}</span> of <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{filteredData.length}</span> stocks
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4 flex-wrap">
+            {/* Page Size Selector */}
+            <div className="flex items-center gap-1.5">
+              <span style={{ color: 'var(--text-3)' }}>Per page:</span>
+              <div className="flex items-center gap-1">
+                {[25, 50, 100, 9999].map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => { setPageSize(size); setCurrentPage(1) }}
+                    className="px-2.5 py-1 rounded-full transition-colors text-[11px] font-medium"
+                    style={{
+                      background: pageSize === size ? 'var(--brand)' : 'var(--glass-bg-subtle)',
+                      color: pageSize === size ? '#fff' : 'var(--text-2)',
+                      border: `1px solid ${pageSize === size ? 'var(--brand)' : 'var(--glass-border)'}`,
+                    }}
+                  >
+                    {size === 9999 ? 'All' : size}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Page Navigation */}
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  disabled={validCurrentPage === 1}
+                  className="btn-glass p-1.5 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="First Page"
+                >
+                  <CaretDoubleLeft size={14} />
+                </button>
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={validCurrentPage === 1}
+                  className="btn-glass p-1.5 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Previous Page"
+                >
+                  <CaretLeft size={14} />
+                </button>
+                <span className="px-2 font-medium" style={{ color: 'var(--text-2)' }}>
+                  Page <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{validCurrentPage}</span> of <span className="font-mono font-bold">{totalPages}</span>
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={validCurrentPage === totalPages}
+                  className="btn-glass p-1.5 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Next Page"
+                >
+                  <CaretRight size={14} />
+                </button>
+                <button
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={validCurrentPage === totalPages}
+                  className="btn-glass p-1.5 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Last Page"
+                >
+                  <CaretDoubleRight size={14} />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Floating Stock Comparison Toolbar */}
       {compareTickers.length > 0 && (

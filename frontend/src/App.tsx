@@ -76,15 +76,19 @@ function TabSkeleton() {
 }
 
 function TapeInner({ data, flashTickers }: { data: DashboardData[]; flashTickers?: Record<string, 'up' | 'down'> }) {
-  const items = useMemo(() => data.map(d => ({
-    ticker: d.Ticker,
-    t: d.Ticker.replace('.NS', ''),
-    p: Number(d.Price) || 0,
-    c: Number(d['1d_Chg_%']) || 0,
-  })), [data])
+  const items = useMemo(() => {
+    // Show top 40 liquid / top score stocks in the marquee to maintain 60fps GPU performance
+    const selected = data.slice(0, 40)
+    return selected.map(d => ({
+      ticker: d.Ticker,
+      t: d.Ticker.replace('.NS', ''),
+      p: Number(d.Price) || 0,
+      c: Number(d['1d_Chg_%']) || 0,
+    }))
+  }, [data])
   if (!items.length) return null
 
-  const duration = (items.length * 217) / 150;
+  const duration = Math.max(30, (items.length * 217) / 150)
 
   return (
     <div className="overflow-hidden glass-subtle" style={{ borderBottom: '0.5px solid var(--glass-border)' }}>

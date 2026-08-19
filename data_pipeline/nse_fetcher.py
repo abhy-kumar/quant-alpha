@@ -232,10 +232,10 @@ def get_liquid_universe(top_n: int = 500, include_db_universe: bool = True) -> l
     ordered_tickers: list[str] = []
 
     def _add_ticker(sym: str):
-        s = sym.strip()
+        s = str(sym).strip().upper()
         if not s:
             return
-        if not s.endswith(".NS"):
+        if not s.endswith(".NS") and not s.endswith(".BO"):
             s = s + ".NS"
         if s not in tickers_set:
             tickers_set.add(s)

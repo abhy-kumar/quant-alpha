@@ -67,8 +67,9 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
     if (document.visibilityState === 'hidden') return
 
     try {
+      const uniqueTickers = Array.from(new Set(dataRef.current.map(d => d.Ticker)))
       const res = await axios.post(`/api/live_data?t=${Date.now()}`, {
-        tickers: dataRef.current.map(d => d.Ticker),
+        tickers: uniqueTickers,
       })
 
       if (res.data.status === 'ok') {
@@ -114,7 +115,17 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
     try {
       const res = await axios.get(`/market_data.json?t=${Date.now()}`)
       if (res.data.status === 'ok' && res.data.data.length > 0) {
-        const d = res.data.data.sort((a: any, b: any) => a.Ticker.localeCompare(b.Ticker))
+        const raw = res.data.data || []
+        const seen = new Set<string>()
+        const deduped: DashboardData[] = []
+        for (const item of raw) {
+          const t = item.Ticker ? String(item.Ticker).toUpperCase() : ''
+          if (t && !seen.has(t)) {
+            seen.add(t)
+            deduped.push({ ...item, Ticker: t })
+          }
+        }
+        const d = deduped.sort((a: any, b: any) => a.Ticker.localeCompare(b.Ticker))
         setData(d)
         const updatedTime = res.data.last_updated || ''
         setScanUpdated(updatedTime)
