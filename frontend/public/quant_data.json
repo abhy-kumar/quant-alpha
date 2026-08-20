@@ -1,39 +1,39 @@
 {
-  "last_updated": "2026-08-20 08:13:26",
+  "last_updated": "2026-08-20 11:22:52",
   "model_portfolios": {
     "max_sharpe": {
-      "NATIONALUM.NS": 0.3183,
-      "IOLCP.NS": 0.2321,
-      "BHARATSE.NS": 0.1917,
-      "OFSS.NS": 0.1343,
-      "IPCALAB.NS": 0.1236
+      "NATIONALUM.NS": 0.3144685531446855,
+      "IOLCP.NS": 0.2338766123387661,
+      "BHARATSE.NS": 0.1905809419058094,
+      "OFSS.NS": 0.13308669133086692,
+      "IPCALAB.NS": 0.127987201279872
     },
     "min_volatility": {
-      "IPCALAB.NS": 0.2386,
-      "KAJARIACER.NS": 0.2189,
-      "OFSS.NS": 0.1519,
-      "KPIL.NS": 0.1247,
-      "PIXTRANS.NS": 0.1125,
-      "JAGSNPHARM.NS": 0.0886,
-      "NATIONALUM.NS": 0.0648
+      "IPCALAB.NS": 0.24442444244424444,
+      "KAJARIACER.NS": 0.2081208120812081,
+      "OFSS.NS": 0.15801580158015802,
+      "PIXTRANS.NS": 0.1113111311131113,
+      "KPIL.NS": 0.10811081108110811,
+      "MINDACORP.NS": 0.09830983098309831,
+      "NATIONALUM.NS": 0.0672067206720672
     },
     "risk_parity": {
-      "IPCALAB.NS": 0.1565,
-      "KAJARIACER.NS": 0.1238,
-      "OFSS.NS": 0.1136,
-      "PIXTRANS.NS": 0.1055,
-      "KPIL.NS": 0.1045,
-      "JAGSNPHARM.NS": 0.097,
-      "NATIONALUM.NS": 0.0953,
-      "MSTCLTD.NS": 0.0719,
-      "IOLCP.NS": 0.0698,
-      "BHARATSE.NS": 0.0621
+      "IPCALAB.NS": 0.15866826634673067,
+      "KAJARIACER.NS": 0.1207758448310338,
+      "OFSS.NS": 0.11507698460307939,
+      "PIXTRANS.NS": 0.10527894421115777,
+      "KPIL.NS": 0.10177964407118577,
+      "MINDACORP.NS": 0.09828034393121375,
+      "NATIONALUM.NS": 0.09618076384723055,
+      "MSTCLTD.NS": 0.07298540291941612,
+      "IOLCP.NS": 0.07118576284743051,
+      "BHARATSE.NS": 0.0597880423915217
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 62.5,
+    "Quality": 63.6,
     "Low_Volatility": 45.0
   },
   "factor_ic_monitor": [
@@ -359,7 +359,7 @@
       },
       {
         "date": "2026-08-20",
-        "portfolio": 102.61,
+        "portfolio": 102.62,
         "benchmark": 100.0
       }
     ],
@@ -961,23 +961,23 @@
         "to": "2026-08-20",
         "tickers": [
           "OFSS.NS",
-          "PIXTRANS.NS",
           "IOLCP.NS",
+          "PIXTRANS.NS",
           "NATIONALUM.NS",
-          "KAJARIACER.NS",
           "KPIL.NS",
-          "IPCALAB.NS",
+          "KAJARIACER.NS",
+          "MINDACORP.NS",
           "MSTCLTD.NS",
           "BHARATSE.NS",
-          "JAGSNPHARM.NS"
+          "IPCALAB.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": 2.61,
-      "cagr": 14.61,
+      "total_return": 2.62,
+      "cagr": 14.67,
       "volatility": 12.28,
-      "sharpe": 0.66,
+      "sharpe": 0.67,
       "max_drawdown": -3.05,
       "info_ratio": 1.19,
       "win_rate": 42.9
@@ -1232,7 +1232,7 @@
       },
       {
         "date": "2026-08-20",
-        "portfolio": 94.82,
+        "portfolio": 94.65,
         "benchmark": 100.0
       }
     ],
@@ -1836,23 +1836,23 @@
           "OFSS.NS",
           "INDOBORAX.NS",
           "GPPL.NS",
-          "HUHTAMAKI.NS",
           "GNFC.NS",
-          "MARKSANS.NS",
+          "IOLCP.NS",
           "PIXTRANS.NS",
-          "KRBL.NS",
+          "MARKSANS.NS",
+          "NATIONALUM.NS",
           "CHENNPETRO.NS",
-          "NATIONALUM.NS"
+          "EXPLEOSOL.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": -5.18,
-      "cagr": -24.54,
-      "volatility": 13.04,
-      "sharpe": -2.38,
+      "total_return": -5.35,
+      "cagr": -25.25,
+      "volatility": 13.07,
+      "sharpe": -2.43,
       "max_drawdown": -8.76,
-      "info_ratio": -1.88,
+      "info_ratio": -1.93,
       "win_rate": 44.9
     }
   },
@@ -3115,7 +3115,7 @@
       },
       {
         "date": "2026-08-20",
-        "portfolio": 126.74,
+        "portfolio": 126.77,
         "benchmark": 100.0
       }
     ],
@@ -3499,8 +3499,8 @@
       }
     ],
     "stats": {
-      "total_return": 26.74,
-      "cagr": 26.6,
+      "total_return": 26.77,
+      "cagr": 26.62,
       "volatility": 30.28,
       "sharpe": 0.66,
       "max_drawdown": -19.24,
@@ -4137,7 +4137,7 @@
       },
       {
         "date": "2026-08-20",
-        "portfolio": 114.52,
+        "portfolio": 114.85,
         "benchmark": 100.0
       }
     ],
@@ -4347,12 +4347,12 @@
       }
     ],
     "stats": {
-      "total_return": 14.52,
-      "cagr": 31.07,
-      "volatility": 28.82,
-      "sharpe": 0.85,
+      "total_return": 14.85,
+      "cagr": 31.83,
+      "volatility": 28.83,
+      "sharpe": 0.88,
       "max_drawdown": -13.65,
-      "info_ratio": 1.08,
+      "info_ratio": 1.1,
       "win_rate": 52.0
     }
   },
@@ -5615,7 +5615,7 @@
       },
       {
         "date": "2026-08-20",
-        "portfolio": 118.3,
+        "portfolio": 118.18,
         "benchmark": 100.0
       }
     ],
@@ -5999,8 +5999,8 @@
       }
     ],
     "stats": {
-      "total_return": 18.3,
-      "cagr": 18.21,
+      "total_return": 18.18,
+      "cagr": 18.09,
       "volatility": 18.53,
       "sharpe": 0.63,
       "max_drawdown": -16.43,
@@ -6637,7 +6637,7 @@
       },
       {
         "date": "2026-08-20",
-        "portfolio": 111.84,
+        "portfolio": 111.7,
         "benchmark": 100.0
       }
     ],
@@ -6847,13 +6847,13 @@
       }
     ],
     "stats": {
-      "total_return": 11.84,
-      "cagr": 25.03,
+      "total_return": 11.7,
+      "cagr": 24.71,
       "volatility": 21.94,
-      "sharpe": 0.84,
+      "sharpe": 0.83,
       "max_drawdown": -15.2,
-      "info_ratio": 1.14,
-      "win_rate": 56.0
+      "info_ratio": 1.13,
+      "win_rate": 55.2
     }
   },
   "market_regime": {
@@ -6864,19 +6864,19 @@
   },
   "sector_allocation": {
     "Industrials": 40.0,
-    "Healthcare": 30.0,
+    "Healthcare": 20.0,
+    "Consumer Cyclical": 20.0,
     "Technology": 10.0,
-    "Basic Materials": 10.0,
-    "Consumer Cyclical": 10.0
+    "Basic Materials": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "BHARATSE",
       "IOLCP",
       "IPCALAB",
-      "JAGSNPHARM",
       "KAJARIACER",
       "KPIL",
+      "MINDACORP",
       "MSTCLTD",
       "NATIONALUM",
       "OFSS",
@@ -6885,23 +6885,23 @@
     "matrix": [
       [
         1.0,
-        0.19,
+        0.18,
         -0.07,
-        -0.11,
-        0.1,
+        0.11,
         0.15,
+        0.31,
         0.19,
         0.02,
         0.14,
         0.03
       ],
       [
-        0.19,
+        0.18,
         1.0,
         0.04,
-        0.27,
-        -0.04,
+        -0.03,
         -0.06,
+        0.02,
         0.03,
         0.04,
         0.03,
@@ -6911,34 +6911,22 @@
         -0.07,
         0.04,
         1.0,
-        0.29,
-        0.02,
+        0.01,
         0.11,
+        -0.02,
         0.05,
         0.06,
         0.01,
         -0.07
       ],
       [
-        -0.11,
-        0.27,
-        0.29,
-        1.0,
-        0.12,
-        0.17,
         0.11,
-        0.04,
         -0.03,
-        -0.0
-      ],
-      [
-        0.1,
-        -0.04,
-        0.02,
-        0.12,
+        0.01,
         1.0,
         0.28,
-        0.1,
+        0.12,
+        0.09,
         0.19,
         0.15,
         0.2
@@ -6947,21 +6935,33 @@
         0.15,
         -0.06,
         0.11,
-        0.17,
         0.28,
         1.0,
+        0.27,
         0.29,
         0.23,
         -0.02,
         0.04
       ],
       [
+        0.31,
+        0.02,
+        -0.02,
+        0.12,
+        0.27,
+        1.0,
+        0.36,
+        0.13,
+        0.21,
+        0.14
+      ],
+      [
         0.19,
         0.03,
         0.05,
-        0.11,
-        0.1,
+        0.09,
         0.29,
+        0.36,
         1.0,
         0.05,
         0.03,
@@ -6971,9 +6971,9 @@
         0.02,
         0.04,
         0.06,
-        0.04,
         0.19,
         0.23,
+        0.13,
         0.05,
         1.0,
         -0.04,
@@ -6983,9 +6983,9 @@
         0.14,
         0.03,
         0.01,
-        -0.03,
         0.15,
         -0.02,
+        0.21,
         0.03,
         -0.04,
         1.0,
@@ -6995,9 +6995,9 @@
         0.03,
         0.11,
         -0.07,
-        -0.0,
         0.2,
         0.04,
+        0.14,
         -0.05,
         0.06,
         0.19,
