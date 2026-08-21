@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-21 11:24:31",
+  "last_updated": "2026-08-21 17:25:38",
   "model_portfolios": {
     "max_sharpe": {
       "NATIONALUM.NS": 0.3018,
@@ -988,11 +988,11 @@
           "PIXTRANS.NS",
           "ENGINERSIN.NS",
           "IVALUE.NS",
+          "MSTCLTD.NS",
           "IPCALAB.NS",
-          "IOLCP.NS",
-          "KPIL.NS",
           "KAJARIACER.NS",
-          "MSTCLTD.NS"
+          "IOLCP.NS",
+          "KPIL.NS"
         ]
       }
     ],
@@ -1883,8 +1883,8 @@
           "NATIONALUM.NS",
           "EXPLEOSOL.NS",
           "ENGINERSIN.NS",
-          "KRBL.NS",
           "CHENNPETRO.NS",
+          "KRBL.NS",
           "PIXTRANS.NS",
           "MARKSANS.NS"
         ]
@@ -6901,10 +6901,10 @@
     }
   },
   "market_regime": {
-    "score": 0,
+    "score": -1,
     "nifty_trend": "bearish",
     "vix": 0.0,
-    "breadth": 0.6051004636785162
+    "breadth": 0.5065891472868217
   },
   "sector_allocation": {
     "Industrials": 50.0,
