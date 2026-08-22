@@ -249,8 +249,8 @@ const ScreenerRow = memo(function ScreenerRow({
 
 export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist, scoreHistory, flashTickers = {}, isLoggedIn = true }: Props) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
-  const [sortKey, setSortKey] = useState<string>('Composite_Score')
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [sortKey, setSortKey] = useState<string>(() => isLoggedIn ? 'Composite_Score' : 'Ticker')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>(() => isLoggedIn ? 'desc' : 'asc')
   const [showFilters, setShowFilters] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const deferredSearch = useDeferredValue(searchQuery)
@@ -265,6 +265,16 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
   // Active score and conviction column names driven by the horizon toggle
   const scoreCol   = horizonMode === 'long' ? 'Composite_Score_Long' : 'Composite_Score'
   const convCol    = horizonMode === 'long' ? 'Conviction_Long'      : 'Conviction'
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setSortKey('Ticker')
+      setSortDir('asc')
+    } else {
+      setSortKey(horizonMode === 'long' ? 'Composite_Score_Long' : 'Composite_Score')
+      setSortDir('desc')
+    }
+  }, [isLoggedIn])
 
   const [minComposite, setMinComposite] = useState(0)
   const [minPiotroski, setMinPiotroski] = useState(0)
@@ -304,7 +314,10 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
 
   const handleSort = (key: string) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
-    else { setSortKey(key); setSortDir('desc') }
+    else {
+      setSortKey(key)
+      setSortDir(key === 'Ticker' || key === 'Sector' ? 'asc' : 'desc')
+    }
   }
 
   const filteredData = useMemo(() => {
@@ -443,9 +456,11 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               value={horizonMode}
               onChange={(v) => {
                 setHorizonMode(v as 'short' | 'long')
-                // Switch default sort to the matching score column
-                setSortKey(v === 'long' ? 'Composite_Score_Long' : 'Composite_Score')
-                setSortDir('desc')
+                // Switch default sort to the matching score column if logged in
+                if (isLoggedIn) {
+                  setSortKey(v === 'long' ? 'Composite_Score_Long' : 'Composite_Score')
+                  setSortDir('desc')
+                }
               }}
             />
             <span className="text-xs hidden sm:inline" style={{ color: 'var(--text-3)' }}>9-Factor Quantitative Model | Cross-Sectional Ranking</span>
