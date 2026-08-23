@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-22 04:13:26",
+  "last_updated": "2026-08-23 23:13:43",
   "model_portfolios": {
     "max_sharpe": {
       "NATIONALUM.NS": 0.3018,
@@ -981,7 +981,7 @@
       },
       {
         "from": "2026-08-21",
-        "to": "2026-08-21",
+        "to": "2026-08-24",
         "tickers": [
           "OFSS.NS",
           "NATIONALUM.NS",
@@ -990,6 +990,22 @@
           "IVALUE.NS",
           "MSTCLTD.NS",
           "IPCALAB.NS",
+          "KAJARIACER.NS",
+          "IOLCP.NS",
+          "KPIL.NS"
+        ]
+      },
+      {
+        "from": "2026-08-24",
+        "to": "2026-08-21",
+        "tickers": [
+          "OFSS.NS",
+          "NATIONALUM.NS",
+          "PIXTRANS.NS",
+          "ENGINERSIN.NS",
+          "IVALUE.NS",
+          "IPCALAB.NS",
+          "MSTCLTD.NS",
           "KAJARIACER.NS",
           "IOLCP.NS",
           "KPIL.NS"
@@ -1875,7 +1891,7 @@
       },
       {
         "from": "2026-08-21",
-        "to": "2026-08-21",
+        "to": "2026-08-24",
         "tickers": [
           "OFSS.NS",
           "INDOBORAX.NS",
@@ -1885,6 +1901,22 @@
           "ENGINERSIN.NS",
           "CHENNPETRO.NS",
           "KRBL.NS",
+          "PIXTRANS.NS",
+          "MARKSANS.NS"
+        ]
+      },
+      {
+        "from": "2026-08-24",
+        "to": "2026-08-21",
+        "tickers": [
+          "OFSS.NS",
+          "INDOBORAX.NS",
+          "IOLCP.NS",
+          "NATIONALUM.NS",
+          "EXPLEOSOL.NS",
+          "KRBL.NS",
+          "CHENNPETRO.NS",
+          "ENGINERSIN.NS",
           "PIXTRANS.NS",
           "MARKSANS.NS"
         ]
