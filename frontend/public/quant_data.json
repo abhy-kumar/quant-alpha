@@ -1,41 +1,40 @@
 {
-  "last_updated": "2026-08-24 05:16:11",
+  "last_updated": "2026-08-24 08:24:27",
   "model_portfolios": {
     "max_sharpe": {
-      "BAJAJ-AUTO.NS": 0.2636,
-      "NATIONALUM.NS": 0.2467,
-      "IPCALAB.NS": 0.2305,
-      "OFSS.NS": 0.124,
-      "IOLCP.NS": 0.0806,
-      "PIXTRANS.NS": 0.0546
+      "BAJAJ-AUTO.NS": 0.29800000000000004,
+      "NATIONALUM.NS": 0.26220000000000004,
+      "IPCALAB.NS": 0.22980000000000003,
+      "OFSS.NS": 0.14150000000000001,
+      "PIXTRANS.NS": 0.05960000000000001
     },
     "min_volatility": {
-      "BAJAJ-AUTO.NS": 0.3023697630236976,
-      "IPCALAB.NS": 0.21837816218378164,
-      "OFSS.NS": 0.11028897110288971,
-      "PIXTRANS.NS": 0.10838916108389161,
-      "KAJARIACER.NS": 0.09269073092690731,
-      "NATIONALUM.NS": 0.07739226077392261,
+      "BAJAJ-AUTO.NS": 0.30326967303269675,
+      "IPCALAB.NS": 0.21797820217978203,
+      "OFSS.NS": 0.11058894110588942,
+      "PIXTRANS.NS": 0.10808919108089192,
+      "KAJARIACER.NS": 0.09209079092090791,
+      "NATIONALUM.NS": 0.07789221077892211,
       "KPIL.NS": 0.0714928507149285,
-      "IVALUE.NS": 0.018198180181981802
+      "IVALUE.NS": 0.0185981401859814
     },
     "risk_parity": {
-      "IPCALAB.NS": 0.1616161616161616,
-      "BAJAJ-AUTO.NS": 0.1426142614261426,
-      "PIXTRANS.NS": 0.1064106410641064,
-      "OFSS.NS": 0.102010201020102,
-      "KAJARIACER.NS": 0.10001000100010002,
-      "NATIONALUM.NS": 0.09610961096109612,
-      "KPIL.NS": 0.09420942094209421,
-      "IVALUE.NS": 0.0713071307130713,
-      "ENGINERSIN.NS": 0.06440644064406441,
-      "IOLCP.NS": 0.0613061306130613
+      "IPCALAB.NS": 0.16406718656268746,
+      "BAJAJ-AUTO.NS": 0.14307138572285544,
+      "PIXTRANS.NS": 0.10597880423915217,
+      "OFSS.NS": 0.10477904419116177,
+      "KAJARIACER.NS": 0.10007998400319935,
+      "NATIONALUM.NS": 0.09868026394721055,
+      "KPIL.NS": 0.09398120375924815,
+      "IVALUE.NS": 0.07478504299140172,
+      "ENGINERSIN.NS": 0.0652869426114777,
+      "BHARATSE.NS": 0.049290141971605674
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 60.8,
+    "Quality": 61.9,
     "Low_Volatility": 45.0
   },
   "factor_ic_monitor": [
@@ -371,7 +370,7 @@
       },
       {
         "date": "2026-08-24",
-        "portfolio": 104.25,
+        "portfolio": 103.53,
         "benchmark": 100.0
       }
     ],
@@ -1008,22 +1007,22 @@
           "ENGINERSIN.NS",
           "PIXTRANS.NS",
           "IVALUE.NS",
-          "KPIL.NS",
           "BAJAJ-AUTO.NS",
           "KAJARIACER.NS",
+          "IPCALAB.NS",
           "NATIONALUM.NS",
-          "IOLCP.NS",
-          "IPCALAB.NS"
+          "BHARATSE.NS",
+          "KPIL.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": 4.25,
-      "cagr": 23.15,
-      "volatility": 12.32,
-      "sharpe": 1.35,
+      "total_return": 3.53,
+      "cagr": 18.95,
+      "volatility": 12.1,
+      "sharpe": 1.03,
       "max_drawdown": -3.05,
-      "info_ratio": 1.88,
+      "info_ratio": 1.57,
       "win_rate": 45.1
     }
   },
@@ -1286,7 +1285,7 @@
       },
       {
         "date": "2026-08-24",
-        "portfolio": 96.52,
+        "portfolio": 96.31,
         "benchmark": 100.0
       }
     ],
@@ -1922,23 +1921,23 @@
           "OFSS.NS",
           "INDOBORAX.NS",
           "NATIONALUM.NS",
+          "CHENNPETRO.NS",
           "IOLCP.NS",
-          "KRBL.NS",
           "GNFC.NS",
           "ENGINERSIN.NS",
           "EXPLEOSOL.NS",
-          "CHENNPETRO.NS",
+          "MARKSANS.NS",
           "PIXTRANS.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": -3.48,
-      "cagr": -16.24,
-      "volatility": 13.29,
-      "sharpe": -1.71,
+      "total_return": -3.69,
+      "cagr": -17.15,
+      "volatility": 13.18,
+      "sharpe": -1.79,
       "max_drawdown": -8.76,
-      "info_ratio": -1.22,
+      "info_ratio": -1.3,
       "win_rate": 47.1
     }
   },
@@ -3201,7 +3200,7 @@
       },
       {
         "date": "2026-08-24",
-        "portfolio": 149.84,
+        "portfolio": 149.17,
         "benchmark": 100.0
       }
     ],
@@ -3585,12 +3584,12 @@
       }
     ],
     "stats": {
-      "total_return": 49.84,
-      "cagr": 49.22,
-      "volatility": 30.98,
-      "sharpe": 1.38,
+      "total_return": 49.17,
+      "cagr": 48.56,
+      "volatility": 30.99,
+      "sharpe": 1.36,
       "max_drawdown": -20.05,
-      "info_ratio": 1.59,
+      "info_ratio": 1.57,
       "win_rate": 56.6
     }
   },
@@ -4223,7 +4222,7 @@
       },
       {
         "date": "2026-08-24",
-        "portfolio": 119.9,
+        "portfolio": 119.61,
         "benchmark": 100.0
       }
     ],
@@ -4433,12 +4432,12 @@
       }
     ],
     "stats": {
-      "total_return": 19.9,
-      "cagr": 43.09,
-      "volatility": 29.39,
-      "sharpe": 1.25,
+      "total_return": 19.61,
+      "cagr": 42.4,
+      "volatility": 29.4,
+      "sharpe": 1.22,
       "max_drawdown": -12.47,
-      "info_ratio": 1.47,
+      "info_ratio": 1.44,
       "win_rate": 56.8
     }
   },
@@ -5701,7 +5700,7 @@
       },
       {
         "date": "2026-08-24",
-        "portfolio": 113.03,
+        "portfolio": 112.73,
         "benchmark": 100.0
       }
     ],
@@ -6085,13 +6084,13 @@
       }
     ],
     "stats": {
-      "total_return": 13.03,
-      "cagr": 12.89,
+      "total_return": 12.73,
+      "cagr": 12.59,
       "volatility": 18.26,
-      "sharpe": 0.35,
+      "sharpe": 0.33,
       "max_drawdown": -15.75,
-      "info_ratio": 0.71,
-      "win_rate": 55.4
+      "info_ratio": 0.69,
+      "win_rate": 55.0
     }
   },
   "backtest_long_6m": {
@@ -6723,7 +6722,7 @@
       },
       {
         "date": "2026-08-24",
-        "portfolio": 107.46,
+        "portfolio": 107.21,
         "benchmark": 100.0
       }
     ],
@@ -6933,17 +6932,17 @@
       }
     ],
     "stats": {
-      "total_return": 7.46,
-      "cagr": 15.27,
-      "volatility": 20.91,
-      "sharpe": 0.42,
+      "total_return": 7.21,
+      "cagr": 14.72,
+      "volatility": 20.92,
+      "sharpe": 0.39,
       "max_drawdown": -14.16,
-      "info_ratio": 0.73,
+      "info_ratio": 0.7,
       "win_rate": 53.6
     }
   },
   "market_regime": {
-    "score": -1,
+    "score": -2,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.5065891472868217
@@ -6951,15 +6950,15 @@
   "sector_allocation": {
     "Industrials": 40.0,
     "Technology": 20.0,
-    "Healthcare": 20.0,
-    "Consumer Cyclical": 10.0,
+    "Consumer Cyclical": 20.0,
+    "Healthcare": 10.0,
     "Basic Materials": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "BAJAJ-AUTO",
+      "BHARATSE",
       "ENGINERSIN",
-      "IOLCP",
       "IPCALAB",
       "IVALUE",
       "KAJARIACER",
@@ -6971,122 +6970,122 @@
     "matrix": [
       [
         1.0,
-        0.19,
-        -0.0,
+        0.1,
+        0.18,
         0.05,
         -0.01,
-        -0.06,
+        -0.07,
         -0.08,
         -0.01,
         -0.2,
-        -0.03
+        -0.04
       ],
       [
-        0.19,
+        0.1,
         1.0,
-        0.28,
-        0.03,
+        0.09,
+        -0.06,
+        0.35,
+        0.1,
+        0.16,
+        0.0,
+        0.13,
+        0.04
+      ],
+      [
+        0.18,
+        0.09,
+        1.0,
+        0.02,
         0.19,
         -0.04,
         0.27,
-        0.01,
-        0.07,
+        0.0,
+        0.06,
         0.13
       ],
       [
-        -0.0,
-        0.28,
-        1.0,
-        0.03,
-        0.15,
-        -0.03,
-        -0.08,
-        0.08,
         0.05,
-        0.1
-      ],
-      [
-        0.05,
-        0.03,
-        0.03,
+        -0.06,
+        0.02,
         1.0,
-        -0.08,
+        -0.09,
         0.02,
         0.11,
-        0.07,
-        0.02,
-        -0.08
+        0.06,
+        0.03,
+        -0.07
       ],
       [
         -0.01,
+        0.35,
         0.19,
-        0.15,
-        -0.08,
+        -0.09,
         1.0,
-        0.24,
+        0.23,
         0.33,
-        0.12,
+        0.13,
         0.22,
         0.24
       ],
       [
-        -0.06,
+        -0.07,
+        0.1,
         -0.04,
-        -0.03,
         0.02,
-        0.24,
+        0.23,
         1.0,
         0.29,
-        0.15,
-        0.13,
+        0.14,
+        0.14,
         0.22
       ],
       [
         -0.08,
+        0.16,
         0.27,
-        -0.08,
         0.11,
         0.33,
         0.29,
         1.0,
-        0.26,
-        0.0,
+        0.25,
+        0.01,
         0.03
       ],
       [
         -0.01,
-        0.01,
-        0.08,
-        0.07,
-        0.12,
-        0.15,
-        0.26,
+        0.0,
+        0.0,
+        0.06,
+        0.13,
+        0.14,
+        0.25,
         1.0,
-        -0.09,
-        0.06
+        -0.1,
+        0.05
       ],
       [
         -0.2,
-        0.07,
-        0.05,
-        0.02,
-        0.22,
         0.13,
-        0.0,
-        -0.09,
+        0.06,
+        0.03,
+        0.22,
+        0.14,
+        0.01,
+        -0.1,
         1.0,
-        0.21
+        0.22
       ],
       [
-        -0.03,
+        -0.04,
+        0.04,
         0.13,
-        0.1,
-        -0.08,
+        -0.07,
         0.24,
         0.22,
         0.03,
-        0.06,
-        0.21,
+        0.05,
+        0.22,
         1.0
       ]
     ]
