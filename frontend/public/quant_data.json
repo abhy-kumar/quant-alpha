@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-27 15:29:25",
+  "last_updated": "2026-08-27 18:36:22",
   "model_portfolios": {
     "max_sharpe": {
       "NATIONALUM.NS": 0.5734,
@@ -1073,8 +1073,8 @@
           "ENGINERSIN.NS",
           "GNFC.NS",
           "BAJAJ-AUTO.NS",
-          "CHENNPETRO.NS",
-          "INDIGOPNTS.NS"
+          "INDIGOPNTS.NS",
+          "CHENNPETRO.NS"
         ]
       }
     ],
@@ -5400,12 +5400,12 @@
       },
       {
         "date": "2026-04-30",
-        "portfolio": 112.55,
+        "portfolio": 112.54,
         "benchmark": 100.0
       },
       {
         "date": "2026-05-01",
-        "portfolio": 112.55,
+        "portfolio": 112.54,
         "benchmark": 100.0
       },
       {
