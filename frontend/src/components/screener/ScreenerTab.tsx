@@ -93,7 +93,7 @@ const ScreenerRow = memo(function ScreenerRow({
         <td className="py-2 px-2 text-center">
           <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} ticker={row.Ticker} />
         </td>
-        <td className={`py-2 px-2 text-right font-medium font-mono hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
+        <td className={`py-2 px-2 text-right font-medium font-mono hidden md:table-cell ${scoreColor(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
         <td className={`py-2 px-2 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Fund_Score)}</td>
         <td className={`py-2 px-2 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Research_Score)}</td>
         <td className="py-2 px-2 text-right font-medium hidden lg:table-cell">
@@ -918,7 +918,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
 
               {/* Row 3: Tech, Fund, Research, F-Score, Value + expand */}
               <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--text-3)' }}>
-                <span><InfoTooltip id="screener.tech">T</InfoTooltip> <span className={`font-mono font-medium ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</span></span>
+                <span><InfoTooltip id="screener.tech">T</InfoTooltip> <span className={`font-mono font-medium ${scoreColor(row.Tech_Score)}`}>{num(row.Tech_Score)}</span></span>
                 <span><InfoTooltip id="screener.fund">F</InfoTooltip> <span className="font-mono font-medium">{num(row.Fund_Score)}</span></span>
                 <span><InfoTooltip id="screener.research">R</InfoTooltip> <span className="font-mono font-medium">{num(row.Research_Score)}</span></span>
                 <span><InfoTooltip id="screener.fscore">P</InfoTooltip> <span className="font-mono font-medium">{row.Piotroski_F ?? '-'}/9</span></span>

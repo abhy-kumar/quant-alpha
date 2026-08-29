@@ -195,25 +195,11 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
                 0.0, min(10.0, item.get("research_composite_long_raw", 5.0) + delta_l)
             )
 
-    # ── Cross-Sectional Percentile Ranking ──────────────────────────────────
+    # ── Cross-Sectional Percentile Metadata ─────────────────────────────────
     if len(final_rows) > 2:
         raw_funds = pd.Series([x["fund_score"] for x in final_rows])
         raw_research = pd.Series([x["research"]["research_composite"] for x in final_rows])
         raw_research_long = pd.Series([x.get("research_composite_long_raw", 5.0) for x in final_rows])
-
-        _PCTILE_ANCHORS = [
-            (0, 1.5), (25, 4.0), (50, 6.0), (75, 8.0), (100, 9.5)
-        ]
-
-        def _pctile_to_score(pctile: float) -> float:
-            pctile = max(0.0, min(100.0, pctile))
-            for i in range(len(_PCTILE_ANCHORS) - 1):
-                p0, s0 = _PCTILE_ANCHORS[i]
-                p1, s1 = _PCTILE_ANCHORS[i + 1]
-                if pctile <= p1:
-                    t = (pctile - p0) / (p1 - p0) if p1 != p0 else 0
-                    return s0 + t * (s1 - s0)
-            return _PCTILE_ANCHORS[-1][1]
 
         for item in final_rows:
             if item.get("is_etf"):
@@ -221,15 +207,12 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
 
             fund_pctile = (raw_funds <= item["fund_score"]).sum() / len(raw_funds) * 100
             item["fund_score_pctile"] = fund_pctile
-            item["fund_score_ranked"] = _pctile_to_score(fund_pctile)
 
             res_pctile = (raw_research <= item["research"]["research_composite"]).sum() / len(raw_research) * 100
             item["research_pctile"] = res_pctile
-            item["research_composite_ranked"] = _pctile_to_score(res_pctile)
 
             res_long_pctile = (raw_research_long <= item.get("research_composite_long_raw", 5.0)).sum() / len(raw_research_long) * 100
             item["research_long_pctile"] = res_long_pctile
-            item["research_composite_long_ranked"] = _pctile_to_score(res_long_pctile)
 
     # ── Smooth Quality Penalty Multipliers ──────────────────────────────────
     for item in final_rows:
@@ -299,23 +282,23 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         item["red_flags"] = check_forensic_red_flags(info, df, item.get("met", {}))
         item["trade_plan"] = generate_atr_trade_plan(price, atr, h22)
 
-    # ── Compute composite scores using ranked values ────────────────────────
+    # ── Compute composite scores directly from normalized component values ─
     for item in final_rows:
         norm_tech = item["norm_tech"]
-        ranked_fund     = item.get("fund_score_ranked",             item["fund_score"])
-        ranked_research = item.get("research_composite_ranked",     item["research"]["research_composite"])
-        ranked_research_long = item.get("research_composite_long_ranked", item.get("research_composite_long_raw", 5.0))
+        fund_score = item["fund_score"]
+        res_score = item["research"].get("research_composite", 5.0)
+        res_long_score = item.get("research_composite_long_raw", 5.0)
 
-        raw_composite       = (norm_tech * w_tech) + (ranked_fund * w_fund) + (ranked_research * w_res)
-        raw_composite_tech  = (norm_tech * 0.50) + (ranked_fund * 0.10) + (ranked_research * 0.40)
-        raw_composite_fund  = (norm_tech * 0.10) + (ranked_fund * 0.40) + (ranked_research * 0.50)
-        raw_composite_mom   = (ranked_research * 0.70) + (norm_tech * 0.20) + (ranked_fund * 0.10)
-        raw_composite_long  = (norm_tech * 0.15) + (ranked_fund * 0.35) + (ranked_research_long * 0.50)
+        raw_composite       = (norm_tech * w_tech) + (fund_score * w_fund) + (res_score * w_res)
+        raw_composite_tech  = (norm_tech * 0.50) + (fund_score * 0.10) + (res_score * 0.40)
+        raw_composite_fund  = (norm_tech * 0.10) + (fund_score * 0.40) + (res_score * 0.50)
+        raw_composite_mom   = (res_score * 0.70) + (norm_tech * 0.20) + (fund_score * 0.10)
+        raw_composite_long  = (norm_tech * 0.15) + (fund_score * 0.35) + (res_long_score * 0.50)
 
-        # ── RS Percentile Multiplier ──────────────────────────────────────────
+        # ── RS Percentile Tilt (gentle ±4% tilt) ─────────────────────────────
         rs_pctile = item.get("rs_pctile", np.nan)
         if not np.isnan(rs_pctile):
-            rs_adj = 0.08 * (rs_pctile - 50.0) / 50.0   # ±8% range
+            rs_adj = 0.04 * (rs_pctile - 50.0) / 50.0   # ±4% gentle tilt
             raw_composite       = max(0.0, raw_composite       * (1.0 + rs_adj))
             raw_composite_tech  = max(0.0, raw_composite_tech  * (1.0 + rs_adj))
             raw_composite_mom   = max(0.0, raw_composite_mom   * (1.0 + rs_adj))
@@ -551,7 +534,8 @@ def build_output_row(item: dict) -> dict:
         "Sig_Supertrend":       tech["sig_supertrend"],
         "Sig_VPT":              tech["sig_vpt"],
         "Sig_Ichimoku":         tech["sig_ichimoku"],
-        "Tech_Score":       round(item["final_tech"], 3),
+        "Tech_Score":       round(item["norm_tech"], 2),
+        "Tech_Score_Raw":   round(item["final_tech"], 3),
         "Bull_Count":       tech["bull"],
         "Bear_Count":       tech["bear"],
         "Total_Return_%":   met["Total_Return_%"],

@@ -291,7 +291,7 @@ function ChartingTabInner({
             {mobilePanelTab === 'tech' && (
               <div className="card p-4" style={{ borderRadius: 'var(--radius-lg)' }}>
                 <div className="grid grid-cols-3 gap-3 text-sm">
-                  <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} tooltipId="chart.tech-score" />
+                  <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={scoreColor(selectedAsset?.Tech_Score)} tooltipId="chart.tech-score" />
                   {isLoggedIn && <InfoBlock label="Conviction" value={selectedAsset?.Conviction || '-'} tooltipId="chart.conviction" />}
                   <InfoBlock label="RSI(14)" value={num(selectedAsset?.RSI_Value)} tooltipId="chart.rsi" />
                   <InfoBlock label="ADX(14)" value={num(selectedAsset?.ADX_Value)} tooltipId="chart.adx" />
@@ -406,7 +406,7 @@ function ChartingTabInner({
           <GlassCardHeader icon={TrendUp} title="Technical Analysis" />
           <GlassCardContent className="p-4">
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={colorCode(selectedAsset?.Tech_Score)} tooltipId="chart.tech-score" />
+              <InfoBlock label="Tech Score" value={num(selectedAsset?.Tech_Score)} accent={scoreColor(selectedAsset?.Tech_Score)} tooltipId="chart.tech-score" />
               {isLoggedIn && <InfoBlock label="Conviction" value={selectedAsset?.Conviction || '-'} tooltipId="chart.conviction" />}
               <InfoBlock label="RSI(14)" value={num(selectedAsset?.RSI_Value)} tooltipId="chart.rsi" />
               <InfoBlock label="ADX(14)" value={num(selectedAsset?.ADX_Value)} tooltipId="chart.adx" />
@@ -657,7 +657,7 @@ function ChartingTabInner({
             <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Score Breakdown</h3>
             <div className="space-y-2.5">
               {scoreBar('Composite', Number(selectedAsset.Composite_Score) || 0, 0, 10, undefined, 'chart.score.composite')}
-              {scoreBar('Tech', Number(selectedAsset.Tech_Score) || 0, -1, 1, undefined, 'chart.score.tech')}
+              {scoreBar('Tech', Number(selectedAsset.Tech_Score) || 0, 0, 10, undefined, 'chart.score.tech')}
               {scoreBar('Fund', Number(selectedAsset.Fund_Score) || 0, 0, 10, undefined, 'chart.score.fund')}
               {scoreBar('Research', Number(selectedAsset.Research_Score) || 0, 0, 10, undefined, 'chart.score.research')}
               <div className="pt-2 space-y-2.5" style={{ borderTop: '1px solid var(--border)' }}>
@@ -713,7 +713,7 @@ function ChartingTabInner({
                     <td className="py-3 px-4 text-sm font-medium" style={{ color: 'var(--text)' }}>{row.Ticker.replace('.NS', '')}</td>
                     <td className="py-3 px-4 text-right text-sm hidden sm:table-cell" style={{ color: 'var(--text-2)' }}>{num(row.Market_Cap_B)}B</td>
                     <td className={`py-3 px-4 text-right text-sm font-medium ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</td>
-                    <td className={`py-3 px-4 text-right text-sm font-medium hidden md:table-cell ${colorCode(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
+                    <td className={`py-3 px-4 text-right text-sm font-medium hidden md:table-cell ${scoreColor(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden lg:table-cell`}>{num(row.Fund_Score)}</td>
                     <td className={`py-3 px-4 text-right text-sm font-medium hidden lg:table-cell`}>{num(row.Research_Score)}</td>
                     <td className="py-3 px-4 text-right text-sm hidden xl:table-cell" style={{ color: 'var(--text-2)' }}>{num(row['P/E'])}</td>

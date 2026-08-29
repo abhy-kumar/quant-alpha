@@ -140,7 +140,7 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
             </div>
             <div className="p-2 card text-center rounded-xl">
               <span className="text-[8.5px] uppercase font-semibold text-[var(--text-3)] block">Technical Score</span>
-              <span className={`text-sm font-bold font-mono mt-0.5 block ${colorCode(asset.Tech_Score)}`}>
+              <span className={`text-sm font-bold font-mono mt-0.5 block ${scoreColor(asset.Tech_Score)}`}>
                 {num(asset.Tech_Score)}
               </span>
             </div>

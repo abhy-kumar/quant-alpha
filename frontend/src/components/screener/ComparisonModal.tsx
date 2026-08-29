@@ -1,7 +1,7 @@
 import React from 'react'
 import { createPortal } from 'react-dom'
 import type { DashboardData } from '../../types'
-import { num, colorCode, scoreColor, InfoTooltip } from '../common/shared'
+import { num, scoreColor, InfoTooltip } from '../common/shared'
 import { X, Minus } from '@phosphor-icons/react'
 import { FactorRadarChart } from '../common/FactorRadarChart'
 
@@ -195,7 +195,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                 )}
                 {renderMetricRow(
                   'Tech Score',
-                  (a) => <span className={colorCode(a.Tech_Score)}>{num(a.Tech_Score)}</span>,
+                  (a) => <span className={scoreColor(a.Tech_Score)}>{num(a.Tech_Score)}/10</span>,
                   'chart.tech-score'
                 )}
                 {renderMetricRow('Fund Score', (a) => `${num(a.Fund_Score)}/10`, 'chart.fund-score')}

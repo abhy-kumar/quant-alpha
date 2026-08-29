@@ -9,6 +9,7 @@ export interface DashboardData {
   ADX_Value: number
   ST_Signal: string
   Tech_Score: number
+  Tech_Score_Raw?: number
   Fund_Score: number
   Research_Score: number
   Composite_Score: number
