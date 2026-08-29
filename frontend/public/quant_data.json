@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-28 21:37:24",
+  "last_updated": "2026-08-29 01:00:42",
   "model_portfolios": {
     "max_sharpe": {
       "NATIONALUM.NS": 0.5655,
@@ -1107,8 +1107,8 @@
           "PIXTRANS.NS",
           "PGIL.NS",
           "NATIONALUM.NS",
-          "KAJARIACER.NS",
           "ENGINERSIN.NS",
+          "KAJARIACER.NS",
           "GNFC.NS",
           "INDIGOPNTS.NS",
           "BAJAJ-AUTO.NS",
