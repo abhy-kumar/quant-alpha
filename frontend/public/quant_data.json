@@ -1,41 +1,41 @@
 {
-  "last_updated": "2026-08-31 11:07:52",
+  "last_updated": "2026-08-31 15:24:15",
   "model_portfolios": {
     "max_sharpe": {
-      "NATIONALUM.NS": 0.2851,
-      "CHENNPETRO.NS": 0.2542,
-      "OFSS.NS": 0.237,
-      "BHARATSE.NS": 0.1975,
-      "KAJARIACER.NS": 0.0262
+      "NATIONALUM.NS": 0.285,
+      "CHENNPETRO.NS": 0.2545,
+      "OFSS.NS": 0.2367,
+      "BHARATSE.NS": 0.1977,
+      "KAJARIACER.NS": 0.0261
     },
     "min_volatility": {
-      "LICI.NS": 0.2598,
-      "OFSS.NS": 0.1592,
-      "KAJARIACER.NS": 0.1406,
-      "PIXTRANS.NS": 0.1137,
-      "MINDACORP.NS": 0.0885,
-      "KPIL.NS": 0.0698,
-      "CHENNPETRO.NS": 0.068,
-      "HINDZINC.NS": 0.0675,
-      "NATIONALUM.NS": 0.0329
+      "LICI.NS": 0.24892489248924893,
+      "OFSS.NS": 0.15001500150015,
+      "KAJARIACER.NS": 0.1423142314231423,
+      "PIXTRANS.NS": 0.11841184118411842,
+      "GNFC.NS": 0.1021102110211021,
+      "MINDACORP.NS": 0.08270827082708271,
+      "CHENNPETRO.NS": 0.0668066806680668,
+      "HINDZINC.NS": 0.058405840584058406,
+      "NATIONALUM.NS": 0.030303030303030304
     },
     "risk_parity": {
-      "LICI.NS": 0.1274872512748725,
-      "OFSS.NS": 0.11798820117988201,
-      "KAJARIACER.NS": 0.11588841115888411,
-      "PIXTRANS.NS": 0.1064893510648935,
-      "MINDACORP.NS": 0.10168983101689831,
-      "KPIL.NS": 0.10038996100389962,
+      "LICI.NS": 0.1262873712628737,
+      "KAJARIACER.NS": 0.11648835116488351,
+      "OFSS.NS": 0.11578842115788421,
+      "PIXTRANS.NS": 0.10778922107789222,
+      "GNFC.NS": 0.1058894110588941,
+      "MINDACORP.NS": 0.10128987101289871,
       "CHENNPETRO.NS": 0.09269073092690731,
-      "HINDZINC.NS": 0.09219078092190781,
-      "NATIONALUM.NS": 0.0851914808519148,
-      "BHARATSE.NS": 0.059994000599940006
+      "HINDZINC.NS": 0.08979102089791022,
+      "NATIONALUM.NS": 0.0836916308369163,
+      "BHARATSE.NS": 0.06029397060293971
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 63.1,
+    "Quality": 61.9,
     "Low_Volatility": 45.0
   },
   "factor_ic_monitor": [
@@ -1131,10 +1131,10 @@
           "PIXTRANS.NS",
           "HINDZINC.NS",
           "LICI.NS",
-          "MINDACORP.NS",
           "BHARATSE.NS",
+          "MINDACORP.NS",
           "CHENNPETRO.NS",
-          "KPIL.NS"
+          "GNFC.NS"
         ]
       }
     ],
@@ -2166,11 +2166,11 @@
           "NATIONALUM.NS",
           "ENGINERSIN.NS",
           "IOLCP.NS",
-          "EXPLEOSOL.NS",
-          "INDOBORAX.NS",
           "KAJARIACER.NS",
+          "INDOBORAX.NS",
+          "EXPLEOSOL.NS",
           "PETRONET.NS",
-          "CHENNPETRO.NS"
+          "MSTCLTD.NS"
         ]
       }
     ],
@@ -7185,14 +7185,14 @@
     }
   },
   "market_regime": {
-    "score": -1,
+    "score": -2,
     "nifty_trend": "bearish",
     "vix": 0.0,
-    "breadth": 0.5237543453070683
+    "breadth": 0.3429657794676806
   },
   "sector_allocation": {
-    "Industrials": 30.0,
-    "Basic Materials": 20.0,
+    "Basic Materials": 30.0,
+    "Industrials": 20.0,
     "Consumer Cyclical": 20.0,
     "Technology": 10.0,
     "Financial Services": 10.0,
@@ -7202,9 +7202,9 @@
     "labels": [
       "BHARATSE",
       "CHENNPETRO",
+      "GNFC",
       "HINDZINC",
       "KAJARIACER",
-      "KPIL",
       "LICI",
       "MINDACORP",
       "NATIONALUM",
@@ -7215,9 +7215,9 @@
       [
         1.0,
         -0.07,
+        -0.06,
         0.13,
         0.11,
-        0.19,
         0.12,
         0.32,
         0.04,
@@ -7227,9 +7227,9 @@
       [
         -0.07,
         1.0,
+        0.16,
         0.11,
         0.18,
-        0.23,
         0.17,
         0.12,
         0.24,
@@ -7237,11 +7237,23 @@
         -0.06
       ],
       [
+        -0.06,
+        0.16,
+        1.0,
+        0.28,
+        0.21,
+        0.18,
+        0.28,
+        0.2,
+        0.04,
+        0.09
+      ],
+      [
         0.13,
         0.11,
+        0.28,
         1.0,
         -0.07,
-        0.29,
         -0.0,
         0.08,
         0.56,
@@ -7251,9 +7263,9 @@
       [
         0.11,
         0.18,
+        0.21,
         -0.07,
         1.0,
-        0.34,
         0.43,
         0.19,
         0.06,
@@ -7261,23 +7273,11 @@
         0.16
       ],
       [
-        0.19,
-        0.23,
-        0.29,
-        0.34,
-        1.0,
-        0.31,
-        0.32,
-        0.26,
-        0.06,
-        0.03
-      ],
-      [
         0.12,
         0.17,
+        0.18,
         -0.0,
         0.43,
-        0.31,
         1.0,
         0.23,
         0.15,
@@ -7287,9 +7287,9 @@
       [
         0.32,
         0.12,
+        0.28,
         0.08,
         0.19,
-        0.32,
         0.23,
         1.0,
         0.12,
@@ -7299,9 +7299,9 @@
       [
         0.04,
         0.24,
+        0.2,
         0.56,
         0.06,
-        0.26,
         0.15,
         0.12,
         1.0,
@@ -7311,9 +7311,9 @@
       [
         0.09,
         -0.03,
+        0.04,
         -0.05,
         0.13,
-        0.06,
         0.03,
         0.16,
         -0.15,
@@ -7323,9 +7323,9 @@
       [
         0.05,
         -0.06,
+        0.09,
         -0.06,
         0.16,
-        0.03,
         0.07,
         0.15,
         0.03,
