@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-01 12:53:52",
+  "last_updated": "2026-09-01 15:31:02",
   "model_portfolios": {
     "max_sharpe": {
       "PGIL.NS": 0.5045504550455044,
@@ -9,27 +9,28 @@
       "PIXTRANS.NS": 0.0138013801380138
     },
     "min_volatility": {
-      "KAJARIACER.NS": 0.2746,
-      "OFSS.NS": 0.1522,
-      "HINDZINC.NS": 0.1506,
-      "KPIL.NS": 0.1135,
-      "EXPLEOSOL.NS": 0.0837,
-      "CHENNPETRO.NS": 0.0773,
-      "MINDACORP.NS": 0.0673,
-      "PIXTRANS.NS": 0.0529,
-      "PGIL.NS": 0.0279
+      "KAJARIACER.NS": 0.2419516096780644,
+      "OFSS.NS": 0.14427114577084585,
+      "INDIGOPNTS.NS": 0.13677264547090584,
+      "HINDZINC.NS": 0.13227354529094182,
+      "KPIL.NS": 0.09908018396320735,
+      "CHENNPETRO.NS": 0.06978604279144171,
+      "EXPLEOSOL.NS": 0.0576884623075385,
+      "MINDACORP.NS": 0.049790041991601676,
+      "PIXTRANS.NS": 0.047390521895620874,
+      "PGIL.NS": 0.020995800839832036
     },
     "risk_parity": {
-      "KAJARIACER.NS": 0.1349134913491349,
-      "OFSS.NS": 0.11381138113811382,
-      "HINDZINC.NS": 0.11251125112511251,
-      "KPIL.NS": 0.103010301030103,
-      "EXPLEOSOL.NS": 0.10001000100010002,
-      "MINDACORP.NS": 0.0962096209620962,
-      "CHENNPETRO.NS": 0.09560956095609562,
-      "PIXTRANS.NS": 0.09000900090009001,
-      "PGIL.NS": 0.07820782078207822,
-      "MSTCLTD.NS": 0.07570757075707571
+      "KAJARIACER.NS": 0.1274127412741274,
+      "OFSS.NS": 0.11071107110711072,
+      "HINDZINC.NS": 0.10971097109710971,
+      "INDIGOPNTS.NS": 0.10891089108910891,
+      "KPIL.NS": 0.1004100410041004,
+      "EXPLEOSOL.NS": 0.09450945094509451,
+      "CHENNPETRO.NS": 0.0933093309330933,
+      "MINDACORP.NS": 0.0923092309230923,
+      "PIXTRANS.NS": 0.0875087508750875,
+      "PGIL.NS": 0.07520752075207521
     }
   },
   "factor_exposures": {
@@ -1148,14 +1149,14 @@
         "tickers": [
           "OFSS.NS",
           "EXPLEOSOL.NS",
-          "HINDZINC.NS",
           "KPIL.NS",
+          "HINDZINC.NS",
           "PIXTRANS.NS",
-          "CHENNPETRO.NS",
           "KAJARIACER.NS",
+          "CHENNPETRO.NS",
           "PGIL.NS",
           "MINDACORP.NS",
-          "MSTCLTD.NS"
+          "INDIGOPNTS.NS"
         ]
       }
     ],
@@ -2208,8 +2209,8 @@
           "ENGINERSIN.NS",
           "CHENNPETRO.NS",
           "EXPLEOSOL.NS",
-          "KPIL.NS",
           "INDOBORAX.NS",
+          "KPIL.NS",
           "IOLCP.NS",
           "HINDZINC.NS",
           "KAJARIACER.NS"
@@ -7227,16 +7228,16 @@
     }
   },
   "market_regime": {
-    "score": -2,
+    "score": 0,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.34073506891271055
   },
   "sector_allocation": {
-    "Industrials": 40.0,
+    "Industrials": 30.0,
     "Technology": 20.0,
+    "Basic Materials": 20.0,
     "Consumer Cyclical": 20.0,
-    "Basic Materials": 10.0,
     "Energy": 10.0
   },
   "correlation_matrix": {
@@ -7244,10 +7245,10 @@
       "CHENNPETRO",
       "EXPLEOSOL",
       "HINDZINC",
+      "INDIGOPNTS",
       "KAJARIACER",
       "KPIL",
       "MINDACORP",
-      "MSTCLTD",
       "OFSS",
       "PGIL",
       "PIXTRANS"
@@ -7257,10 +7258,10 @@
         1.0,
         0.1,
         0.1,
+        -0.03,
         0.17,
         0.23,
         0.12,
-        0.1,
         -0.04,
         0.11,
         -0.06
@@ -7269,10 +7270,10 @@
         0.1,
         1.0,
         0.26,
+        0.38,
         0.11,
         0.49,
         0.17,
-        0.25,
         0.12,
         0.14,
         0.09
@@ -7281,22 +7282,34 @@
         0.1,
         0.26,
         1.0,
+        0.26,
         -0.13,
         0.3,
         0.07,
-        0.14,
         -0.1,
         -0.05,
         -0.07
       ],
       [
+        -0.03,
+        0.38,
+        0.26,
+        1.0,
+        0.07,
+        0.33,
+        0.1,
+        0.11,
+        0.18,
+        0.13
+      ],
+      [
         0.17,
         0.11,
         -0.13,
+        0.07,
         1.0,
         0.34,
         0.19,
-        0.22,
         0.14,
         0.21,
         0.18
@@ -7305,10 +7318,10 @@
         0.23,
         0.49,
         0.3,
+        0.33,
         0.34,
         1.0,
         0.32,
-        0.34,
         0.05,
         0.17,
         0.03
@@ -7317,34 +7330,22 @@
         0.12,
         0.17,
         0.07,
+        0.1,
         0.19,
         0.32,
         1.0,
-        0.32,
         0.15,
         0.32,
         0.15
       ],
       [
-        0.1,
-        0.25,
-        0.14,
-        0.22,
-        0.34,
-        0.32,
-        1.0,
-        -0.01,
-        0.09,
-        -0.02
-      ],
-      [
         -0.04,
         0.12,
         -0.1,
+        0.11,
         0.14,
         0.05,
         0.15,
-        -0.01,
         1.0,
         0.37,
         0.24
@@ -7353,10 +7354,10 @@
         0.11,
         0.14,
         -0.05,
+        0.18,
         0.21,
         0.17,
         0.32,
-        0.09,
         0.37,
         1.0,
         -0.02
@@ -7365,10 +7366,10 @@
         -0.06,
         0.09,
         -0.07,
+        0.13,
         0.18,
         0.03,
         0.15,
-        -0.02,
         0.24,
         -0.02,
         1.0
