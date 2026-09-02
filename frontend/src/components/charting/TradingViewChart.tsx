@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import {
   createChart,
   ColorType,
@@ -55,6 +55,14 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   const containerRef = useRef<HTMLDivElement>(null)
   const rsiContainerRef = useRef<HTMLDivElement>(null)
   const macdContainerRef = useRef<HTMLDivElement>(null)
+
+  const dataByTime = useMemo(() => {
+    const map = new Map<string, ChartDataPoint>()
+    for (const d of data) {
+      if (d && d.time) map.set(d.time, d)
+    }
+    return map
+  }, [data])
 
   // Chart instances
   const mainChartRef = useRef<IChartApi | null>(null)
@@ -356,7 +364,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
           if (open > 0) chgPct = ((close - open) / open) * 100
         }
 
-        const dataPoint = data.find((d) => d.time === rawDate)
+        const dataPoint = dataByTime.get(rawDate)
 
         setHudInfo({
           time: rawDate,

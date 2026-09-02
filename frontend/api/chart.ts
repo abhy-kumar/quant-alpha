@@ -189,7 +189,7 @@ export async function fetchChartData(ticker: string, period = '1mo', interval: Y
     interval,
   })
 
-  const quotes = result.quotes.filter((quote: ChartQuote) => quote.close !== null)
+  const quotes = (result.quotes || []).filter((quote: ChartQuote) => quote && quote.close !== null)
   const closes = quotes.map((quote: ChartQuote) => quote.close as number)
   const highs = quotes.map((quote: ChartQuote) => quote.high ?? quote.close as number)
   const lows = quotes.map((quote: ChartQuote) => quote.low ?? quote.close as number)

@@ -28,7 +28,7 @@ export const FactorICMonitorCard: React.FC<FactorICMonitorCardProps> = ({ factor
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium" style={{ color: 'var(--text)' }}>{f.factor}</span>
               <span className="font-mono text-[11px]" style={{ color: f.ic_current >= 0.10 ? 'var(--green)' : 'var(--text-2)' }}>
-                IC: +{f.ic_current.toFixed(3)} (t={f.t_stat.toFixed(1)})
+                IC: {f.ic_current >= 0 ? '+' : ''}{f.ic_current.toFixed(3)} (t={f.t_stat.toFixed(1)})
               </span>
             </div>
             <div className="h-1.5 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>

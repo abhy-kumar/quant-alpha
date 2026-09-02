@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-02 00:49:56",
+  "last_updated": "2026-09-02 11:01:50",
   "model_portfolios": {
     "max_sharpe": {
       "FEDERALBNK.NS": 0.4528,
@@ -40,45 +40,45 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.088,
-      "ic_3m_rolling": 0.092,
-      "t_stat": 0.96,
-      "status": "Moderate Alpha"
+      "ic_current": -0.107,
+      "ic_3m_rolling": -0.103,
+      "t_stat": -2.41,
+      "status": "Neutral / Decaying"
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.142,
-      "ic_3m_rolling": 0.149,
-      "t_stat": 1.56,
+      "ic_current": 0.125,
+      "ic_3m_rolling": 0.235,
+      "t_stat": 2.77,
       "status": "Strong Alpha"
     },
     {
       "factor": "Low Volatility",
-      "ic_current": 0.075,
-      "ic_3m_rolling": 0.079,
-      "t_stat": 0.82,
-      "status": "Moderate Alpha"
+      "ic_current": -0.236,
+      "ic_3m_rolling": -0.381,
+      "t_stat": -5.35,
+      "status": "Neutral / Decaying"
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.115,
-      "ic_3m_rolling": 0.121,
-      "t_stat": 1.26,
-      "status": "Strong Alpha"
+      "ic_current": -0.062,
+      "ic_3m_rolling": -0.038,
+      "t_stat": -1.38,
+      "status": "Neutral / Decaying"
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": 0.062,
-      "ic_3m_rolling": 0.065,
-      "t_stat": 0.68,
-      "status": "Moderate Alpha"
+      "ic_current": -0.103,
+      "ic_3m_rolling": -0.108,
+      "t_stat": -2.27,
+      "status": "Neutral / Decaying"
     },
     {
       "factor": "Composite Multi-Factor Alpha",
-      "ic_current": 0.185,
-      "ic_3m_rolling": 0.194,
-      "t_stat": 2.03,
-      "status": "Strong Alpha"
+      "ic_current": -0.074,
+      "ic_3m_rolling": -0.014,
+      "t_stat": -1.66,
+      "status": "Neutral / Decaying"
     }
   ],
   "scenario_stress_tests": [

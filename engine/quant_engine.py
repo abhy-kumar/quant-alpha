@@ -331,10 +331,11 @@ def compute_factor_ic_monitor():
     conn = _get_conn()
     try:
         query = """
-        SELECT Piotroski_F, Momentum_6M, Vol_60D, P_E, ROE_Pct, Composite_Score, Return_21d
-        FROM factor_history
-        WHERE Return_21d IS NOT NULL
-        ORDER BY Scan_Date DESC
+        SELECT f.Piotroski_F, f.Momentum_6M, f.Vol_60D, f.P_E, f.ROE_Pct, f.Composite_Score, o.Return_21d
+        FROM factor_history f
+        JOIN outcome_tracking o ON f.Ticker = o.Ticker AND f.Scan_Date = o.Scan_Date
+        WHERE o.Return_21d IS NOT NULL
+        ORDER BY f.Scan_Date DESC
         LIMIT 500
         """
         df = pd.read_sql_query(query, conn)
