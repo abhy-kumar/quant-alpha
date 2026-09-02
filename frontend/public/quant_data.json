@@ -1,41 +1,40 @@
 {
-  "last_updated": "2026-09-01 19:53:04",
+  "last_updated": "2026-09-02 00:49:56",
   "model_portfolios": {
     "max_sharpe": {
-      "NATIONALUM.NS": 0.388,
-      "OFSS.NS": 0.2515,
-      "BHARATSE.NS": 0.2364,
-      "KAJARIACER.NS": 0.0653,
-      "AJANTPHARM.NS": 0.0588
+      "FEDERALBNK.NS": 0.4528,
+      "NATIONALUM.NS": 0.2735,
+      "BHARATSE.NS": 0.1535,
+      "OFSS.NS": 0.1173
     },
     "min_volatility": {
-      "AJANTPHARM.NS": 0.22602260226022602,
-      "LICI.NS": 0.21322132213221323,
-      "OFSS.NS": 0.12371237123712371,
-      "KAJARIACER.NS": 0.11221122112211221,
-      "PIXTRANS.NS": 0.10101010101010102,
-      "GNFC.NS": 0.0848084808480848,
-      "MINDACORP.NS": 0.0668066806680668,
-      "NATIONALUM.NS": 0.0387038703870387,
-      "HINDZINC.NS": 0.0335033503350335
+      "FEDERALBNK.NS": 0.22115576884623075,
+      "AJANTPHARM.NS": 0.20405918816236754,
+      "LICI.NS": 0.17446510697860426,
+      "KAJARIACER.NS": 0.09698060387922416,
+      "OFSS.NS": 0.09568086382723455,
+      "PIXTRANS.NS": 0.09518096380723856,
+      "NATIONALUM.NS": 0.04059188162367526,
+      "MINDACORP.NS": 0.03929214157168567,
+      "HINDZINC.NS": 0.03259348130373925
     },
     "risk_parity": {
-      "AJANTPHARM.NS": 0.13510000000000003,
-      "LICI.NS": 0.12070000000000002,
-      "KAJARIACER.NS": 0.11060000000000002,
-      "OFSS.NS": 0.10820000000000002,
-      "PIXTRANS.NS": 0.10280000000000002,
-      "GNFC.NS": 0.10200000000000001,
-      "MINDACORP.NS": 0.09660000000000002,
-      "HINDZINC.NS": 0.08450000000000002,
-      "NATIONALUM.NS": 0.08250000000000002,
-      "BHARATSE.NS": 0.05700000000000001
+      "AJANTPHARM.NS": 0.1313131313131313,
+      "FEDERALBNK.NS": 0.12861286128612862,
+      "LICI.NS": 0.11691169116911691,
+      "KAJARIACER.NS": 0.1065106510651065,
+      "OFSS.NS": 0.10391039103910392,
+      "PIXTRANS.NS": 0.0996099609960996,
+      "MINDACORP.NS": 0.0928092809280928,
+      "HINDZINC.NS": 0.08350835083508351,
+      "NATIONALUM.NS": 0.08160816081608162,
+      "BHARATSE.NS": 0.0552055205520552
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 60.8,
+    "Quality": 60.3,
     "Low_Volatility": 45.0
   },
   "factor_ic_monitor": [
@@ -1163,15 +1162,15 @@
         "to": "2026-09-01",
         "tickers": [
           "OFSS.NS",
-          "KAJARIACER.NS",
           "NATIONALUM.NS",
+          "KAJARIACER.NS",
           "PIXTRANS.NS",
           "HINDZINC.NS",
-          "MINDACORP.NS",
           "AJANTPHARM.NS",
           "BHARATSE.NS",
+          "MINDACORP.NS",
           "LICI.NS",
-          "GNFC.NS"
+          "FEDERALBNK.NS"
         ]
       }
     ],
@@ -7265,18 +7264,18 @@
     "breadth": 0.34073506891271055
   },
   "sector_allocation": {
-    "Basic Materials": 30.0,
+    "Basic Materials": 20.0,
     "Industrials": 20.0,
     "Consumer Cyclical": 20.0,
+    "Financial Services": 20.0,
     "Technology": 10.0,
-    "Healthcare": 10.0,
-    "Financial Services": 10.0
+    "Healthcare": 10.0
   },
   "correlation_matrix": {
     "labels": [
       "AJANTPHARM",
       "BHARATSE",
-      "GNFC",
+      "FEDERALBNK",
       "HINDZINC",
       "KAJARIACER",
       "LICI",
@@ -7289,7 +7288,7 @@
       [
         1.0,
         -0.01,
-        0.17,
+        0.19,
         0.07,
         0.19,
         0.05,
@@ -7301,7 +7300,7 @@
       [
         -0.01,
         1.0,
-        -0.06,
+        0.11,
         0.11,
         0.11,
         0.13,
@@ -7311,21 +7310,21 @@
         0.06
       ],
       [
-        0.17,
-        -0.06,
-        1.0,
-        0.28,
-        0.2,
-        0.18,
-        0.28,
         0.19,
-        0.03,
-        0.09
+        0.11,
+        1.0,
+        -0.0,
+        0.21,
+        0.24,
+        0.31,
+        -0.01,
+        0.16,
+        -0.01
       ],
       [
         0.07,
         0.11,
-        0.28,
+        -0.0,
         1.0,
         -0.13,
         0.0,
@@ -7337,7 +7336,7 @@
       [
         0.19,
         0.11,
-        0.2,
+        0.21,
         -0.13,
         1.0,
         0.45,
@@ -7349,7 +7348,7 @@
       [
         0.05,
         0.13,
-        0.18,
+        0.24,
         0.0,
         0.45,
         1.0,
@@ -7361,7 +7360,7 @@
       [
         0.09,
         0.31,
-        0.28,
+        0.31,
         0.07,
         0.19,
         0.23,
@@ -7373,7 +7372,7 @@
       [
         0.16,
         0.04,
-        0.19,
+        -0.01,
         0.53,
         0.05,
         0.17,
@@ -7385,7 +7384,7 @@
       [
         0.1,
         0.1,
-        0.03,
+        0.16,
         -0.1,
         0.14,
         0.05,
@@ -7397,7 +7396,7 @@
       [
         0.08,
         0.06,
-        0.09,
+        -0.01,
         -0.07,
         0.18,
         0.08,
