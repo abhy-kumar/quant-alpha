@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-02 12:27:47",
+  "last_updated": "2026-09-02 15:01:50",
   "model_portfolios": {
     "max_sharpe": {
       "PGIL.NS": 0.464,
@@ -1169,13 +1169,13 @@
           "OFSS.NS",
           "KAJARIACER.NS",
           "PGIL.NS",
-          "MSTCLTD.NS",
           "KPIL.NS",
-          "HINDZINC.NS",
+          "MSTCLTD.NS",
           "EXPLEOSOL.NS",
-          "INDIGOPNTS.NS",
           "CHENNPETRO.NS",
-          "BAJAJ-AUTO.NS"
+          "INDIGOPNTS.NS",
+          "BAJAJ-AUTO.NS",
+          "HINDZINC.NS"
         ]
       }
     ],
@@ -2250,10 +2250,10 @@
           "ENGINERSIN.NS",
           "CHENNPETRO.NS",
           "KAJARIACER.NS",
-          "INDOBORAX.NS",
           "KPIL.NS",
+          "INDOBORAX.NS",
           "HUHTAMAKI.NS",
-          "HINDZINC.NS"
+          "IOLCP.NS"
         ]
       }
     ],
