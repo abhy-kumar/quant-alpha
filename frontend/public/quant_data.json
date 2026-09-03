@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-02 19:50:20",
+  "last_updated": "2026-09-03 00:57:04",
   "model_portfolios": {
     "max_sharpe": {
       "PGIL.NS": 0.5155484451554844,
@@ -1184,13 +1184,13 @@
         "to": "2026-09-02",
         "tickers": [
           "OFSS.NS",
-          "EXPLEOSOL.NS",
           "KPIL.NS",
-          "HINDZINC.NS",
           "PIXTRANS.NS",
-          "CHENNPETRO.NS",
-          "PGIL.NS",
           "KAJARIACER.NS",
+          "PGIL.NS",
+          "EXPLEOSOL.NS",
+          "HINDZINC.NS",
+          "CHENNPETRO.NS",
           "MINDACORP.NS",
           "INDIGOPNTS.NS"
         ]
@@ -2279,14 +2279,14 @@
         "tickers": [
           "OFSS.NS",
           "GPPL.NS",
-          "ENGINERSIN.NS",
-          "INDOBORAX.NS",
           "EXPLEOSOL.NS",
+          "ENGINERSIN.NS",
           "CHENNPETRO.NS",
           "KPIL.NS",
+          "INDOBORAX.NS",
+          "DBCORP.NS",
           "IOLCP.NS",
-          "HINDZINC.NS",
-          "DBCORP.NS"
+          "KAJARIACER.NS"
         ]
       }
     ],
@@ -7309,8 +7309,8 @@
   "sector_allocation": {
     "Industrials": 30.0,
     "Technology": 20.0,
-    "Basic Materials": 20.0,
     "Consumer Cyclical": 20.0,
+    "Basic Materials": 20.0,
     "Energy": 10.0
   },
   "correlation_matrix": {
