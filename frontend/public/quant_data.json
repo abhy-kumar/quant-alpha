@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-04 12:27:21",
+  "last_updated": "2026-09-04 14:53:03",
   "model_portfolios": {
     "max_sharpe": {
       "CHENNPETRO.NS": 0.3892,
@@ -1214,9 +1214,9 @@
           "BAJAJ-AUTO.NS",
           "EXPLEOSOL.NS",
           "CHENNPETRO.NS",
+          "KPIL.NS",
           "ACE.NS",
           "LICI.NS",
-          "KPIL.NS",
           "KAJARIACER.NS"
         ]
       }
@@ -2337,7 +2337,7 @@
           "IOLCP.NS",
           "HINDZINC.NS",
           "INDOBORAX.NS",
-          "LICI.NS"
+          "KPIL.NS"
         ]
       }
     ],
