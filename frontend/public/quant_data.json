@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-07 13:50:18",
+  "last_updated": "2026-09-07 16:24:49",
   "model_portfolios": {
     "max_sharpe": {
       "PGIL.NS": 0.3639636036396359,
@@ -1233,8 +1233,8 @@
           "OFSS.NS",
           "BAJAJCON.NS",
           "GPPL.NS",
-          "KPIL.NS",
           "HINDZINC.NS",
+          "KPIL.NS",
           "EXPLEOSOL.NS",
           "CHENNPETRO.NS",
           "PGIL.NS",
@@ -2380,7 +2380,7 @@
           "KPIL.NS",
           "GNFC.NS",
           "INDOBORAX.NS",
-          "MSTCLTD.NS"
+          "HINDZINC.NS"
         ]
       }
     ],
