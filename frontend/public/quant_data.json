@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-08 12:27:00",
+  "last_updated": "2026-09-08 15:07:37",
   "model_portfolios": {
     "max_sharpe": {
       "PGIL.NS": 0.5267473252674733,
@@ -1248,8 +1248,8 @@
         "to": "2026-09-08",
         "tickers": [
           "OFSS.NS",
-          "PGIL.NS",
           "GPPL.NS",
+          "PGIL.NS",
           "KAJARIACER.NS",
           "BAJAJ-AUTO.NS",
           "CHENNPETRO.NS",
