@@ -1,39 +1,37 @@
 {
-  "last_updated": "2026-09-08 09:10:15",
+  "last_updated": "2026-09-08 12:27:00",
   "model_portfolios": {
     "max_sharpe": {
-      "PGIL.NS": 0.6294370562943705,
-      "CHENNPETRO.NS": 0.2645735426457354,
-      "BAJAJ-AUTO.NS": 0.062193780621937804,
-      "OFSS.NS": 0.043795620437956206
+      "PGIL.NS": 0.5267473252674733,
+      "BAJAJ-AUTO.NS": 0.25307469253074694,
+      "CHENNPETRO.NS": 0.22017798220177984
     },
     "min_volatility": {
-      "COALINDIA.NS": 0.32636736326367366,
-      "BAJAJ-AUTO.NS": 0.2258774122587741,
-      "KAJARIACER.NS": 0.14428557144285573,
-      "LICI.NS": 0.12588741125887412,
-      "OFSS.NS": 0.07019298070192981,
-      "GPPL.NS": 0.041695830416958304,
-      "HINDZINC.NS": 0.036696330366963306,
-      "GNFC.NS": 0.028997100289971003
+      "COALINDIA.NS": 0.35270000000000007,
+      "BAJAJ-AUTO.NS": 0.23790000000000003,
+      "KAJARIACER.NS": 0.16270000000000004,
+      "OFSS.NS": 0.07400000000000001,
+      "GPPL.NS": 0.07360000000000001,
+      "GNFC.NS": 0.04850000000000001,
+      "HINDZINC.NS": 0.042300000000000004
     },
     "risk_parity": {
-      "COALINDIA.NS": 0.13657268546290743,
-      "BAJAJ-AUTO.NS": 0.13067386522695462,
-      "KAJARIACER.NS": 0.11277744451109778,
-      "LICI.NS": 0.10657868426314737,
-      "OFSS.NS": 0.09948010397920416,
-      "HINDZINC.NS": 0.09258148370325935,
-      "GPPL.NS": 0.09148170365926815,
-      "GNFC.NS": 0.08988202359528094,
-      "CHENNPETRO.NS": 0.07578484303139373,
-      "PGIL.NS": 0.0641871625674865
+      "COALINDIA.NS": 0.1421,
+      "BAJAJ-AUTO.NS": 0.1319,
+      "KAJARIACER.NS": 0.1139,
+      "OFSS.NS": 0.1007,
+      "GPPL.NS": 0.096,
+      "HINDZINC.NS": 0.0949,
+      "GNFC.NS": 0.0905,
+      "CHENNPETRO.NS": 0.0809,
+      "ACE.NS": 0.0808,
+      "PGIL.NS": 0.0683
     }
   },
   "factor_exposures": {
     "Value": 45.0,
     "Momentum": 55.0,
-    "Quality": 58.1,
+    "Quality": 57.5,
     "Low_Volatility": 45.0
   },
   "factor_ic_monitor": [
@@ -424,7 +422,7 @@
       },
       {
         "date": "2026-09-08",
-        "portfolio": 105.34,
+        "portfolio": 105.46,
         "benchmark": 100.0
       }
     ],
@@ -1250,25 +1248,25 @@
         "to": "2026-09-08",
         "tickers": [
           "OFSS.NS",
-          "GPPL.NS",
           "PGIL.NS",
-          "HINDZINC.NS",
-          "CHENNPETRO.NS",
+          "GPPL.NS",
           "KAJARIACER.NS",
           "BAJAJ-AUTO.NS",
+          "CHENNPETRO.NS",
+          "HINDZINC.NS",
           "COALINDIA.NS",
-          "LICI.NS",
-          "GNFC.NS"
+          "GNFC.NS",
+          "ACE.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": 5.34,
-      "cagr": 24.1,
+      "total_return": 5.46,
+      "cagr": 24.69,
       "volatility": 12.12,
-      "sharpe": 1.45,
+      "sharpe": 1.5,
       "max_drawdown": -3.05,
-      "info_ratio": 1.99,
+      "info_ratio": 2.04,
       "win_rate": 46.8
     }
   },
@@ -1586,7 +1584,7 @@
       },
       {
         "date": "2026-09-08",
-        "portfolio": 97.66,
+        "portfolio": 97.67,
         "benchmark": 100.0
       }
     ],
@@ -2416,17 +2414,17 @@
           "ENGINERSIN.NS",
           "CHENNPETRO.NS",
           "EXPLEOSOL.NS",
-          "IOLCP.NS",
+          "KAJARIACER.NS",
           "INDOBORAX.NS",
           "GNFC.NS",
-          "KAJARIACER.NS",
-          "LICI.NS"
+          "MSTCLTD.NS",
+          "HINDZINC.NS"
         ]
       }
     ],
     "stats": {
-      "total_return": -2.34,
-      "cagr": -9.36,
+      "total_return": -2.33,
+      "cagr": -9.32,
       "volatility": 13.0,
       "sharpe": -1.22,
       "max_drawdown": -8.76,
@@ -3693,7 +3691,7 @@
       },
       {
         "date": "2026-09-08",
-        "portfolio": 142.96,
+        "portfolio": 142.62,
         "benchmark": 100.0
       }
     ],
@@ -4077,12 +4075,12 @@
       }
     ],
     "stats": {
-      "total_return": 42.96,
-      "cagr": 42.58,
+      "total_return": 42.62,
+      "cagr": 42.24,
       "volatility": 25.06,
-      "sharpe": 1.44,
+      "sharpe": 1.43,
       "max_drawdown": -19.18,
-      "info_ratio": 1.7,
+      "info_ratio": 1.69,
       "win_rate": 54.2
     }
   },
@@ -4715,7 +4713,7 @@
       },
       {
         "date": "2026-09-08",
-        "portfolio": 154.66,
+        "portfolio": 154.29,
         "benchmark": 100.0
       }
     ],
@@ -4925,12 +4923,12 @@
       }
     ],
     "stats": {
-      "total_return": 54.66,
-      "cagr": 139.91,
-      "volatility": 24.48,
-      "sharpe": 5.45,
+      "total_return": 54.29,
+      "cagr": 138.77,
+      "volatility": 24.49,
+      "sharpe": 5.4,
       "max_drawdown": -5.56,
-      "info_ratio": 5.72,
+      "info_ratio": 5.67,
       "win_rate": 56.0
     }
   },
@@ -6193,7 +6191,7 @@
       },
       {
         "date": "2026-09-08",
-        "portfolio": 104.49,
+        "portfolio": 104.53,
         "benchmark": 100.0
       }
     ],
@@ -6577,8 +6575,8 @@
       }
     ],
     "stats": {
-      "total_return": 4.49,
-      "cagr": 4.46,
+      "total_return": 4.53,
+      "cagr": 4.5,
       "volatility": 18.51,
       "sharpe": -0.11,
       "max_drawdown": -17.53,
@@ -7215,7 +7213,7 @@
       },
       {
         "date": "2026-09-08",
-        "portfolio": 112.11,
+        "portfolio": 112.1,
         "benchmark": 100.0
       }
     ],
@@ -7425,8 +7423,8 @@
       }
     ],
     "stats": {
-      "total_return": 12.11,
-      "cagr": 25.78,
+      "total_return": 12.1,
+      "cagr": 25.77,
       "volatility": 20.96,
       "sharpe": 0.92,
       "max_drawdown": -9.62,
@@ -7435,21 +7433,21 @@
     }
   },
   "market_regime": {
-    "score": -2,
+    "score": -1,
     "nifty_trend": "bearish",
     "vix": 0.0,
-    "breadth": 0.3705118411000764
+    "breadth": 0.45110771581359815
   },
   "sector_allocation": {
-    "Industrials": 20.0,
+    "Industrials": 30.0,
     "Consumer Cyclical": 20.0,
-    "Basic Materials": 20.0,
     "Energy": 20.0,
-    "Technology": 10.0,
-    "Financial Services": 10.0
+    "Basic Materials": 20.0,
+    "Technology": 10.0
   },
   "correlation_matrix": {
     "labels": [
+      "ACE",
       "BAJAJ-AUTO",
       "CHENNPETRO",
       "COALINDIA",
@@ -7457,24 +7455,36 @@
       "GPPL",
       "HINDZINC",
       "KAJARIACER",
-      "LICI",
       "OFSS",
       "PGIL"
     ],
     "matrix": [
       [
         1.0,
+        -0.08,
+        -0.04,
+        -0.04,
+        0.39,
+        0.29,
+        0.26,
+        -0.01,
+        -0.02,
+        -0.04
+      ],
+      [
+        -0.08,
+        1.0,
         0.03,
         -0.31,
         -0.03,
         -0.07,
         -0.01,
         -0.02,
-        0.15,
         -0.24,
         -0.1
       ],
       [
+        -0.04,
         0.03,
         1.0,
         0.16,
@@ -7482,104 +7492,91 @@
         -0.05,
         0.08,
         0.18,
-        0.13,
         -0.07,
         0.08
       ],
       [
+        -0.04,
         -0.31,
         0.16,
         1.0,
         0.21,
         -0.1,
         0.18,
-        0.24,
-        -0.05,
+        0.25,
         -0.2,
         -0.1
       ],
       [
+        0.39,
         -0.03,
         0.14,
         0.21,
         1.0,
-        0.24,
+        0.23,
         0.22,
         0.11,
-        0.13,
-        -0.01,
+        -0.0,
         -0.08
       ],
       [
+        0.29,
         -0.07,
         -0.05,
         -0.1,
-        0.24,
+        0.23,
         1.0,
-        0.15,
-        -0.03,
-        0.02,
+        0.16,
+        -0.02,
         0.19,
-        0.19
+        0.2
       ],
       [
+        0.26,
         -0.01,
         0.08,
         0.18,
         0.22,
-        0.15,
+        0.16,
         1.0,
         -0.18,
-        -0.06,
         -0.14,
         -0.1
       ],
       [
+        -0.01,
         -0.02,
         0.18,
-        0.24,
+        0.25,
         0.11,
-        -0.03,
+        -0.02,
         -0.18,
         1.0,
-        0.38,
         0.13,
-        0.23
+        0.24
       ],
       [
-        0.15,
-        0.13,
-        -0.05,
-        0.13,
-        0.02,
-        -0.06,
-        0.38,
-        1.0,
-        0.03,
-        0.15
-      ],
-      [
+        -0.02,
         -0.24,
         -0.07,
         -0.2,
-        -0.01,
+        -0.0,
         0.19,
         -0.14,
         0.13,
-        0.03,
         1.0,
-        0.36
+        0.35
       ],
       [
+        -0.04,
         -0.1,
         0.08,
         -0.1,
         -0.08,
-        0.19,
+        0.2,
         -0.1,
-        0.23,
-        0.15,
-        0.36,
+        0.24,
+        0.35,
         1.0
       ]
     ]
