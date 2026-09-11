@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-11 12:31:55",
+  "last_updated": "2026-09-11 14:58:10",
   "model_portfolios": {
     "max_sharpe": {
       "INDOBORAX.NS": 0.341,
@@ -1314,14 +1314,14 @@
         "to": "2026-09-11",
         "tickers": [
           "OFSS.NS",
+          "GPPL.NS",
           "BAJAJCON.NS",
           "INDOBORAX.NS",
-          "GPPL.NS",
           "PGIL.NS",
           "EXPLEOSOL.NS",
+          "EMMVEE.NS",
           "KPIL.NS",
           "ACE.NS",
-          "EMMVEE.NS",
           "GNFC.NS"
         ]
       }
@@ -7562,7 +7562,7 @@
     }
   },
   "market_regime": {
-    "score": -1,
+    "score": -2,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.3667180277349769
