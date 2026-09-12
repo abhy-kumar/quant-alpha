@@ -1,6 +1,82 @@
 {
   "runs": [
     {
+      "slug": "long-6m-2026-09-12",
+      "as_of_date": "2026-09-12",
+      "model": "long",
+      "horizon": "6m",
+      "created_at": "2026-09-12 08:09:55",
+      "data_start": "2026-03-13",
+      "data_end": "2026-09-11",
+      "n_chart_pts": 126,
+      "stats": {
+        "total_return": 20.88,
+        "cagr": 46.31,
+        "volatility": 19.2,
+        "sharpe": 2.07,
+        "max_drawdown": -7.37,
+        "info_ratio": 2.41,
+        "win_rate": 54.4
+      }
+    },
+    {
+      "slug": "long-1y-2026-09-12",
+      "as_of_date": "2026-09-12",
+      "model": "long",
+      "horizon": "1y",
+      "created_at": "2026-09-12 08:09:46",
+      "data_start": "2025-09-10",
+      "data_end": "2026-09-11",
+      "n_chart_pts": 252,
+      "stats": {
+        "total_return": 7.9,
+        "cagr": 7.88,
+        "volatility": 17.64,
+        "sharpe": 0.08,
+        "max_drawdown": -15.0,
+        "info_ratio": 0.45,
+        "win_rate": 51.0
+      }
+    },
+    {
+      "slug": "short-6m-2026-09-12",
+      "as_of_date": "2026-09-12",
+      "model": "short",
+      "horizon": "6m",
+      "created_at": "2026-09-12 08:09:32",
+      "data_start": "2026-03-13",
+      "data_end": "2026-09-11",
+      "n_chart_pts": 126,
+      "stats": {
+        "total_return": 48.95,
+        "cagr": 122.48,
+        "volatility": 25.29,
+        "sharpe": 4.59,
+        "max_drawdown": -6.13,
+        "info_ratio": 4.84,
+        "win_rate": 60.0
+      }
+    },
+    {
+      "slug": "short-1y-2026-09-12",
+      "as_of_date": "2026-09-12",
+      "model": "short",
+      "horizon": "1y",
+      "created_at": "2026-09-12 08:09:03",
+      "data_start": "2025-09-10",
+      "data_end": "2026-09-11",
+      "n_chart_pts": 252,
+      "stats": {
+        "total_return": 54.98,
+        "cagr": 54.84,
+        "volatility": 26.39,
+        "sharpe": 1.83,
+        "max_drawdown": -11.56,
+        "info_ratio": 2.08,
+        "win_rate": 56.6
+      }
+    },
+    {
       "slug": "long-6m-2026-09-05",
       "as_of_date": "2026-09-05",
       "model": "long",
@@ -647,5 +723,5 @@
       }
     }
   ],
-  "exported_at": "2026-09-11 19:36:49"
+  "exported_at": "2026-09-12 08:11:32"
 }
