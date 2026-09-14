@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-14 16:52:47",
+  "last_updated": "2026-09-14 20:50:13",
   "model_portfolios": {
     "max_sharpe": {
       "INDOBORAX.NS": 0.341,
@@ -1343,6 +1343,22 @@
       },
       {
         "from": "2026-09-14",
+        "to": "2026-09-15",
+        "tickers": [
+          "OFSS.NS",
+          "GPPL.NS",
+          "BAJAJCON.NS",
+          "INDOBORAX.NS",
+          "PGIL.NS",
+          "EXPLEOSOL.NS",
+          "EMMVEE.NS",
+          "KPIL.NS",
+          "ACE.NS",
+          "GNFC.NS"
+        ]
+      },
+      {
+        "from": "2026-09-15",
         "to": "2026-09-11",
         "tickers": [
           "OFSS.NS",
@@ -2600,7 +2616,7 @@
       },
       {
         "from": "2026-09-14",
-        "to": "2026-09-11",
+        "to": "2026-09-15",
         "tickers": [
           "OFSS.NS",
           "GPPL.NS",
@@ -2611,6 +2627,22 @@
           "FILATEX.NS",
           "INDOBORAX.NS",
           "GNFC.NS",
+          "CHENNPETRO.NS"
+        ]
+      },
+      {
+        "from": "2026-09-15",
+        "to": "2026-09-11",
+        "tickers": [
+          "OFSS.NS",
+          "GPPL.NS",
+          "EXPLEOSOL.NS",
+          "ENGINERSIN.NS",
+          "KPIL.NS",
+          "BAJAJCON.NS",
+          "NILKAMAL.NS",
+          "FILATEX.NS",
+          "INDOBORAX.NS",
           "CHENNPETRO.NS"
         ]
       }
