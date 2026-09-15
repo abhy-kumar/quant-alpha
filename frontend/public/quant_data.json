@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-15 12:59:30",
+  "last_updated": "2026-09-15 15:37:45",
   "model_portfolios": {
     "max_sharpe": {
       "INDOBORAX.NS": 0.4241,
@@ -7683,7 +7683,7 @@
     "score": -3,
     "nifty_trend": "bearish",
     "vix": 0.0,
-    "breadth": 0.3667180277349769
+    "breadth": 0.14085041761579348
   },
   "sector_allocation": {
     "Industrials": 30.0,
