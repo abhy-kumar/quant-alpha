@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-14 20:50:13",
+  "last_updated": "2026-09-15 01:14:20",
   "model_portfolios": {
     "max_sharpe": {
       "INDOBORAX.NS": 0.341,
@@ -2640,9 +2640,9 @@
           "ENGINERSIN.NS",
           "KPIL.NS",
           "BAJAJCON.NS",
-          "NILKAMAL.NS",
-          "FILATEX.NS",
           "INDOBORAX.NS",
+          "FILATEX.NS",
+          "GNFC.NS",
           "CHENNPETRO.NS"
         ]
       }
