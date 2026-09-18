@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-18 12:34:29",
+  "last_updated": "2026-09-18 14:59:55",
   "model_portfolios": {
     "max_sharpe": {
       "INDOBORAX.NS": 0.5104,
@@ -1437,12 +1437,12 @@
           "EXPLEOSOL.NS",
           "ENGINERSIN.NS",
           "GPPL.NS",
-          "BAJAJCON.NS",
           "INDOBORAX.NS",
           "PNB.NS",
+          "BAJAJCON.NS",
           "GAIL.NS",
-          "PGIL.NS",
-          "KPIL.NS"
+          "KPIL.NS",
+          "PGIL.NS"
         ]
       }
     ],
@@ -7803,7 +7803,7 @@
     }
   },
   "market_regime": {
-    "score": 0,
+    "score": 2,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.6790359602142311
@@ -7811,9 +7811,9 @@
   "sector_allocation": {
     "Industrials": 30.0,
     "Technology": 20.0,
-    "Consumer Defensive": 10.0,
     "Basic Materials": 10.0,
     "Financial Services": 10.0,
+    "Consumer Defensive": 10.0,
     "Utilities": 10.0,
     "Consumer Cyclical": 10.0
   },
