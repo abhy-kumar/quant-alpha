@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-21 14:20:22",
+  "last_updated": "2026-09-21 16:57:10",
   "model_portfolios": {
     "max_sharpe": {
       "INDOBORAX.NS": 0.4189,
@@ -2864,7 +2864,7 @@
           "FILATEX.NS",
           "PETRONET.NS",
           "OFSS.NS",
-          "KAJARIACER.NS"
+          "MSTCLTD.NS"
         ]
       }
     ],
