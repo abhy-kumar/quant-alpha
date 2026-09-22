@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-21 20:53:26",
+  "last_updated": "2026-09-22 01:26:49",
   "model_portfolios": {
     "max_sharpe": {
       "INDOBORAX.NS": 0.5404,
@@ -1488,13 +1488,13 @@
           "OFSS.NS",
           "ENGINERSIN.NS",
           "EXPLEOSOL.NS",
-          "MSTCLTD.NS",
           "GPPL.NS",
+          "MSTCLTD.NS",
           "INDOBORAX.NS",
           "BAJAJCON.NS",
-          "PETRONET.NS",
           "PNB.NS",
-          "KPIL.NS"
+          "KPIL.NS",
+          "PETRONET.NS"
         ]
       }
     ],
@@ -7918,8 +7918,8 @@
     "Technology": 20.0,
     "Basic Materials": 10.0,
     "Consumer Defensive": 10.0,
-    "Energy": 10.0,
-    "Financial Services": 10.0
+    "Financial Services": 10.0,
+    "Energy": 10.0
   },
   "correlation_matrix": {
     "labels": [
