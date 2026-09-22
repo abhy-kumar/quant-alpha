@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-22 12:55:09",
+  "last_updated": "2026-09-22 15:31:08",
   "model_portfolios": {
     "max_sharpe": {
       "INDOBORAX.NS": 0.3925,
@@ -2904,7 +2904,7 @@
           "BAJAJCON.NS",
           "MSTCLTD.NS",
           "KAJARIACER.NS",
-          "MARKSANS.NS"
+          "INDOBORAX.NS"
         ]
       }
     ],
