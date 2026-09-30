@@ -116,7 +116,7 @@
         "@type": "Dataset",
         "name": "Alpha NSE Quantitative Stock Factor & Market Scan Dataset",
         "description": "Daily cross-sectional factor rankings, Piotroski F-Scores, financial metrics, and momentum indicators for 150 National Stock Exchange of India (NSE) equities.",
-        "url": "https://quant-alpha-sage.vercel.app/market_data.json",
+        "url": "https://quant-alpha-sage.vercel.app/api/data?resource=market",
         "keywords": ["NSE India", "Piotroski F-Score", "Quantitative Finance", "Factor Investing", "Stock Screener"],
         "license": "https://creativecommons.org/licenses/by/4.0/",
         "isAccessibleForFree": true,
@@ -128,12 +128,12 @@
           {
             "@type": "DataDownload",
             "encodingFormat": "application/json",
-            "contentUrl": "https://quant-alpha-sage.vercel.app/market_data.json"
+            "contentUrl": "https://quant-alpha-sage.vercel.app/api/data?resource=market"
           },
           {
             "@type": "DataDownload",
             "encodingFormat": "application/json",
-            "contentUrl": "https://quant-alpha-sage.vercel.app/quant_data.json"
+            "contentUrl": "https://quant-alpha-sage.vercel.app/api/data?resource=quant"
           }
         ]
       },

@@ -29,6 +29,7 @@ export interface DashboardData {
   ATR_Risk_Pct?: number
   ATR_Value?: number
   ML_Alpha_Prob?: number
+  ML_Method?: string
   ML_Conviction?: string
   Scan_Time: string
   "1d_Chg_%"?: number
@@ -152,6 +153,8 @@ export interface BacktestStats {
 }
 
 export interface BacktestBundle {
+  error?: string
+  version?: number
   chart: { date: string; portfolio: number; benchmark: number }[]
   holdings?: BacktestHolding[]
   stats: BacktestStats
@@ -178,9 +181,9 @@ export interface FactorExposure {
 
 export interface FactorICMetric {
   factor: string
-  ic_current: number
-  ic_3m_rolling: number
-  t_stat: number
+  ic_current: number | null
+  ic_3m_rolling: number | null
+  t_stat: number | null
   status: string
 }
 
@@ -193,6 +196,7 @@ export interface ScenarioStressTest {
 }
 
 export interface QuantData {
+  efficient_frontier?: { volatility: number; return: number; sharpe: number }[]
   last_updated: string
   model_portfolios: {
     max_sharpe: Record<string, number>
@@ -305,7 +309,7 @@ export interface StrategyTradeRecord {
   exitPrice: number
   returnPct: number
   holdingDays: number
-  exitReason: 'Rebalance' | 'Stop-Loss' | 'Take-Profit'
+  exitReason: 'Rebalance' | 'Stop-Loss' | 'Take-Profit' | 'End of Test'
 }
 
 export interface StrategyBacktestStats {
@@ -327,6 +331,7 @@ export interface StrategyBacktestStats {
 }
 
 export interface StrategyBacktestResult {
+  message?: string
   config: StrategyRuleConfig
   chart: {
     date: string
@@ -348,4 +353,11 @@ export interface StrategyBacktestResult {
     winRatePct: number
   }[]
   trades: StrategyTradeRecord[]
+}
+
+export interface StrategyHistory {
+  dates: string[]
+  benchmark: number[]
+  prices: Record<string, Record<string, number>>
+  factors: Record<string, DashboardData[]>
 }

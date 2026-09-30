@@ -274,7 +274,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
       setSortKey(horizonMode === 'long' ? 'Composite_Score_Long' : 'Composite_Score')
       setSortDir('desc')
     }
-  }, [isLoggedIn])
+  }, [isLoggedIn, horizonMode])
 
   const [minComposite, setMinComposite] = useState(0)
   const [minPiotroski, setMinPiotroski] = useState(0)
@@ -322,7 +322,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
 
   const filteredData = useMemo(() => {
     const stringFields = new Set(['Ticker', 'Sector', 'Conviction', 'Conviction_Long', 'Industry', 'Long_Name', 'ST_Signal'])
-    let arr = uniqueData.filter(d => {
+    const arr = uniqueData.filter(d => {
       if (deferredSearch) {
         const q = deferredSearch.toUpperCase()
         if (!d.Ticker.replace('.NS','').includes(q) && !(d.Long_Name||'').toUpperCase().includes(q)) return false

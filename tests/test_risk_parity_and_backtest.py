@@ -74,8 +74,8 @@ class TestFactorICMonitor(unittest.TestCase):
             self.assertIn("ic_3m_rolling", item)
             self.assertIn("t_stat", item)
             self.assertIn("status", item)
-            self.assertIsInstance(item["ic_current"], float)
-            self.assertIsInstance(item["t_stat"], float)
+            self.assertTrue(item["ic_current"] is None or isinstance(item["ic_current"], float))
+            self.assertTrue(item["t_stat"] is None or isinstance(item["t_stat"], float))
 
 
 class TestScenarioStressTesting(unittest.TestCase):

@@ -9,13 +9,20 @@ interface MonteCarloChartProps {
   isDark: boolean
 }
 
+function seededRandom(initial: number) {
+  let seed = initial
+  return () => { seed = (1664525 * seed + 1013904223) >>> 0; return (seed+1)/4294967297 }
+}
+
 export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatility, isDark }) => {
   const simulationData = useMemo(() => {
+    // Fixed seed keeps render calculations pure and scenario comparisons repeatable.
+    const random = seededRandom(42)
     const days = 252
     const numSimulations = 500
     const dt = 1 / 252
-    const mu = (cagr || 15) / 100
-    const sigma = (volatility || 18) / 100
+    const mu = cagr / 100
+    const sigma = volatility / 100
     const initialValue = 100
 
     const paths: number[][] = []
@@ -24,8 +31,8 @@ export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatili
       let current = initialValue
       for (let day = 1; day <= days; day++) {
         // Box-Muller transform for Gaussian random numbers
-        const u1 = Math.random() || 1e-10
-        const u2 = Math.random() || 1e-10
+        const u1 = random() || 1e-10
+        const u2 = random() || 1e-10
         const z = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2)
         const shock = sigma * Math.sqrt(dt) * z
         const drift = (mu - 0.5 * sigma * sigma) * dt

@@ -10,8 +10,12 @@ interface PositionSizerModalProps {
   onClose: () => void
 }
 
-export const PositionSizerModal: React.FC<PositionSizerModalProps> = ({ asset, isOpen, onClose }) => {
-  if (!isOpen || !asset) return null
+export const PositionSizerModal: React.FC<PositionSizerModalProps> = (props) => {
+  if (!props.isOpen || !props.asset) return null
+  return <PositionSizerModalContent {...props} asset={props.asset} key={props.asset.Ticker} />
+}
+
+const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'> & { asset: DashboardData }> = ({ asset, onClose }) => {
 
   const ticker = asset.Ticker.replace('.NS', '')
   const price = Number(asset.Price) || 100

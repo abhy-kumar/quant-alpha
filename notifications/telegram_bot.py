@@ -31,8 +31,8 @@ def send_telegram_broadcast():
         with open(MARKET_DATA_PATH, "r", encoding="utf-8") as f:
             market_data = json.load(f)
 
-        top_stocks = sorted(market_data, key=lambda x: x.get("Composite_Score", 0), reverse=True)[:5]
-        regime_score = top_stocks[0].get("Regime_Score", 0) if top_stocks else 0
+        top_stocks = sorted(market_data.get("data", []), key=lambda x: x.get("Composite_Score") or 0, reverse=True)[:5]
+        regime_score = market_data.get("market_regime_score", 0)
 
         # Construct markdown message
         msg_lines = [
@@ -47,13 +47,16 @@ def send_telegram_broadcast():
             comp = s.get("Composite_Score", 0)
             conv = s.get("Conviction", "Hold")
             ml_prob = s.get("ML_Alpha_Prob", 50.0)
+            is_ml = s.get("ML_Method", "").startswith("NIFTY")
+            alpha_label = "ML Outperformance Estimate" if is_ml else "Uncalibrated Factor Heuristic"
+            alpha_unit = "%" if is_ml else "/100"
             chg = s.get("1d_Chg_%", 0)
             chg_str = f"+{chg:.2f}%" if chg >= 0 else f"{chg:.2f}%"
 
             msg_lines.append(
                 f"{i}. *{t}* | ₹{s.get('Price', 0)} ({chg_str})\n"
                 f"   • Composite: *{comp:.1f}/10* | Conviction: *{conv}*\n"
-                f"   • ML Outperformance Prob: *{ml_prob:.1f}%*"
+                f"   • {alpha_label}: *{ml_prob:.1f}{alpha_unit}*"
             )
 
         msg_lines.append("───────────────────────────")

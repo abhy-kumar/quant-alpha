@@ -17,10 +17,10 @@ on:
   workflow_dispatch:
 
 # Prevent overlapping runs - if a new scan triggers while one is running,
-# cancel the in-progress run and start fresh with current data.
+# finish the current publication before starting another run.
 concurrency:
   group: market-scan
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -42,38 +42,48 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      - name: Restore application caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/sector_cache.json
+            data/fundamentals_cache.json
+            data/news_cache.json
+            data/ath_cache.json
+            data/etf_list.json
+          key: market-cache-v3-${{ github.run_id }}
+          restore-keys: market-cache-v3-
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m venv .venv
+          .venv/bin/python -m pip install -r requirements.txt
 
       - name: Run market scanner
         run: |
-          python db_split_join.py join
-          python -m engine.scanner
-          python db_split_join.py split
+          .venv/bin/python db_split_join.py join
+          .venv/bin/python -m engine.scanner
+          .venv/bin/python db_split_join.py split
 
       - name: Broadcast daily Telegram signals (optional)
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python -m notifications.telegram_bot
+          .venv/bin/python -m notifications.telegram_bot
 
       - name: Commit and push updated data
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git fetch origin main
-          git reset --soft origin/main
-          git add frontend/public/market_data.json frontend/public/quant_data.json frontend/public/score_history.json frontend/public/backtest_runs/ data/market_scans.db.part_*
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update market data [skip ci]" && git push)
+          git add frontend/public/market_data.json frontend/public/quant_data.json frontend/public/score_history.json frontend/public/backtest_runs/ frontend/public/strategy_history.json data/market_scans.db.part_*
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update market data [skip ci]" && git pull --rebase origin main && git push origin HEAD:main)
 
   weekend_update:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Run on Saturday cron trigger or manual workflow_dispatch
-    if: github.event.schedule == '37 3 * * 6' || github.event_name == 'workflow_dispatch'
+    # Run on Saturday cron only; manual dispatch runs the daily scan.
+    if: github.event.schedule == '37 3 * * 6'
 
     steps:
       - name: Checkout repository
@@ -85,23 +95,33 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      - name: Restore application caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/sector_cache.json
+            data/fundamentals_cache.json
+            data/news_cache.json
+            data/ath_cache.json
+            data/etf_list.json
+          key: market-cache-v3-${{ github.run_id }}
+          restore-keys: market-cache-v3-
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m venv .venv
+          .venv/bin/python -m pip install -r requirements.txt
 
       - name: Run weekend update (outcome backfill + quant regen)
         run: |
-          python db_split_join.py join
-          python -m notifications.weekend_update
-          python db_split_join.py split
+          .venv/bin/python db_split_join.py join
+          .venv/bin/python -m notifications.weekend_update
+          .venv/bin/python db_split_join.py split
 
       - name: Commit and push updated quant data
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git fetch origin main
-          git reset --soft origin/main
-          git add frontend/public/quant_data.json frontend/public/backtest_runs/ data/market_scans.db.part_*
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: weekend outcome backfill + quant update [skip ci]" && git push)
+          git add frontend/public/quant_data.json frontend/public/backtest_runs/ frontend/public/strategy_history.json data/market_scans.db.part_*
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: weekend outcome backfill + quant update [skip ci]" && git pull --rebase origin main && git push origin HEAD:main)
 

@@ -29,3 +29,9 @@ documentation.md
 *.sqlite
 *.sqlite3
 data/market_scans.db
+
+.env.*
+!.env.example
+frontend/.env.*
+!frontend/.env.example
+data/ml_alpha_model.joblib

@@ -9,8 +9,7 @@ import { useChartData } from './hooks/useChartData'
 import { useWatchlist } from './hooks/useWatchlist'
 import { SeoHead } from './components/common/SeoHead'
 import { SocialShareModal } from './components/common/SocialShareModal'
-import { NewsletterModal } from './components/common/NewsletterModal'
-import { ShareNetwork, EnvelopeSimple } from '@phosphor-icons/react'
+import { ShareNetwork } from '@phosphor-icons/react'
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -144,7 +143,6 @@ export default function App() {
   const [selectedTicker, setSelectedTicker] = useState('')
   const [horizon, setHorizon] = useState<'short'|'long'>('short')
   const [isShareOpen, setIsShareOpen] = useState(false)
-  const [isNewsletterOpen, setIsNewsletterOpen] = useState(false)
 
   const {
     isLoggedIn,
@@ -177,7 +175,7 @@ export default function App() {
     scoreHistory,
     flashTickers,
     fetchData,
-  } = useMarketData(selectedTicker, setSelectedTicker)
+  } = useMarketData(selectedTicker, setSelectedTicker, isLoggedIn)
 
   const {
     chartPeriod,
@@ -195,8 +193,8 @@ export default function App() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches
   })
 
-  useEffect(() => { localStorage.setItem('qa_dark', String(isDark)) }, [isDark])
-  useEffect(() => { isDark ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark') }, [isDark])
+  useEffect(() => { try { localStorage.setItem('qa_dark', String(isDark)) } catch { /* Storage may be disabled. */ } }, [isDark])
+  useEffect(() => { document.documentElement.classList.toggle('dark', isDark) }, [isDark])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -224,11 +222,11 @@ export default function App() {
       const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT'
       if (isInput) return
 
-      if (e.key === '1') { e.preventDefault(); setActiveTab('picks') }
-      else if (e.key === '2') { e.preventDefault(); setActiveTab('fundamentals') }
-      else if (e.key === '3') { e.preventDefault(); setActiveTab('charting') }
-      else if (e.key === '4') { e.preventDefault(); setActiveTab('heatmap') }
-      else if (e.key === '5') { e.preventDefault(); setActiveTab('quantlab') }
+      if (e.key === '1') { e.preventDefault(); navigate(isLoggedIn ? '/signals' : '/') }
+      else if (e.key === '2') { e.preventDefault(); navigate('/screen') }
+      else if (e.key === '3') { e.preventDefault(); navigate('/') }
+      else if (e.key === '4') { e.preventDefault(); navigate('/heatmap') }
+      else if (e.key === '5') { e.preventDefault(); navigate(isLoggedIn ? '/quant' : '/') }
       else if (e.key === '/') {
         e.preventDefault()
         const searchInput = document.querySelector<HTMLInputElement>('input[placeholder*="Search"]')
@@ -242,7 +240,8 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isLoggedIn, navigate])
 
-  const activeTab = (PATH_TABS[location.pathname] ?? 'charting') as 'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab'
+  const requestedTab = PATH_TABS[location.pathname] ?? 'charting'
+  const activeTab = (!isLoggedIn && ['picks', 'quantlab'].includes(requestedTab) ? 'charting' : requestedTab) as 'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab'
   const setActiveTab = (id: 'picks'|'fundamentals'|'charting'|'heatmap'|'quantlab') => navigate(TAB_PATHS[id] ?? '/')
 
 
@@ -318,19 +317,6 @@ export default function App() {
                   cursor: 'pointer',
                 }}>
                 <ShareNetwork size={13} weight="duotone" /><span className="hidden sm:inline">Share</span>
-              </button>
-              <button onClick={() => setIsNewsletterOpen(true)} title="Subscribe to Research Brief" aria-label="Subscribe to Research Brief"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
-                style={{
-                  color: 'var(--text-2)',
-                  background: 'var(--glass-bg-subtle)',
-                  border: '0.5px solid var(--glass-border)',
-                  backdropFilter: 'blur(16px)',
-                  WebkitBackdropFilter: 'blur(16px)',
-                  boxShadow: 'var(--glass-shadow)',
-                  cursor: 'pointer',
-                }}>
-                <EnvelopeSimple size={13} weight="duotone" /><span className="hidden sm:inline">Brief</span>
               </button>
               <button onClick={()=>setIsDark(!isDark)} aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
@@ -510,7 +496,7 @@ export default function App() {
                 <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon} isLoggedIn={isLoggedIn}/>
               </div>
               <div className={activeTab === 'picks' ? 'block animate-fade-in' : 'hidden'}>
-                <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>
+                {isLoggedIn && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
               </div>
               <div className={activeTab === 'fundamentals' ? 'block animate-fade-in' : 'hidden'}>
                 <ScreenerTab data={data} onSelect={handleSelect} watchlist={watchlist} toggleWatchlist={toggleWatchlist} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>
@@ -519,7 +505,7 @@ export default function App() {
                 <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>
               </div>
               <div className={activeTab === 'quantlab' ? 'block animate-fade-in' : 'hidden'}>
-                <QuantLabTab isDark={isDark} scanUpdated={scanUpdated} onSelect={handleSelect}/>
+                {isLoggedIn && <QuantLabTab isDark={isDark} scanUpdated={scanUpdated} onSelect={handleSelect}/>}
               </div>
             </Suspense>
           </ErrorBoundary>
@@ -587,7 +573,6 @@ export default function App() {
         </div>
       </footer>
       <SocialShareModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} asset={selectedAsset} />
-      <NewsletterModal isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />
       <Analytics />
     </div>
   )

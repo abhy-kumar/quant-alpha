@@ -32,6 +32,8 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
 
   return (
     <div className="space-y-5">
+      {result.message && <p className="text-sm text-[var(--text-2)]">{result.message}</p>}
+      {chart.length === 0 && <p>Performance unavailable until historical coverage is complete.</p>}
       {/* KPI Stats Ribbon */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         {[

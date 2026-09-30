@@ -1,5 +1,14 @@
 {
   "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
-  ]
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/data.ts": {
+      "includeFiles": "public/**/*.json",
+      "maxDuration": 30
+    }
+  }
 }

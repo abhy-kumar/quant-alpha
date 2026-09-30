@@ -87,7 +87,7 @@ Alpha classifies stocks into 5 conviction tiers based on Composite Score:
 - **Keys**: `status`, `nifty_50` (price, change_pct, is_up), `fii_net` (INR Cr), `dii_net` (INR Cr), `pcr`, `is_market_closed`, `data` (dictionary of LTP per ticker).
 
 ### Endpoint 2: Full Scan Dataset
-- **URL**: `GET https://quant-alpha-sage.vercel.app/market_data.json`
+- **URL**: `GET https://quant-alpha-sage.vercel.app/api/data?resource=market`
 - **Response Format**: JSON Array of 150 objects.
 - **Fields per stock**: `Ticker`, `Price`, `1d_Chg_%`, `Composite_Score`, `Composite_Score_Long`, `Piotroski_F`, `Value_Score`, `Tech_Score`, `Fund_Score`, `Research_Score`, `Conviction`, `Sector`, `Beta`, `RSI_Value`, `Sig_Price_vs_SMA50`, `Sig_Price_vs_SMA200`, `Sig_MACD_Cross`, `Sig_Supertrend`, `Bull_Count`, `Bear_Count`.
 

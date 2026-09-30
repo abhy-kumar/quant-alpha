@@ -132,9 +132,9 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
             </div>
           </div>
           <div className="p-3 card text-center">
-            <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--brand)]">ML Alpha Prob</span>
+            <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--brand)]">{asset.ML_Method?.startsWith('NIFTY') ? 'ML Alpha Probability' : 'Factor Heuristic'}</span>
             <div className="text-lg font-bold font-mono mt-1 text-[var(--brand)]">
-              {asset.ML_Alpha_Prob != null ? `${asset.ML_Alpha_Prob}%` : 'N/A'}
+              {asset.ML_Alpha_Prob != null ? `${asset.ML_Alpha_Prob}${asset.ML_Method?.startsWith('NIFTY') ? '%' : '/100'}` : 'N/A'}
             </div>
           </div>
         </div>

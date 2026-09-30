@@ -52,7 +52,7 @@ export const ScenarioStressCard: React.FC<ScenarioStressCardProps> = ({ scenario
         </table>
       </GlassCardContent>
       <GlassCardFooter className="typo-caption text-center px-4 pb-4 text-[var(--text-3)] border-none">
-        Simulated multi-factor sensitivity based on portfolio beta, Piotroski quality dampener, and historical drawdown distribution.
+        Illustrative assumed shocks scaled by volatility and quality heuristics. These are not historical portfolio replays.
       </GlassCardFooter>
     </GlassCard>
   )

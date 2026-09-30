@@ -99,7 +99,6 @@
 - **Internal Link Equity Distribution**: Footer internal linking matrix connecting all primary SPA routes.
 - **Generative Engine Optimization (GEO) for AI Search**: Implements `public/llms.txt` and `public/llms-full.txt` adhering to the `llmstxt.org` standard for AI search engines (Perplexity, ChatGPT, Claude, Google Search Overviews).
 - **1-Click Viral Social Share Engine (`SocialShareModal.tsx`)**: Deep-link social sharing templates for WhatsApp, X (Twitter), LinkedIn, Telegram, and native mobile Web Share API.
-- **Growth Funnel & Research Dispatch Capture (`NewsletterModal.tsx`)**: Institutional research dispatch subscription modal for community growth and investor retention.
 
 ### 12. Modern Apple HIG Interface & Institutional Modals (`frontend/src/`)
 - **1-Click Strategy Presets**: Screener drawer presets for Buffett-Munger Quality, Minervini Stage 2 Breakouts, PEAD Momentum, Defensive Low-Beta, and Deep Value Moats.
@@ -195,7 +194,6 @@ stock-dashboard/
 │   │   │   │   ├── FactorRadarModal.tsx          # Expanded factor radar & strengths modal
 │   │   │   │   ├── GlassCard.tsx                 # Glassmorphic card container component
 │   │   │   │   ├── InvestmentThesisModal.tsx     # Institutional investment thesis modal
-│   │   │   │   ├── NewsletterModal.tsx           # Institutional research dispatch subscription modal
 │   │   │   │   ├── PositionSizerModal.tsx        # Risk management & position sizing calculator modal
 │   │   │   │   ├── SeoHead.tsx                   # Dynamic route title, meta, canonical & JSON-LD component
 │   │   │   │   ├── SocialShareModal.tsx          # 1-click social growth share modal
@@ -362,3 +360,75 @@ The platform uses GitHub Actions ([`.github/workflows/daily_scan.yml`](.github/w
 
 Developed for the **Alpha Research and Investment Club, Faculty of Management Studies (FMS), University of Delhi**.  
 Released under the [Apache License 2.0 with Commons Clause](./LICENSE).
+
+## September 2026 audit fixes and deployment
+
+The newsletter has been removed. The shared account is retained with signed,
+eight-hour, HttpOnly sessions, server authorization for research data, and route
+guards. Local-storage flags no longer grant access. Configure `AUTH_EMAIL` and a
+**new** `AUTH_PASSWORD` in Vercel's server environment; the historical password
+appears in Git history and must not be reused. Optionally configure a random
+`AUTH_SESSION_SECRET`. Never use a `VITE_` prefix for credentials. For local
+development copy `frontend/.env.example` to `frontend/.env.local` and fill it in.
+Redeploy after changing Vercel settings. Without them, public charts/screener
+remain usable and the shared login fails closed. Session cookies expire after
+eight hours. The process-local login throttle is basic protection; configure
+Vercel Firewall rate limiting if stronger distributed enforcement is needed.
+
+Research JSON remains tracked for the scan pipeline. **A public Git repository
+makes those datasets and historical source files public.** The login gate protects
+the hosted API and views, not GitHub copies. The Vite build excludes research
+JSON from static output; `api/data.ts` reads its function-bundled datasets.
+Strategy history is trimmed to the fields used by the rules and served in
+authenticated pages below Vercel's function response-size limit.
+Vercel must use the `frontend` project root and the Vite `dist` output directory.
+
+Historical research now persists NIFTY prices, tracks shares between rebalances,
+charges costs on actual turnover, and executes trailing stops at the observed
+close including gap losses. Liquidity and signals use prior information. Missing
+benchmark coverage or held-stock execution prices cannot produce invented
+returns. These price-only replay models are proxies, not historical replays of
+today's fundamental model. The archived-factor replay and interactive sandbox
+use the stored factor snapshots. The sandbox liquidates and re-enters at each
+scheduled rebalance with 20bps charged per leg, implements selected weights,
+ATR stops and take-profit exits, and holds cash when no stocks match. Historical
+coverage begins with recorded factors; missing periods are never synthesized.
+The recorded universe is not a complete historical index-constituent database.
+
+ML validation is chronological and purged by whole scan-date groups. Prediction
+uses the same feature scales as training; the target is a 21-session NIFTY excess
+return of at least one percentage point. Models are versioned and expire daily.
+Insufficient mature validation history explicitly activates an uncalibrated
+factor heuristic rather than an ML probability. Longer outcomes continue to
+mature after 21-day labels are filled. Null outcomes do not count as losses.
+Factor IC uses daily cross-sectional observations over a calendar quarter;
+insufficient samples produce N/A. The frontier uses measured covariance and
+returns. Macro shock cards remain explicitly illustrative assumptions.
+
+Fundamental cache hits preserve acquisition timestamps, and Actions retain the
+application caches. Quotes use stable GET requests, slower polling when closed,
+and bounded symbol validation. NSE 2026 holidays are verified in
+`frontend/server/market_calendar.json`; refresh this calendar for later years
+from the linked official NSE API. Daily charts expose daily/weekly candles only.
+Workflow generation failures propagate, output files are written atomically,
+and automated commits rebase instead of resetting source history. Manual runs
+no longer launch both the daily and weekend jobs. Dependency overrides were
+repaired and the lockfile updated. Modal hook ordering and stale chart callbacks
+were corrected. Type-migration and React performance lint checks remain warnings;
+hook ordering and other correctness checks remain errors.
+
+To repair stored research, use the project's virtual environment:
+
+```powershell
+& .venv/Scripts/python.exe db_split_join.py join
+& .venv/Scripts/python.exe scripts/repair_quote_gaps.py
+& .venv/Scripts/python.exe scripts/backfill_research.py
+& .venv/Scripts/python.exe db_split_join.py split
+& .venv/Scripts/python.exe -m pytest -q
+```
+
+Only commit split database parts. Legacy backtest caches are invalidated by
+engine version and source-price fingerprints. Corrected runs are exported anew.
+Run `npm test`, `npm run lint`, and `npm run build` in `frontend`; the new code-check
+workflow runs Python in a virtual environment and checks that private datasets
+are absent from the static build.

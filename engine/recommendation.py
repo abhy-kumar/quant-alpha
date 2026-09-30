@@ -345,8 +345,8 @@ def check_forensic_red_flags(info: dict, df: pd.DataFrame = None, latest_metrics
         flags.append(f"High Debt with Negative ROE (D/E: {debt_eq/100.0:.1f}x)")
 
     # 3. Severe Loss-Making / Deep Operating Insolvency
-    if not np.isnan(roe) and roe < -15.0:
-        flags.append(f"Severe Negative Return on Equity ({roe:.1f}%)")
+    if not np.isnan(roe) and roe < -0.15:
+        flags.append(f"Severe Negative Return on Equity ({roe * 100:.1f}%)")
 
     # 4. Blow-off Top Overextension (Z-Score > 2.5 & RSI > 80)
     if latest_metrics:

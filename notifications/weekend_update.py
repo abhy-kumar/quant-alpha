@@ -22,7 +22,7 @@ import pandas as pd
 import yfinance as yf
 
 import engine.quant_engine as quant_engine
-from data_pipeline.data_pipeline import update_outcome_tracking, DB_PATH
+from data_pipeline.data_pipeline import update_outcome_tracking, store_daily_ohlcv, DB_PATH
 from config import PERIOD, INTERVAL, MIN_ROWS
 
 logging.basicConfig(
@@ -44,7 +44,7 @@ def _get_tracked_tickers() -> list[str]:
         c = conn.cursor()
         c.execute("""
             SELECT DISTINCT Ticker FROM outcome_tracking
-            WHERE Return_21d IS NULL OR Return_63d IS NULL
+            WHERE Return_21d IS NULL OR Return_63d IS NULL OR Return_126d IS NULL OR Return_252d IS NULL
         """)
         tickers = [row[0] for row in c.fetchall()]
         conn.close()
@@ -101,12 +101,15 @@ def run():
         ohlcv_results = {}
     else:
         # Step 2: Fetch fresh OHLCV
-        ohlcv_results = fetch_ohlcv_for_tickers(tickers)
+        ohlcv_results = fetch_ohlcv_for_tickers(list(set(tickers + ["^NSEI"])))
+        if "^NSEI" not in ohlcv_results or len(ohlcv_results) < len(tickers) * .8:
+            raise RuntimeError("Weekend OHLCV coverage is insufficient")
 
         # Step 3: Backfill forward returns using today as the "scan date"
         # update_outcome_tracking uses the OHLCV data to fill past pending rows
         today = datetime.now().strftime("%Y-%m-%d")
         log.info(f"Running outcome backfill (reference date: {today})...")
+        store_daily_ohlcv(ohlcv_results, today)
         update_outcome_tracking(today, ohlcv_results)
         log.info("Outcome backfill complete.")
 
@@ -117,6 +120,7 @@ def run():
         backtest_engine.run_all_current_backtests()
     except Exception as e:
         log.error(f"Failed to run weekend backtests: {e}")
+        raise
 
     # Step 5: Regenerate quant_data.json and backtest_runs/
     log.info("Running quant engine to regenerate quant_data.json...")

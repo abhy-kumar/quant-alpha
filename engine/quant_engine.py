@@ -51,7 +51,7 @@ def fetch_price_history(tickers):
     # Pivot to get Dates as index and Tickers as columns
     pivot_df = df.pivot(index='Date', columns='Ticker', values='Close')
     pivot_df.index = pd.to_datetime(pivot_df.index)
-    return pivot_df.ffill().dropna()
+    return pivot_df.dropna()
 
 def optimize_portfolio(returns_df, objective='sharpe'):
     """Calculate optimal weights using Mean-Variance Optimization."""
@@ -103,6 +103,9 @@ def optimize_portfolio(returns_df, objective='sharpe'):
     else:
         return {col: 1.0 / num_assets for col in returns_df.columns}
 
+    if not result.success or not np.isfinite(result.x).all():
+        logger.warning("Portfolio optimizer did not converge; equal weights used")
+        return {col: 1.0 / num_assets for col in returns_df.columns}
     weights = np.round(result.x, 4)
     # Ensure exact sum to 1.0
     if weights.sum() > 0:
@@ -117,141 +120,26 @@ def run_backtest(score_column: str = 'Composite_Score'):
                       'Composite_Score' for short-term or 'Composite_Score_Long'
                       for the 1m-6m horizon-optimised model.
     """
-    conn = _get_conn()
-    
-    # Get all distinct scan dates
-    dates_df = pd.read_sql_query("SELECT DISTINCT Scan_Date FROM factor_history ORDER BY Scan_Date", conn)
-    scan_dates = dates_df['Scan_Date'].tolist()
-    
-    if len(scan_dates) < 2:
-        conn.close()
-        return []
+    if score_column not in ('Composite_Score', 'Composite_Score_Long'):
+        raise ValueError('Unsupported score column')
+    with _get_conn() as conn:
+        factors = pd.read_sql_query(f"SELECT Scan_Date, Ticker, {score_column} AS Score FROM factor_history ORDER BY Scan_Date", conn)
+    prices, volumes, highs, lows, tickers = backtest_engine.load_ohlcv()
+    if factors.empty or prices.empty:
+        return {"chart": [], "stats": {}, "error": "Insufficient historical factors"}
+    def score_fn(p, v, h, l, universe, idx):
+        as_of = str(p.index[idx].date())
+        eligible = factors[factors.Scan_Date <= as_of]
+        if eligible.empty:
+            return pd.Series(dtype=float)
+        latest = eligible.Scan_Date.max()
+        snapshot = eligible[eligible.Scan_Date == latest].set_index('Ticker')['Score']
+        return snapshot.reindex(universe).dropna()
+    horizon = int((prices.index >= pd.Timestamp(factors.Scan_Date.min())).sum())
+    return backtest_engine.run_walkforward_backtest(score_fn, prices, volumes, highs, lows, tickers, horizon, label='Archived factor model')
 
-    # Get daily returns for all stocks to compute daily portfolio returns
-    ohlcv_df = pd.read_sql_query("SELECT Date, Ticker, Close FROM daily_ohlcv ORDER BY Date", conn)
-    ohlcv_df['Date'] = pd.to_datetime(ohlcv_df['Date'])
-    pivot_df = ohlcv_df.pivot(index='Date', columns='Ticker', values='Close')
-    returns_df = pivot_df.pct_change() # return on day T
-    
-    # Nifty data for benchmark (if available in daily_ohlcv)
-    benchmark_returns = pd.Series(0.0, index=returns_df.index)
-    if '^NSEI' in returns_df.columns:
-        benchmark_returns = returns_df['^NSEI'].fillna(0)
-    
-    portfolio_value = 100.0
-    benchmark_value = 100.0
-    
-    backtest_data = [{
-        "date": scan_dates[0][:10] if isinstance(scan_dates[0], str) else str(scan_dates[0])[:10],
-        "portfolio": 100.0,
-        "benchmark": 100.0
-    }]
-    holdings_log = []  # NEW — one entry per scan window
-    
-    for i in range(len(scan_dates)):
-        current_date = scan_dates[i]
-        
-        # Get top 10 stocks for this scan date
-        query = f"""
-        SELECT Ticker FROM factor_history
-        WHERE Scan_Date = ?
-        ORDER BY {score_column} DESC
-        LIMIT 10
-        """
-        top_picks = pd.read_sql_query(query, conn, params=(current_date,))['Ticker'].tolist()
-        
-        if not top_picks:
-            continue
 
-        # NEW — record which tickers were held in this scan window
-        next_scan_date = scan_dates[i+1][:10] if i < len(scan_dates) - 1 else str(returns_df.index[-1].date())
-        holdings_log.append({
-            "from": current_date[:10] if isinstance(current_date, str) else str(current_date)[:10],
-            "to":   next_scan_date,
-            "tickers": top_picks
-        })
-
-        # Determine the period until the next scan date
-        start_date = pd.to_datetime(current_date)
-        if i < len(scan_dates) - 1:
-            end_date = pd.to_datetime(scan_dates[i+1])
-        else:
-            end_date = returns_df.index[-1]
-            
-        period_returns = returns_df.loc[(returns_df.index > start_date) & (returns_df.index <= end_date)]
-        
-        for date, row in period_returns.iterrows():
-            # Equal weight the available top picks
-            valid_picks = [t for t in top_picks if t in row.index and not np.isnan(row[t])]
-            if valid_picks:
-                daily_ret = np.mean([row[t] for t in valid_picks])
-            else:
-                daily_ret = 0.0
-                
-            portfolio_value *= (1 + daily_ret)
-            
-            bench_ret = benchmark_returns.loc[date] if date in benchmark_returns.index else 0.0
-            benchmark_value *= (1 + bench_ret)
-            
-            backtest_data.append({
-                "date": date.strftime("%Y-%m-%d"),
-                "portfolio": round(portfolio_value, 2),
-                "benchmark": round(benchmark_value, 2)
-            })
-
-    conn.close()
-    
-    if not backtest_data:
-        return {"chart": [], "stats": {}}
-        
-    # Ensure unique dates (take last value if duplicates)
-    df = pd.DataFrame(backtest_data).drop_duplicates(subset=['date'], keep='last')
-    chart_data = df.to_dict('records')
-    
-    # Compute advanced stats
-    daily_port_returns = df['portfolio'].pct_change().dropna()
-    daily_bench_returns = df['benchmark'].pct_change().dropna()
-    
-    if daily_port_returns.empty:
-        return {"chart": chart_data, "stats": {}}
-        
-    days = max((pd.to_datetime(df['date'].iloc[-1]) - pd.to_datetime(df['date'].iloc[0])).days, 1)
-    years = max(days / 365.25, 0.01) # Avoid div by zero
-    
-    total_ret = (df['portfolio'].iloc[-1] / df['portfolio'].iloc[0]) - 1
-    cagr = ((1 + total_ret) ** (1 / years)) - 1
-    
-    bench_ret = (df['benchmark'].iloc[-1] / df['benchmark'].iloc[0]) - 1
-    bench_cagr = ((1 + bench_ret) ** (1 / years)) - 1
-    
-    ann_vol = daily_port_returns.std() * np.sqrt(252)
-    
-    sharpe = (cagr - RISK_FREE_RATE) / ann_vol if ann_vol > 0 else 0
-    
-    # Max Drawdown
-    cum_max = df['portfolio'].cummax()
-    drawdown = (df['portfolio'] / cum_max) - 1
-    max_dd = drawdown.min()
-    
-    # Information Ratio
-    tracking_error = (daily_port_returns - daily_bench_returns).std() * np.sqrt(252)
-    info_ratio = (cagr - bench_cagr) / tracking_error if tracking_error > 0 else 0
-    
-    win_rate = (daily_port_returns > 0).mean()
-    
-    stats = {
-        "total_return": round(total_ret * 100, 2),
-        "cagr": round(cagr * 100, 2),
-        "volatility": round(ann_vol * 100, 2),
-        "sharpe": round(sharpe, 2),
-        "max_drawdown": round(max_dd * 100, 2),
-        "info_ratio": round(info_ratio, 2),
-        "win_rate": round(win_rate * 100, 1)
-    }
-    
-    return {"chart": chart_data, "holdings": holdings_log, "stats": stats}
-
-def compute_factor_exposures(top_picks_df):
+def compute_factor_exposures(top_picks_df, universe=None):
     """Aggregate factor exposures for the top picks."""
     if top_picks_df.empty:
         return {}
@@ -259,7 +147,8 @@ def compute_factor_exposures(top_picks_df):
     def normalize(series, invert=False):
         s = pd.to_numeric(series, errors='coerce').dropna()
         if s.empty: return 50
-        pct = s.rank(pct=True).mean() * 100
+        reference = pd.to_numeric(universe[series.name], errors='coerce').dropna() if universe is not None and series.name in universe else s
+        pct = float(np.mean([(reference <= value).mean() for value in s])) * 100
         return float(100 - pct if invert else pct)
         
     value = normalize(top_picks_df['P_E'], invert=True)
@@ -327,62 +216,66 @@ def compute_correlation_matrix(price_history):
     }
 
 def compute_factor_ic_monitor():
-    """Compute rolling Spearman rank Information Coefficients (IC) for academic factors."""
-    conn = _get_conn()
-    try:
-        query = """
-        SELECT f.Piotroski_F, f.Momentum_6M, f.Vol_60D, f.P_E, f.ROE_Pct, f.Composite_Score, o.Return_21d
-        FROM factor_history f
-        JOIN outcome_tracking o ON f.Ticker = o.Ticker AND f.Scan_Date = o.Scan_Date
-        WHERE o.Return_21d IS NOT NULL
-        ORDER BY f.Scan_Date DESC
-        LIMIT 500
-        """
-        df = pd.read_sql_query(query, conn)
-        conn.close()
-    except Exception as e:
-        logger.warning(f"Failed to query factor history for IC: {e}")
-        conn.close()
-        df = pd.DataFrame()
+    """Cross-sectional daily Spearman IC, averaged across a calendar quarter.
 
-    factors_meta = [
-        {"name": "Piotroski F-Score", "col": "Piotroski_F", "base_ic": 0.088, "dir": 1},
-        {"name": "6M Momentum", "col": "Momentum_6M", "base_ic": 0.142, "dir": 1},
-        {"name": "Low Volatility", "col": "Vol_60D", "base_ic": 0.075, "dir": -1},
-        {"name": "Quality (ROE)", "col": "ROE_Pct", "base_ic": 0.115, "dir": 1},
-        {"name": "Value (Earnings Yield)", "col": "P_E", "base_ic": 0.062, "dir": -1},
-        {"name": "Composite Multi-Factor Alpha", "col": "Composite_Score", "base_ic": 0.185, "dir": 1},
-    ]
+    Non-overlapping 21-session cohorts are used for the descriptive t statistic;
+    adjacent forward-return windows cannot be treated as independent samples.
+    """
+    with _get_conn() as conn:
+        df = pd.read_sql_query("""SELECT f.Scan_Date, f.Piotroski_F, f.Momentum_6M,
+          f.Vol_60D, f.P_E, f.ROE_Pct, f.Composite_Score, o.Return_21d
+          FROM factor_history f JOIN outcome_tracking o USING(Ticker, Scan_Date)
+          WHERE o.Return_21d IS NOT NULL ORDER BY f.Scan_Date""", conn)
+    meta = [('Piotroski F-Score','Piotroski_F',1),('6M Momentum','Momentum_6M',1),
+            ('Low Volatility','Vol_60D',-1),('Quality (ROE)','ROE_Pct',1),
+            ('Value (Earnings Yield)','P_E',-1),('Composite Multi-Factor','Composite_Score',1)]
+    if not df.empty:
+        cutoff = pd.Timestamp(df.Scan_Date.max()) - pd.DateOffset(months=3)
+        df = df[pd.to_datetime(df.Scan_Date) >= cutoff]
+    output = []
+    for name, col, direction in meta:
+        daily = []
+        for date, cohort in df.groupby('Scan_Date'):
+            cohort = cohort.dropna(subset=[col,'Return_21d'])
+            if col == 'P_E':
+                cohort = cohort[cohort[col] > 0]
+            if len(cohort) >= 20 and cohort[col].nunique() > 1 and cohort.Return_21d.nunique() > 1:
+                daily.append(float(cohort[col].corr(cohort.Return_21d, method='spearman')) * direction)
+        sufficient = len(daily) >= 5
+        ic = float(np.mean(daily)) if sufficient else None
+        independent = np.array(daily[::21])
+        t = float(independent.mean() / (independent.std(ddof=1) / np.sqrt(len(independent)))) if len(independent) >= 3 and independent.std(ddof=1) > 0 else None
+        output.append({'factor':name,'ic_current':round(daily[-1],3) if sufficient else None,
+                       'ic_3m_rolling':round(ic,3) if ic is not None else None,
+                       't_stat':round(t,2) if t is not None else None,'sample_dates':len(daily),
+                       'status':'Insufficient history' if not sufficient else 'Observed positive IC' if ic > 0 else 'Observed nonpositive IC'})
+    return output
 
-    ic_results = []
-    for f in factors_meta:
-        col = f["col"]
-        if not df.empty and col in df.columns and len(df.dropna(subset=[col, "Return_21d"])) >= 20:
-            sub = df.dropna(subset=[col, "Return_21d"])
-            corr = sub[col].corr(sub["Return_21d"], method="spearman") * f["dir"]
-            ic_val = float(np.nan_to_num(corr, nan=f["base_ic"]))
-            sub_recent = sub.head(100)
-            corr_recent = sub_recent[col].corr(sub_recent["Return_21d"], method="spearman") * f["dir"]
-            ic_3m = float(np.nan_to_num(corr_recent, nan=ic_val))
-            n = len(sub)
-            t_stat = ic_val * np.sqrt((n - 2) / max(1e-5, (1 - ic_val**2))) if abs(ic_val) < 1 else 3.2
-        else:
-            ic_val = f["base_ic"]
-            ic_3m = round(f["base_ic"] * 1.05, 3)
-            t_stat = round(ic_val * np.sqrt(120), 2)
 
-        ic_results.append({
-            "factor": f["name"],
-            "ic_current": round(float(ic_val), 3),
-            "ic_3m_rolling": round(float(ic_3m), 3),
-            "t_stat": round(float(t_stat), 2),
-            "status": "Strong Alpha" if ic_val >= 0.10 else ("Moderate Alpha" if ic_val >= 0.04 else "Neutral / Decaying")
-        })
+def compute_efficient_frontier(returns):
+    if returns.empty or len(returns) < 30 or len(returns.columns) < 2:
+        return []
+    mu = returns.mean().to_numpy() * 252
+    cov = returns.cov().to_numpy() * 252
+    n = len(mu)
+    points = []
+    min_result = minimize(lambda w: w @ cov @ w, np.ones(n)/n, bounds=[(0,1)]*n,
+                          constraints=[{'type':'eq','fun':lambda w: w.sum()-1}], method='SLSQP')
+    if not min_result.success:
+        return []
+    for target in np.linspace(mu @ min_result.x, mu.max(), 30):
+        fit = minimize(lambda w: w @ cov @ w, min_result.x, bounds=[(0,1)]*n,
+                       constraints=[{'type':'eq','fun':lambda w: w.sum()-1},
+                                    {'type':'eq','fun':lambda w,t=target: mu @ w-t}], method='SLSQP')
+        if fit.success:
+            vol = float(np.sqrt(fit.x @ cov @ fit.x))
+            points.append({'volatility':round(vol*100,2),'return':round(float(mu @ fit.x)*100,2),
+                           'sharpe':round((float(mu @ fit.x)-RISK_FREE_RATE)/vol,2) if vol else 0})
+    return points
 
-    return ic_results
 
 def compute_scenario_stress_tests(top_picks_df, returns_df):
-    """Simulate top portfolio performance across historical macroeconomic shocks."""
+    """Illustrative assumed shocks; this heuristic is not a historical replay."""
     portfolio_beta = 1.0
     if not returns_df.empty:
         avg_vol = returns_df.std().mean() * np.sqrt(252)
@@ -402,28 +295,28 @@ def compute_scenario_stress_tests(top_picks_df, returns_df):
             "period": "Feb - Mar 2020",
             "benchmark_shock_pct": -38.4,
             "simulated_portfolio_pct": round(-38.4 * portfolio_beta * quality_dampener, 1),
-            "factor_resilience": "High Defensive Buffer" if quality_dampener < 0.85 else "Moderate Resilience"
+            "factor_resilience": "Illustrative volatility/quality sensitivity"
         },
         {
             "event_name": "2022 Global Rate Hike & Inflation",
             "period": "Jan - Jun 2022",
             "benchmark_shock_pct": -15.2,
             "simulated_portfolio_pct": round(-15.2 * portfolio_beta * quality_dampener, 1),
-            "factor_resilience": "Strong Factor Moat"
+            "factor_resilience": "Illustrative volatility/quality sensitivity"
         },
         {
             "event_name": "2024 Election / Budget Flash Volatility",
             "period": "Jun 2024",
             "benchmark_shock_pct": -5.9,
             "simulated_portfolio_pct": round(-5.9 * portfolio_beta * quality_dampener, 1),
-            "factor_resilience": "Rapid Mean Reversion"
+            "factor_resilience": "Illustrative volatility/quality sensitivity"
         },
         {
             "event_name": "High Multiple Valuation Reset",
             "period": "Simulated Stress Test",
             "benchmark_shock_pct": -12.0,
             "simulated_portfolio_pct": round(-12.0 * portfolio_beta * quality_dampener, 1),
-            "factor_resilience": "Positive Alpha Spread"
+            "factor_resilience": "Illustrative volatility/quality sensitivity"
         }
     ]
     return scenarios
@@ -460,13 +353,13 @@ def generate_quant_data():
         risk_parity = dict(sorted(risk_parity.items(), key=lambda item: item[1], reverse=True))
         
         # Factor Exposures
-        exposures = compute_factor_exposures(top_picks_df)
+        exposures = compute_factor_exposures(top_picks_df, fetch_latest_top_picks(1000))
         
-        # Backtest — legacy (factor_history-based, short live window)
+        # Backtest â€” legacy (factor_history-based, short live window)
         backtest_results      = run_backtest('Composite_Score')
         backtest_long_results = run_backtest('Composite_Score_Long')
 
-        # Walk-forward backtests from 2-year OHLCV history (1Y & 6M × Short & Long)
+        # Walk-forward backtests from 2-year OHLCV history (1Y & 6M Ã— Short & Long)
         logger.info("Running walk-forward OHLCV backtests...")
         wf_results = backtest_engine.run_all_backtests()
         
@@ -485,11 +378,13 @@ def generate_quant_data():
                 "risk_parity": risk_parity
             },
             "factor_exposures": exposures,
+            "efficient_frontier": compute_efficient_frontier(returns_df),
+            "data_version": backtest_engine.BACKTEST_VERSION,
             "factor_ic_monitor": factor_ic,
             "scenario_stress_tests": stress_tests,
             "backtest": backtest_results,
             "backtest_long": backtest_long_results,
-            # Walk-forward OHLCV-based backtests (1Y & 6M × Short & Long)
+            # Walk-forward OHLCV-based backtests (1Y & 6M Ã— Short & Long)
             "backtest_short_1y": wf_results.get("backtest_short_1y"),
             "backtest_short_6m": wf_results.get("backtest_short_6m"),
             "backtest_long_1y":  wf_results.get("backtest_long_1y"),
@@ -500,9 +395,11 @@ def generate_quant_data():
         }
         
         os.makedirs("frontend/public", exist_ok=True)
-        with open("frontend/public/quant_data.json", "w") as f:
-            json.dump(output, f, indent=2)
+        from utils import atomic_json
+        atomic_json("frontend/public/quant_data.json", output)
             
+        from engine.strategy_history import export_strategy_history
+        export_strategy_history()
         logger.info("Successfully generated quant_data.json")
 
         # Export cached custom backtest runs to static JSON for Vercel
@@ -511,10 +408,12 @@ def generate_quant_data():
             if n_runs:
                 logger.info(f"Exported {n_runs} cached backtest run(s) to frontend/public/backtest_runs/")
         except Exception as ex:
-            logger.warning(f"Could not export backtest index: {ex}")
+            logger.error(f"Could not export backtest index: {ex}")
+            raise
 
     except Exception as e:
         logger.error(f"Error generating Quant data: {e}")
+        raise
 
 if __name__ == "__main__":
     generate_quant_data()

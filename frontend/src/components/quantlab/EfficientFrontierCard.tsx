@@ -43,7 +43,7 @@ export const EfficientFrontierCard: React.FC<EfficientFrontierCardProps> = ({ po
                 const d = payload[0].payload as EfficientFrontierPoint
                 return (
                   <div style={{ ...tooltipStyle, minWidth: 150 }}>
-                    <p className="font-semibold text-xs mb-1" style={{ color: 'var(--brand)' }}>Simulated Portfolio</p>
+                    <p className="font-semibold text-xs mb-1" style={{ color: 'var(--brand)' }}>Optimized Portfolio</p>
                     <p className="text-[11px]" style={{ color: 'var(--text)' }}>Volatility: <strong>{d.volatility}%</strong></p>
                     <p className="text-[11px]" style={{ color: 'var(--green)' }}>Expected Return: <strong>+{d.return}%</strong></p>
                     <p className="text-[11px]" style={{ color: 'var(--blue)' }}>Sharpe Ratio: <strong>{d.sharpe}</strong></p>
@@ -56,7 +56,7 @@ export const EfficientFrontierCard: React.FC<EfficientFrontierCardProps> = ({ po
         </ResponsiveContainer>
       </GlassCardContent>
       <GlassCardFooter className="px-5 pb-4 text-[11px] text-center text-[var(--text-3)] border-none">
-        Optimal Tangency Portfolio maxes Sharpe ratio at ~18.0% volatility.
+        Estimated from recorded daily returns and covariance of the current portfolio. Historical estimates may change.
       </GlassCardFooter>
     </GlassCard>
   )

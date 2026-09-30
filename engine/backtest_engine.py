@@ -24,17 +24,19 @@ Backtest protocol:
   - Monthly rebalance: every 20 trading days
   - Top-10 equal-weight long-only portfolio
   - Look-ahead free: signals computed from data up to the rebalance date only
-  - Benchmark: ^NSEI (Nifty 50) if available in daily_ohlcv, else flat 0%
+  - Benchmark: ^NSEI (Nifty 50) if available in daily_ohlcv, required; unavailable results are explicitly flagged
   - Horizons: 1Y (last 252 trading days) and 6M (last 126 trading days)
 """
 
 import sqlite3
+import hashlib
 import json
 import os
 import numpy as np
 import pandas as pd
 from datetime import datetime
 from config import RISK_FREE_RATE
+from engine.market_calendar import HOLIDAYS
 
 DB_PATH = "data/market_scans.db"
 REBALANCE_EVERY = 20   # trading days between rebalances
@@ -42,6 +44,7 @@ TOP_N = 10             # stocks in portfolio at each rebalance
 MIN_HISTORY = 60       # minimum trading days of history before we start scoring
 RUNS_DIR = os.path.join("frontend", "public", "backtest_runs")
 TRANSACTION_COST_PER_LEG_BPS = 20  # 20 bps per leg buy/sell (40 bps round-trip)
+BACKTEST_VERSION = 3
 MIN_ADTV_INR = 10_000_000           # ₹1 Crore 30-day ADTV minimum liquidity gate
 
 
@@ -67,8 +70,20 @@ def _ensure_cache_table():
             PRIMARY KEY (as_of_date, model, horizon)
         )
     """)
+    columns = {r[1] for r in conn.execute('PRAGMA table_info(backtest_cache)')}
+    if 'version' not in columns:
+        conn.execute('ALTER TABLE backtest_cache ADD COLUMN version INTEGER DEFAULT 0')
+    if 'fingerprint' not in columns:
+        conn.execute('ALTER TABLE backtest_cache ADD COLUMN fingerprint TEXT')
+    conn.execute('DELETE FROM backtest_cache WHERE version != ?', (BACKTEST_VERSION,))
     conn.commit()
     conn.close()
+
+
+def _fingerprint(as_of_date):
+    with sqlite3.connect(DB_PATH) as conn:
+        values = conn.execute('SELECT COUNT(*), SUM(Close), SUM(Volume) FROM daily_ohlcv WHERE Date <= ?', (as_of_date,)).fetchone()
+    return hashlib.sha256(json.dumps(values).encode()).hexdigest()
 
 
 def _check_cache(as_of_date: str, model: str, horizon: str) -> dict | None:
@@ -77,8 +92,8 @@ def _check_cache(as_of_date: str, model: str, horizon: str) -> dict | None:
     conn = sqlite3.connect(DB_PATH)
     row = conn.execute(
         "SELECT chart_json, holdings_json, stats_json FROM backtest_cache "
-        "WHERE as_of_date=? AND model=? AND horizon=?",
-        (as_of_date, model, horizon)
+        "WHERE as_of_date=? AND model=? AND horizon=? AND fingerprint=?",
+        (as_of_date, model, horizon, _fingerprint(as_of_date))
     ).fetchone()
     conn.close()
     if row:
@@ -86,6 +101,7 @@ def _check_cache(as_of_date: str, model: str, horizon: str) -> dict | None:
             "chart":    json.loads(row[0]),
             "holdings": json.loads(row[1]),
             "stats":    json.loads(row[2]),
+            "version": BACKTEST_VERSION,
         }
     return None
 
@@ -98,8 +114,8 @@ def _store_cache(as_of_date: str, model: str, horizon: str, result: dict,
     conn.execute(
         """INSERT OR REPLACE INTO backtest_cache
            (as_of_date, model, horizon, created_at, data_start, data_end,
-            n_chart_pts, stats_json, chart_json, holdings_json)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            n_chart_pts, stats_json, chart_json, holdings_json, version, fingerprint)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             as_of_date, model, horizon,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -108,6 +124,8 @@ def _store_cache(as_of_date: str, model: str, horizon: str, result: dict,
             json.dumps(result.get("stats", {})),
             json.dumps(result.get("chart", [])),
             json.dumps(result.get("holdings", [])),
+            BACKTEST_VERSION,
+            _fingerprint(as_of_date),
         )
     )
     conn.commit()
@@ -140,22 +158,16 @@ def load_ohlcv() -> tuple[pd.DataFrame, pd.DataFrame, list]:
     )
     conn.close()
 
+    df = df[~df["Date"].isin(HOLIDAYS)]
     df["Date"] = pd.to_datetime(df["Date"])
-    prices  = df.pivot(index="Date", columns="Ticker", values="Close").ffill()
-    volumes = df.pivot(index="Date", columns="Ticker", values="Volume").ffill()
-    highs   = df.pivot(index="Date", columns="Ticker", values="High").ffill()
-    lows    = df.pivot(index="Date", columns="Ticker", values="Low").ffill()
+    prices  = df.pivot(index="Date", columns="Ticker", values="Close")
+    volumes = df.pivot(index="Date", columns="Ticker", values="Volume")
+    highs   = df.pivot(index="Date", columns="Ticker", values="High")
+    lows    = df.pivot(index="Date", columns="Ticker", values="Low")
 
     bench = "^NSEI"
-    adtv_30d = (prices * volumes).rolling(30, min_periods=5).mean()
-    max_adtv = adtv_30d.max(axis=0)
-    liquid_tickers = max_adtv[max_adtv >= MIN_ADTV_INR].index.tolist()
-    if bench in prices.columns and bench not in liquid_tickers:
-        liquid_tickers.append(bench)
-
-    all_tickers = [t for t in liquid_tickers if t != bench]
-
-    return prices[liquid_tickers], volumes[liquid_tickers], highs[liquid_tickers], lows[liquid_tickers], all_tickers
+    all_tickers = [t for t in prices.columns if t != bench]
+    return prices, volumes, highs, lows, all_tickers
 
 
 # ---------------------------------------------------------------------------
@@ -378,9 +390,9 @@ def compute_short_score_at(
         if len(c) < MIN_HISTORY:
             continue
 
-        h = h_slice[ticker].reindex(c_slice.index).ffill().dropna().to_numpy(dtype=float)
-        l = l_slice[ticker].reindex(l_slice.index).ffill().dropna().to_numpy(dtype=float)
-        v = v_slice[ticker].reindex(v_slice.index).ffill().dropna().to_numpy(dtype=float)
+        h = h_slice[ticker].reindex(c_slice.index).dropna().to_numpy(dtype=float)
+        l = l_slice[ticker].reindex(l_slice.index).dropna().to_numpy(dtype=float)
+        v = v_slice[ticker].reindex(v_slice.index).dropna().to_numpy(dtype=float)
         # Align lengths
         n = min(len(c), len(h), len(l), len(v))
         c, h, l, v = c[-n:], h[-n:], l[-n:], v[-n:]
@@ -443,13 +455,8 @@ def compute_short_score_at(
         m6m = mom(126, skip=21)
         m12 = mom(252, skip=21)
 
-        moms = [x for x in [m1m * 0.1, m3m * 0.2, m6m * 0.35, m12 * 0.35] if not np.isnan(x)]
-        if not moms:
-            mom_composite = 0.0
-        else:
-            mom_composite = sum(moms) / max(sum(
-                [0.1, 0.2, 0.35, 0.35][:len([x for x in [m1m, m3m, m6m, m12] if not np.isnan(x)])]
-            ), 1e-6)
+        available = [(m, w) for m, w in zip([m1m,m3m,m6m,m12], [.1,.2,.35,.35]) if np.isfinite(m)]
+        mom_composite = sum(m*w for m,w in available) / sum(w for _,w in available) if available else 0.0
 
         # Cross-sectional z-score for momentum applied later; here raw
         scores[ticker] = {
@@ -601,13 +608,13 @@ def _compute_backtest_stats(df: pd.DataFrame) -> dict:
     daily_pr = df["portfolio"].pct_change().dropna()
     daily_br = df["benchmark"].pct_change().dropna()
     ann_vol  = float(daily_pr.std() * np.sqrt(252)) if len(daily_pr) > 1 else 0
-    sharpe   = (cagr - RISK_FREE_RATE) / ann_vol if ann_vol > 0 else 0
+    sharpe   = (daily_pr.mean() * 252 - RISK_FREE_RATE) / ann_vol if ann_vol > 0 else 0
 
     cum_max = df["portfolio"].cummax()
     max_dd  = float(((df["portfolio"] / cum_max) - 1).min())
 
     te      = float((daily_pr - daily_br).std() * np.sqrt(252)) if len(daily_pr) > 1 else 0
-    ir      = (cagr - bench_cagr) / te if te > 0 else 0
+    ir      = ((daily_pr - daily_br).mean() * 252) / te if te > 0 else 0
     win_rt  = float((daily_pr > 0).mean() * 100)
 
     return {
@@ -649,206 +656,91 @@ def run_walkforward_backtest(
       regime_adaptive   — dynamically adjust equity vs cash buffer based on macro regime
       Returns dict: {chart, holdings, stats}
     """
-    dates = prices.index
-    total_bars = len(dates)
-
-    # ── Determine end bar (cap at as_of_date if provided) ───────────────────
-    if as_of_date is not None:
-        as_of_ts = pd.Timestamp(as_of_date)
-        mask = dates <= as_of_ts
-        if not mask.any():
-            return {"chart": [], "holdings": [], "stats": {},
-                    "error": f"as_of_date {as_of_date} is before data start"}
-        end_bar = int(mask.sum()) - 1
-    else:
-        end_bar = total_bars - 1
-
-    # ── Determine simulation window ──────────────────────────────────────────
-    window_start = max(MIN_HISTORY, end_bar - horizon_days + 1)
-    sim_dates_idx = list(range(window_start, end_bar + 1, rebalance_every))
-
-    bench = "^NSEI"
-    has_bench = bench in prices.columns
-
-    # Compute daily returns for all tickers (we'll use them to track portfolio)
-    returns_all = prices.pct_change()
-
-    portfolio_value = 100.0
-    benchmark_value = 100.0
-
-    chart_data  = []
-    holdings_log = []
-
-    # Initialise values on the day before the first rebalance
-    first_bar = window_start
-    if first_bar > 0:
-        chart_data.append({
-            "date":      dates[first_bar - 1],
-            "portfolio": portfolio_value,
-            "benchmark": benchmark_value,
-        })
-
-    current_holdings: list[str] = []
-    prev_target_weights: dict[str, float] = {}
-
-    for i, idx in enumerate(sim_dates_idx):
-        # Score all tickers using data up to (and including) idx — look-ahead free
-        scores = score_fn(prices, volumes, highs, lows, all_tickers, idx)
-
-        # Filter: must have price data on this day
-        valid = [t for t in scores.index if t in prices.columns and not np.isnan(prices.iloc[idx].get(t, np.nan))]
-        scores = scores.loc[[t for t in scores.index if t in valid]]
-
-        # Apply Portfolio Continuation Buffer / Hysteresis Band (Entry <= top_n, Exit <= top_n * 2)
-        ranked_tickers = scores.sort_values(ascending=False).index.tolist()
-        exit_rank_threshold = top_n * 2
-
-        retained = []
-        if current_holdings:
-            for t in current_holdings:
-                if t in ranked_tickers and ranked_tickers.index(t) < exit_rank_threshold:
-                    retained.append(t)
-
-        needed = top_n - len(retained)
-        new_candidates = [t for t in ranked_tickers if t not in retained]
-        new_buys = new_candidates[:needed] if needed > 0 else []
-
-        top_picks = retained + new_buys
-        if not top_picks:
-            top_picks = scores.nlargest(top_n).index.tolist()
-
-        current_holdings = top_picks
-
-        # Calculate position weights
-        weights = {}
-        if weighting_scheme == "score_weighted" and not scores.empty:
-            pick_scores = scores.loc[[t for t in top_picks if t in scores.index]]
-            score_sum = pick_scores.sum()
-            if score_sum > 0:
-                weights = (pick_scores / score_sum).to_dict()
-        elif weighting_scheme == "volatility_parity":
-            vols = {}
-            for t in top_picks:
-                sub_prices = prices[t].iloc[max(0, idx - 60):idx + 1].dropna()
-                if len(sub_prices) >= 10:
-                    v = float(sub_prices.pct_change().std())
-                    vols[t] = 1.0 / v if v > 0 else 1.0
-                else:
-                    vols[t] = 1.0
-            total_inv_vol = sum(vols.values())
-            if total_inv_vol > 0:
-                weights = {t: vols[t] / total_inv_vol for t in top_picks}
-
-        # Fallback to equal weighting if unassigned or equal requested
-        if not weights:
-            n_picks = max(len(top_picks), 1)
-            weights = {t: 1.0 / n_picks for t in top_picks}
-
-        # Determine regime equity ratio if regime_adaptive is enabled
-        equity_ratio = 1.0
-        if regime_adaptive and has_bench:
-            b_prices = prices[bench].iloc[max(0, idx - 200):idx + 1].dropna()
-            if len(b_prices) >= 50:
-                b_close = float(b_prices.iloc[-1])
-                b_sma200 = float(b_prices.mean()) if len(b_prices) >= 200 else float(b_prices.mean())
-                b_vol = float(b_prices.pct_change().std() * np.sqrt(252))
-                
-                if b_close < b_sma200 and b_vol > 0.30:
-                    equity_ratio = 0.20  # Extreme Risk-Off: 20% equity, 80% cash
-                elif b_close < b_sma200 or b_vol > 0.25:
-                    equity_ratio = 0.50  # Risk-Off/Caution: 50% equity, 50% cash
-                else:
-                    equity_ratio = 1.00  # Risk-On: 100% equity
-
-        # Apply transaction friction based on portfolio turnover
-        target_weights = {t: weights.get(t, 0.0) * equity_ratio for t in top_picks}
-        all_w_keys = set(prev_target_weights.keys()).union(target_weights.keys())
-        turnover = sum(abs(target_weights.get(k, 0.0) - prev_target_weights.get(k, 0.0)) for k in all_w_keys)
-        tx_cost_pct = turnover * (TRANSACTION_COST_PER_LEG_BPS / 10000.0)
-        portfolio_value *= max(0.0, 1.0 - tx_cost_pct)
-        prev_target_weights = target_weights
-
-        # Entry prices for stop-loss monitoring
-        entry_prices = {t: float(prices[t].iloc[idx]) for t in top_picks if t in prices.columns}
-        stopped_out = set()
-
-        # Determine hold period
-        next_idx = sim_dates_idx[i + 1] if i + 1 < len(sim_dates_idx) else end_bar
-        period_range = range(idx + 1, min(next_idx + 1, end_bar + 1))
-
-        holdings_log.append({
-            "from":         str(dates[idx].date()),
-            "to":           str(dates[min(next_idx, end_bar)].date()),
-            "tickers":      top_picks,
-            "weights":      {t: round(w * equity_ratio, 4) for t, w in weights.items()},
-            "equity_ratio": equity_ratio,
-        })
-
-        daily_cash_rf = (RISK_FREE_RATE / 252.0)
-
-        for bar_idx in period_range:
-            if bar_idx > end_bar:
-                break
-            row = returns_all.iloc[bar_idx]
-
-            valid_picks = [t for t in top_picks if t in row.index and not np.isnan(row[t])]
-            
-            # Check stop loss if enabled
-            if stop_loss_pct > 0:
-                for t in valid_picks:
-                    if t not in stopped_out and t in entry_prices:
-                        curr_p = float(prices[t].iloc[bar_idx])
-                        ent_p = entry_prices[t]
-                        if ent_p > 0 and (curr_p / ent_p - 1.0) <= -stop_loss_pct:
-                            stopped_out.add(t)
-
-            active_picks = [t for t in valid_picks if t not in stopped_out]
-            
-            if active_picks:
-                active_weight_sum = sum(weights.get(t, 0.0) for t in active_picks)
-                if active_weight_sum > 0:
-                    equity_ret = float(sum(row[t] * (weights.get(t, 0.0) / active_weight_sum) for t in active_picks))
-                else:
-                    equity_ret = 0.0
+    if prices.empty or horizon_days < 1 or rebalance_every < 1 or top_n < 1:
+        return {"chart": [], "holdings": [], "stats": {}, "error": "Insufficient history or invalid configuration", "version": BACKTEST_VERSION}
+    end = len(prices) - 1
+    if as_of_date:
+        eligible_dates = prices.index <= pd.Timestamp(as_of_date)
+        if not eligible_dates.any():
+            return {"chart": [], "holdings": [], "stats": {}, "error": "Date precedes history", "version": BACKTEST_VERSION}
+        end = int(eligible_dates.sum()) - 1
+    start = max(MIN_HISTORY, end - horizon_days + 1)
+    if start >= end:
+        return {"chart": [], "holdings": [], "stats": {}, "error": "Insufficient history", "version": BACKTEST_VERSION}
+    bench = '^NSEI'
+    if bench not in prices or prices[bench].iloc[start:end+1].isna().any():
+        return {"chart": [], "holdings": [], "stats": {}, "error": "NIFTY benchmark history is missing; backfill required", "version": BACKTEST_VERSION}
+    cash, shares, peaks, last_prices = 100.0, {}, {}, {}
+    records, holdings = [], []
+    cost = TRANSACTION_COST_PER_LEG_BPS / 10000
+    base_bench = float(prices[bench].iloc[start])
+    turnover_history = (prices * volumes).rolling(30, min_periods=20).mean()
+    def value():
+        return cash + sum(q * last_prices[t] for t, q in shares.items())
+    records.append({"date": prices.index[start], "portfolio": 100.0, "benchmark": 100.0})
+    for idx in range(start, end + 1):
+        row = prices.iloc[idx]
+        if idx > start:
+            # Stopped proceeds receive cash yield only on subsequent sessions.
+            cash *= (1 + RISK_FREE_RATE) ** (1 / 252)
+        for t in list(shares):
+            price = row.get(t)
+            if pd.isna(price) or price <= 0:
+                raise ValueError(f"Missing executable close for held stock {t} on {prices.index[idx].date()}")
+            last_prices[t] = float(price)
+            if stop_loss_pct > 0 and price <= peaks[t] * (1 - stop_loss_pct):
+                # Close-triggered execution: the actual close includes any gap loss.
+                cash += shares.pop(t) * price * (1 - cost)
+                peaks.pop(t, None)
             else:
-                equity_ret = 0.0
-
-            # Combine weighted equity return + cash yield remainder
-            daily_ret = (equity_ret * equity_ratio) + (daily_cash_rf * (1.0 - equity_ratio))
-
-            portfolio_value *= (1 + daily_ret)
-
-            if has_bench:
-                br = row.get(bench, 0.0)
-                bench_ret = float(br) if not np.isnan(br) else 0.0
-            else:
-                bench_ret = 0.0
-            benchmark_value *= (1 + bench_ret)
-
-            chart_data.append({
-                "date":      dates[bar_idx],
-                "portfolio": portfolio_value,
-                "benchmark": benchmark_value,
-            })
-
-    if not chart_data:
-        return {"chart": [], "holdings": [], "stats": {}}
-
-    df = pd.DataFrame(chart_data)
-    df = df.drop_duplicates(subset=["date"], keep="last")
-    df = df.sort_values("date")
-
-    chart_records = [
-        {
-            "date":      str(r["date"].date()),
-            "portfolio": round(r["portfolio"], 2),
-            "benchmark": round(r["benchmark"], 2),
-        }
-        for _, r in df.iterrows()
-    ]
-
+                peaks[t] = max(peaks[t], float(price))
+        if (idx - start) % rebalance_every == 0 and idx < end:
+            # Form signals at the prior close, trade at today's close. No same-bar execution lookahead.
+            signal_idx = idx - 1
+            liquid = [t for t in all_tickers if t in row.index and pd.notna(row[t]) and row[t] > 0
+                      and pd.notna(prices.iloc[signal_idx][t])
+                      and turnover_history.iloc[signal_idx].get(t, 0) >= MIN_ADTV_INR]
+            scores = score_fn(prices.iloc[:idx], volumes.iloc[:idx], highs.iloc[:idx], lows.iloc[:idx], liquid, signal_idx).dropna()
+            scores = scores.reindex([t for t in scores.index if t in liquid]).sort_values(ascending=False)
+            retained = [t for t in shares if t in scores.head(top_n * 2).index][:top_n]
+            picks = retained + [t for t in scores.index if t not in retained][:max(0, top_n-len(retained))]
+            weights = {t: 1 / len(picks) for t in picks}
+            if weighting_scheme == 'score_weighted' and picks:
+                positive = scores.reindex(picks).clip(lower=0)
+                if positive.sum() > 0:
+                    weights = (positive / positive.sum()).to_dict()
+            elif weighting_scheme == 'volatility_parity' and picks:
+                vol = prices[picks].iloc[max(0, idx-60):idx].pct_change(fill_method=None).std()
+                inv = (1 / vol.where(vol > 0)).replace([np.inf, -np.inf], np.nan).fillna(1.0)
+                weights = (inv / inv.sum()).to_dict()
+            equity = 1.0
+            if regime_adaptive:
+                history = prices[bench].iloc[max(0, idx-200):idx]
+                vol = history.pct_change(fill_method=None).std() * np.sqrt(252)
+                below = history.iloc[-1] < history.mean()
+                equity = .2 if below and vol > .30 else .5 if below or vol > .25 else 1.0
+            nav = value()
+            targets = {t: w * equity for t, w in weights.items()}
+            old_values = {t: q * last_prices[t] for t, q in shares.items()}
+            # Solve target dollars against NAV after costs, using actual drifted holdings.
+            after = nav
+            for _ in range(20):
+                turnover = sum(abs(targets.get(t, 0) * after - old_values.get(t, 0)) for t in set(targets) | set(old_values))
+                after = nav - cost * turnover
+            previous_peaks = peaks.copy()
+            shares = {t: after * w / float(row[t]) for t, w in targets.items() if w > 0}
+            last_prices = {t: float(row[t]) for t in shares}
+            peaks = {t: max(previous_peaks.get(t, row[t]), row[t]) for t in shares}
+            cash = after - sum(q * last_prices[t] for t, q in shares.items())
+            holdings.append({"from": str(prices.index[idx].date()), "to": str(prices.index[min(idx+rebalance_every,end)].date()),
+                             "tickers": list(shares), "weights": targets, "equity_ratio": equity})
+        if idx > start:
+            records.append({"date": prices.index[idx], "portfolio": value(), "benchmark": float(row[bench]) / base_bench * 100})
+    df = pd.DataFrame(records)
     stats = _compute_backtest_stats(df)
-    return {"chart": chart_records, "holdings": holdings_log, "stats": stats}
+    chart = [{"date": str(r['date'].date()), "portfolio": round(r['portfolio'], 4), "benchmark": round(r['benchmark'], 4)} for r in records]
+    return {"chart": chart, "holdings": holdings, "stats": stats, "version": BACKTEST_VERSION,
+            "methodology": "Prior-close price signals; close execution; shares held between rebalances; 20bps per leg; historical liquidity; close-triggered trailing stops"}
 
 
 # ---------------------------------------------------------------------------
@@ -867,45 +759,11 @@ def run_all_backtests() -> dict:
     logger = logging.getLogger("backtest_engine")
     logger.info("Loading OHLCV data for walk-forward backtest...")
 
-    prices, volumes, highs, lows, all_tickers = load_ohlcv()
-    logger.info(f"Loaded {len(prices.columns)} tickers, {len(prices)} trading days "
-                f"({prices.index[0].date()} → {prices.index[-1].date()})")
-
-    # Short-term scoring wrapper (needs volumes)
-    def short_fn(prices, volumes, highs, lows, tickers, idx):
-        return compute_short_score_at(prices, volumes, highs, lows, tickers, idx)
-
-    # Long-term scoring wrapper (volumes unused)
-    def long_fn(prices, volumes, highs, lows, tickers, idx):
-        return compute_long_score_at(prices, highs, lows, tickers, idx)
-
-    results = {}
-    configs = [
-        ("backtest_short_1y", short_fn, 252, "Short-term 1Y"),
-        ("backtest_short_6m", short_fn, 126, "Short-term 6M"),
-        ("backtest_long_1y",  long_fn,  252, "Long-term 1Y"),
-        ("backtest_long_6m",  long_fn,  126, "Long-term 6M"),
-    ]
-
-    for key, fn, horizon, label in configs:
-        logger.info(f"Running {label} backtest ({horizon} trading days)...")
-        try:
-            result = run_walkforward_backtest(
-                score_fn=fn,
-                prices=prices, volumes=volumes,
-                highs=highs, lows=lows,
-                all_tickers=all_tickers,
-                horizon_days=horizon,
-                label=label,
-            )
-            n_pts = len(result.get("chart", []))
-            logger.info(f"  {label}: {n_pts} data points, stats={result.get('stats', {})}")
-            results[key] = result
-        except Exception as e:
-            logger.error(f"  {label} failed: {e}", exc_info=True)
-            results[key] = {"chart": [], "holdings": [], "stats": {}}
-
-    return results
+    _, as_of_date = get_ohlcv_date_range()
+    if not as_of_date:
+        raise ValueError('No OHLCV history available')
+    return {f'backtest_{model}_{horizon}': run_custom_backtest(as_of_date, model, horizon)
+            for model in ('short','long') for horizon in ('1y','6m')}
 
 
 # ---------------------------------------------------------------------------
@@ -978,7 +836,8 @@ def run_custom_backtest(
     data_end   = chart[-1]["date"] if chart else ""
 
     # Store in SQLite
-    _store_cache(as_of_date, model, horizon, result, data_start, data_end)
+    if not result.get("error"):
+        _store_cache(as_of_date, model, horizon, result, data_start, data_end)
 
     # Write static JSON files so Vercel can serve them
     export_backtest_index()
@@ -1001,41 +860,6 @@ def export_backtest_index():
     _ensure_cache_table()
     os.makedirs(RUNS_DIR, exist_ok=True)
 
-    # Sync any static JSON files on disk into backtest_cache table if missing
-    try:
-        conn_sync = sqlite3.connect(DB_PATH)
-        for fname in os.listdir(RUNS_DIR):
-            if fname == "index.json" or not fname.endswith(".json"):
-                continue
-            fpath = os.path.join(RUNS_DIR, fname)
-            try:
-                with open(fpath, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                as_of = data.get("as_of_date")
-                model = data.get("model")
-                horizon = data.get("horizon")
-                if as_of and model and horizon:
-                    conn_sync.execute("""
-                        INSERT OR IGNORE INTO backtest_cache
-                        (as_of_date, model, horizon, created_at, data_start, data_end, n_chart_pts, stats_json, chart_json, holdings_json)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        as_of, model, horizon,
-                        data.get("created_at", ""),
-                        data.get("data_start", ""),
-                        data.get("data_end", ""),
-                        len(data.get("chart", [])),
-                        json.dumps(data.get("stats", {})),
-                        json.dumps(data.get("chart", [])),
-                        json.dumps(data.get("holdings", []))
-                    ))
-            except Exception:
-                pass
-        conn_sync.commit()
-        conn_sync.close()
-    except Exception:
-        pass
-
     conn = sqlite3.connect(DB_PATH)
     rows = conn.execute(
         """SELECT as_of_date, model, horizon, created_at,
@@ -1057,6 +881,7 @@ def export_backtest_index():
         # Write individual run file
         run_path = os.path.join(RUNS_DIR, f"{slug}.json")
         run_data = {
+            "version": BACKTEST_VERSION,
             "as_of_date":  as_of_date,
             "model":       model,
             "horizon":     horizon,
@@ -1073,6 +898,7 @@ def export_backtest_index():
         # Index entry (no chart/holdings data to keep it small)
         index.append({
             "slug":        slug,
+            "version": BACKTEST_VERSION,
             "as_of_date":  as_of_date,
             "model":       model,
             "horizon":     horizon,
@@ -1085,8 +911,8 @@ def export_backtest_index():
 
     # Write index
     index_path = os.path.join(RUNS_DIR, "index.json")
-    with open(index_path, "w") as f:
-        json.dump({"runs": index, "exported_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}, f, indent=2)
+    from utils import atomic_json
+    atomic_json(index_path, {"runs": index, "exported_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
 
     return len(index)
 
@@ -1138,14 +964,15 @@ def run_all_current_backtests(as_of_date: str | None = None, force: bool = False
             logger.info(f"  {slug}: {cached_flag}, stats={result.get('stats', {})}")
         except Exception as exc:
             logger.error(f"  {slug} failed: {exc}", exc_info=True)
-            results[slug] = {"error": str(exc)}
+            raise
 
     # Re-export the full index (includes all historical runs, not just today's)
     try:
         n = export_backtest_index()
         logger.info(f"Exported backtest index ({n} total runs).")
     except Exception as exc:
-        logger.warning(f"export_backtest_index failed: {exc}")
+        logger.error(f"export_backtest_index failed: {exc}")
+        raise
 
     return results
 

@@ -1,0 +1,33 @@
+name: Code checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths-ignore: ['data/**', 'frontend/public/**']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Python tests in virtual environment
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r requirements.txt pytest
+          .venv/bin/python db_split_join.py join
+          .venv/bin/python -m pytest -q
+      - name: Frontend checks
+        working-directory: frontend
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm test
+          npm run lint
+          npm run build
+          test ! -f dist/market_data.json
+          test ! -f dist/quant_data.json
+          test ! -d dist/backtest_runs

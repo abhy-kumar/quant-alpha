@@ -27,16 +27,16 @@ export const FactorICMonitorCard: React.FC<FactorICMonitorCardProps> = ({ factor
           <div key={f.factor} className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium" style={{ color: 'var(--text)' }}>{f.factor}</span>
-              <span className="font-mono text-[11px]" style={{ color: f.ic_current >= 0.10 ? 'var(--green)' : 'var(--text-2)' }}>
-                IC: {f.ic_current >= 0 ? '+' : ''}{f.ic_current.toFixed(3)} (t={f.t_stat.toFixed(1)})
+              <span className="font-mono text-[11px]" style={{ color: (f.ic_current ?? 0) >= 0.10 ? 'var(--green)' : 'var(--text-2)' }}>
+                IC: {(f.ic_current ?? 0) >= 0 ? '+' : ''}{f.ic_current?.toFixed(3) ?? 'N/A'} (t={f.t_stat?.toFixed(1) ?? 'N/A'})
               </span>
             </div>
             <div className="h-1.5 rounded-full w-full overflow-hidden" style={{ background: 'var(--border)' }}>
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${Math.min(100, Math.max(10, f.ic_current * 400))}%`,
-                  background: f.ic_current >= 0.10 ? 'var(--green)' : 'var(--brand)',
+                  width: `${Math.min(100, Math.max(10, (f.ic_current ?? 0) * 400))}%`,
+                  background: (f.ic_current ?? 0) >= 0.10 ? 'var(--green)' : 'var(--brand)',
                 }}
               />
             </div>
@@ -44,7 +44,7 @@ export const FactorICMonitorCard: React.FC<FactorICMonitorCardProps> = ({ factor
         ))}
       </GlassCardContent>
       <GlassCardFooter className="typo-caption text-center px-4 pb-4 text-[var(--text-3)] border-none">
-        Spearman rank Information Coefficient: corr(Factor_t, Return_t+21d). IC &gt; 0.05 indicates statistical predictive power.
+        Spearman rank Information Coefficient: corr(Factor_t, Return_t+21d). N/A means insufficient observations. IC alone does not establish significance.
       </GlassCardFooter>
     </GlassCard>
   )

@@ -2,13 +2,14 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import axios from 'axios'
 
 export function useAuth() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    try {
-      return localStorage.getItem('qa_auth') === 'true'
-    } catch {
-      return false
-    }
-  })
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  useEffect(() => {
+    const controller = new AbortController()
+    axios.get('/api/login', { signal: controller.signal }).then(r => setIsLoggedIn(Boolean(r.data.authenticated))).catch(() => {})
+    const expired = () => setIsLoggedIn(false)
+    window.addEventListener('qa-session-expired', expired)
+    return () => { controller.abort(); window.removeEventListener('qa-session-expired', expired) }
+  }, [])
 
   const [showLogin, setShowLogin] = useState(false)
   const [loginEmail, setLoginEmail] = useState('')
@@ -41,9 +42,7 @@ export function useAuth() {
         setLoginEmail('')
         setLoginPassword('')
         setLoginError('')
-        try {
-          localStorage.setItem('qa_auth', 'true')
-        } catch {}
+
       } else {
         setLoginError(res.data?.error || 'Invalid credentials')
       }
@@ -55,12 +54,12 @@ export function useAuth() {
     }
   }, [loginEmail, loginPassword])
 
-  const handleLogout = useCallback((onLogoutTabReset?: () => void) => {
-    setIsLoggedIn(false)
+  const handleLogout = useCallback(async (onLogoutTabReset?: () => void) => {
     try {
-      localStorage.removeItem('qa_auth')
-    } catch {}
-    if (onLogoutTabReset) onLogoutTabReset()
+      await axios.delete('/api/login')
+      setIsLoggedIn(false)
+      if (onLogoutTabReset) onLogoutTabReset()
+    } catch { setLoginError('Could not sign out. Please retry.') }
   }, [])
 
   useEffect(() => {

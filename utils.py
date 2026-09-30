@@ -106,3 +106,18 @@ class CacheManager:
         if symbol not in self.caches["etf_list"]:
             self.caches["etf_list"].append(symbol)
 
+
+
+def atomic_json(path, data, *, indent=2):
+    """Publish a complete JSON document, rejecting nonfinite research results."""
+    import tempfile
+    directory = os.path.dirname(path) or '.'
+    os.makedirs(directory, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(dir=directory, suffix='.tmp')
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as stream:
+            json.dump(data, stream, indent=indent, separators=(',', ':') if indent is None else None, allow_nan=False)
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)

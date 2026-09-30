@@ -5,7 +5,7 @@
  * monthly return matrices, alpha decay horizons, and trade logs in real-time.
  */
 
-import type { DashboardData, StrategyRuleConfig, StrategyBacktestResult, StrategyTradeRecord, StrategyBacktestStats } from '../types'
+import type { DashboardData, StrategyRuleConfig, StrategyBacktestResult, StrategyTradeRecord, StrategyBacktestStats, StrategyHistory } from '../types'
 
 export const STRATEGY_PRESETS: Record<string, StrategyRuleConfig> = {
   momentum: {
@@ -13,7 +13,7 @@ export const STRATEGY_PRESETS: Record<string, StrategyRuleConfig> = {
     description: 'High-conviction trend breakouts with volume confirmation and dynamic ATR trailing stop.',
     minPiotroski: 5,
     minRoe: 12,
-    maxDebtEquity: 1.5,
+    maxDebtEquity: 0,
     maxPe: 65,
     minMomentumRank: 75,
     minRsi: 45,
@@ -108,27 +108,27 @@ export function filterUniverse(stocks: DashboardData[], config: StrategyRuleConf
 
   for (const s of stocks) {
     // 1. Piotroski F-Score filter
-    const fScore = s.Piotroski_F ?? 5
+    const fScore = s.Piotroski_F ?? -Infinity
     if (fScore < config.minPiotroski) continue
 
     // 2. ROE filter
-    const roe = s['ROE_%'] ?? 10
+    const roe = s['ROE_%'] ?? -Infinity
     if (roe < config.minRoe) continue
 
     // 3. Debt/Equity filter
-    const de = s.Debt_to_Equity ?? 0.5
+    const de = s.Debt_to_Equity == null ? Infinity : s.Debt_to_Equity / 100
     if (de > config.maxDebtEquity) continue
 
     // 4. P/E filter
-    const pe = s['P/E'] ?? 20
-    if (pe > 0 && pe > config.maxPe) continue
+    const pe = s['P/E'] ?? Infinity
+    if (pe <= 0 || pe > config.maxPe) continue
 
     // 5. Momentum filter (RS Percentile or Momentum_6M)
-    const momRank = s.RS_Percentile ?? ((s.Momentum_6M ?? 0) > 0 ? 60 : 40)
+    const momRank = s.RS_Percentile ?? -Infinity
     if (momRank < config.minMomentumRank) continue
 
     // 6. RSI range filter
-    const rsi = s.RSI_Value ?? 50
+    const rsi = s.RSI_Value ?? -Infinity
     if (rsi < config.minRsi || rsi > config.maxRsi) continue
 
     // 7. Trend filter: Price > 50SMA
@@ -158,138 +158,71 @@ export function filterUniverse(stocks: DashboardData[], config: StrategyRuleConf
 /**
  * Execute vectorized strategy simulation over benchmark and stock universe.
  */
-export function simulateStrategy(
-  stocks: DashboardData[],
-  benchmarkSeries: { date: string; portfolio?: number; benchmark: number }[],
-  config: StrategyRuleConfig
-): StrategyBacktestResult {
-  const filtered = filterUniverse(stocks, config)
-  const topStocks = filtered.slice(0, config.topN).map(f => f.stock)
-
-  // Fallback if universe is empty
-  const activeStocks = topStocks.length > 0 ? topStocks : stocks.slice(0, config.topN)
-
-  // Baseline benchmark points
-  const pts = benchmarkSeries.length > 0 ? benchmarkSeries : generateDefaultSeries()
-  const baseBench = pts[0].benchmark || 100
-
-  // Asset characteristics for synthetic simulation
-  const avgStockBeta = activeStocks.reduce((acc, s) => acc + (s.Beta ?? 1.05), 0) / (activeStocks.length || 1)
-  const avgStockVol = activeStocks.reduce((acc, s) => acc + ((s['Ann_Vol_%'] ?? 24) / 100), 0) / (activeStocks.length || 1)
-  const avgPiotroski = activeStocks.reduce((acc, s) => acc + (s.Piotroski_F ?? 6), 0) / (activeStocks.length || 1)
-  const avgAlphaBonus = (avgPiotroski >= 7 ? 0.0003 : 0.0001) + ((config.minMomentumRank > 70 ? 0.0003 : 0.0001))
-
-  // Simulate daily compounding curve
+export function simulateStrategy(history: StrategyHistory | null, config: StrategyRuleConfig): StrategyBacktestResult {
   const chart: StrategyBacktestResult['chart'] = []
-  let portVal = 100.0
-  let benchVal = 100.0
-  let portPeak = 100.0
-  let benchPeak = 100.0
-
-  const dailyPortReturns: number[] = []
-  const dailyBenchReturns: number[] = []
   const trades: StrategyTradeRecord[] = []
-
-  let lastRebalanceDate = pts[0].date
-  let daysSinceRebalance = 0
-
-  for (let i = 0; i < pts.length; i++) {
-    const pt = pts[i]
-    let benchDailyRet = 0
-
-    if (i > 0) {
-      const prevBench = pts[i - 1].benchmark || 100
-      const curBench = pt.benchmark || 100
-      benchDailyRet = (curBench - prevBench) / prevBench
-    }
-
-    daysSinceRebalance++
-
-    // Periodic rebalance simulation & trade record generation
-    if (daysSinceRebalance >= config.rebalanceDays || i === pts.length - 1) {
-      if (activeStocks.length > 0 && i > 0) {
-        const sampleStock = activeStocks[(trades.length) % activeStocks.length]
-        const entryPrice = sampleStock.Price || 1250
-        const tradeReturn = (benchDailyRet * avgStockBeta * config.rebalanceDays) + (avgAlphaBonus * config.rebalanceDays) + ((Math.sin(i) * 0.02))
-        const exitPrice = +(entryPrice * (1 + tradeReturn)).toFixed(2)
-
-        let exitReason: 'Rebalance' | 'Stop-Loss' | 'Take-Profit' = 'Rebalance'
-        if (config.stopLossAtr > 0 && tradeReturn < -(config.stopLossAtr * 0.03)) {
-          exitReason = 'Stop-Loss'
-        } else if (config.takeProfitPct > 0 && tradeReturn >= (config.takeProfitPct / 100)) {
-          exitReason = 'Take-Profit'
-        }
-
-        trades.push({
-          ticker: sampleStock.Ticker,
-          entryDate: lastRebalanceDate,
-          exitDate: pt.date,
-          entryPrice: +entryPrice.toFixed(2),
-          exitPrice,
-          returnPct: +(tradeReturn * 100).toFixed(2),
-          holdingDays: daysSinceRebalance,
-          exitReason,
+  const empty = (message: string): StrategyBacktestResult => ({ config, chart: [], trades: [], stats: computeStrategyStats([], [], [], []), monthlyReturns: [], alphaDecay: [], message })
+  if (!history || history.dates.length < 2) return empty('Recorded price and factor history is not available yet.')
+  const { dates, prices, benchmark, factors } = history
+  if (benchmark.length !== dates.length || benchmark.some(p => !(p > 0))) return empty('NIFTY benchmark coverage is incomplete.')
+  let cash = 100, peak = 100, benchPeak = 100
+  const positions = new Map<string, { shares: number; entry: number; entryDate: string; entryIdx: number; peak: number; atr: number }>()
+  const factorDates = Object.keys(factors).sort()
+  const fee = 0.002
+  let anyMatches = false
+  const exit = (ticker: string, idx: number, reason: StrategyTradeRecord['exitReason']) => {
+    const p = positions.get(ticker)!
+    const price = prices[dates[idx]]?.[ticker]
+    if (!(price > 0)) throw new Error(`Missing executable close for ${ticker} on ${dates[idx]}`)
+    cash += p.shares * price * (1 - fee)
+    trades.push({ ticker, entryDate: p.entryDate, exitDate: dates[idx], entryPrice: p.entry, exitPrice: price,
+      returnPct: (price * (1-fee) / (p.entry * (1+fee)) - 1) * 100, holdingDays: idx-p.entryIdx, exitReason: reason })
+    positions.delete(ticker)
+  }
+  const nav = (idx: number) => cash + [...positions].reduce((sum, [t,p]) => sum + p.shares * prices[dates[idx]][t], 0)
+  chart.push({ date: dates[0], portfolio: 100, benchmark: 100, drawdown: 0, benchmarkDrawdown: 0 })
+  try {
+    for (let i = 1; i < dates.length; i++) {
+      cash *= Math.pow(1.065, 1/252)
+      for (const [ticker,p] of positions) {
+        const price = prices[dates[i]]?.[ticker]
+        if (!(price > 0)) return empty(`Missing executable close for ${ticker} on ${dates[i]}.`)
+        if (config.stopLossAtr > 0 && price <= p.peak - config.stopLossAtr * p.atr) exit(ticker, i, 'Stop-Loss')
+        else if (config.takeProfitPct > 0 && price >= p.entry * (1+config.takeProfitPct/100)) exit(ticker, i, 'Take-Profit')
+        else p.peak = Math.max(p.peak, price)
+      }
+      if ((i-1) % Math.max(1, config.rebalanceDays) === 0 && i < dates.length-1) {
+        // Liquidate at the observed close; charge both exit and fresh entry legs.
+        for (const ticker of [...positions.keys()]) exit(ticker, i, 'Rebalance')
+        const lastFactorDate = factorDates.filter(d => d < dates[i]).at(-1) || ''
+        const fresh = lastFactorDate && (Date.parse(dates[i])-Date.parse(lastFactorDate))/86400000 <= 7
+        const matched = filterUniverse(fresh ? factors[lastFactorDate] : [], config)
+          .filter(({ stock }) => prices[dates[i]][stock.Ticker] > 0 && (config.stopLossAtr <= 0 || (stock.ATR_Value ?? 0) > 0))
+          .slice(0, Math.max(1, config.topN))
+        anyMatches ||= matched.length > 0
+        const raw = matched.map(m => config.weightingScheme === 'score_weighted' ? Math.max(0, m.score)
+          : config.weightingScheme === 'volatility_parity' ? 1 / Math.max(m.stock.Vol_60D ?? Infinity, 0.01) : 1)
+        const total = raw.reduce((a,b) => a+b,0)
+        const budget = cash / (1+fee)
+        if (total > 0) matched.forEach(({ stock }, j) => {
+          const dollars = budget * raw[j]/total
+          if (dollars <= 0) return
+          const price = prices[dates[i]][stock.Ticker]
+          cash -= dollars * (1+fee)
+          positions.set(stock.Ticker, { shares: dollars/price, entry: price, entryDate: dates[i], entryIdx: i, peak: price, atr: stock.ATR_Value || 0 })
         })
       }
-      lastRebalanceDate = pt.date
-      daysSinceRebalance = 0
+      if (i === dates.length-1) for (const ticker of [...positions.keys()]) exit(ticker,i,'End of Test')
+      const portfolio = nav(i), bench = benchmark[i]/benchmark[0]*100
+      peak = Math.max(peak, portfolio); benchPeak = Math.max(benchPeak, bench)
+      chart.push({ date:dates[i], portfolio, benchmark:bench, drawdown:(portfolio/peak-1)*100, benchmarkDrawdown:(bench/benchPeak-1)*100 })
     }
-
-    // Daily simulated return model
-    let portDailyRet = 0
-    if (i > 0) {
-      // Beta exposure + Alpha factor generation - Volatility drag (Ito's lemma adjustment)
-      const volDrag = (avgStockVol * avgStockVol) / 504
-      const alphaComponent = avgAlphaBonus + (Math.cos(i * 0.15) * 0.001) - volDrag
-      const betaComponent = benchDailyRet * avgStockBeta
-      portDailyRet = betaComponent + alphaComponent
-
-      // Apply stop loss dampening if configured
-      if (config.stopLossAtr > 0 && portDailyRet < -0.025) {
-        portDailyRet = Math.max(portDailyRet, -0.015) // Stop loss limits daily catastrophic tail
-      }
-
-      portVal *= (1 + portDailyRet)
-      benchVal *= (1 + benchDailyRet)
-    }
-
-    if (portVal > portPeak) portPeak = portVal
-    if (benchVal > benchPeak) benchPeak = benchVal
-
-    const drawdown = +(((portVal - portPeak) / portPeak) * 100).toFixed(2)
-    const benchmarkDrawdown = +(((benchVal - benchPeak) / benchPeak) * 100).toFixed(2)
-
-    chart.push({
-      date: pt.date,
-      portfolio: +portVal.toFixed(2),
-      benchmark: +((pt.benchmark / baseBench) * 100).toFixed(2),
-      drawdown,
-      benchmarkDrawdown,
-    })
-
-    if (i > 0) {
-      dailyPortReturns.push(portDailyRet)
-      dailyBenchReturns.push(benchDailyRet)
-    }
-  }
-
-  // Compute stats
-  const stats = computeStrategyStats(chart, dailyPortReturns, dailyBenchReturns, trades)
-
-  // Compute Monthly returns heatmap
-  const monthlyReturns = computeMonthlyGrid(chart)
-
-  // Compute forward alpha decay horizons (5d, 21d, 63d, 126d)
-  const alphaDecay = computeAlphaDecay(chart)
-
-  return {
-    config,
-    chart,
-    stats,
-    monthlyReturns,
-    alphaDecay,
-    trades: trades.slice(-30).reverse(), // Most recent 30 trades
-  }
+  } catch (error) { return empty(error instanceof Error ? error.message : 'Incomplete historical coverage') }
+  const daily = chart.slice(1).map((c,i) => c.portfolio/chart[i].portfolio-1)
+  const benchDaily = chart.slice(1).map((c,i) => c.benchmark/chart[i].benchmark-1)
+  return { config, chart, trades: trades.slice().reverse(), stats: computeStrategyStats(chart,daily,benchDaily,trades),
+    monthlyReturns:computeMonthlyGrid(chart), alphaDecay:computeAlphaDecay(chart),
+    message:anyMatches ? `Recorded history: ${dates[0]} to ${dates.at(-1)}. Prior-day factors, close execution, 20bps per leg; ATR stops execute at the close.` : 'No historical stocks meet these rules. Portfolio held cash.' }
 }
 
 /**
@@ -311,7 +244,7 @@ function computeStrategyStats(
 
   const dStart = new Date(chart[0].date).getTime()
   const dEnd = new Date(chart[chart.length - 1].date).getTime()
-  const years = Math.max((dEnd - dStart) / (1000 * 60 * 60 * 24 * 365.25), 0.1)
+  const years = Math.max((dEnd - dStart) / (1000 * 60 * 60 * 24 * 365.25), 1/365.25)
 
   const portFirst = chart[0].portfolio
   const portLast = chart[chart.length - 1].portfolio
@@ -336,8 +269,8 @@ function computeStrategyStats(
   const downsideVol = Math.sqrt(downsideVariance) * Math.sqrt(252)
 
   const riskFree = 0.065 // 6.5% INR risk-free rate
-  const sharpeRatio = annualVol > 0 ? +(((cagr / 100) - riskFree) / (annualVol / 100)).toFixed(2) : 0
-  const sortinoRatio = downsideVol > 0 ? +(((cagr / 100) - riskFree) / downsideVol).toFixed(2) : 0
+  const sharpeRatio = annualVol > 0 ? +((meanRet * 252 - riskFree) / (annualVol / 100)).toFixed(2) : 0
+  const sortinoRatio = downsideVol > 0 ? +((meanRet * 252 - riskFree) / downsideVol).toFixed(2) : 0
 
   // Max Drawdown & Calmar
   const maxDrawdown = Math.abs(Math.min(...chart.map(c => c.drawdown), 0))
@@ -353,10 +286,10 @@ function computeStrategyStats(
   // Trade analytics
   const winTrades = trades.filter(t => t.returnPct > 0)
   const lossTrades = trades.filter(t => t.returnPct < 0)
-  const winRate = trades.length > 0 ? +((winTrades.length / trades.length) * 100).toFixed(1) : 55.0
+  const winRate = trades.length > 0 ? +((winTrades.length / trades.length) * 100).toFixed(1) : 0
   const grossProfit = winTrades.reduce((a, t) => a + t.returnPct, 0)
   const grossLoss = Math.abs(lossTrades.reduce((a, t) => a + t.returnPct, 0))
-  const profitFactor = grossLoss > 0 ? +(grossProfit / grossLoss).toFixed(2) : (grossProfit > 0 ? 3.5 : 1.0)
+  const profitFactor = grossLoss > 0 ? +(grossProfit / grossLoss).toFixed(2) : 0
   const avgTradeReturn = trades.length > 0 ? +(trades.reduce((a, t) => a + t.returnPct, 0) / trades.length).toFixed(2) : 0
 
   return {
@@ -384,14 +317,15 @@ function computeStrategyStats(
 function computeMonthlyGrid(chart: { date: string; portfolio: number }[]): StrategyBacktestResult['monthlyReturns'] {
   const monthMap: Record<number, Record<number, { first: number; last: number }>> = {}
 
-  for (const pt of chart) {
+  for (let i=0; i<chart.length; i++) {
+    const pt = chart[i]
     const d = new Date(pt.date)
     const y = d.getFullYear()
     const m = d.getMonth() // 0-11
 
     if (!monthMap[y]) monthMap[y] = {}
     if (!monthMap[y][m]) {
-      monthMap[y][m] = { first: pt.portfolio, last: pt.portfolio }
+      monthMap[y][m] = { first: chart[Math.max(0,i-1)].portfolio, last: pt.portfolio }
     } else {
       monthMap[y][m].last = pt.portfolio
     }
@@ -435,12 +369,12 @@ function computeAlphaDecay(chart: { portfolio: number; benchmark: number }[]): S
     { days: 126, label: '6-Month (126d)' },
   ]
 
-  return horizons.map(h => {
+  return horizons.filter(h => chart.length > h.days).map(h => {
     let excessSum = 0
     let wins = 0
     let count = 0
 
-    for (let i = 0; i + h.days < chart.length; i += Math.max(1, Math.floor(h.days / 2))) {
+    for (let i = 0; i + h.days < chart.length; i += h.days) {
       const portRet = (chart[i + h.days].portfolio - chart[i].portfolio) / chart[i].portfolio
       const benchRet = (chart[i + h.days].benchmark - chart[i].benchmark) / chart[i].benchmark
       const excess = portRet - benchRet
@@ -449,8 +383,8 @@ function computeAlphaDecay(chart: { portfolio: number; benchmark: number }[]): S
       count++
     }
 
-    const avgExcess = count > 0 ? +((excessSum / count) * 100).toFixed(2) : 1.5
-    const winRate = count > 0 ? +((wins / count) * 100).toFixed(1) : 60.0
+    const avgExcess = count > 0 ? +((excessSum / count) * 100).toFixed(2) : 0
+    const winRate = count > 0 ? +((wins / count) * 100).toFixed(1) : 0
 
     return {
       horizonDays: h.days,
@@ -459,21 +393,4 @@ function computeAlphaDecay(chart: { portfolio: number; benchmark: number }[]): S
       winRatePct: winRate,
     }
   })
-}
-
-function generateDefaultSeries(): { date: string; benchmark: number }[] {
-  const series: { date: string; benchmark: number }[] = []
-  let base = 100.0
-  const now = new Date()
-
-  for (let i = 252; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
-    base *= (1 + (Math.sin(i * 0.1) * 0.003) + 0.0004)
-    series.push({
-      date: d.toISOString().split('T')[0],
-      benchmark: +base.toFixed(2),
-    })
-  }
-
-  return series
 }

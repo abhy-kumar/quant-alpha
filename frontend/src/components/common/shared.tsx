@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react'
+import React, { useRef, useId, useState, useEffect, useCallback } from 'react'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { Question } from '@phosphor-icons/react'
 import { tooltips } from '../../data/tooltipContent'
@@ -48,6 +48,7 @@ export const SortHeader = ({ field, children, align = 'left', className = '', so
 )
 
 export function MiniSparkline({ values, width = 64, height = 22, ticker }: { values: number[]; width?: number; height?: number; ticker?: string }) {
+  const id = useId()
   if (!values || values.length === 0) return <span className="text-[var(--text-3)] text-[10px] block text-center">N/A</span>
   if (values.length === 1) {
     const v = values[0]
@@ -60,7 +61,7 @@ export function MiniSparkline({ values, width = 64, height = 22, ticker }: { val
   const fillPts = values.map((v, i) => `${(i / (values.length - 1)) * width},${height - ((v - min) / range) * (height - 4) - 2}`).join(' ')
   const up = values[values.length - 1] >= values[0]
   const lineColor = up ? 'var(--green)' : 'var(--red)'
-  const gradientId = `sg-${ticker || Math.random().toString(36).slice(2, 8)}`
+  const gradientId = `sg-${ticker || id}`
   return (
     <svg width={width} height={height}>
       <defs>
@@ -104,9 +105,8 @@ export function SegmentedControl({ options, value, onChange, className = '' }: {
     updateIndicator()
 
     // Multiple RAF passes to ensure measurements after font load / layout calculations
-    let rafId1: number
     let rafId2: number
-    rafId1 = requestAnimationFrame(() => {
+    const rafId1 = requestAnimationFrame(() => {
       updateIndicator()
       rafId2 = requestAnimationFrame(updateIndicator)
     })

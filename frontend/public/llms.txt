@@ -56,9 +56,9 @@
 
 ## Static Data
 
-- GET /market_data.json - Full scan output: all scores, factors, conviction, regime (updated 5x daily)
-- GET /quant_data.json - Quantitative analysis factors and custom backtest data
-- GET /score_history.json - Historical composite scores per stock for trend charting
+- GET /api/data?resource=market - Public raw facts; authenticated sessions also receive research scores (updated 5x daily)
+- GET /api/data?resource=quant - Quantitative analysis factors and custom backtest data
+- GET /api/data?resource=scores - Historical composite scores per stock for trend charting
 
 ## Tech Stack
 
@@ -84,7 +84,7 @@ dataset for future ML models. Key tables:
 - Dashboard: https://quant-alpha-sage.vercel.app
 - Source Code: https://github.com/abhy-kumar/quant-alpha
 - Live Data API: https://quant-alpha-sage.vercel.app/api/live_data
-- Full Scan Data: https://quant-alpha-sage.vercel.app/market_data.json
+- Full Scan Data: https://quant-alpha-sage.vercel.app/api/data?resource=market
 
 ## Scope and Limitations
 

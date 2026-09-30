@@ -11,16 +11,17 @@ import sqlite3
 import numpy as np
 import pandas as pd
 import joblib
+from functools import lru_cache
 
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from utils import log, _safe_float
 from sklearn.ensemble import HistGradientBoostingClassifier
-from sklearn.model_selection import TimeSeriesSplit
-from sklearn.metrics import roc_auc_score, accuracy_score, brier_score_loss
+from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn.inspection import permutation_importance
 
+MODEL_VERSION = 3
 MODEL_PATH = "data/ml_alpha_model.joblib"
 DB_PATH = "data/market_scans.db"
 
@@ -50,24 +51,23 @@ class PurgedGroupTimeSeriesSplit:
         self.embargo_window = embargo_window
 
     def split(self, X, y=None, groups=None):
-        n_samples = len(X)
-        indices = np.arange(n_samples)
-        split_size = n_samples // (self.n_splits + 1)
-        
-        for i in range(self.n_splits):
-            test_start = (i + 1) * split_size
-            test_end = test_start + split_size
-            
-            test_indices = indices[test_start:test_end]
-            
-            # Purge training labels overlapping with test start
-            train_left = indices[:max(0, test_start - self.purge_window)]
-            
-            # Embargo training labels following test end
-            train_right = indices[min(n_samples, test_end + self.embargo_window):]
-            
-            train_indices = np.concatenate([train_left, train_right])
-            yield train_indices, test_indices
+        if groups is None:
+            groups = np.arange(len(X))
+        groups = np.asarray(groups)
+        unique = np.unique(groups)
+        size = len(unique) // (self.n_splits + 1)
+        if size < 1:
+            return
+        for fold in range(1, self.n_splits + 1):
+            first = fold * size
+            last = (fold+1)*size if fold < self.n_splits else len(unique)
+            mature = max(0, first-self.purge_window)
+            if mature:
+                yield np.flatnonzero(np.isin(groups,unique[:mature])), np.flatnonzero(np.isin(groups,unique[first:last]))
+
+
+def outperformance_target(stock_percent, benchmark_percent):
+    return ((stock_percent - benchmark_percent) >= 1.0).astype(int)
 
 
 def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
@@ -101,22 +101,26 @@ def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
         ORDER BY t.Scan_Date ASC
         """
         df = pd.read_sql_query(query, conn)
+        benchmark = pd.read_sql_query("SELECT Date, Close FROM daily_ohlcv WHERE Ticker='^NSEI' ORDER BY Date", conn)
         conn.close()
+        if benchmark.empty:
+            return None
+        benchmark['forward'] = (benchmark['Close'].shift(-21) / benchmark['Close'] - 1) * 100
+        df = df.merge(benchmark[['Date', 'forward']], left_on='Scan_Date', right_on='Date', how='inner').dropna(subset=['forward'])
 
-        if len(df) < 15:
+        if len(df) < 100 or df['Scan_Date'].nunique() < 60:
             log.info(f"[ML Engine] Historical outcome sample count ({len(df)} rows) is developing. Baseline heuristic active.")
             return None
 
         # Clean null values in feature columns
         for col in FEATURE_COLS:
             if col in df.columns:
-                df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
+                df[col] = pd.to_numeric(df[col], errors="coerce")
 
-        # Target: 1 if excess return over cross-sectional market median >= 1.0% (100 bps alpha hurdle), else 0
-        market_bench_ret = df.groupby("Scan_Date")["Return_21d"].transform("median").fillna(0.0)
-        excess_ret = pd.to_numeric(df["Return_21d"], errors="coerce").fillna(0.0) - market_bench_ret
-        
-        y = (excess_ret >= 0.01).astype(int)
+        # Target: 1 if excess return over NIFTY 50 >= 1.0% (100 bps alpha hurdle), else 0
+        y = outperformance_target(pd.to_numeric(df['Return_21d'], errors='coerce'), df['forward'])
+        if y.nunique() < 2:
+            return None
         X = df[FEATURE_COLS]
 
         # Perform Purged & Embargoed TimeSeries Cross-Validation
@@ -126,7 +130,7 @@ def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
             cv_scores = []
             cv_aucs = []
             
-            for train_idx, val_idx in ptscv.split(X):
+            for train_idx, val_idx in ptscv.split(X, groups=df["Scan_Date"].to_numpy()):
                 X_tr, X_val = X.iloc[train_idx], X.iloc[val_idx]
                 y_tr, y_val = y.iloc[train_idx], y.iloc[val_idx]
                 
@@ -142,6 +146,10 @@ def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
             
             if cv_aucs:
                 log.info(f"[ML Engine] Purged Group CV ({n_splits}-fold) - Acc: {np.mean(cv_scores):.2%}, ROC-AUC: {np.mean(cv_aucs):.4f}")
+
+        if not cv_aucs:
+            log.info("[ML Engine] Too little mature chronological validation history; heuristic active")
+            return None
 
         # Train final model on full dataset
         model = HistGradientBoostingClassifier(
@@ -162,7 +170,9 @@ def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
             log.debug(f"[ML Engine] Permutation importance check skipped: {e}")
 
         os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-        joblib.dump(model, MODEL_PATH)
+        model.qa_version = MODEL_VERSION
+        joblib.dump(model, MODEL_PATH + ".tmp")
+        os.replace(MODEL_PATH + ".tmp", MODEL_PATH)
         log.info(f"[ML Engine] Successfully trained ML Alpha Model on {len(df)} samples (Win Rate: {y.mean():.2%}).")
         return model
 
@@ -171,11 +181,15 @@ def train_ml_alpha_model() -> HistGradientBoostingClassifier | None:
         return None
 
 
+@lru_cache(maxsize=1)
 def get_ml_model() -> HistGradientBoostingClassifier | None:
     """Load cached ML model or train if missing."""
     if os.path.exists(MODEL_PATH):
         try:
-            return joblib.load(MODEL_PATH)
+            import time
+            model = joblib.load(MODEL_PATH)
+            if getattr(model, 'qa_version', 0) == MODEL_VERSION and time.time() - os.path.getmtime(MODEL_PATH) < 86400:
+                return model
         except Exception as e:
             log.warning(f"[ML Engine] Failed loading cached model: {e}")
 
@@ -201,33 +215,20 @@ def predict_stock_alpha(stock_dict: dict, model: HistGradientBoostingClassifier 
 
     top_drivers = []
     if research_score > 6.5: top_drivers.append("High Multi-Factor Rank")
-    if tech_score > 0.6: top_drivers.append("Strong Technical Momentum")
+    if tech_score > 8: top_drivers.append("Strong Technical Momentum")
     if fund_score > 6.5: top_drivers.append("Robust Fundamental Quality")
 
     if model is None:
         # Heuristic ensemble calculation when ML samples are accumulating
-        prob = min(95.0, max(5.0, 50.0 + (research_score - 5.0) * 4.5 + tech_score * 12.0 + (fund_score - 5.0) * 3.0))
+        prob = min(95.0, max(5.0, 50.0 + (research_score - 5.0) * 4.5 + (tech_score - 5.0) * 2.4 + (fund_score - 5.0) * 3.0))
     else:
         try:
-            features = [
-                tech_score,
-                fund_score,
-                research_score,
-                _safe_float(stock_dict.get("Piotroski_F"), 5.0),
-                _safe_float(stock_dict.get("Gross_Profit_Score"), 5.0),
-                _safe_float(stock_dict.get("Earnings_Quality"), 5.0),
-                _safe_float(stock_dict.get("Risk_Adj_Mom"), 0.0),
-                _safe_float(stock_dict.get("Vol_60D"), 25.0),
-                _safe_float(stock_dict.get("Z_Score_60"), 0.0),
-                _safe_float(stock_dict.get("RSI_Value"), 50.0),
-                _safe_float(stock_dict.get("ADX_Value"), 20.0),
-            ]
-            X_sample = pd.DataFrame([features], columns=FEATURE_COLS)
+            X_sample = pd.DataFrame([stock_dict]).reindex(columns=FEATURE_COLS).apply(pd.to_numeric, errors='coerce')
             prob_raw = model.predict_proba(X_sample)[0][1]
             prob = float(np.round(prob_raw * 100, 1))
         except Exception as e:
             log.warning(f"[ML Engine] Prediction fallback: {e}")
-            prob = min(95.0, max(5.0, 50.0 + (research_score - 5.0) * 4.5 + tech_score * 12.0))
+            prob = min(95.0, max(5.0, 50.0 + (research_score - 5.0) * 4.5 + (tech_score - 5.0) * 2.4))
 
     if prob >= 70.0:
         conviction = "Strong Alpha"
@@ -240,7 +241,8 @@ def predict_stock_alpha(stock_dict: dict, model: HistGradientBoostingClassifier 
 
     return {
         "ml_alpha_prob": prob,
-        "ml_conviction": conviction,
+        "ml_conviction": conviction if model is not None else "Heuristic rank",
+        "method": "NIFTY +1 percentage point / 21 trading days" if model is not None else "Uncalibrated factor heuristic",
         "top_drivers": top_drivers,
     }
 

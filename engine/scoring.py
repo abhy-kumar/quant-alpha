@@ -279,7 +279,7 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         atr = _safe_float(item["latest"].get("ATR", np.nan)) if "latest" in item else np.nan
         h22 = _safe_float(df["High"].iloc[-22:].max()) if (df is not None and len(df) >= 22) else price
         
-        item["red_flags"] = check_forensic_red_flags(info, df, item.get("met", {}))
+        item["red_flags"] = check_forensic_red_flags(info, df, {**item.get("met", {}), "z_score_60": item["research"].get("z_score_60", 0), "RSI": item["latest"].get("RSI", 50), "sig_supertrend": item["tech"].get("sig_supertrend", 0)})
         item["trade_plan"] = generate_atr_trade_plan(price, atr, h22)
 
     # ── Compute composite scores directly from normalized component values ─
@@ -386,21 +386,22 @@ def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, s
         ml_model = get_ml_model()
         for item in final_rows:
             stock_dict = {
-                "Tech_Score": item["final_tech"],
+                "Tech_Score": item["norm_tech"],
                 "Fund_Score": item["fund_score"],
                 "Research_Score": item["research"].get("research_composite", 5.0),
                 "Piotroski_F": item["research"].get("piotroski_f_score", 5),
                 "Gross_Profit_Score": item["research"].get("gross_profit_score", 5.0),
                 "Earnings_Quality": item["research"].get("earnings_quality_score", 5.0),
                 "Risk_Adj_Mom": item["research"].get("risk_adj_mom", 0.0),
-                "Vol_60D": item["research"].get("vol_60d", 25.0),
+                "Vol_60D": item["research"].get("vol_60d", 0.25) * 100,
                 "Z_Score_60": item["research"].get("z_score_60", 0.0),
-                "RSI_Value": item["met"].get("RSI", 50.0),
-                "ADX_Value": item["met"].get("ADX", 20.0),
+                "RSI_Value": item["latest"].get("RSI", 50.0),
+                "ADX_Value": item["latest"].get("ADX", 20.0),
             }
             ml_pred = predict_stock_alpha(stock_dict, ml_model)
             item["ml_alpha_prob"] = ml_pred["ml_alpha_prob"]
             item["ml_conviction"] = ml_pred["ml_conviction"]
+            item["ml_method"] = ml_pred["method"]
     except Exception as e:
         log.warning(f"ML Alpha prediction skipped: {e}")
 
@@ -475,6 +476,7 @@ def build_output_row(item: dict) -> dict:
         "Composite_Score_Fund": round(item["composite_score_fund"], 2),
         "Composite_Score_Mom":  round(item.get("composite_score_mom", 5.0), 2),
         "Composite_Score_Long": round(item.get("composite_score_long", 5.0), 2),
+        "ML_Method": item.get("ml_method", "Uncalibrated factor heuristic"),
         "ML_Alpha_Prob":    round(item.get("ml_alpha_prob", min(95.0, max(5.0, 50.0 + (research.get("research_composite", 5.0) - 5.0) * 4.5 + item["final_tech"] * 12.0))), 1),
         "ML_Conviction":    item.get("ml_conviction", "Neutral"),
         "Piotroski_F":      research.get("piotroski_f_score", 0),

@@ -174,9 +174,10 @@ function computeRsi(closes: number[], period = 14): (number | null)[] {
   return rsi
 }
 
-export type YahooInterval = '1d' | '1wk' | '1mo' | '1m' | '2m' | '5m' | '15m' | '30m' | '60m' | '90m' | '1h' | '5d'
+export type YahooInterval = '1d' | '1wk'
 
 export async function fetchChartData(ticker: string, period = '1mo', interval: YahooInterval = '1d'): Promise<ChartDataPoint[]> {
+  if (!['1d', '1wk'].includes(interval) || !['1w','1mo','3mo','6mo','1y','2y','5y'].includes(period)) throw new Error('Unsupported chart range')
   const end = new Date()
   const start = periodToStart(period, end)
 
@@ -254,6 +255,9 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       return
     }
 
+    if (!['1d','1wk'].includes(interval) || !['1w','1mo','3mo','6mo','1y','2y','5y'].includes(period)) {
+      res.statusCode = 400; res.end(JSON.stringify({ error: 'Use daily or weekly candles and a supported range' })); return
+    }
     const data = await fetchChartData(ticker, period, interval)
 
     res.statusCode = 200

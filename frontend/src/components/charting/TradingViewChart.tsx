@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react'
+import React, { useEffect, useRef, useState, useMemo, useEffectEvent } from 'react'
 import {
   createChart,
   ColorType,
@@ -63,6 +63,8 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     }
     return map
   }, [data])
+
+  const lookupPoint = useEffectEvent((date: string) => dataByTime.get(date))
 
   // Chart instances
   const mainChartRef = useRef<IChartApi | null>(null)
@@ -140,10 +142,13 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     }
   }, [isDark, textColor, gridColor, crosshairColor])
 
+  const currentChartSettings = useEffectEvent(() => ({ textColor, gridColor, crosshairColor, isLogScale }))
+
   // Main Chart Lifecycle Effect
   useEffect(() => {
     if (!containerRef.current) return
 
+    const { textColor, gridColor, crosshairColor, isLogScale } = currentChartSettings()
     let isSubscribed = true
 
     // 1. Create Main Chart
@@ -364,7 +369,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
           if (open > 0) chgPct = ((close - open) / open) * 100
         }
 
-        const dataPoint = dataByTime.get(rawDate)
+        const dataPoint = lookupPoint(rawDate)
 
         setHudInfo({
           time: rawDate,
@@ -459,7 +464,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       try { if (mac) mac.remove() } catch {}
       try { if (mc) mc.remove() } catch {}
     }
-  }, [showRsi, showMacd])
+  }, [showRsi, showMacd, height])
 
   // Update Data on Series without re-instantiating Chart Canvas
   useEffect(() => {
@@ -569,7 +574,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     } catch {
       // Safe catch
     }
-  }, [data, showSma50, showSma200, showSupertrend, showBollinger, showRsi, showMacd])
+  }, [height, data, showSma50, showSma200, showSupertrend, showBollinger, showRsi, showMacd])
 
   // Handle Logarithmic Toggle
   useEffect(() => {

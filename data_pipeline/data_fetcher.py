@@ -95,7 +95,7 @@ def _fetch_yfinance_statements(t: yf.Ticker, info: dict):
 def _fetch_yoy_financials(t: yf.Ticker, info: dict):
     """
     Fetch annual financials and balance sheet to compute YoY deltas for:
-    - Piotroski F-Score: ΔLeverage, ΔCurrent Ratio, ΔGross Margin, ΔAsset Turnover
+    - Piotroski F-Score: Î”Leverage, Î”Current Ratio, Î”Gross Margin, Î”Asset Turnover
     - Investment Factor: Total asset growth
     
     Stores YoY deltas in info dict for downstream consumption.
@@ -301,7 +301,12 @@ def fetch_fundamentals(ticker: str) -> dict:
     cached_info = cache_manager.get("fundamentals", sym, ttl=CACHE_TTL_FUNDAMENTALS)
     cached_sector = cache_manager.get("sector", sym, ttl=CACHE_TTL_SECTOR)
 
-    info = cached_info if cached_info else {}
+    if cached_info and cached_sector:
+        info = dict(cached_info)
+        info["news_sentiment"] = _fetch_news_sentiment(sym)
+        return info
+    info = dict(cached_info) if cached_info else {}
+    fetched_new = False
 
     needs_fundamentals = not cached_info or pd.isna(_safe_float(info.get('trailingPE'))) or pd.isna(_safe_float(info.get('returnOnEquity')))
     needs_sector = not cached_sector
@@ -311,6 +316,7 @@ def fetch_fundamentals(ticker: str) -> dict:
             t = yf.Ticker(ticker, session=_YF_SESSION)
             new_info = t.info or {}
             info.update(new_info)
+            fetched_new = bool(new_info)
 
             missing_critical = (
                 pd.isna(_safe_float(info.get('operatingCashflow'))) or
@@ -361,7 +367,9 @@ def fetch_fundamentals(ticker: str) -> dict:
         except Exception:
             pass
 
-    cache_manager.set("fundamentals", sym, info)
+    if fetched_new or not cached_info:
+        if info:
+            cache_manager.set("fundamentals", sym, info)
 
     info['news_sentiment'] = _fetch_news_sentiment(sym)
     return info
@@ -537,36 +545,20 @@ def _parse_screener_financials(soup, info: dict):
     """
     quarters_section = soup.select_one('#quarters')
     if quarters_section:
-        headers = [th.text.strip().lower() for th in quarters_section.select('table th')]
-        rows = quarters_section.select('table tbody tr')
-
-        sales_idx = next((i for i, h in enumerate(headers) if 'sales' in h or 'revenue' in h), -1)
-        net_profit_idx = next((i for i, h in enumerate(headers) if 'net profit' in h or 'profit' in h), -1)
-
-        if rows and len(rows) >= 2 and sales_idx != -1:
+        for row in quarters_section.select('table tbody tr'):
+            cells = row.find_all('td')
+            if len(cells) < 6:
+                continue
+            label = cells[0].get_text(' ', strip=True).lower().replace('+', '').strip()
+            field = {'sales': 'revenueGrowth', 'revenue': 'revenueGrowth', 'net profit': 'earningsGrowth'}.get(label)
+            if not field or not pd.isna(_safe_float(info.get(field))):
+                continue
             try:
-                curr_row = rows[0].find_all('td')
-                prev_row = rows[1].find_all('td')
-                if len(curr_row) > sales_idx and len(prev_row) > sales_idx:
-                    curr_sales = float(curr_row[sales_idx].text.strip().replace(',', '').replace('%', ''))
-                    prev_sales = float(prev_row[sales_idx].text.strip().replace(',', '').replace('%', ''))
-                    if prev_sales > 0 and pd.isna(_safe_float(info.get('revenueGrowth'))):
-                        info['revenueGrowth'] = (curr_sales - prev_sales) / abs(prev_sales)
-            except (ValueError, IndexError):
-                pass
-
-        if rows and len(rows) >= 2 and net_profit_idx != -1:
-            try:
-                curr_row = rows[0].find_all('td')
-                prev_row = rows[1].find_all('td')
-                if len(curr_row) > net_profit_idx and len(prev_row) > net_profit_idx:
-                    curr_profit_text = curr_row[net_profit_idx].text.strip().replace(',', '').replace('%', '')
-                    prev_profit_text = prev_row[net_profit_idx].text.strip().replace(',', '').replace('%', '')
-                    curr_profit = float(curr_profit_text) if curr_profit_text not in ('-', '') else 0
-                    prev_profit = float(prev_profit_text) if prev_profit_text not in ('-', '') else 0
-                    if prev_profit != 0 and pd.isna(_safe_float(info.get('earningsGrowth'))):
-                        info['earningsGrowth'] = (curr_profit - prev_profit) / abs(prev_profit)
-            except (ValueError, IndexError):
+                current = float(cells[-1].get_text(strip=True).replace(',', ''))
+                previous = float(cells[-5].get_text(strip=True).replace(',', ''))
+                if previous != 0:
+                    info[field] = (current - previous) / abs(previous)
+            except ValueError:
                 pass
 
     pl_section = soup.select_one('#profit-loss')
@@ -578,7 +570,7 @@ def _parse_screener_financials(soup, info: dict):
             if not cells:
                 continue
             label = cells[0].text.strip().lower()
-            if ('gross profit' in label or 'gross block' in label) and pd.isna(_safe_float(info.get('grossProfits'))):
+            if ('gross profit' in label) and pd.isna(_safe_float(info.get('grossProfits'))):
                 try:
                     val = float(cells[-1].text.strip().replace(',', ''))
                     info['grossProfits'] = val * 10000000

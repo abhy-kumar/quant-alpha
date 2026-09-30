@@ -182,7 +182,7 @@ def _build_intermediate_rows(raw_data: dict, nifty_df, etf_list: list) -> tuple[
             adtv_30d = (df["Close"] * df["Volume"]).tail(30).mean()
             mcap = _safe_float(info.get("marketCap"))
             if adtv_30d < 10_000_000 or (not np.isnan(mcap) and mcap > 0 and mcap < 500_000_000):
-                log.info(f"[Scanner] Pre-filter: Excluded illiquid/microcap {ticker} (ADTV: ₹{adtv_30d/1e5:.1f}L, MCAP: ₹{mcap/1e7 if not np.isnan(mcap) else 0:.1f}Cr)")
+                log.info(f"[Scanner] Pre-filter: Excluded illiquid/microcap {ticker} (ADTV: â‚¹{adtv_30d/1e5:.1f}L, MCAP: â‚¹{mcap/1e7 if not np.isnan(mcap) else 0:.1f}Cr)")
                 continue
 
         sector = "ETF" if is_etf else (info.get("sector", "Unknown") or "Unknown")
@@ -314,6 +314,7 @@ def _archive_scan(result_df: pd.DataFrame, scan_time: datetime) -> None:
         log.info(f"Successfully archived {len(sql_df)} records to historical_scans database.")
     except Exception as e:
         log.error(f"Failed to archive scan: {e}")
+        raise
 
 
 def _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pct,
@@ -321,7 +322,7 @@ def _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pc
     """Store all data for ML pipeline."""
     scan_date = scan_time.strftime("%Y-%m-%d")
     try:
-        store_daily_ohlcv(ohlcv_results, scan_date)
+        store_daily_ohlcv({**ohlcv_results, "^NSEI": nifty_df}, scan_date)
         store_factor_history(final_rows, scan_date)
         create_outcome_entries(final_rows, scan_date)
         update_outcome_tracking(scan_date, ohlcv_results)
@@ -334,6 +335,7 @@ def _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pc
         log.info(f"ML data pipeline: stored OHLCV, factors, outcomes, regime for {scan_date}")
     except Exception as e:
         log.error(f"ML data pipeline failed: {e}")
+        raise
 
 
 def run_scanner(progress_callback=None) -> pd.DataFrame:
@@ -430,8 +432,8 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         }
 
         os.makedirs("frontend/public", exist_ok=True)
-        with open("frontend/public/market_data.json", "w") as f:
-            json.dump(output_data, f, indent=2)
+        from utils import atomic_json
+        atomic_json("frontend/public/market_data.json", output_data)
 
         cache_manager.save_all()
         log.info(f"Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
@@ -445,6 +447,8 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
         log.info("Running quant engine...")
         quant_engine.generate_quant_data()
 
+    if result_df.empty:
+        raise RuntimeError("Scanner produced no stocks; refusing to publish stale data")
     return result_df
 
 

@@ -202,6 +202,7 @@ def store_daily_ohlcv(ohlcv_results: dict, scan_date: str):
     ohlcv_results: {ticker: DataFrame} from scanner.
     """
     ensure_schema()
+    from engine.market_calendar import HOLIDAYS
     conn = _get_conn()
     rows = []
     for ticker, df in ohlcv_results.items():
@@ -209,6 +210,8 @@ def store_daily_ohlcv(ohlcv_results: dict, scan_date: str):
             continue
         for idx, row in df.iterrows():
             date_str = idx.strftime("%Y-%m-%d") if hasattr(idx, "strftime") else str(idx)[:10]
+            if date_str in HOLIDAYS:
+                continue
             rows.append((
                 ticker, date_str,
                 _safe_float(row.get("Open")),
@@ -330,7 +333,7 @@ def update_outcome_tracking(scan_date: str, ohlcv_results: dict):
     conn = _get_conn()
     c = conn.cursor()
 
-    c.execute("SELECT DISTINCT Scan_Date FROM factor_history WHERE Scan_Date < ? ORDER BY Scan_Date DESC LIMIT 60", (scan_date,))
+    c.execute("SELECT DISTINCT Scan_Date FROM factor_history WHERE Scan_Date < ? ORDER BY Scan_Date DESC", (scan_date,))
     past_dates = [row[0] for row in c.fetchall()]
 
     if not past_dates:
@@ -344,7 +347,7 @@ def update_outcome_tracking(scan_date: str, ohlcv_results: dict):
 
     updated = 0
     for past_date in past_dates:
-        c.execute("SELECT Ticker, Conviction_At_Scan FROM outcome_tracking WHERE Scan_Date = ? AND Return_21d IS NULL", (past_date,))
+        c.execute("SELECT Ticker, Conviction_At_Scan FROM outcome_tracking WHERE Scan_Date = ? AND (Return_5d IS NULL OR Return_10d IS NULL OR Return_21d IS NULL OR Return_63d IS NULL OR Return_126d IS NULL OR Return_252d IS NULL)", (past_date,))
         pending = c.fetchall()
 
         if not pending:
@@ -357,9 +360,14 @@ def update_outcome_tracking(scan_date: str, ohlcv_results: dict):
 
             df = all_tickers_ohlcv[ticker]
             try:
-                df_idx = df.index
-                mask = df_idx >= past_dt
-                future = df[mask]
+                df = df.copy()
+                df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
+                from engine.market_calendar import HOLIDAYS
+                df = df[~df.index.strftime("%Y-%m-%d").isin(HOLIDAYS)]
+                df = df.sort_index().loc[:pd.Timestamp(scan_date)]
+                future = df.loc[df.index >= past_dt]
+                if future.empty or future.index[0] != pd.Timestamp(past_dt):
+                    continue
                 if len(future) < 2:
                     continue
 
@@ -384,14 +392,14 @@ def update_outcome_tracking(scan_date: str, ohlcv_results: dict):
 
                 c.execute("""
                     UPDATE outcome_tracking SET
-                        Return_5d = COALESCE(Return_5d, ?),
-                        Return_10d = COALESCE(Return_10d, ?),
-                        Return_21d = COALESCE(Return_21d, ?),
-                        Return_63d = COALESCE(Return_63d, ?),
-                        Return_126d = COALESCE(Return_126d, ?),
-                        Return_252d = COALESCE(Return_252d, ?),
-                        Peak_Return_21d = COALESCE(Peak_Return_21d, ?),
-                        Trough_Return_21d = COALESCE(Trough_Return_21d, ?)
+                        Return_5d = ?,
+                        Return_10d = ?,
+                        Return_21d = ?,
+                        Return_63d = ?,
+                        Return_126d = ?,
+                        Return_252d = ?,
+                        Peak_Return_21d = ?,
+                        Trough_Return_21d = ?
                     WHERE Ticker = ? AND Scan_Date = ?
                 """, (
                     _ret(5), _ret(10), _ret(21), _ret(63), _ret(126), _ret(252),
@@ -399,7 +407,8 @@ def update_outcome_tracking(scan_date: str, ohlcv_results: dict):
                     ticker, past_date
                 ))
                 updated += 1
-            except Exception:
+            except Exception as exc:
+                logger.warning("Outcome backfill failed for %s on %s: %s", ticker, past_date, exc)
                 continue
 
     conn.commit()
@@ -540,10 +549,10 @@ def get_outcome_accuracy(min_date: str = None) -> pd.DataFrame:
     conn = _get_conn()
     query = """
         SELECT Conviction_At_Scan,
-               COUNT(*) as n,
+               COUNT(*) as n, COUNT(Return_21d) as n_21d, COUNT(Return_63d) as n_63d,
                AVG(CASE WHEN Return_21d > 0 THEN 1.0 ELSE 0.0 END) as win_rate_21d,
                AVG(Return_21d) as avg_return_21d,
-               AVG(CASE WHEN Return_63d > 0 THEN 1.0 ELSE 0.0 END) as win_rate_63d,
+               AVG(CASE WHEN Return_63d IS NULL THEN NULL WHEN Return_63d > 0 THEN 1.0 ELSE 0.0 END) as win_rate_63d,
                AVG(Return_63d) as avg_return_63d
         FROM outcome_tracking
         WHERE Return_21d IS NOT NULL

@@ -2,6 +2,7 @@
 import YahooFinance from 'yahoo-finance2'
 import type { IncomingMessage, ServerResponse } from 'http'
 
+import calendar from '../server/market_calendar.json' with { type: 'json' }
 const yahooFinance = new YahooFinance()
 
 interface QuoteResult {
@@ -11,20 +12,7 @@ interface QuoteResult {
 }
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
-  )
-
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 200
-    res.end()
-    return
-  }
-
+  if (req.method !== 'GET') { res.statusCode = 405; res.end(JSON.stringify({ error: 'Use GET' })); return }
   try {
     const istString = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
     const istDate = new Date(istString)
@@ -34,51 +22,24 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
     const isWeekend = day === 0 || day === 6
     const isOutsideMarketHours = hour < 9 || (hour === 9 && minute < 15) || hour > 15 || (hour === 15 && minute >= 30)
-    const isMarketClosed = isWeekend || isOutsideMarketHours
+    const dateKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+    const isMarketClosed = isWeekend || isOutsideMarketHours || calendar.holidays.includes(dateKey)
 
     // Keep edge cache short so market transitions and live quotes are always fresh
     if (isMarketClosed) {
-      res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120')
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=60')
     } else {
       res.setHeader('Cache-Control', 'public, s-maxage=5, stale-while-revalidate=10')
     }
 
-    let tickers: string | string[] | undefined
-    if (req.method === 'POST') {
-      const body = await new Promise<string>((resolve, reject) => {
-        let data = ''
-        req.on('data', chunk => data += chunk)
-        req.on('end', () => resolve(data))
-        req.on('error', reject)
-      })
-      const parsed = JSON.parse(body)
-      tickers = parsed?.tickers
-    } else {
-      const url = new URL(req.url ?? '/', `http://${req.headers.host}`)
-      tickers = url.searchParams.get('tickers') ?? undefined
-    }
-
-    if (!tickers) {
+    const url = new URL(req.url || '/', 'http://localhost')
+    const tickerList = [...new Set((url.searchParams.get('tickers') || '').split(','))].sort()
+    if (!tickerList.length || tickerList.length > 600 || tickerList.some(t => !/^(?:[A-Z0-9&_-]{1,30}\.(?:NS|BO)|\^NSEI)$/.test(t))) {
       res.statusCode = 400
-      res.setHeader('Content-Type', 'application/json')
-      res.end(JSON.stringify({ error: 'Tickers parameter is required' }))
+      res.setHeader('Cache-Control', 'no-store')
+      res.end(JSON.stringify({ error: 'Provide 1–600 valid NSE/BSE tickers' }))
       return
     }
-
-    let tickerList: string[] = []
-    if (typeof tickers === 'string') {
-      tickerList = tickers.split(',')
-    } else if (Array.isArray(tickers)) {
-      tickerList = tickers
-    }
-
-    if (tickerList.length === 0) {
-      res.statusCode = 400
-      res.setHeader('Content-Type', 'application/json')
-      res.end(JSON.stringify({ error: 'Tickers list cannot be empty' }))
-      return
-    }
-
     if (!tickerList.includes('^NSEI')) {
       tickerList.push('^NSEI')
     }

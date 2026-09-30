@@ -12,8 +12,12 @@ interface Props {
   peerGroup?: DashboardData[]
 }
 
-export const FactorRadarModal: React.FC<Props> = ({ asset, isOpen, onClose, peerGroup = [] }) => {
-  if (!isOpen || !asset) return null
+export const FactorRadarModal: React.FC<Props> = (props) => {
+  if (!props.isOpen || !props.asset) return null
+  return <FactorRadarModalContent {...props} asset={props.asset} key={props.asset.Ticker} />
+}
+
+const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: DashboardData }> = ({ asset, onClose, peerGroup = [] }) => {
 
   const ticker = asset.Ticker.replace('.NS', '')
   const factors = useMemo(() => extractFactorDimensions(asset), [asset])

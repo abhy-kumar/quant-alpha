@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull, DashboardData, StrategyRuleConfig, StrategyBacktestResult } from '../../types'
+import type { QuantData, BacktestBundle, BacktestRunMeta, BacktestRunFull, DashboardData, StrategyRuleConfig, StrategyBacktestResult, StrategyHistory } from '../../types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
 import { Flask, Target, Crosshair, TrendUp, ChartLineDown, ShieldCheck, Warning, ChartPieSlice, GridFour, ArrowsLeftRight, BookOpen, Lightning, ChartBar, Prohibit, CheckCircle, Info, ClockCounterClockwise, ArrowClockwise, DownloadSimple } from '@phosphor-icons/react'
 import { SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent, GlassCardFooter } from '../common/shared'
@@ -21,6 +21,24 @@ interface Props {
   onSelect: (ticker: string) => void
 }
 
+async function loadStrategyHistory(signal: AbortSignal): Promise<StrategyHistory | null> {
+  const indexResponse = await fetch('/api/data?resource=strategies', { signal })
+  if (!indexResponse.ok) return null
+  const index = await indexResponse.json() as { pages: number }
+  const history: StrategyHistory = { dates: [], benchmark: [], prices: {}, factors: {} }
+  // Bounded pages stay below the server response limit and avoid a burst of requests.
+  for (let page = 0; page < index.pages; page++) {
+    const response = await fetch(`/api/data?resource=strategies&page=${page}`, { signal })
+    if (!response.ok) return null
+    const part = await response.json() as StrategyHistory
+    history.dates.push(...part.dates)
+    history.benchmark.push(...part.benchmark)
+    Object.assign(history.prices, part.prices)
+    Object.assign(history.factors, part.factors)
+  }
+  return history
+}
+
 // Recompute backtest stats from a windowed slice of chart data
 function computeStats(chart: { date: string; portfolio: number; benchmark: number }[]) {
   if (chart.length < 2) return null
@@ -37,9 +55,9 @@ function computeStats(chart: { date: string; portfolio: number; benchmark: numbe
   const dailyReturns = chart.slice(1).map((d, i) => d.portfolio / chart[i].portfolio - 1)
   const benchReturns = chart.slice(1).map((d, i) => d.benchmark / chart[i].benchmark - 1)
   const mean = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length
-  const variance = dailyReturns.reduce((a, b) => a + (b - mean) ** 2, 0) / dailyReturns.length
+  const variance = dailyReturns.reduce((a, b) => a + (b - mean) ** 2, 0) / Math.max(1,dailyReturns.length-1)
   const annVol = Math.sqrt(variance * 252)
-  const sharpe = annVol > 0 ? (cagr - 0.065) / annVol : 0
+  const sharpe = annVol > 0 ? (mean * 252 - 0.065) / annVol : 0
 
   let peak = chart[0].portfolio
   let maxDd = 0
@@ -49,14 +67,10 @@ function computeStats(chart: { date: string; portfolio: number; benchmark: numbe
     if (dd < maxDd) maxDd = dd
   }
 
-  const benchFirst = chart[0].benchmark
-  const benchLast = chart[chart.length - 1].benchmark
-  const benchRet = (benchLast / benchFirst) - 1
-  const benchCagr = Math.pow(1 + benchRet, 1 / years) - 1
-  const trackingErr = Math.sqrt(
-    dailyReturns.map((r, i) => (r - benchReturns[i]) ** 2).reduce((a, b) => a + b, 0) / dailyReturns.length * 252
-  )
-  const infoRatio = trackingErr > 0 ? (cagr - benchCagr) / trackingErr : 0
+  const excess = dailyReturns.map((r,i) => r-benchReturns[i])
+  const excessMean = excess.reduce((a,b) => a+b,0)/excess.length
+  const trackingErr = Math.sqrt(excess.reduce((sum,r) => sum+(r-excessMean)**2,0)/Math.max(1,excess.length-1)*252)
+  const infoRatio = trackingErr > 0 ? excessMean*252/trackingErr : 0
   const winRate = dailyReturns.filter(r => r > 0).length / dailyReturns.length * 100
 
   return {
@@ -71,6 +85,8 @@ function computeStats(chart: { date: string; portfolio: number; benchmark: numbe
 }
 
 function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
+  const [history, setHistory] = useState<StrategyHistory | null>(null)
+  const [quantError, setQuantError] = useState('')
   const [quantData, setQuantData] = useState<QuantData | null>(null)
   const [loading, setLoading] = useState(true)
   const [backtestModel, setBacktestModel] = useState<'short' | 'long'>('short')
@@ -91,9 +107,13 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
   const [runDataLoading, setRunDataLoading]   = useState(false)
 
   useEffect(() => {
-    fetch('/quant_data.json?t=' + Date.now())
+    const controller = new AbortController()
+    loadStrategyHistory(controller.signal).then(setHistory).catch(() => { if (!controller.signal.aborted) setHistory(null) })
+    fetch('/api/data?resource=quant')
       .then(r => r.json())
       .then(d => {
+        if (d.error) { setQuantError(d.error); setLoading(false); return }
+        setQuantError('')
         setQuantData(d)
         setLoading(false)
       })
@@ -102,7 +122,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
         setLoading(false)
       })
 
-    fetch('/market_data.json?t=' + Date.now())
+    fetch('/api/data?resource=market')
       .then(r => r.json())
       .then(d => {
         if (d?.data && Array.isArray(d.data)) {
@@ -110,12 +130,13 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
         }
       })
       .catch(() => {})
+    return () => controller.abort()
   }, [scanUpdated])
 
   // Load cached custom backtest index
   const loadRunIndex = useCallback((silent = false) => {
     if (!silent) setRunsLoading(true)
-    fetch('/backtest_runs/index.json?t=' + Date.now())
+    fetch('/api/data?resource=runs')
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.runs) setCachedRuns(d.runs)
@@ -124,16 +145,16 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
       .finally(() => { if (!silent) setRunsLoading(false) })
   }, [])
 
-  useEffect(() => { loadRunIndex() }, [])
+  useEffect(() => { loadRunIndex() }, [loadRunIndex])
 
   // Load full data for a selected run
   const loadRunData = useCallback((slug: string) => {
     setRunDataLoading(true)
     setSelectedSlug(slug)
     setSelectedRunData(null)
-    fetch(`/backtest_runs/${slug}.json?t=` + Date.now())
+    fetch(`/api/data?resource=run&slug=${encodeURIComponent(slug)}`)
       .then(r => r.json())
-      .then(d => setSelectedRunData(d))
+      .then(d => setSelectedRunData(d.error ? null : d))
       .catch(() => setSelectedRunData(null))
       .finally(() => setRunDataLoading(false))
   }, [])
@@ -175,7 +196,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
     }
   }, [quantData, backtestModel, backtestHorizon])
 
-  const allChartData = activeBacktest?.chart ?? []
+  const allChartData = useMemo(() => activeBacktest?.chart ?? [], [activeBacktest])
   const holdings     = activeBacktest?.holdings ?? []
 
   // Rebase to 100 from start
@@ -209,22 +230,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
     }
   }, [quantData])
 
-  // Generate simulated Markowitz Efficient Frontier scatter points
-  const efficientFrontierPoints = useMemo(() => {
-    const points = []
-    const minVol = 12.0
-    const maxVol = 28.0
-    for (let vol = minVol; vol <= maxVol; vol += 1.0) {
-      const sharpeFactor = 1.25 - Math.pow((vol - 18.0) / 10.0, 2)
-      const expectedReturn = (vol * 1.35 * Math.max(0.6, sharpeFactor))
-      points.push({
-        volatility: Number(vol.toFixed(1)),
-        return: Number(expectedReturn.toFixed(1)),
-        sharpe: Number(((expectedReturn - 6.5) / vol).toFixed(2)),
-      })
-    }
-    return points
-  }, [])
+  const efficientFrontierPoints = quantData?.efficient_frontier ?? []
 
   // - Strategy Sandbox Calculation Memos -
   const handleSelectPreset = useCallback((presetKey: string) => {
@@ -244,9 +250,8 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
   }, [marketStocks, strategyConfig])
 
   const sandboxResult: StrategyBacktestResult = useMemo(() => {
-    const benchmarkSeries = (quantData?.backtest_short_1y?.chart ?? quantData?.backtest?.chart ?? [])
-    return simulateStrategy(marketStocks, benchmarkSeries, strategyConfig)
-  }, [marketStocks, quantData, strategyConfig])
+    return simulateStrategy(history, strategyConfig)
+  }, [history, strategyConfig])
 
   // Generate monthly return matrix from active backtest chart data
   const monthlyReturnsMatrix = useMemo(() => {
@@ -282,7 +287,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
   }, [activeBacktest])
 
   // Custom tooltip that also shows holdings for the hovered date
-  const BacktestTooltip = ({ active, payload, label }: any) => {
+  const renderBacktestTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null
     const holding = holdings.find(h => label >= h.from && label < h.to)
     return (
@@ -321,7 +326,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
     return (
       <div className="p-8 text-center card" style={{ borderRadius: 'var(--radius-lg)' }}>
         <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>Awaiting Scan History</h3>
-        <p style={{ color: 'var(--text-2)' }}>At least 5 trading days of scan history are required for backtesting and portfolio optimization.</p>
+        <p style={{ color: 'var(--text-2)' }}>{quantError || 'Recorded history is required for backtesting and portfolio optimization.'}</p>
       </div>
     )
   }
@@ -392,18 +397,18 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
           <GlassCard>
             <GlassCardHeader
               icon={ShieldCheck}
-              iconColor={quantData.market_regime.score >= 70 ? 'var(--green)' : quantData.market_regime.score <= 30 ? 'var(--red)' : 'var(--amber)'}
+              iconColor={quantData.market_regime.score >= 4 ? 'var(--green)' : quantData.market_regime.score <= 1 ? 'var(--red)' : 'var(--amber)'}
               title="Market Regime"
               tooltipId="quant.regime"
             />
             <GlassCardContent className="p-5 flex flex-col items-center text-center gap-2">
               <div className="typo-h2 font-semibold" style={{ color: 'var(--text)' }}>
-                {quantData.market_regime.score >= 70 ? 'Risk-On (Bull)' : quantData.market_regime.score <= 30 ? 'Risk-Off (Bear)' : 'Neutral Regime'}
+                {quantData.market_regime.score >= 4 ? 'Risk-On (Bull)' : quantData.market_regime.score <= 1 ? 'Risk-Off (Bear)' : 'Neutral Regime'}
               </div>
               <div className="grid grid-cols-3 gap-3 w-full mt-1">
                 <div>
                   <div className="typo-eyebrow flex items-center justify-center gap-0.5">Score<InfoTooltip id="quant.regime" /></div>
-                  <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.score}/100</div>
+                  <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.score}/5</div>
                 </div>
                 <div>
                   <div className="typo-eyebrow flex items-center justify-center gap-0.5">Breadth<InfoTooltip id="quant.breadth" /></div>
@@ -492,7 +497,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
             <GlassCardContent className="p-5 space-y-4">
             {!activeBacktest?.chart?.length && (
               <div className="px-5 py-2 text-[11px]" style={{ background: 'var(--amber-bg)', borderBottom: '0.5px solid var(--glass-border)', color: 'var(--amber)' }}>
-                Walk-forward backtest data is not yet available for this model.
+                {activeBacktest?.error || 'Walk-forward backtest data is not yet available for this model.'}
               </div>
             )}
             <div className="p-5" style={{ height: 320 }}>
@@ -501,7 +506,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                   <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
                   <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }} tickMargin={10} minTickGap={30} />
                   <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }} domain={['auto', 'auto']} tickFormatter={(v) => typeof v === 'number' ? v.toFixed(1) : v} />
-                  <Tooltip content={<BacktestTooltip />} />
+                  <Tooltip content={renderBacktestTooltip} />
                   <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif', fontSize: '10px', color: 'var(--text-3)' }} />
                   <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
                   <Line type="monotone" dataKey="portfolio" name={backtestModel === 'long' ? 'Long Horizon Picks' : 'Alpha Picks'} stroke={backtestModel === 'long' ? 'var(--green)' : 'var(--brand)'} strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
