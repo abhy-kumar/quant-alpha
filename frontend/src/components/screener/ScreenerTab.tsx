@@ -1,3 +1,5 @@
+import { debtEquityRatio } from '../../utils/formatters'
+import { ModalShell } from '../common/ModalShell'
 import React, { useState, useMemo, useDeferredValue, useEffect, memo } from 'react'
 import type { DashboardData } from '../../types'
 import { num, colorCode, scoreColor, getSignalLabel, getBadgeClass, SortHeader, MiniSparkline, InfoTooltip } from '../common/shared'
@@ -19,6 +21,7 @@ interface Props {
   scoreHistory: Record<string, {date: string; composite: number}[]>
   flashTickers?: Record<string, 'up'|'down'>
   isLoggedIn?: boolean
+  onRequestSignIn?: () => void
 }
 
 const CONVICTION_OPTIONS = ['Strong Buy', 'Buy', 'Hold', 'Caution', 'Avoid']
@@ -68,7 +71,7 @@ const ScreenerRow = memo(function ScreenerRow({
             checked={isChecked}
             onChange={() => onToggleCompare(row.Ticker)}
             className="accent-brand rounded cursor-pointer"
-            title="Compare stock"
+            aria-label={`Compare ${row.Ticker.replace('.NS', '')}`} title="Compare stock"
           />
         </td>
         <td className="py-2 px-2 font-medium cursor-pointer transition-colors glass-subtle" style={{ color: 'var(--text)', position:'sticky', left:0, zIndex:1 }} onClick={() => onSelect(row.Ticker)}
@@ -76,9 +79,9 @@ const ScreenerRow = memo(function ScreenerRow({
           onMouseLeave={e => (e.currentTarget.style.color = 'var(--text)')}
         >
           <div className="flex items-center gap-1.5">
-            <span>{row.Ticker.replace('.NS', '')}</span>
+            <button className="ticker-link" onClick={event => { event.stopPropagation(); onSelect(row.Ticker) }}>{row.Ticker.replace('.NS', '')}</button>
             {row.Red_Flags && row.Red_Flags.length > 0 && (
-              <span className="inline-flex items-center text-[10px] px-1 py-0.5 rounded bg-amber-500/20 text-amber-300 font-normal border border-amber-500/40" title={`Forensic Flags: ${row.Red_Flags.join('; ')}`}>
+              <span className="inline-flex items-center text-[12px] px-1 py-0.5 rounded bg-[var(--amber-bg)] text-[var(--amber)] font-normal border border-[var(--border)]" title={`Forensic Flags: ${row.Red_Flags.join('; ')}`}>
                 Flagged ({row.Red_Flags.length})
               </span>
             )}
@@ -97,7 +100,7 @@ const ScreenerRow = memo(function ScreenerRow({
         <td className={`py-2 px-2 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Fund_Score)}</td>
         <td className={`py-2 px-2 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Research_Score)}</td>
         <td className="py-2 px-2 text-right font-medium hidden lg:table-cell">
-          <span className="font-mono">{row.Piotroski_F ?? '-'}</span><span className="text-[9px] text-[var(--text-3)]">/9</span>
+          <span className="font-mono">{row.Piotroski_F ?? '-'}</span><span className="text-[12px] text-[var(--text-3)]">/9</span>
         </td>
         <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{row.Momentum_12M != null ? `${(row.Momentum_12M * 100).toFixed(1)}%` : '-'}</td>
         <td className="py-2 px-2 text-right font-medium font-mono hidden xl:table-cell">{num(row.Value_Score)}</td>
@@ -112,14 +115,14 @@ const ScreenerRow = memo(function ScreenerRow({
         )}
         <td className="py-2 px-2">
           <div className="flex items-center gap-1">
-            <button onClick={(e) => { e.stopPropagation(); onToggleWatchlist(row.Ticker) }}
+            <button aria-label={`${isWatched ? 'Remove' : 'Add'} ${row.Ticker.replace('.NS', '')} ${isWatched ? 'from' : 'to'} watchlist`} aria-pressed={isWatched} onClick={(e) => { e.stopPropagation(); onToggleWatchlist(row.Ticker) }}
               onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.75)')}
               onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
               style={{ transition: 'transform var(--dur-fast) var(--ease-out)', border: 'none', background: 'none', cursor: 'pointer', color: isWatched ? 'var(--amber)' : 'var(--text-3)' }}>
               <Star size={12} weight="fill" color={isWatched ? 'var(--amber)' : 'var(--text-3)'} style={{ transition: 'color var(--dur-base)' }}/>
             </button>
-            <button onClick={() => onToggleExpand(row.Ticker)} className="transition-colors" style={{ color: 'var(--text-3)' }}>
-              <Info size={14} weight="duotone" />
+            <button aria-label={`Details for ${row.Ticker.replace('.NS', '')}`} aria-expanded={isExpanded} onClick={() => onToggleExpand(row.Ticker)} className="transition-colors" style={{ color: 'var(--text-3)' }}>
+              <Info size={14} weight="regular" />
             </button>
           </div>
         </td>
@@ -134,16 +137,16 @@ const ScreenerRow = memo(function ScreenerRow({
             <div className="p-6" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--glass-border)' }}>
               {/* Forensic Red Flags Alert */}
               {row.Red_Flags && row.Red_Flags.length > 0 && (
-                <div className="mb-4 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300 flex items-center gap-2">
-                  <span className="font-bold">Forensic Flags:</span>
-                  <span className="text-amber-200">{row.Red_Flags.join(' • ')}</span>
+                <div className="mb-4 p-2.5 rounded-xl bg-[var(--amber-bg)] border border-[var(--border)] text-xs text-[var(--amber)] flex items-center gap-2">
+                  <span className="font-semibold">Forensic Flags:</span>
+                  <span className="text-[var(--amber)]">{row.Red_Flags.join(' • ')}</span>
                 </div>
               )}
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div>
                   <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Technical Indicators</h4>
-                  <div className="space-y-1.5 text-[11px]">
+                  <div className="space-y-1.5 text-[12px]">
                     {[
                       ['Price vs SMA50', row.Sig_Price_vs_SMA50, 'sig.price-sma50'], ['Price vs SMA200', row.Sig_Price_vs_SMA200, 'sig.price-sma200'],
                       ['SMA50 vs SMA200', row.Sig_SMA50_vs_SMA200, 'sig.sma-cross'], ['RSI', row.Sig_RSI, 'sig.rsi'],
@@ -162,7 +165,7 @@ const ScreenerRow = memo(function ScreenerRow({
                 </div>
                 <div>
                   <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Factor Scores</h4>
-                  <div className="space-y-1.5 text-[11px]">
+                  <div className="space-y-1.5 text-[12px]">
                     {[
                       ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`, 'research.piotroski'],
                       ['Gross Profitability', `${num(row.Gross_Profit_Score)}/10`, 'research.gross-profit'],
@@ -186,13 +189,13 @@ const ScreenerRow = memo(function ScreenerRow({
                 </div>
                 <div>
                   <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Key Ratios & Trade Plan</h4>
-                  <div className="space-y-1.5 text-[11px]">
+                  <div className="space-y-1.5 text-[12px]">
                     {[
                       ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E']), 'metrics.pe'],
                       ['Forward P/E', num(row['Forward_P/E']), 'metrics.forward-pe'],
                       ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-', 'metrics.roe'],
                       ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-', 'metrics.roce'],
-                      ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-', 'metrics.de'],
+                      ['D/E', num(debtEquityRatio(row.Debt_to_Equity), 2), 'metrics.de'],
                       ['ATR Stop (2×ATR)', row.ATR_Stop ? `₹${num(row.ATR_Stop)}` : '-', 'metrics.atr-stop'],
                       ['ATR Target 1', row.ATR_Target1 ? `₹${num(row.ATR_Target1)}` : '-', 'metrics.atr-t1'],
                       ['ATR Target 2', row.ATR_Target2 ? `₹${num(row.ATR_Target2)}` : '-', 'metrics.atr-t2'],
@@ -226,16 +229,16 @@ const ScreenerRow = memo(function ScreenerRow({
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <button onClick={(e) => { e.stopPropagation(); onThesis(row) }} className="btn-glass text-xs py-1 px-3 rounded-full" title="Institutional Investment Thesis">
-                    <Lightning size={13} weight="duotone" className="text-[var(--brand)]" /> Thesis
+                    <Lightning size={13} weight="regular" className="text-[var(--brand)]" /> Thesis
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); onSizer(row) }} className="btn-glass text-xs py-1 px-3 rounded-full" title="Calculate Risk & Position Size">
-                    <Calculator size={13} weight="duotone" className="text-[var(--brand)]" /> Sizer
+                    <Calculator size={13} weight="regular" className="text-[var(--brand)]" /> Sizer
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); onRadar(row) }} className="btn-glass text-xs py-1 px-3 rounded-full" title="10-Factor Radar Polygon Chart">
-                    <Sparkle size={13} weight="duotone" className="text-[var(--brand)]" /> Radar
+                    <Sparkle size={13} weight="regular" className="text-[var(--brand)]" /> Radar
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); onFactsheet(row) }} className="btn-glass text-xs py-1 px-3 rounded-full font-medium" title="1-Page Printable Equity Research Factsheet">
-                    <FileText size={13} weight="duotone" className="text-[var(--brand)]" /> Factsheet
+                    <FileText size={13} weight="regular" className="text-[var(--brand)]" /> Factsheet
                   </button>
                 </div>
               </div>
@@ -247,11 +250,18 @@ const ScreenerRow = memo(function ScreenerRow({
   )
 })
 
-export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist, scoreHistory, flashTickers = {}, isLoggedIn = true }: Props) {
+export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist, scoreHistory, flashTickers = {}, isLoggedIn = true, onRequestSignIn }: Props) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
   const [sortKey, setSortKey] = useState<string>(() => isLoggedIn ? 'Composite_Score' : 'Ticker')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(() => isLoggedIn ? 'desc' : 'asc')
   const [showFilters, setShowFilters] = useState(false)
+  const [isCompact, setIsCompact] = useState(() => window.matchMedia('(max-width: 639px)').matches)
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 639px)')
+    const update = (event: MediaQueryListEvent) => setIsCompact(event.matches)
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
   const [searchQuery, setSearchQuery] = useState('')
   const deferredSearch = useDeferredValue(searchQuery)
   const [horizonMode, setHorizonMode] = useState<'short' | 'long'>('short')
@@ -334,7 +344,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
       if (selectedSectors.length > 0 && !selectedSectors.includes(d.Sector)) return false
       if (selectedConvictions.length > 0 && !selectedConvictions.includes((d as any)[convCol])) return false
       if (minMarketCap > 0 && Number(d.Market_Cap_B) < minMarketCap) return false
-      if (maxDE < 999 && Number(d.Debt_to_Equity) > maxDE) return false
+      if (maxDE < 999 && (debtEquityRatio(d.Debt_to_Equity) ?? Infinity) > maxDE) return false
       if (minROE > 0 && Number(d['ROE_%']) < minROE) return false
       if (maxPE < 999 && (Number(d['P/E']) > maxPE || Number(d['P/E']) <= 0)) return false
       if (minRSI > 0 && Number(d.RSI_Value) < minRSI) return false
@@ -481,7 +491,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
             ].map(([label, weight, color]) => (
               <div key={label} className="flex flex-col items-center">
                 <span className="text-sm font-mono font-medium" style={{ color }}>{weight}</span>
-                <span className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
+                <span className="text-[12px] mt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
               </div>
             ))}
           </div>
@@ -499,12 +509,12 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
             ].map(([label, weight, color]) => (
               <div key={label} className="flex flex-col items-center">
                 <span className="text-sm font-mono font-medium" style={{ color }}>{weight}</span>
-                <span className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
+                <span className="text-[12px] mt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
               </div>
             ))}
           </div>
         )}
-        <div className="mt-3 pt-2 flex flex-wrap gap-3 text-[11px]" style={{ borderTop: '0.5px solid var(--glass-border)', color: 'var(--text-3)' }}>
+        <div className="mt-3 pt-2 flex flex-wrap gap-3 text-[12px]" style={{ borderTop: '1px solid var(--glass-border)', color: 'var(--text-3)' }}>
           {horizonMode === 'short' ? (
             <span>Composite Weights: Technical 35% | Fundamental 25% | Research 40%</span>
           ) : (
@@ -516,11 +526,11 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
       {/* Search + Filter bar */}
       <div className="flex items-center justify-between gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-[200px]">
-          <input type="text" placeholder="Search by symbol or company name" value={searchQuery}
+          <input aria-label="Search screener" type="search" placeholder="Search by symbol or company name" value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="glass-input w-full sm:w-[220px]"
           />
-          <span className="text-[11px] sm:text-[12px] hidden xs:inline" style={{color:'var(--text-3)'}}>Displaying {filteredData.length} of {data.length}</span>
+          <span className="text-[12px] sm:text-[12px] hidden xs:inline" style={{color:'var(--text-3)'}}>Displaying {filteredData.length} of {data.length}</span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -554,24 +564,22 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
             className="btn-glass text-xs py-1.5 px-3.5 rounded-full"
             title="Export filtered securities to CSV"
           >
-            <DownloadSimple size={14} weight="bold" /> <span className="hidden sm:inline">Export CSV</span>
+            <DownloadSimple size={14} weight="regular" /> <span className="hidden sm:inline">Export CSV</span>
           </button>
           <button
-            onClick={() => setShowFilters(!showFilters)}
+            aria-expanded={showFilters} onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 text-[12px] sm:text-[13px] font-medium rounded-full transition-all duration-200"
             style={{
-              background: showFilters ? 'var(--brand)' : 'var(--glass-bg)',
-              color: showFilters ? '#fff' : 'var(--text-2)',
-              border: `0.5px solid ${showFilters ? 'var(--brand)' : 'var(--glass-border)'}`,
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
+              background: showFilters ? 'var(--accent-fill)' : 'var(--surface-2)',
+              color: showFilters ? 'var(--on-accent)' : 'var(--text-2)',
+              border: `1px solid ${showFilters ? 'var(--brand)' : 'var(--glass-border)'}`,
               boxShadow: showFilters ? '0 4px 12px rgba(110, 168, 254, 0.3)' : 'var(--glass-shadow)',
             }}
           >
-            <Funnel size={14} weight="duotone" /> Filters
+            <Funnel size={14} weight="regular" /> Filters
             {activeFilterCount > 0 && (
-              <span style={{ minWidth: 18, height: 18, borderRadius: 9, background: showFilters ? 'rgba(255,255,255,0.2)' : 'var(--brand)',
-                color: showFilters ? 'white' : 'white', fontSize: 10, fontWeight: 700,
+              <span style={{ minWidth: 18, height: 18, borderRadius: 9, background: showFilters ? 'rgba(255,255,255,0.2)' : 'var(--accent-fill)',
+                color: showFilters ? 'white' : 'white', fontSize: 12, fontWeight: 700,
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                 {activeFilterCount}
               </span>
@@ -587,14 +595,14 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
             <span className="section-label" style={{ color: 'var(--brand)' }}>Filters</span>
             {activeFilterCount > 0 && (
               <button onClick={clearFilters} className="flex items-center gap-1 text-xs transition-colors hover:opacity-80" style={{ color: 'var(--text-3)' }}>
-                <X size={12} weight="light" /> Clear all
+                <X size={12} weight="regular" /> Clear all
               </button>
             )}
           </div>
 
           {/* Strategy Presets */}
-          <div className="mb-4 pb-3" style={{ borderBottom: '0.5px solid var(--glass-border)' }}>
-            <span className="text-[10px] uppercase font-semibold tracking-wider block mb-2" style={{ color: 'var(--text-3)' }}>
+          <div className="mb-4 pb-3" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+            <span className="text-[12px]  font-semibold tracking-normal block mb-2" style={{ color: 'var(--text-3)' }}>
               1-Click Strategy Presets
             </span>
             <div className="flex flex-wrap gap-2">
@@ -624,56 +632,55 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min composite: {minComposite.toFixed(1)}</label>
-              <input type="range" min="0" max="10" step="0.5" value={minComposite} onChange={e => setMinComposite(Number(e.target.value))} className="w-full" aria-label="Minimum composite score" />
+              <input aria-label="Minimum composite score" type="range" min="0" max="10" step="0.5" value={minComposite} onChange={e => setMinComposite(Number(e.target.value))} className="w-full" />
             </div>
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Piotroski: {minPiotroski}</label>
-              <input type="range" min="0" max="9" step="1" value={minPiotroski} onChange={e => setMinPiotroski(Number(e.target.value))} className="w-full" aria-label="Minimum Piotroski score" />
+              <input aria-label="Minimum Piotroski score" type="range" min="0" max="9" step="1" value={minPiotroski} onChange={e => setMinPiotroski(Number(e.target.value))} className="w-full" />
             </div>
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min market cap: ₹{minMarketCap >= 1000 ? `${(minMarketCap/1000).toFixed(1)}T` : `${minMarketCap}B`}</label>
-              <input type="range" min="0" max="500" step="5" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" aria-label="Minimum market cap" />
+              <input aria-label="Minimum market capitalization" type="range" min="0" max="500" step="5" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" />
             </div>
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max D/E: {maxDE >= 999 ? 'Any' : maxDE}</label>
-              <input type="range" min="0" max="10" step="0.5" value={maxDE >= 999 ? 10 : maxDE} onChange={e => setMaxDE(Number(e.target.value) >= 10 ? 999 : Number(e.target.value))} className="w-full" aria-label="Maximum debt to equity" />
+              <input aria-label="Maximum debt to equity" type="range" min="0" max="10" step="0.5" value={maxDE >= 999 ? 10 : maxDE} onChange={e => setMaxDE(Number(e.target.value) >= 10 ? 999 : Number(e.target.value))} className="w-full" />
             </div>
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Value Score: {minValue.toFixed(1)}</label>
-              <input type="range" min="0" max="10" step="0.5" value={minValue} onChange={e => setMinValue(Number(e.target.value))} className="w-full" aria-label="Minimum value score" />
+              <input aria-label="Minimum value score" type="range" min="0" max="10" step="0.5" value={minValue} onChange={e => setMinValue(Number(e.target.value))} className="w-full" />
             </div>
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max Beta: {maxBeta >= 3 ? 'Any' : maxBeta.toFixed(1)}</label>
-              <input type="range" min="0" max="3" step="0.1" value={maxBeta} onChange={e => setMaxBeta(Number(e.target.value) >= 2.9 ? 3 : Number(e.target.value))} className="w-full" aria-label="Maximum beta" />
+              <input aria-label="Maximum beta" type="range" min="0" max="3" step="0.1" value={maxBeta} onChange={e => setMaxBeta(Number(e.target.value) >= 2.9 ? 3 : Number(e.target.value))} className="w-full" />
             </div>
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min ROE: {minROE > 0 ? `${minROE}%` : 'Any'}</label>
-              <input type="range" min="0" max="35" step="5" value={minROE} onChange={e => setMinROE(Number(e.target.value))} className="w-full" aria-label="Minimum ROE percentage" />
+              <input aria-label="Minimum return on equity" type="range" min="0" max="35" step="5" value={minROE} onChange={e => setMinROE(Number(e.target.value))} className="w-full" />
             </div>
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max P/E: {maxPE >= 999 ? 'Any' : maxPE}</label>
-              <input type="range" min="10" max="100" step="5" value={maxPE >= 999 ? 100 : maxPE} onChange={e => setMaxPE(Number(e.target.value) >= 100 ? 999 : Number(e.target.value))} className="w-full" aria-label="Maximum P/E ratio" />
+              <input aria-label="Maximum price to earnings" type="range" min="10" max="100" step="5" value={maxPE >= 999 ? 100 : maxPE} onChange={e => setMaxPE(Number(e.target.value) >= 100 ? 999 : Number(e.target.value))} className="w-full" />
             </div>
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min RSI(14): {minRSI > 0 ? minRSI : 'Any'}</label>
-              <input type="range" min="0" max="70" step="5" value={minRSI} onChange={e => setMinRSI(Number(e.target.value))} className="w-full" aria-label="Minimum RSI" />
+              <input aria-label="Minimum RSI" type="range" min="0" max="70" step="5" value={minRSI} onChange={e => setMinRSI(Number(e.target.value))} className="w-full" />
             </div>
             <div>
               <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max RSI(14): {maxRSI < 100 ? maxRSI : 'Any'}</label>
-              <input type="range" min="30" max="100" step="5" value={maxRSI} onChange={e => setMaxRSI(Number(e.target.value))} className="w-full" aria-label="Maximum RSI" />
+              <input aria-label="Maximum RSI" type="range" min="30" max="100" step="5" value={maxRSI} onChange={e => setMaxRSI(Number(e.target.value))} className="w-full" />
             </div>
             <div className="sm:col-span-2">
               <label className="text-xs mb-2 block" style={{ color: 'var(--text-2)' }}>Sectors</label>
               <div className="flex flex-wrap gap-1.5">
                 {availableSectors.map(s => (
-                  <button key={s} onClick={() => toggleSector(s)} className="px-3 py-1 text-[11px] font-medium rounded-full transition-all duration-200" style={selectedSectors.includes(s) ? {
-                    background: 'var(--brand)', color: '#fff',
-                    border: '0.5px solid var(--brand)',
-                    boxShadow: '0 2px 8px rgba(110, 168, 254, 0.3)',
+                  <button key={s} aria-pressed={selectedSectors.includes(s)} onClick={() => toggleSector(s)} className="px-3 py-1 text-[12px] font-medium rounded-full transition-all duration-200" style={selectedSectors.includes(s) ? {
+                    background: 'var(--accent-fill)', color: 'var(--on-accent)',
+                    border: '1px solid var(--brand)',
+                    boxShadow: 'none',
                   } : {
                     background: 'var(--glass-bg-subtle)', color: 'var(--text-2)',
-                    border: '0.5px solid var(--glass-border)',
-                    backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                    border: '1px solid var(--glass-border)',
                   }}>
                     {s}
                   </button>
@@ -685,14 +692,13 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               <label className="text-xs mb-2 block" style={{ color: 'var(--text-2)' }}>Conviction</label>
               <div className="flex flex-wrap gap-1.5">
                 {CONVICTION_OPTIONS.map(c => (
-                  <button key={c} onClick={() => toggleConviction(c)} className="px-3 py-1 text-[11px] font-medium rounded-full transition-all duration-200" style={selectedConvictions.includes(c) ? {
-                    background: 'var(--brand)', color: '#fff',
-                    border: '0.5px solid var(--brand)',
-                    boxShadow: '0 2px 8px rgba(110, 168, 254, 0.3)',
+                  <button key={c} aria-pressed={selectedConvictions.includes(c)} onClick={() => toggleConviction(c)} className="px-3 py-1 text-[12px] font-medium rounded-full transition-all duration-200" style={selectedConvictions.includes(c) ? {
+                    background: 'var(--accent-fill)', color: 'var(--on-accent)',
+                    border: '1px solid var(--brand)',
+                    boxShadow: 'none',
                   } : {
                     background: 'var(--glass-bg-subtle)', color: 'var(--text-2)',
-                    border: '0.5px solid var(--glass-border)',
-                    backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                    border: '1px solid var(--glass-border)',
                   }}>
                     {c}
                   </button>
@@ -705,14 +711,13 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
       </div>
 
       {/* Mobile Slide-Up Filter Drawer */}
-      {showFilters && (
-        <div className="sm:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-backdrop-in">
-          <div className="w-full max-h-[85vh] overflow-y-auto card p-5 pb-safe rounded-t-3xl animate-sheet-up border-t border-[var(--glass-border-strong)]" style={{ background: 'var(--glass-bg-strong)' }}>
+      {showFilters && isCompact && (
+        <ModalShell title="Filters" onClose={() => setShowFilters(false)} className="max-w-md p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="section-label" style={{ color: 'var(--brand)' }}>Filter Securities</span>
                 {activeFilterCount > 0 && (
-                  <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full" style={{ background: 'var(--brand-soft)', color: 'var(--brand)' }}>
+                  <span className="text-[12px] font-mono font-medium px-2 py-0.5 rounded-full" style={{ background: 'var(--brand-soft)', color: 'var(--brand)' }}>
                     {activeFilterCount} active
                   </span>
                 )}
@@ -721,7 +726,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 {activeFilterCount > 0 && (
                   <button onClick={clearFilters} className="text-xs transition-colors" style={{ color: 'var(--text-3)' }}>Clear</button>
                 )}
-                <button onClick={() => setShowFilters(false)} className="p-1 rounded-full text-[var(--text-2)] hover:bg-[var(--glass-bg-subtle)]">
+                <button onClick={() => setShowFilters(false)} className="icon-button" aria-label="Close filters">
                   <X size={18} />
                 </button>
               </div>
@@ -729,36 +734,36 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
 
             <div className="space-y-4 text-xs">
               <div>
-                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min composite score: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{minComposite.toFixed(1)}</span></label>
-                <input type="range" min="0" max="10" step="0.5" value={minComposite} onChange={e => setMinComposite(Number(e.target.value))} className="w-full" />
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min composite score: <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{minComposite.toFixed(1)}</span></label>
+                <input aria-label="Minimum composite score" type="range" min="0" max="10" step="0.5" value={minComposite} onChange={e => setMinComposite(Number(e.target.value))} className="w-full" />
               </div>
               <div>
-                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Piotroski score: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{minPiotroski}</span></label>
-                <input type="range" min="0" max="9" step="1" value={minPiotroski} onChange={e => setMinPiotroski(Number(e.target.value))} className="w-full" />
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Piotroski score: <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{minPiotroski}</span></label>
+                <input aria-label="Minimum Piotroski score" type="range" min="0" max="9" step="1" value={minPiotroski} onChange={e => setMinPiotroski(Number(e.target.value))} className="w-full" />
               </div>
               <div>
-                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Market Cap: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>₹{minMarketCap >= 1000 ? `${(minMarketCap/1000).toFixed(1)}T` : `${minMarketCap}B`}</span></label>
-                <input type="range" min="0" max="500" step="5" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" />
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Market Cap: <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>₹{minMarketCap >= 1000 ? `${(minMarketCap/1000).toFixed(1)}T` : `${minMarketCap}B`}</span></label>
+                <input aria-label="Minimum market capitalization" type="range" min="0" max="500" step="5" value={minMarketCap} onChange={e => setMinMarketCap(Number(e.target.value))} className="w-full" />
               </div>
               <div>
-                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max Debt-to-Equity: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{maxDE >= 999 ? 'Any' : maxDE}</span></label>
-                <input type="range" min="0" max="10" step="0.5" value={maxDE >= 999 ? 10 : maxDE} onChange={e => setMaxDE(Number(e.target.value) >= 10 ? 999 : Number(e.target.value))} className="w-full" />
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max Debt-to-Equity: <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{maxDE >= 999 ? 'Any' : maxDE}</span></label>
+                <input aria-label="Maximum debt to equity" type="range" min="0" max="10" step="0.5" value={maxDE >= 999 ? 10 : maxDE} onChange={e => setMaxDE(Number(e.target.value) >= 10 ? 999 : Number(e.target.value))} className="w-full" />
               </div>
               <div>
-                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Value Score: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{minValue.toFixed(1)}</span></label>
-                <input type="range" min="0" max="10" step="0.5" value={minValue} onChange={e => setMinValue(Number(e.target.value))} className="w-full" />
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Min Value Score: <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{minValue.toFixed(1)}</span></label>
+                <input aria-label="Minimum value score" type="range" min="0" max="10" step="0.5" value={minValue} onChange={e => setMinValue(Number(e.target.value))} className="w-full" />
               </div>
               <div>
-                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max Beta: <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{maxBeta >= 3 ? 'Any' : maxBeta.toFixed(1)}</span></label>
-                <input type="range" min="0" max="3" step="0.1" value={maxBeta} onChange={e => setMaxBeta(Number(e.target.value) >= 2.9 ? 3 : Number(e.target.value))} className="w-full" />
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-2)' }}>Max Beta: <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{maxBeta >= 3 ? 'Any' : maxBeta.toFixed(1)}</span></label>
+                <input aria-label="Maximum beta" type="range" min="0" max="3" step="0.1" value={maxBeta} onChange={e => setMaxBeta(Number(e.target.value) >= 2.9 ? 3 : Number(e.target.value))} className="w-full" />
               </div>
 
               <div>
                 <label className="text-xs mb-2 block font-medium" style={{ color: 'var(--text-2)' }}>Sectors</label>
                 <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
                   {availableSectors.map(s => (
-                    <button key={s} onClick={() => toggleSector(s)} className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all" style={selectedSectors.includes(s) ? {
-                      background: 'var(--brand)', color: '#fff', border: '1px solid var(--brand)',
+                    <button key={s} aria-pressed={selectedSectors.includes(s)} onClick={() => toggleSector(s)} className="px-2.5 py-1 text-[12px] font-medium rounded-lg transition-all" style={selectedSectors.includes(s) ? {
+                      background: 'var(--accent-fill)', color: 'var(--on-accent)', border: '1px solid var(--brand)',
                     } : {
                       background: 'var(--glass-bg-subtle)', color: 'var(--text-2)', border: '1px solid var(--glass-border)',
                     }}>
@@ -773,8 +778,8 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 <label className="text-xs mb-2 block font-medium" style={{ color: 'var(--text-2)' }}>Conviction</label>
                 <div className="flex flex-wrap gap-1.5">
                   {CONVICTION_OPTIONS.map(c => (
-                    <button key={c} onClick={() => toggleConviction(c)} className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all" style={selectedConvictions.includes(c) ? {
-                      background: 'var(--brand)', color: '#fff', border: '1px solid var(--brand)',
+                    <button key={c} aria-pressed={selectedConvictions.includes(c)} onClick={() => toggleConviction(c)} className="px-2.5 py-1 text-[12px] font-medium rounded-lg transition-all" style={selectedConvictions.includes(c) ? {
+                      background: 'var(--accent-fill)', color: 'var(--on-accent)', border: '1px solid var(--brand)',
                     } : {
                       background: 'var(--glass-bg-subtle)', color: 'var(--text-2)', border: '1px solid var(--glass-border)',
                     }}>
@@ -789,14 +794,13 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 <button
                   onClick={() => setShowFilters(false)}
                   className="w-full py-2.5 rounded-xl text-xs font-semibold"
-                  style={{ background: 'var(--brand)', color: '#fff', boxShadow: '0 4px 12px rgba(110, 168, 254, 0.3)' }}
+                  style={{ background: 'var(--accent-fill)', color: 'var(--on-accent)', boxShadow: 'none' }}
                 >
                   Apply Filters ({filteredData.length} stocks)
                 </button>
               </div>
             </div>
-          </div>
-        </div>
+        </ModalShell>
       )}
 
       {/* Desktop table */}
@@ -814,9 +818,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               <th className="py-2 px-2 text-center w-8" style={{ color: 'var(--text-3)' }}>
                 <span title="Select up to 4 stocks to compare"><Scales size={14} /></span>
               </th>
-              <th className="py-2 px-2 typo-table-head cursor-pointer select-none glass-subtle" style={{textAlign:'left',position:'sticky',left:0,zIndex:1}} onClick={()=>handleSort('Ticker')}>
-                <span className="inline-flex items-center gap-1"><InfoTooltip id="screener.ticker">Ticker</InfoTooltip>{sortKey==='Ticker'&&<span style={{color:'var(--brand)'}}>{sortDir==='asc'?'↑':'↓'}</span>}</span>
-              </th>
+              <SortHeader field="Ticker" className="sticky left-0 z-10 bg-[var(--surface-2)]" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Ticker</SortHeader>
               <SortHeader field="Sector" className="hidden md:table-cell" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.sector">Sector</InfoTooltip></SortHeader>
               <SortHeader field="Price" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.price">Price</InfoTooltip></SortHeader>
               <SortHeader field="1d_Chg_%" align="right" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}><InfoTooltip id="screener.1d">1D</InfoTooltip></SortHeader>
@@ -851,10 +853,10 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 onSelect={onSelect}
                 onToggleCompare={(ticker) => setCompareTickers(prev => prev.includes(ticker) ? prev.filter(t => t !== ticker) : prev.length < 4 ? [...prev, ticker] : prev)}
                 onToggleWatchlist={toggleWatchlist}
-                onThesis={setThesisAsset}
+                onThesis={row => isLoggedIn ? setThesisAsset(row) : onRequestSignIn?.()}
                 onSizer={setSizerAsset}
-                onRadar={setRadarAsset}
-                onFactsheet={setFactsheetAsset}
+                onRadar={row => isLoggedIn ? setRadarAsset(row) : onRequestSignIn?.()}
+                onFactsheet={row => isLoggedIn ? setFactsheetAsset(row) : onRequestSignIn?.()}
               />
             ))}
           </tbody>
@@ -886,7 +888,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               {/* Row 1: Ticker, Score, Conviction, Watch */}
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
-                  <button onClick={() => onSelect(row.Ticker)} className="text-sm font-bold" style={{ color: 'var(--text)' }}>
+                  <button onClick={() => onSelect(row.Ticker)} className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
                     {row.Ticker.replace('.NS', '')}
                   </button>
                   {isLoggedIn && (
@@ -897,7 +899,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 </div>
                 <div className="flex items-center gap-2">
                   {isLoggedIn && <span className={`text-sm font-mono font-medium ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</span>}
-                  <button onClick={() => toggleWatchlist(row.Ticker)}
+                  <button aria-label={`${watchlist.includes(row.Ticker) ? 'Remove' : 'Add'} ${row.Ticker.replace('.NS', '')} ${watchlist.includes(row.Ticker) ? 'from' : 'to'} watchlist`} aria-pressed={watchlist.includes(row.Ticker)} onClick={() => toggleWatchlist(row.Ticker)}
                     onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.75)')}
                     onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
                     style={{ transition: 'transform var(--dur-fast) var(--ease-out)', border: 'none', background: 'none', cursor: 'pointer', color: watchlist.includes(row.Ticker) ? 'var(--amber)' : 'var(--text-3)' }}>
@@ -907,7 +909,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               </div>
 
               {/* Row 2: Price, 1D, Sector */}
-              <div className="flex items-center gap-3 mb-1.5 text-[11px]">
+              <div className="flex items-center gap-3 mb-1.5 text-[12px]">
                 <span className="font-mono font-medium" style={{ color: 'var(--text)' }}>{num(row.Price)}</span>
                 <span className={`font-mono font-medium ${colorCode(row['1d_Chg_%'])}`}>
                   {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
@@ -917,7 +919,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               </div>
 
               {/* Row 3: Tech, Fund, Research, F-Score, Value + expand */}
-              <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--text-3)' }}>
+              <div className="flex items-center gap-3 text-[12px]" style={{ color: 'var(--text-3)' }}>
                 <span><InfoTooltip id="screener.tech">T</InfoTooltip> <span className={`font-mono font-medium ${scoreColor(row.Tech_Score)}`}>{num(row.Tech_Score)}</span></span>
                 <span><InfoTooltip id="screener.fund">F</InfoTooltip> <span className="font-mono font-medium">{num(row.Fund_Score)}</span></span>
                 <span><InfoTooltip id="screener.research">R</InfoTooltip> <span className="font-mono font-medium">{num(row.Research_Score)}</span></span>
@@ -926,12 +928,12 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 <span className="ml-auto">
                   <button
                     onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors text-[10px] font-medium"
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors text-[12px] font-medium"
                     style={{
                       color: expandedRow === row.Ticker ? 'var(--brand)' : 'var(--text-3)',
                       background: expandedRow === row.Ticker ? 'var(--brand-soft)' : 'transparent',
                     }}>
-                    <Info size={12} weight="duotone" />
+                    <Info size={12} weight="regular" />
                     {expandedRow === row.Ticker ? 'Close' : 'Details'}
                   </button>
                 </span>
@@ -947,17 +949,17 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
               {expandedRow === row.Ticker && (
                 <div style={{ borderTop: '1px solid var(--glass-border)' }}>
                   {/* Metrics grid */}
-                  <div className="px-3 py-2.5 grid grid-cols-3 gap-x-3 gap-y-2.5 text-[11px]">
+                  <div className="px-3 py-2.5 grid grid-cols-3 gap-x-3 gap-y-2.5 text-[12px]">
                     {[
                       ['P/E', row['P/E'] != null && Number(row['P/E']) < 0 ? 'Loss' : num(row['P/E']), 'metrics.pe'],
                       ['ROE', row['ROE_%'] != null ? `${row['ROE_%'].toFixed(1)}%` : '-', 'metrics.roe'],
                       ['ROCE', row['ROCE_%'] != null ? `${row['ROCE_%'].toFixed(1)}%` : '-', 'metrics.roce'],
-                      ['D/E', row.Debt_to_Equity != null ? row.Debt_to_Equity.toFixed(2) : '-', 'metrics.de'],
+                      ['D/E', num(debtEquityRatio(row.Debt_to_Equity), 2), 'metrics.de'],
                       ['Mkt Cap', row.Market_Cap_B != null ? `₹${row.Market_Cap_B.toLocaleString('en-IN')}B` : '-', 'metrics.mkt-cap'],
                       ['Promoter', row['Promoter_Holding_%'] != null ? `${row['Promoter_Holding_%'].toFixed(1)}%` : '-', 'metrics.promoter'],
                     ].map(([label, val, tooltipId]) => (
                       <div key={label as string} className="flex flex-col gap-0.5">
-                        <span className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
+                        <span className="text-[12px]  tracking-normal" style={{ color: 'var(--text-3)' }}>
                           <InfoTooltip id={tooltipId as string}>{label as string}</InfoTooltip>
                         </span>
                         <span className="font-mono font-medium text-[12px]" style={{ color: 'var(--text)' }}>{val as React.ReactNode}</span>
@@ -967,7 +969,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
 
                   {/* Signals */}
                   <div className="px-3 pb-2 pt-1" style={{ borderTop: '1px solid var(--glass-border)' }}>
-                    <p className="text-[9px] uppercase tracking-wider mb-2" style={{ color: 'var(--text-3)' }}>Technical Signals</p>
+                    <p className="text-[12px]  tracking-normal mb-2" style={{ color: 'var(--text-3)' }}>Technical Signals</p>
                     <div className="flex flex-wrap gap-1.5">
                       {[
                         ['SMA50', row.Sig_Price_vs_SMA50, 'sig.price-sma50'],
@@ -984,7 +986,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                         return (
                           <span
                             key={label as string}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[12px] font-medium"
                             style={{
                               background: bullish ? 'rgba(74,222,128,0.10)' : bearish ? 'rgba(248,113,113,0.10)' : 'var(--glass-bg-subtle)',
                               color: bullish ? 'var(--green)' : bearish ? 'var(--red)' : 'var(--text-3)',
@@ -1001,7 +1003,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
 
                   {/* Factor scores - compact horizontal bars */}
                   <div className="px-3 pb-3 pt-1" style={{ borderTop: '1px solid var(--glass-border)' }}>
-                    <p className="text-[9px] uppercase tracking-wider mb-2" style={{ color: 'var(--text-3)' }}>Factor Scores</p>
+                    <p className="text-[12px]  tracking-normal mb-2" style={{ color: 'var(--text-3)' }}>Factor Scores</p>
                     <div className="space-y-1.5">
                       {[
                         ['Value', row.Value_Score],
@@ -1014,7 +1016,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                         const pct = Math.min(100, (v / 10) * 100)
                         return (
                           <div key={label as string} className="flex items-center gap-2">
-                            <span className="text-[10px] w-20 shrink-0" style={{ color: 'var(--text-3)' }}>{label as string}</span>
+                            <span className="text-[12px] w-20 shrink-0" style={{ color: 'var(--text-3)' }}>{label as string}</span>
                             <div className="flex-1 h-1 rounded-full" style={{ background: 'var(--glass-border)' }}>
                               <div
                                 className="h-1 rounded-full"
@@ -1025,7 +1027,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                                 }}
                               />
                             </div>
-                            <span className="font-mono text-[10px] w-5 text-right" style={{ color: 'var(--text-2)' }}>{num(val)}</span>
+                            <span className="font-mono text-[12px] w-5 text-right" style={{ color: 'var(--text-2)' }}>{num(val)}</span>
                           </div>
                         )
                       })}
@@ -1034,17 +1036,17 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
 
                   {/* Mobile Actions */}
                   <div className="px-3 py-2.5 flex items-center gap-1.5 flex-wrap border-t border-[var(--glass-border)]">
-                    <button onClick={(e) => { e.stopPropagation(); setThesisAsset(row) }} className="btn-glass text-[11px] py-1 px-2.5 rounded-full flex items-center gap-1">
-                      <Lightning size={12} weight="duotone" className="text-[var(--brand)]" /> Thesis
+                    <button onClick={(e) => { e.stopPropagation(); if (isLoggedIn) setThesisAsset(row); else onRequestSignIn?.() }} className="btn-glass text-[12px] py-1 px-2.5 rounded-full flex items-center gap-1">
+                      <Lightning size={12} weight="regular" className="text-[var(--brand)]" /> Thesis
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); setSizerAsset(row) }} className="btn-glass text-[11px] py-1 px-2.5 rounded-full flex items-center gap-1">
-                      <Calculator size={12} weight="duotone" className="text-[var(--brand)]" /> Sizer
+                    <button onClick={(e) => { e.stopPropagation(); setSizerAsset(row) }} className="btn-glass text-[12px] py-1 px-2.5 rounded-full flex items-center gap-1">
+                      <Calculator size={12} weight="regular" className="text-[var(--brand)]" /> Sizer
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); setRadarAsset(row) }} className="btn-glass text-[11px] py-1 px-2.5 rounded-full flex items-center gap-1">
-                      <Sparkle size={12} weight="duotone" className="text-[var(--brand)]" /> Radar
+                    <button onClick={(e) => { e.stopPropagation(); if (isLoggedIn) setRadarAsset(row); else onRequestSignIn?.() }} className="btn-glass text-[12px] py-1 px-2.5 rounded-full flex items-center gap-1">
+                      <Sparkle size={12} weight="regular" className="text-[var(--brand)]" /> Radar
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); setFactsheetAsset(row) }} className="btn-glass text-[11px] py-1 px-2.5 rounded-full flex items-center gap-1">
-                      <FileText size={12} weight="duotone" className="text-[var(--brand)]" /> Factsheet
+                    <button onClick={(e) => { e.stopPropagation(); if (isLoggedIn) setFactsheetAsset(row); else onRequestSignIn?.() }} className="btn-glass text-[12px] py-1 px-2.5 rounded-full flex items-center gap-1">
+                      <FileText size={12} weight="regular" className="text-[var(--brand)]" /> Factsheet
                     </button>
                   </div>
                 </div>
@@ -1059,7 +1061,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 card text-xs" style={{ borderRadius: 'var(--radius-xl)' }}>
           <div className="flex items-center gap-2" style={{ color: 'var(--text-3)' }}>
             <span>
-              Showing <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{Math.min((validCurrentPage - 1) * pageSize + 1, filteredData.length)}</span>–<span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{Math.min(validCurrentPage * pageSize, filteredData.length)}</span> of <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{filteredData.length}</span> stocks
+              Showing <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{Math.min((validCurrentPage - 1) * pageSize + 1, filteredData.length)}</span>–<span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{Math.min(validCurrentPage * pageSize, filteredData.length)}</span> of <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{filteredData.length}</span> stocks
             </span>
           </div>
 
@@ -1072,10 +1074,10 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                   <button
                     key={size}
                     onClick={() => { setPageSize(size); setCurrentPage(1) }}
-                    className="px-2.5 py-1 rounded-full transition-colors text-[11px] font-medium"
+                    className="px-2.5 py-1 rounded-full transition-colors text-[12px] font-medium"
                     style={{
-                      background: pageSize === size ? 'var(--brand)' : 'var(--glass-bg-subtle)',
-                      color: pageSize === size ? '#fff' : 'var(--text-2)',
+                      background: pageSize === size ? 'var(--accent-fill)' : 'var(--surface-2)',
+                      color: pageSize === size ? 'var(--on-accent)' : 'var(--text-2)',
                       border: `1px solid ${pageSize === size ? 'var(--brand)' : 'var(--glass-border)'}`,
                     }}
                   >
@@ -1105,7 +1107,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                   <CaretLeft size={14} />
                 </button>
                 <span className="px-2 font-medium" style={{ color: 'var(--text-2)' }}>
-                  Page <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{validCurrentPage}</span> of <span className="font-mono font-bold">{totalPages}</span>
+                  Page <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{validCurrentPage}</span> of <span className="font-mono font-semibold">{totalPages}</span>
                 </span>
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
@@ -1132,7 +1134,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
       {/* Floating Stock Comparison Toolbar */}
       {compareTickers.length > 0 && (
         <div
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-4 py-3 rounded-2xl glass-strong shadow-2xl animate-fade-in"
+          className="comparison-toolbar fixed bottom-6 right-6 z-40 flex items-center gap-3 px-4 py-3 rounded-2xl glass-strong shadow-2xl animate-fade-in"
           style={{
             background: 'var(--surface-3)',
             color: 'var(--text)',
@@ -1149,10 +1151,10 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsCompareOpen(true)}
-              className="px-3 py-1.5 rounded-xl font-bold text-xs transition-all shadow-md"
+              className="px-3 py-1.5 rounded-xl font-semibold text-xs transition-all shadow-md"
               style={{
-                background: 'var(--brand)',
-                color: '#ffffff',
+                background: 'var(--accent-fill)',
+                color: 'var(--on-accent)',
               }}
             >
               Compare Selected

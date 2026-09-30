@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, memo, lazy, Suspense } from 'react'
+import React, { useEffect, useLayoutEffect, useState, useMemo, memo, lazy, Suspense } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { TrendUp, ChartBar, StackSimple, Moon, Sun, WarningCircle, Database, Pulse, SignOut, LockSimple } from '@phosphor-icons/react'
 import { Analytics } from '@vercel/analytics/react'
@@ -9,6 +9,8 @@ import { useChartData } from './hooks/useChartData'
 import { useWatchlist } from './hooks/useWatchlist'
 import { SeoHead } from './components/common/SeoHead'
 import { SocialShareModal } from './components/common/SocialShareModal'
+import { ModalShell } from './components/common/ModalShell'
+import { X } from '@phosphor-icons/react'
 import { ShareNetwork } from '@phosphor-icons/react'
 
 class ErrorBoundary extends React.Component<
@@ -26,13 +28,13 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.error) {
       return (
-        <div style={{ padding: 40, fontFamily: 'sans-serif', background: 'var(--surface-2)', color: 'var(--text)', borderRadius: 'var(--radius-lg)', margin: 20 }}>
+        <div style={{ padding: 40, background: 'var(--surface-2)', color: 'var(--text)', borderRadius: 'var(--radius-lg)', margin: 20 }}>
           <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Something went wrong</h2>
           <p style={{ fontSize: 14, color: 'var(--text-2)', marginBottom: 16 }}>
             {import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred in this view.'}
           </p>
           {import.meta.env.DEV && (
-            <pre style={{ padding: 12, background: 'var(--surface-3)', borderRadius: 8, fontSize: 11, overflowX: 'auto', marginBottom: 16 }}>
+            <pre style={{ padding: 12, background: 'var(--surface-3)', borderRadius: 8, fontSize: 12, overflowX: 'auto', marginBottom: 16 }}>
               {this.state.error.stack}
             </pre>
           )}
@@ -63,10 +65,9 @@ function TabSkeleton() {
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {[0, 1, 2].map(i => (
-          <div key={i} className="glass" style={{
+          <div key={i} className="card loading-shimmer" style={{
             height: 340,
             borderRadius: 'var(--radius-lg)',
-            animation: `pulse 1.5s ${i * 0.12}s ease-in-out infinite`,
           }}/>
         ))}
       </div>
@@ -87,17 +88,16 @@ function TapeInner({ data, flashTickers }: { data: DashboardData[]; flashTickers
   }, [data])
   if (!items.length) return null
 
-  const duration = Math.max(30, (items.length * 217) / 150)
 
   return (
-    <div className="overflow-hidden glass-subtle" style={{ borderBottom: '0.5px solid var(--glass-border)' }}>
-      <div className="tape flex w-max whitespace-nowrap scrollbar-none" style={{ animation: `scroll ${duration}s linear infinite` }}>
-        {[...items, ...items].map((x, i) => {
+    <div role="region" aria-label="Market prices" tabIndex={0} className="overflow-x-auto market-tape" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+      <div className="flex w-max whitespace-nowrap">
+        {items.map((x, i) => {
           const flash = flashTickers?.[x.ticker]
           return (
             <span
               key={i}
-              className={`inline-flex items-center px-4 py-1.5 text-[11px] shrink-0 transition-colors duration-500 rounded ${
+              className={`inline-flex items-center px-4 py-1.5 text-[12px] shrink-0 transition-colors duration-500 rounded ${
                 flash === 'up' ? 'bg-emerald-500/20' : flash === 'down' ? 'bg-rose-500/20' : ''
               }`}
             >
@@ -154,7 +154,6 @@ export default function App() {
     setLoginPassword,
     loginError,
     loginLoading,
-    loginRef,
     handleLogin,
     handleLogout,
   } = useAuth()
@@ -194,7 +193,7 @@ export default function App() {
   })
 
   useEffect(() => { try { localStorage.setItem('qa_dark', String(isDark)) } catch { /* Storage may be disabled. */ } }, [isDark])
-  useEffect(() => { document.documentElement.classList.toggle('dark', isDark) }, [isDark])
+  useLayoutEffect(() => { document.documentElement.classList.toggle('dark', isDark) }, [isDark])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -272,135 +271,56 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background:'var(--bg-gradient)' }}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <SeoHead activeTab={activeTab} selectedTicker={selectedTicker} selectedAsset={selectedAsset} />
       <Tape data={data} flashTickers={flashTickers} />
 
       <div>
         {/* Header - Web Application Navigation Bar */}
-        <header className="glass-strong" style={{ borderBottom:'0.5px solid var(--glass-border)', borderRadius: 0 }}>
-          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[52px] flex items-center justify-between relative">
-            {/* Left: Brand Logo */}
-            <div className="flex items-center gap-3">
-              <button onClick={()=>setActiveTab('charting')} className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity">
-                <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-[36px] w-auto" />
-              </button>
-            </div>
-
-            {/* Desktop Center: Segmented Navigation Bar - Truly Centered */}
-            <nav className="hidden md:flex items-center p-1 rounded-full glass-subtle absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 shadow-sm"
-              style={{ border: '0.5px solid var(--glass-border)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)' }}>
+        <header className="app-header glass">
+          <div className="app-toolbar">
+            <button type="button" onClick={() => setActiveTab('charting')} aria-label="Alpha home" className="shrink-0">
+              <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-11 w-auto" />
+            </button>
+            <nav className="app-navigation" aria-label="Main navigation">
               {visibleTabs.map(tab => (
-                <button key={tab.id} onClick={()=>setActiveTab(tab.id as any)}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-medium rounded-full transition-all duration-200"
-                  style={{
-                    color: activeTab===tab.id ? 'var(--text)' : 'var(--text-3)',
-                    background: activeTab===tab.id ? 'var(--glass-bg-strong)' : 'transparent',
-                    border: activeTab===tab.id ? '0.5px solid var(--glass-border-strong)' : '0.5px solid transparent',
-                    boxShadow: activeTab===tab.id ? '0 1px 4px rgba(0,0,0,0.12), inset 0 0.5px 0 rgba(255,255,255,0.15)' : 'none',
-                  }}>
-                  <tab.icon size={13} weight="duotone" />{tab.label}
+                <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id)} aria-current={activeTab === tab.id ? 'page' : undefined}>
+                  <tab.icon size={18} weight="regular" aria-hidden="true" />{tab.label}
                 </button>
               ))}
             </nav>
-
-            {/* Right: Mode & Auth Controls */}
-            <div className="flex items-center gap-1.5" ref={loginRef} style={{ position: 'relative' }}>
-              <button onClick={() => setIsShareOpen(true)} title="Share Quant Research" aria-label="Share Quant Research"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
-                style={{
-                  color: 'var(--brand)',
-                  background: 'var(--brand-soft)',
-                  border: '0.5px solid var(--glass-border)',
-                  backdropFilter: 'blur(16px)',
-                  WebkitBackdropFilter: 'blur(16px)',
-                  boxShadow: 'var(--glass-shadow)',
-                  cursor: 'pointer',
-                }}>
-                <ShareNetwork size={13} weight="duotone" /><span className="hidden sm:inline">Share</span>
+            <div className="toolbar-actions">
+              <button type="button" onClick={() => setIsShareOpen(true)} aria-label="Share research" className="btn-glass">
+                <ShareNetwork size={18} weight="regular" aria-hidden="true" /><span className="hidden sm:inline toolbar-action-label">Share</span>
               </button>
-              <button onClick={()=>setIsDark(!isDark)} aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
-                style={{
-                  color: 'var(--text-3)',
-                  background: 'var(--glass-bg-subtle)',
-                  border: '0.5px solid var(--glass-border)',
-                  backdropFilter: 'blur(16px)',
-                  WebkitBackdropFilter: 'blur(16px)',
-                  boxShadow: 'var(--glass-shadow)',
-                  cursor: 'pointer',
-                }}>
-                {isDark ? <Sun size={13} weight="duotone"/> : <Moon size={13} weight="duotone"/>}
-                <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
+              <button type="button" onClick={() => setIsDark(!isDark)} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'} className="btn-glass">
+                {isDark ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
+                <span className="hidden sm:inline toolbar-action-label">{isDark ? 'Light' : 'Dark'}</span>
               </button>
               {isLoggedIn ? (
-                <button onClick={() => handleLogout(() => { if (activeTab === 'picks' || activeTab === 'quantlab') setActiveTab('charting') })} aria-label="Logout"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
-                  style={{
-                    color: 'var(--text-3)',
-                    background: 'var(--glass-bg-subtle)',
-                    border: '0.5px solid var(--glass-border)',
-                    backdropFilter: 'blur(16px)',
-                    WebkitBackdropFilter: 'blur(16px)',
-                    boxShadow: 'var(--glass-shadow)',
-                    cursor: 'pointer',
-                  }}>
-                  <SignOut size={13} weight="duotone"/><span className="hidden sm:inline">Logout</span>
+                <button type="button" onClick={() => handleLogout(() => { if (activeTab === 'picks' || activeTab === 'quantlab') setActiveTab('charting') })} aria-label="Sign out" className="btn-glass">
+                  <SignOut size={18} aria-hidden="true" /><span className="hidden sm:inline toolbar-action-label">Sign out</span>
                 </button>
               ) : (
-                <button onClick={()=>setShowLogin(!showLogin)} aria-label="Login"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
-                  style={{
-                    color: 'var(--text-3)',
-                    background: 'var(--glass-bg-subtle)',
-                    border: '0.5px solid var(--glass-border)',
-                    backdropFilter: 'blur(16px)',
-                    WebkitBackdropFilter: 'blur(16px)',
-                    boxShadow: 'var(--glass-shadow)',
-                    cursor: 'pointer',
-                  }}>
-                  <LockSimple size={13} weight="duotone"/><span className="hidden sm:inline">Login</span>
+                <button type="button" onClick={() => setShowLogin(true)} aria-label="Sign in" className="btn-glass">
+                  <LockSimple size={18} aria-hidden="true" /><span className="hidden sm:inline toolbar-action-label">Sign in</span>
                 </button>
-              )}
-              {showLogin && !isLoggedIn && (
-                <div style={{
-                  position: 'absolute', top: '100%', right: 0, marginTop: 8, padding: 16,
-                  borderRadius: 'var(--radius-lg)', zIndex: 100, minWidth: 240,
-                  background: 'var(--glass-bg-strong)',
-                  backdropFilter: 'blur(40px) saturate(1.8)',
-                  WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
-                  border: '0.5px solid var(--glass-border-strong)',
-                  boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.3)' : '0 8px 32px rgba(0,0,0,0.12)',
-                }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Club Member Login</div>
-                  <input type="email" placeholder="Email" value={loginEmail}
-                    onChange={e => setLoginEmail(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                    className="glass-input" style={{ width: '100%', marginBottom: 8, fontSize: 12 }} />
-                  <input type="password" placeholder="Password" value={loginPassword}
-                    onChange={e => setLoginPassword(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                    className="glass-input" style={{ width: '100%', marginBottom: 8, fontSize: 12 }} />
-                  {loginError && <div style={{ fontSize: 11, color: 'var(--red)', marginBottom: 8 }}>{loginError}</div>}
-                  <button onClick={handleLogin} disabled={loginLoading} className="btn-primary w-full text-xs py-2">
-                    {loginLoading ? 'Signing In...' : 'Sign In'}
-                  </button>
-                </div>
               )}
             </div>
           </div>
         </header>
 
         {/* Row 2: Market Data Sub-Header */}
-        <div className="glass-subtle" style={{ borderBottom:'0.5px solid var(--glass-border)', borderRadius: 0 }}>
-          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[11px]">
+        <div className="market-status">
+          <div className="max-w-[1400px] mx-auto px-3 md:px-6 h-[32px] flex items-center gap-3 overflow-x-auto scrollbar-none text-[12px]">
           {/* LIVE indicator */}
           <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
             <div className={isDynamic ? 'live-pulse-glow' : ''} style={{ width:6, height:6, borderRadius:'50%',
               background: isDynamic ? 'var(--green)' : 'var(--text-3)',
               transition: 'background 300ms ease',
               boxShadow: isDynamic ? '0 0 6px var(--green)' : 'none' }}/>
-            <span style={{ fontSize:11, color: isDynamic ? 'var(--green)' : 'var(--text-3)', letterSpacing:'0.04em', fontWeight:600 }}>
-              NSE: {isDynamic ? 'LIVE (15s)' : 'CLOSED'}
+            <span style={{ fontSize: 12, color: isDynamic ? 'var(--green)' : 'var(--text-3)', letterSpacing:'0.04em', fontWeight:600 }}>
+              NSE: {isDynamic ? 'Live · 30s' : 'Closed'}
             </span>
           </div>
 
@@ -461,7 +381,7 @@ export default function App() {
           <div className="flex-1" />
 
           {pricesUpdated && (
-            <span style={{ flexShrink:0, color:'var(--text-3)', fontSize:11 }}>
+            <span style={{ flexShrink:0, color:'var(--text-3)', fontSize: 12 }}>
               {pricesUpdated}
             </span>
           )}
@@ -470,36 +390,31 @@ export default function App() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 max-w-[1400px] mx-auto w-full px-3 md:px-5 py-3 md:py-5 bottom-nav-pad md:pb-5">
+      <main id="main-content" tabIndex={-1} className="flex-1 max-w-[1400px] mx-auto w-full px-4 md:px-6 py-5 md:py-6 bottom-nav-pad md:pb-6">
+        <div className="mb-5">
+          <h1 className="typo-h1">{TABS.find(tab => tab.id === activeTab)?.label}</h1>
+          <p className="typo-caption mt-1">{{charting: 'Price history and company fundamentals', picks: 'Research signals for your investment horizon', fundamentals: 'Explore the NSE universe', heatmap: 'Research scores by sector', quantlab: 'Portfolio research and strategy analysis'}[activeTab]}</p>
+        </div>
         {loading ? (
           <TabSkeleton />
         ) : !data.length ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <WarningCircle size={32} weight="duotone" style={{ color: 'var(--red)', margin: '0 auto 12px' }}/>
+            <WarningCircle size={32} weight="regular" style={{ color: 'var(--red)', margin: '0 auto 12px' }}/>
             <p style={{ color: 'var(--text-2)', marginBottom: 8, fontSize: 14 }}>Could not load market data.</p>
             {loadError && <p style={{ color: 'var(--red)', fontSize: 12, marginBottom: 16 }}>{loadError}</p>}
-            <button onClick={() => fetchData()} className="rounded-xl px-5 py-2 text-[13px] font-medium transition-all duration-200"
-              style={{
-                background: 'var(--glass-bg-strong)',
-                color: 'var(--brand)',
-                border: '1px solid var(--glass-border-strong)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                boxShadow: 'var(--glass-shadow)',
-                cursor: 'pointer',
-              }}>Retry</button>
+            <button onClick={() => fetchData()} className="btn-glass">Retry</button>
           </div>
         ) : (
           <ErrorBoundary>
             <Suspense fallback={<TabSkeleton />}>
               <div className={activeTab === 'charting' ? 'block animate-fade-in' : 'hidden'}>
-                <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon} isLoggedIn={isLoggedIn}/>
+                <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon} isLoggedIn={isLoggedIn} onRequestSignIn={() => setShowLogin(true)}/>
               </div>
               <div className={activeTab === 'picks' ? 'block animate-fade-in' : 'hidden'}>
                 {isLoggedIn && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
               </div>
               <div className={activeTab === 'fundamentals' ? 'block animate-fade-in' : 'hidden'}>
-                <ScreenerTab data={data} onSelect={handleSelect} watchlist={watchlist} toggleWatchlist={toggleWatchlist} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn}/>
+                <ScreenerTab data={data} onSelect={handleSelect} watchlist={watchlist} toggleWatchlist={toggleWatchlist} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn} onRequestSignIn={() => setShowLogin(true)}/>
               </div>
               <div className={activeTab === 'heatmap' ? 'block animate-fade-in' : 'hidden'}>
                 <HeatmapTab sectorMap={sectorMap} onSelect={handleSelect} isDark={isDark}/>
@@ -513,33 +428,20 @@ export default function App() {
       </main>
 
       {/* Mobile Bottom Navigation Dock */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-strong border-t border-[var(--glass-border)] px-2 py-1 pb-safe backdrop-blur-xl" style={{ borderRadius: 0 }}>
+      <nav className="mobile-navigation md:hidden glass" aria-label="Mobile navigation">
         <div className="flex items-center justify-around max-w-md mx-auto">
-          {visibleTabs.map(tab => {
-            const isActive = activeTab === tab.id
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className="flex flex-col items-center justify-center py-1 px-3 min-w-[56px] min-h-[44px] rounded-xl transition-all duration-200"
-                style={{
-                  color: isActive ? 'var(--brand)' : 'var(--text-3)',
-                  background: isActive ? 'var(--brand-soft)' : 'transparent',
-                }}
-              >
-                <tab.icon size={18} weight={isActive ? "fill" : "duotone"} />
-                <span className="text-[10px] font-medium mt-0.5" style={{ color: isActive ? 'var(--brand)' : 'var(--text-3)' }}>
-                  {tab.label}
-                </span>
-              </button>
-            )
-          })}
+          {visibleTabs.map(tab => (
+            <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id)} aria-current={activeTab === tab.id ? 'page' : undefined}>
+              <tab.icon size={22} weight="regular" aria-hidden="true" />
+              <span>{tab.label}</span>
+            </button>
+          ))}
         </div>
       </nav>
 
       {/* Footer */}
-      <footer className="mt-auto glass" style={{borderTop:'0.5px solid var(--glass-border)', borderRadius: 0 }}>
-        <div className="max-w-[1400px] mx-auto px-3 md:px-5 py-3 flex flex-col gap-2 text-[10px]" style={{color:'var(--text-3)'}}>
+      <footer className="mt-auto glass" style={{borderTop:'1px solid var(--glass-border)', borderRadius: 0 }}>
+        <div className="max-w-[1400px] mx-auto px-3 md:px-5 py-3 flex flex-col gap-2 text-[12px]" style={{color:'var(--text-3)'}}>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="flex items-center gap-3">
               <span>Made with &#10084;&#65039; by Abhishek Kumar</span>
@@ -572,6 +474,25 @@ export default function App() {
           </div>
         </div>
       </footer>
+      {showLogin && !isLoggedIn && (
+        <ModalShell title="Sign in" onClose={() => setShowLogin(false)} className="max-w-sm p-6">
+          <button type="button" onClick={() => setShowLogin(false)} aria-label="Close dialog" className="icon-button absolute top-4 right-4"><X size={18} /></button>
+          <h2 className="typo-h2 pr-10">Sign in</h2>
+          <p className="typo-body mt-2 mb-5">Use the shared club account to access Signals and Quant Lab.</p>
+          <form onSubmit={event => { event.preventDefault(); handleLogin() }} className="space-y-4">
+            <div>
+              <label htmlFor="login-email" className="block typo-caption mb-1.5">Email</label>
+              <input id="login-email" type="email" autoComplete="username" autoFocus value={loginEmail} onChange={event => setLoginEmail(event.target.value)} className="glass-input w-full" required />
+            </div>
+            <div>
+              <label htmlFor="login-password" className="block typo-caption mb-1.5">Password</label>
+              <input id="login-password" type="password" autoComplete="current-password" value={loginPassword} onChange={event => setLoginPassword(event.target.value)} className="glass-input w-full" required />
+            </div>
+            {loginError && <p role="alert" className="typo-body text-[var(--red)]">{loginError}</p>}
+            <button type="submit" disabled={loginLoading} className="btn-primary w-full">{loginLoading ? 'Signing in…' : 'Sign in'}</button>
+          </form>
+        </ModalShell>
+      )}
       <SocialShareModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} asset={selectedAsset} />
       <Analytics />
     </div>

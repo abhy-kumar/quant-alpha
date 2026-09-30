@@ -62,7 +62,7 @@ interface Props {
   className?: string
 }
 
-const COMPARISON_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4']
+const COMPARISON_COLORS = ['var(--chart-blue)', 'var(--green)', 'var(--chart-orange)', 'var(--chart-pink)', 'var(--chart-purple)', 'var(--chart-teal)']
 
 export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, showLegend = true, className = '' }: Props) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
@@ -97,7 +97,7 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
   if (!activeAsset && (!assets || assets.length === 0)) return null
 
   const center = size / 2
-  const maxRadius = (size - 76) / 2
+  const maxRadius = Math.max(32, (size - (size < 280 ? 104 : 148)) / 2)
   const numFactors = factors.length || 10
   const levels = [2, 4, 6, 8, 10]
 
@@ -125,9 +125,9 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
   const gradientId = `radar-grad-${(activeAsset?.Ticker || 'radar').replace(/[^a-zA-Z0-9]/g, '')}`
 
   return (
-    <div className={`flex flex-col items-center select-none ${className}`}>
-      <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="overflow-visible">
+    <div className={`flex flex-col items-center select-none w-full min-w-0 ${className}`}>
+      <div className="relative" style={{ width: '100%', maxWidth: size, aspectRatio: '1' }}>
+        <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Factor scores and sector benchmark">
           <defs>
             <radialGradient id={gradientId} cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="var(--brand)" stopOpacity={0.45} />
@@ -161,10 +161,10 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
                 <text
                   x={center + 3}
                   y={center - levelRadius + 9}
-                  fontSize="8"
+                  fontSize="12"
                   fill="var(--text-3)"
                   opacity={0.6}
-                  fontFamily="monospace"
+                  fontFamily="var(--font-ui)"
                 >
                   {level}
                 </text>
@@ -195,7 +195,7 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
           {!isMultiAsset && peerPoints && (
             <polygon
               points={peerPoints}
-              fill="rgba(245, 158, 11, 0.08)"
+              fill="var(--amber)" fillOpacity={0.08}
               stroke="var(--amber)"
               strokeWidth="1.5"
               strokeDasharray="4,3"
@@ -210,7 +210,7 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
               fill={`url(#${gradientId})`}
               stroke="var(--brand)"
               strokeWidth="2.2"
-              filter="url(#radar-glow)"
+
               style={{ transition: 'all 400ms var(--ease-out)' }}
             />
           )}
@@ -238,7 +238,7 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
           {factors.map((f, i) => {
             const { x, y } = getCoordinates(i, f.score)
             const angle = (i * 2 * Math.PI) / numFactors - Math.PI / 2
-            const labelRadius = maxRadius + 18
+            const labelRadius = maxRadius + 24
             const lx = center + labelRadius * Math.cos(angle)
             const ly = center + labelRadius * Math.sin(angle)
             const isHovered = hoveredIdx === i
@@ -246,7 +246,11 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
             return (
               <g
                 key={f.key}
-                className="cursor-pointer"
+                tabIndex={0}
+                role="img"
+                aria-label={`${f.label}: ${f.score.toFixed(1)} out of 10. ${f.rawDesc}`}
+                onFocus={() => setHoveredIdx(i)}
+                onBlur={() => setHoveredIdx(null)}
                 onMouseEnter={() => setHoveredIdx(i)}
                 onMouseLeave={() => setHoveredIdx(null)}
               >
@@ -256,7 +260,7 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
                   cy={y}
                   r={isHovered ? 5.5 : 3.5}
                   fill="var(--brand)"
-                  stroke="#ffffff"
+                  stroke="var(--surface)"
                   strokeWidth="1.5"
                   className="transition-all duration-200"
                 />
@@ -265,13 +269,13 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
                 <text
                   x={lx}
                   y={ly + 3}
-                  textAnchor={Math.abs(lx - center) < 10 ? 'middle' : lx > center ? 'start' : 'end'}
-                  fontSize="9.5"
+                  textAnchor="middle"
+                  fontSize={size < 280 ? 12 : 15}
                   fontWeight={isHovered ? '700' : '500'}
                   fill={isHovered ? 'var(--brand)' : 'var(--text-2)'}
                   className="transition-colors duration-150"
                 >
-                  {f.label}
+                  {size < 280 ? ({ piotroski: 'F-score', momentum: 'Mom', value: 'Value', profitability: 'Profit', quality: 'Quality', investment: 'Invest', sue: 'SUE', lowvol: 'Low vol', bab: 'Beta', reversion: 'Revert' } as Record<string, string>)[f.key] : f.label}
                 </text>
               </g>
             )
@@ -281,14 +285,14 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
         {/* Hovered Factor Tooltip Overlay */}
         {hoveredIdx !== null && (
           <div
-            className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl glass-strong shadow-lg text-center pointer-events-none animate-fade-in text-xs z-10 whitespace-nowrap"
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl glass-strong shadow-lg text-center pointer-events-none animate-fade-in text-xs z-10 whitespace-normal max-w-full w-[280px]"
             style={{ border: '1px solid var(--border-2)', background: 'var(--surface-3)' }}
           >
-            <div className="font-bold flex items-center justify-center gap-1.5" style={{ color: 'var(--text)' }}>
+            <div className="font-semibold flex flex-wrap items-center justify-center gap-1.5" style={{ color: 'var(--text)' }}>
               <span>{factors[hoveredIdx].label}</span>
               <span className="font-mono" style={{ color: 'var(--brand)' }}>{factors[hoveredIdx].score.toFixed(1)}/10</span>
             </div>
-            <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-3)' }}>
+            <div className="text-[12px] mt-0.5" style={{ color: 'var(--text-3)' }}>
               {factors[hoveredIdx].rawDesc} • {factors[hoveredIdx].academicRef}
             </div>
           </div>
@@ -297,7 +301,7 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
 
       {/* Legend */}
       {showLegend && (
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-2 text-[11px]" style={{ color: 'var(--text-3)' }}>
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-2 text-[12px]" style={{ color: 'var(--text-3)' }}>
           {!isMultiAsset && activeAsset && (
             <>
               <div className="flex items-center gap-1.5">

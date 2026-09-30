@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
+import { ModalShell } from './ModalShell'
 import type { DashboardData } from '../../types'
 import { formatNum as num } from '../../utils/formatters'
 import { X, Calculator, Lightning, WarningOctagon } from '@phosphor-icons/react'
@@ -51,17 +51,16 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
 
   const redFlags = asset.Red_Flags || []
 
-  return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-start justify-center p-3 sm:p-6 sm:pt-10 overflow-y-auto bg-black/80 backdrop-blur-md" onClick={onClose}>
-      <div className="relative w-full max-w-xl card p-5 sm:p-6 shadow-2xl rounded-2xl my-auto sm:my-0" style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)' }} onClick={e => e.stopPropagation()}>
+  return (
+    <ModalShell title="Position size" onClose={onClose} className="max-w-3xl p-5 sm:p-6" overlayClassName="">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 mb-4" style={{ borderBottom: '1px solid var(--glass-border)' }}>
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl" style={{ background: 'var(--brand-soft)', color: 'var(--brand)' }}>
-              <Calculator size={22} weight="duotone" />
+              <Calculator size={22} weight="regular" />
             </div>
             <div>
-              <h3 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
+              <h3 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>
                 Position Sizer & Volatility Execution
               </h3>
               <p className="text-xs" style={{ color: 'var(--text-3)' }}>
@@ -69,9 +68,9 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
               </p>
             </div>
           </div>
-          <button
+          <button type="button" aria-label="Close dialog"
             onClick={onClose}
-            className="p-2 rounded-full transition-colors hover:bg-white/10"
+            className="icon-button"
             style={{ color: 'var(--text-3)' }}
           >
             <X size={20} />
@@ -80,11 +79,11 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
 
         {/* Red Flags Alert if applicable */}
         {redFlags.length > 0 && (
-          <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-xs text-amber-300">
-            <WarningOctagon size={20} className="shrink-0 mt-0.5 text-amber-400" />
+          <div className="mb-4 p-3 rounded-xl bg-[var(--amber-bg)] border border-[var(--border)] flex items-start gap-2.5 text-xs text-[var(--amber)]">
+            <WarningOctagon size={20} className="shrink-0 mt-0.5 text-[var(--amber)]" />
             <div>
-              <div className="font-bold text-amber-300">Forensic Disqualifiers Flagged ({redFlags.length})</div>
-              <ul className="list-disc list-inside mt-1 text-[11px] text-amber-200/90 space-y-0.5">
+              <div className="font-semibold text-[var(--amber)]">Forensic Disqualifiers Flagged ({redFlags.length})</div>
+              <ul className="list-disc list-inside mt-1 text-[12px] text-[var(--amber)] space-y-0.5">
                 {redFlags.map((flag, idx) => (
                   <li key={idx}>{flag}</li>
                 ))}
@@ -103,7 +102,7 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
           </div>
           <button
             onClick={() => setUseAtrMode(!useAtrMode)}
-            className="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all"
+            className="px-2.5 py-1 text-[12px] font-semibold rounded-lg transition-all"
             style={{
               background: useAtrMode ? 'var(--brand-soft)' : 'var(--surface-3)',
               color: useAtrMode ? 'var(--brand)' : 'var(--text-3)',
@@ -122,7 +121,7 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
             </label>
             <input
               type="number"
-              value={accountCapital}
+              aria-label="Total portfolio capital in rupees" value={accountCapital}
               onChange={e => setAccountCapital(Math.max(1000, Number(e.target.value)))}
               className="glass-input w-full font-mono text-xs"
             />
@@ -137,7 +136,7 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
               step="0.1"
               min="0.1"
               max="10"
-              value={maxRiskPct}
+              aria-label="Maximum capital risk per trade in percent" value={maxRiskPct}
               onChange={e => setMaxRiskPct(Number(e.target.value))}
               className="glass-input w-full font-mono text-xs"
             />
@@ -153,7 +152,7 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
               min="0.5"
               max="35"
               disabled={useAtrMode}
-              value={stopLossPct}
+              aria-label="Stop loss risk in percent" value={stopLossPct}
               onChange={e => setStopLossPct(Number(e.target.value))}
               className={`glass-input w-full font-mono text-xs ${useAtrMode ? 'opacity-70 cursor-not-allowed' : ''}`}
             />
@@ -168,7 +167,7 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
               step="0.1"
               min="1"
               max="10"
-              value={rewardRatio}
+              aria-label="Target risk reward ratio" value={rewardRatio}
               onChange={e => setRewardRatio(Number(e.target.value))}
               className="glass-input w-full font-mono text-xs"
             />
@@ -177,22 +176,22 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
 
         {/* Output Calculation Breakdown */}
         <div className="card p-4 space-y-3">
-          <div className="text-xs font-bold uppercase tracking-wider text-[var(--brand)] mb-1 flex items-center justify-between">
+          <div className="text-xs font-semibold  tracking-normal text-[var(--brand)] mb-1 flex items-center justify-between">
             <span>Optimal Trade Execution</span>
-            <span className="text-[10px] text-[var(--green)] font-mono">Est. Profit: +₹{num(totalExpectedProfit)} (Risk: ₹{num(maxRiskAmount)})</span>
+            <span className="text-[12px] text-[var(--green)] font-mono">Est. Profit: +₹{num(totalExpectedProfit)} (Risk: ₹{num(maxRiskAmount)})</span>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="p-3 card">
-              <span className="text-[10px] text-[var(--text-3)] uppercase font-semibold">Calculated Shares</span>
-              <div className="text-xl font-bold font-mono text-[var(--brand)] mt-1">
+              <span className="text-[12px] text-[var(--text-3)]  font-semibold">Calculated Shares</span>
+              <div className="text-xl font-semibold font-mono text-[var(--brand)] mt-1">
                 {recommendedShares.toLocaleString('en-IN')} <span className="text-xs font-normal">shares</span>
               </div>
             </div>
 
             <div className="p-3 card">
-              <span className="text-[10px] text-[var(--text-3)] uppercase font-semibold">Total Allocation</span>
-              <div className="text-xl font-bold font-mono text-[var(--text)] mt-1">
+              <span className="text-[12px] text-[var(--text-3)]  font-semibold">Total Allocation</span>
+              <div className="text-xl font-semibold font-mono text-[var(--text)] mt-1">
                 ₹{num(totalPositionValue)} <span className="text-xs font-normal text-[var(--text-3)]">({positionPctOfAccount.toFixed(1)}%)</span>
               </div>
             </div>
@@ -200,30 +199,27 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-2" style={{ borderTop: '1px solid var(--border)' }}>
             <div>
-              <span className="text-[10px] text-[var(--text-3)]">Stop-Loss (2×ATR):</span>
-              <div className="font-mono font-bold text-[var(--red)] text-sm">₹{num(stopLossPrice)}</div>
-              <span className="text-[9px] text-[var(--text-3)]">(-{stopLossPct.toFixed(1)}%)</span>
+              <span className="text-[12px] text-[var(--text-3)]">Stop-Loss (2×ATR):</span>
+              <div className="font-mono font-semibold text-[var(--red)] text-sm">₹{num(stopLossPrice)}</div>
+              <span className="text-[12px] text-[var(--text-3)]">(-{stopLossPct.toFixed(1)}%)</span>
             </div>
             <div>
-              <span className="text-[10px] text-[var(--text-3)]">Target 1 (50% trim):</span>
-              <div className="font-mono font-bold text-[var(--green)] text-sm">₹{num(target1Price)}</div>
-              <span className="text-[9px] text-[var(--text-3)]">(+{((target1Price/price - 1)*100).toFixed(1)}%)</span>
+              <span className="text-[12px] text-[var(--text-3)]">Target 1 (50% trim):</span>
+              <div className="font-mono font-semibold text-[var(--green)] text-sm">₹{num(target1Price)}</div>
+              <span className="text-[12px] text-[var(--text-3)]">(+{((target1Price/price - 1)*100).toFixed(1)}%)</span>
             </div>
             <div>
-              <span className="text-[10px] text-[var(--text-3)]">Target 2 (Runner):</span>
-              <div className="font-mono font-bold text-[var(--green)] text-sm">₹{num(target2Price)}</div>
-              <span className="text-[9px] text-[var(--text-3)]">(+{((target2Price/price - 1)*100).toFixed(1)}%)</span>
+              <span className="text-[12px] text-[var(--text-3)]">Target 2 (Runner):</span>
+              <div className="font-mono font-semibold text-[var(--green)] text-sm">₹{num(target2Price)}</div>
+              <span className="text-[12px] text-[var(--text-3)]">(+{((target2Price/price - 1)*100).toFixed(1)}%)</span>
             </div>
             <div>
-              <span className="text-[10px] text-[var(--text-3)]">Chandelier Trailing:</span>
-              <div className="font-mono font-bold text-amber-400 text-sm">₹{num(chandelierPrice)}</div>
-              <span className="text-[9px] text-[var(--text-3)]">(-3×ATR Trail)</span>
+              <span className="text-[12px] text-[var(--text-3)]">Chandelier Trailing:</span>
+              <div className="font-mono font-semibold text-[var(--amber)] text-sm">₹{num(chandelierPrice)}</div>
+              <span className="text-[12px] text-[var(--text-3)]">(-3×ATR Trail)</span>
             </div>
           </div>
         </div>
-      </div>
-    </div>,
-    document.body
+    </ModalShell>
   )
 }
-

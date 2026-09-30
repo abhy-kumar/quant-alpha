@@ -21,7 +21,7 @@ export const scoreBar = (label: string, value: number, min: number = 0, max: num
       <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
         <div className="h-full rounded-full" style={{ width: `${pct}%`, background: barColor, transition: 'width 500ms var(--ease-out)' }} />
       </div>
-      <span className="font-mono text-[11px] w-7 text-right shrink-0" style={{ color: 'var(--text)' }}>
+      <span className="font-mono text-[12px] w-7 text-right shrink-0" style={{ color: 'var(--text)' }}>
         {value.toFixed(1)}
       </span>
     </div>
@@ -38,18 +38,18 @@ export const SortHeader = ({ field, children, align = 'left', className = '', so
   field: string; children: React.ReactNode; align?: 'left' | 'right'; className?: string;
   sortKey: string; sortDir: 'asc' | 'desc'; onSort: (k: string) => void;
 }) => (
-  <th className={`py-2 px-2 typo-table-head cursor-pointer select-none ${className}`}
-    style={{ textAlign: align }} onClick={() => onSort(field)}>
-    <span className="inline-flex items-center gap-1">
+  <th className={`py-2 px-2 typo-table-head select-none ${className}`}
+    aria-sort={sortKey === field ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} style={{ textAlign: align }}>
+    <button type="button" className="inline-flex items-center gap-1 text-inherit" onClick={() => onSort(field)}>
       {children}
       {sortKey === field && <span style={{ color: 'var(--brand)' }}>{sortDir === 'asc' ? '↑' : '↓'}</span>}
-    </span>
+    </button>
   </th>
 )
 
 export function MiniSparkline({ values, width = 64, height = 22, ticker }: { values: number[]; width?: number; height?: number; ticker?: string }) {
   const id = useId()
-  if (!values || values.length === 0) return <span className="text-[var(--text-3)] text-[10px] block text-center">N/A</span>
+  if (!values || values.length === 0) return <span className="text-[var(--text-3)] text-[12px] block text-center">N/A</span>
   if (values.length === 1) {
     const v = values[0]
     const pct = Math.max(0, Math.min(100, (v / 10) * 100))
@@ -76,11 +76,12 @@ export function MiniSparkline({ values, width = 64, height = 22, ticker }: { val
   )
 }
 
-export function SegmentedControl({ options, value, onChange, className = '' }: {
+export function SegmentedControl({ options, value, onChange, className = '', label = 'View options' }: {
   options: { key: string; label: string }[]
   value: string
   onChange: (key: string) => void
   className?: string
+  label?: string
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const btnRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
@@ -130,15 +131,24 @@ export function SegmentedControl({ options, value, onChange, className = '' }: {
   }, [updateIndicator])
 
   return (
-    <div ref={containerRef} className={`segmented-control ${className}`}>
+    <div ref={containerRef} role="group" aria-label={label} className={`segmented-control ${className}`}>
       {indicator && indicator.width > 0 && (
         <div className="seg-indicator" style={{ left: indicator.left, width: indicator.width }} />
       )}
       {options.map(opt => (
         <button
           key={opt.key}
+          type="button"
+          aria-pressed={value === opt.key}
           ref={el => { if (el) btnRefs.current.set(opt.key, el) }}
           onClick={() => onChange(opt.key)}
+          onKeyDown={event => {
+            const index = options.findIndex(option => option.key === opt.key)
+            const next = event.key === 'ArrowRight' ? (index + 1) % options.length
+              : event.key === 'ArrowLeft' ? (index - 1 + options.length) % options.length
+              : event.key === 'Home' ? 0 : event.key === 'End' ? options.length - 1 : -1
+            if (next >= 0) { event.preventDefault(); onChange(options[next].key); btnRefs.current.get(options[next].key)?.focus() }
+          }}
           className={value === opt.key ? 'active' : ''}
         >
           {opt.label}
@@ -149,44 +159,31 @@ export function SegmentedControl({ options, value, onChange, className = '' }: {
 }
 
 export function InfoTooltip({ id, children }: { id: string; children?: React.ReactNode }) {
+  const [open, setOpen] = useState(false)
   const entry = tooltips[id]
   if (!entry) return children ? <>{children}</> : null
   return (
     <Tooltip.Provider delayDuration={200}>
-      <Tooltip.Root>
+      <Tooltip.Root open={open} onOpenChange={setOpen}>
         <Tooltip.Trigger asChild>
-          {children ? (
-            <span className="inline-flex items-center gap-1 cursor-help">{children}</span>
-          ) : (
-            <span className="inline-flex items-center gap-1 cursor-help">
-              <Question size={11} weight="light" style={{ color: 'var(--text-3)', opacity: 0.6 }} />
-            </span>
-          )}
+          <span tabIndex={0} onClick={event => { if (!children) { event.stopPropagation(); setOpen(value => !value) } }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); setOpen(value => !value) } }} className="info-tooltip-trigger" aria-label={children ? undefined : entry.text}>
+            {children || <Question size={16} weight="regular" style={{ color: 'var(--text-3)' }} />}
+          </span>
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content
             className="tooltip-content"
             sideOffset={6}
             side="top"
-            style={{
-              background: 'var(--glass-bg-strong)',
-              backdropFilter: 'blur(var(--glass-blur))',
-              WebkitBackdropFilter: 'blur(var(--glass-blur))',
-              border: '1px solid var(--glass-border-strong)',
-              borderRadius: 'var(--radius)',
-              boxShadow: 'var(--glass-shadow-lg)',
-              padding: '8px 12px',
-              maxWidth: 280,
-              zIndex: 9999,
-            }}
+
           >
-            <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text)', margin: 0 }}>
+            <p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--text)', margin: 0 }}>
               {entry.text}
             </p>
-            <p style={{ fontSize: 10, color: 'var(--text-3)', margin: '4px 0 0', fontStyle: 'italic' }}>
+            <p style={{ fontSize: 12, color: 'var(--text-3)', margin: '4px 0 0', fontStyle: 'italic' }}>
               Source: {entry.source}
             </p>
-            <Tooltip.Arrow style={{ fill: 'var(--glass-bg-strong)' }} />
+            <Tooltip.Arrow style={{ fill: 'var(--surface)' }} />
           </Tooltip.Content>
         </Tooltip.Portal>
       </Tooltip.Root>

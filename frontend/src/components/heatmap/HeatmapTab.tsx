@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import type { DashboardData } from '../../types'
 import { SegmentedControl, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
 import { GridFour } from '@phosphor-icons/react'
@@ -9,125 +9,60 @@ interface Props {
   isDark: boolean
 }
 
-function getHeatmapColor(score: number, isDark: boolean) {
-  const normalized = Math.max(0, Math.min(1, (score - 2) / 6))
-  const r = Math.round(220 - normalized * 180)
-  const g = Math.round(50 + normalized * 150)
-  const b = Math.round(50 + normalized * 80)
-  const bgAlpha = isDark ? 0.2 : 0.12
-  return {
-    backgroundColor: `rgba(${r}, ${g}, ${b}, ${bgAlpha})`,
-    borderColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
-    color: isDark ? `rgb(${Math.min(255, r + 60)}, ${Math.min(255, g + 60)}, ${Math.min(255, b + 60)})` : `rgb(${Math.max(0, r - 40)}, ${Math.max(0, g - 40)}, ${Math.max(0, b - 40)})`,
-  }
+function score(stock: DashboardData): number | null {
+  const value = stock.Composite_Score
+  if (value === null || value === undefined) return null
+  const number = Number(value)
+  return Number.isFinite(number) ? number : null
 }
 
-function getLegendColor(score: number, isDark: boolean) {
-  return getHeatmapColor(score, isDark)
+function tileColor(value: number | null) {
+  const token = value === null ? '--text-3' : value >= 7 ? '--green' : value >= 4 ? '--blue' : '--red'
+  return { backgroundColor: value === null ? 'var(--surface-2)' : `color-mix(in srgb, var(${token}) 10%, var(--surface))`,
+    border: '1px solid var(--border)', color: 'var(--text)' }
 }
 
-function HeatmapTabInner({ sectorMap, onSelect, isDark }: Props) {
-  const [sortMode, setSortMode] = useState<'alpha'|'score'>('score')
-
-  const sectorAvgScores = useMemo(() => {
-    const m: Record<string, number> = {}
-    Object.entries(sectorMap).forEach(([s, stocks]) => {
-      m[s] = stocks.reduce((a, st) => a + (Number(st.Composite_Score) || 0), 0) / stocks.length
-    })
-    return m
-  }, [sectorMap])
-
-  const sortedSectors = sortMode === 'score'
-    ? Object.keys(sectorMap).sort((a, b) => sectorAvgScores[b] - sectorAvgScores[a])
-    : Object.keys(sectorMap).sort()
-
-  return (
-    <div className="space-y-4">
-      {/* Legend + Sort toggle */}
-      <div className="flex flex-wrap justify-between items-center gap-4 text-xs" style={{ color: 'var(--text-3)' }}>
-        <div className="flex items-center gap-4">
-          <span className="font-medium">Score:</span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm" style={getLegendColor(3, isDark)} />
-            Low (&lt;4)
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm" style={getLegendColor(5.5, isDark)} />
-            Mid (4-7)
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm" style={getLegendColor(8, isDark)} />
-            High (&gt;7)
-          </span>
-        </div>
-        <SegmentedControl
-          options={[
-            { key: 'score', label: 'By Score' },
-            { key: 'alpha', label: 'A-Z' },
-          ]}
-          value={sortMode}
-          onChange={(v) => setSortMode(v as 'alpha' | 'score')}
-        />
+function HeatmapTab({ sectorMap, onSelect }: Props) {
+  const [sortMode, setSortMode] = useState('score')
+  const sectorScores = useMemo(() => Object.fromEntries(Object.entries(sectorMap).map(([sector, stocks]) => {
+    const scores = stocks.map(score).filter((value): value is number => value !== null)
+    return [sector, scores.length ? scores.reduce((sum, value) => sum + value, 0) / scores.length : null]
+  })), [sectorMap])
+  const sectors = Object.keys(sectorMap).sort((a, b) => sortMode === 'score'
+    ? (sectorScores[b] ?? -1) - (sectorScores[a] ?? -1) || a.localeCompare(b) : a.localeCompare(b))
+  const hasScores = Object.values(sectorScores).some(value => value !== null)
+  return <div className="space-y-5">
+    <div className="flex flex-wrap justify-between items-center gap-3 text-xs text-[var(--text-3)]">
+      <div className="flex flex-wrap items-center gap-4" aria-label="Score legend">
+        {hasScores ? <><span>Composite score</span>{[[3, 'Low · below 4'], [5, 'Mid · 4 to 7'], [8, 'High · 7 and above']].map(([value, label]) =>
+          <span key={label} className="flex items-center gap-1.5"><span aria-hidden="true" className="w-3 h-3 rounded-sm" style={tileColor(Number(value))} />{label}</span>)}</>
+          : <span>Sign in to view research scores. Unavailable scores appear as a dash.</span>}
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {sortedSectors.map(sector => {
-          const stocks = sectorMap[sector]
-          const avgScore = sectorAvgScores[sector]
-          const colCount = Math.min(4, Math.max(2, Math.ceil(Math.sqrt(stocks.length))))
-          return (
-            <GlassCard key={sector}>
-              <GlassCardHeader
-                icon={GridFour}
-                title={sector}
-                badge={
-                  <span className="font-mono text-xs font-bold" style={{ color: avgScore >= 7 ? 'var(--green)' : avgScore >= 4 ? 'var(--text-2)' : 'var(--red)' }}>
-                    {avgScore.toFixed(1)} / 10
-                  </span>
-                }
-              />
-              <GlassCardContent className="p-4">
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${colCount}, 1fr)`, gap: 6 }}>
-                {stocks.map(stock => {
-                  const s = Number(stock.Composite_Score || 0)
-                  const colors = getHeatmapColor(s, isDark)
-                  return (
-                    <div
-                      key={stock.Ticker}
-                      onClick={() => onSelect(stock.Ticker)}
-                      className="flex flex-col items-center justify-center px-1 py-2.5"
-                      style={{
-                        ...colors,
-                        borderRadius: 'var(--radius-sm)',
-                        transition: 'transform 120ms ease, box-shadow 120ms ease, backdrop-filter 120ms ease',
-                        cursor: 'pointer',
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)' }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none' }}
-                      title={`${stock.Ticker.replace('.NS', '')} - Score: ${s.toFixed(2)}`}
-                    >
-                      <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '-0.02em',
-                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        width: '100%', textAlign: 'center', display: 'block' }}>
-                        {stock.Ticker.replace('.NS', '')}
-                      </span>
-                      <span style={{ fontSize: 10, marginTop: 2, opacity: 0.7 }}>
-                        {s.toFixed(1)}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-              </GlassCardContent>
-            </GlassCard>
-          )
-        })}
-      </div>
+      <SegmentedControl label="Sort sectors" options={[{ key: 'score', label: 'By score' }, { key: 'alpha', label: 'A–Z' }]} value={sortMode} onChange={setSortMode} />
     </div>
-  )
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {sectors.map(sector => {
+        const stocks = sectorMap[sector]
+        const average = sectorScores[sector]
+        return <GlassCard key={sector}>
+          <GlassCardHeader icon={GridFour} title={sector} badge={<span className="typo-num-sm text-[var(--text-2)]">{average === null ? '—' : `${average.toFixed(1)} / 10`}</span>} />
+          <GlassCardContent className="p-4">
+            <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(4, Math.max(2, Math.ceil(Math.sqrt(stocks.length))))}, minmax(0, 1fr))` }}>
+              {stocks.map(stock => {
+                const value = score(stock)
+                const ticker = stock.Ticker.replace('.NS', '')
+                return <button type="button" key={stock.Ticker} onClick={() => onSelect(stock.Ticker)}
+                  aria-label={`${ticker}, ${value === null ? 'score unavailable' : `score ${value.toFixed(1)}`}. View chart`}
+                  className="heatmap-tile flex flex-col items-center justify-center px-1 py-3 rounded-lg min-w-0" style={tileColor(value)}>
+                  <span className="w-full truncate text-xs font-semibold">{ticker}</span>
+                  <span className="typo-num-sm mt-1">{value === null ? '—' : value.toFixed(1)}</span>
+                </button>
+              })}
+            </div>
+          </GlassCardContent>
+        </GlassCard>
+      })}
+    </div>
+  </div>
 }
-
-import { memo } from 'react'
-export default memo(HeatmapTabInner)
+export default memo(HeatmapTab)

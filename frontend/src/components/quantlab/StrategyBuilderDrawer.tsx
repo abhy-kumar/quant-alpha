@@ -42,7 +42,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
           badge={
             <button
               onClick={handleReset}
-              className="btn btn-secondary text-[11px] px-2 py-0.5 flex items-center gap-1"
+              className="btn btn-secondary text-[12px] px-2 py-0.5 flex items-center gap-1"
               title="Reset to default preset"
             >
               <ArrowClockwise size={12} />
@@ -57,6 +57,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
               return (
                 <button
                   key={key}
+                  aria-pressed={isSelected}
                   onClick={() => onSelectPreset(key)}
                   className={`p-3 rounded-lg text-left transition-all border ${
                     isSelected
@@ -67,7 +68,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                   <p className="text-xs font-semibold" style={{ color: isSelected ? 'var(--brand)' : 'var(--text)' }}>
                     {preset.name}
                   </p>
-                  <p className="text-[10px] mt-1 line-clamp-2" style={{ color: 'var(--text-3)' }}>
+                  <p className="text-[12px] mt-1 line-clamp-2" style={{ color: 'var(--text-3)' }}>
                     {preset.description}
                   </p>
                 </button>
@@ -78,7 +79,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
           {/* Universe Candidate Meter */}
           <div className="flex items-center justify-between pt-2 border-t border-[var(--border)] text-xs">
             <span style={{ color: 'var(--text-2)' }}>Filtered Universe Candidates:</span>
-            <span className="font-mono font-bold" style={{ color: matchingCount >= 10 ? 'var(--green)' : 'var(--amber)' }}>
+            <span className="font-mono font-semibold" style={{ color: matchingCount >= 10 ? 'var(--green)' : 'var(--amber)' }}>
               {matchingCount} / {totalUniverseCount} Stocks Pass Rules
             </span>
           </div>
@@ -99,7 +100,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span style={{ color: 'var(--text-2)' }}>Min Piotroski F-Score</span>
-                <span className="font-mono font-bold" style={{ color: 'var(--brand-light)' }}>
+                <span className="font-mono font-semibold" style={{ color: 'var(--brand-light)' }}>
                   &gt;= {config.minPiotroski} / 9
                 </span>
               </div>
@@ -108,7 +109,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                 min="0"
                 max="9"
                 step="1"
-                value={config.minPiotroski}
+                aria-label="Minimum Piotroski score" value={config.minPiotroski}
                 onChange={e => onChange({ ...config, minPiotroski: Number(e.target.value) })}
                 className="w-full accent-[var(--brand)] cursor-pointer"
               />
@@ -118,7 +119,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span style={{ color: 'var(--text-2)' }}>Min Return on Equity (ROE)</span>
-                <span className="font-mono font-bold" style={{ color: 'var(--green)' }}>
+                <span className="font-mono font-semibold" style={{ color: 'var(--green)' }}>
                   &gt;= {config.minRoe}%
                 </span>
               </div>
@@ -127,7 +128,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                 min="0"
                 max="30"
                 step="2"
-                value={config.minRoe}
+                aria-label="Minimum return on equity" value={config.minRoe}
                 onChange={e => onChange({ ...config, minRoe: Number(e.target.value) })}
                 className="w-full accent-[var(--brand)] cursor-pointer"
               />
@@ -137,7 +138,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span style={{ color: 'var(--text-2)' }}>Max Debt / Equity Ratio</span>
-                <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>
+                <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>
                   &lt;= {config.maxDebtEquity.toFixed(1)}x
                 </span>
               </div>
@@ -146,7 +147,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                 min="0.2"
                 max="3.0"
                 step="0.1"
-                value={config.maxDebtEquity}
+                aria-label="Maximum debt to equity" value={config.maxDebtEquity}
                 onChange={e => onChange({ ...config, maxDebtEquity: Number(e.target.value) })}
                 className="w-full accent-[var(--brand)] cursor-pointer"
               />
@@ -156,7 +157,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span style={{ color: 'var(--text-2)' }}>Max Trailing P/E</span>
-                <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>
+                <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>
                   &lt;= {config.maxPe}x
                 </span>
               </div>
@@ -165,7 +166,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                 min="10"
                 max="100"
                 step="5"
-                value={config.maxPe}
+                aria-label="Maximum price to earnings" value={config.maxPe}
                 onChange={e => onChange({ ...config, maxPe: Number(e.target.value) })}
                 className="w-full accent-[var(--brand)] cursor-pointer"
               />
@@ -185,7 +186,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span style={{ color: 'var(--text-2)' }}>Min Momentum Percentile</span>
-                <span className="font-mono font-bold" style={{ color: 'var(--brand)' }}>
+                <span className="font-mono font-semibold" style={{ color: 'var(--brand)' }}>
                   Top {100 - config.minMomentumRank}% (Rank &gt;= {config.minMomentumRank})
                 </span>
               </div>
@@ -194,7 +195,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                 min="0"
                 max="90"
                 step="5"
-                value={config.minMomentumRank}
+                aria-label="Minimum momentum percentile" value={config.minMomentumRank}
                 onChange={e => onChange({ ...config, minMomentumRank: Number(e.target.value) })}
                 className="w-full accent-[var(--brand)] cursor-pointer"
               />
@@ -204,7 +205,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span style={{ color: 'var(--text-2)' }}>RSI(14) Allowed Range</span>
-                <span className="font-mono font-bold" style={{ color: 'var(--blue)' }}>
+                <span className="font-mono font-semibold" style={{ color: 'var(--blue)' }}>
                   {config.minRsi} - {config.maxRsi}
                 </span>
               </div>
@@ -213,7 +214,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                   type="number"
                   min="0"
                   max="50"
-                  value={config.minRsi}
+                  aria-label="Minimum RSI" value={config.minRsi}
                   onChange={e => onChange({ ...config, minRsi: Math.max(0, Number(e.target.value)) })}
                   className="input px-2 py-1 text-xs font-mono"
                   placeholder="Min RSI"
@@ -222,7 +223,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                   type="number"
                   min="50"
                   max="100"
-                  value={config.maxRsi}
+                  aria-label="Maximum RSI" value={config.maxRsi}
                   onChange={e => onChange({ ...config, maxRsi: Math.min(100, Number(e.target.value)) })}
                   className="input px-2 py-1 text-xs font-mono"
                   placeholder="Max RSI"
@@ -267,7 +268,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span style={{ color: 'var(--text-2)' }}>Portfolio Holdings Size</span>
-                <span className="font-mono font-bold" style={{ color: 'var(--brand)' }}>
+                <span className="font-mono font-semibold" style={{ color: 'var(--brand)' }}>
                   Top {config.topN} Stocks
                 </span>
               </div>
@@ -275,11 +276,12 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                 {[5, 10, 15, 20].map(n => (
                   <button
                     key={n}
+                    aria-pressed={config.topN === n}
                     type="button"
                     onClick={() => onChange({ ...config, topN: n })}
                     className={`py-1 text-xs font-mono rounded border ${
                       config.topN === n
-                        ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] border-[var(--brand)] font-bold'
+                        ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] border-[var(--brand)] font-semibold'
                         : 'border-[var(--border)] text-[var(--text-3)] hover:text-[var(--text)]'
                     }`}
                   >
@@ -293,7 +295,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span style={{ color: 'var(--text-2)' }}>Rebalancing Frequency</span>
-                <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>
+                <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>
                   {config.rebalanceDays === 10 ? 'Bi-Weekly (10d)' : config.rebalanceDays === 20 ? 'Monthly (20d)' : 'Quarterly (60d)'}
                 </span>
               </div>
@@ -305,11 +307,12 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                 ].map(r => (
                   <button
                     key={r.d}
+                    aria-pressed={config.rebalanceDays === r.d}
                     type="button"
                     onClick={() => onChange({ ...config, rebalanceDays: r.d })}
                     className={`py-1 text-xs font-mono rounded border ${
                       config.rebalanceDays === r.d
-                        ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] border-[var(--brand)] font-bold'
+                        ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] border-[var(--brand)] font-semibold'
                         : 'border-[var(--border)] text-[var(--text-3)] hover:text-[var(--text)]'
                     }`}
                   >
@@ -323,7 +326,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span style={{ color: 'var(--text-2)' }}>Weighting Scheme</span>
-                <span className="font-mono font-bold" style={{ color: 'var(--brand-light)' }}>
+                <span className="font-mono font-semibold" style={{ color: 'var(--brand-light)' }}>
                   {config.weightingScheme === 'equal' ? 'Equal Weight' : config.weightingScheme === 'volatility_parity' ? 'Vol Parity' : 'Score Weighted'}
                 </span>
               </div>
@@ -335,11 +338,12 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                 ].map(w => (
                   <button
                     key={w.id}
+                    aria-pressed={config.weightingScheme === w.id}
                     type="button"
                     onClick={() => onChange({ ...config, weightingScheme: w.id as any })}
                     className={`py-1 text-xs rounded border ${
                       config.weightingScheme === w.id
-                        ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] border-[var(--brand)] font-bold'
+                        ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] border-[var(--brand)] font-semibold'
                         : 'border-[var(--border)] text-[var(--text-3)] hover:text-[var(--text)]'
                     }`}
                   >
@@ -353,7 +357,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span style={{ color: 'var(--text-2)' }}>Trailing ATR Stop-Loss</span>
-                <span className="font-mono font-bold" style={{ color: config.stopLossAtr > 0 ? 'var(--red)' : 'var(--text-3)' }}>
+                <span className="font-mono font-semibold" style={{ color: config.stopLossAtr > 0 ? 'var(--red)' : 'var(--text-3)' }}>
                   {config.stopLossAtr > 0 ? `${config.stopLossAtr.toFixed(1)}x ATR` : 'Disabled'}
                 </span>
               </div>
@@ -362,7 +366,7 @@ export const StrategyBuilderDrawer: React.FC<Props> = ({
                 min="0"
                 max="4.0"
                 step="0.5"
-                value={config.stopLossAtr}
+                aria-label="Trailing stop in ATR multiples" value={config.stopLossAtr}
                 onChange={e => onChange({ ...config, stopLossAtr: Number(e.target.value) })}
                 className="w-full accent-[var(--brand)] cursor-pointer"
               />

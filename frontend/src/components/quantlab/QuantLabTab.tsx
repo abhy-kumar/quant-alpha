@@ -292,7 +292,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
     const holding = holdings.find(h => label >= h.from && label < h.to)
     return (
       <div style={{ ...getRechartsTooltipStyle(isDark), minWidth: 180 }}>
-        <p className="text-[11px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>{label}</p>
+        <p className="text-[12px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>{label}</p>
         {payload.map((p: any) => (
           <p key={p.dataKey} className="text-xs" style={{ color: p.color }}>
             {p.name}: <strong>{typeof p.value === 'number' ? p.value.toFixed(2) : p.value}</strong>
@@ -300,10 +300,10 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
         ))}
         {holding && holding.tickers.length > 0 && (
           <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
-            <p className="text-[10px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>Holdings</p>
+            <p className="text-[12px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>Holdings</p>
             <div className="flex flex-wrap gap-1">
               {holding.tickers.map(t => (
-                <span key={t} className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
+                <span key={t} className="text-[12px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
                   {t.replace('.NS', '')}
                 </span>
               ))}
@@ -340,12 +340,12 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
       {/* Top View Mode Switcher: Standard Models vs Interactive Strategy Sandbox */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-1)]">
         <div className="flex items-center gap-2.5 px-1">
-          <Flask size={20} weight="duotone" className="text-[var(--brand)]" />
+          <Flask size={20} weight="regular" className="text-[var(--brand)]" />
           <div>
             <span className="text-xs font-semibold block" style={{ color: 'var(--text)' }}>
               Quantitative Studio
             </span>
-            <span className="text-[10px] block" style={{ color: 'var(--text-3)' }}>
+            <span className="text-[12px] block" style={{ color: 'var(--text-3)' }}>
               {activeLabView === 'standard' ? 'Institutional Model Portfolios, Factor Efficacy & Regime' : 'Custom Multi-Factor Strategy Rule Sandbox & Tear Sheet'}
             </span>
           </div>
@@ -354,8 +354,8 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
           value={activeLabView}
           onChange={(v: any) => setActiveLabView(v)}
           options={[
-            { key: 'standard', label: 'Model Portfolios & Factors' },
-            { key: 'sandbox', label: 'Strategy Builder & Sandbox' },
+            { key: 'standard', label: 'Models & factors' },
+            { key: 'sandbox', label: 'Strategy builder' },
           ]}
         />
       </div>
@@ -437,7 +437,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
               <div className="section-band flex items-center gap-1.5">
                 {stat.icon}<span className="typo-caption font-semibold" style={{ color: 'var(--text-2)' }}>{stat.label}</span><InfoTooltip id={stat.tooltipId} />
               </div>
-              <div className="p-4 typo-display font-bold" style={{ color: stat.color }}>{stat.value}</div>
+              <div className="p-4 typo-display font-semibold" style={{ color: stat.color }}>{stat.value}</div>
             </div>
           ))}
         </div>
@@ -496,7 +496,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
             />
             <GlassCardContent className="p-5 space-y-4">
             {!activeBacktest?.chart?.length && (
-              <div className="px-5 py-2 text-[11px]" style={{ background: 'var(--amber-bg)', borderBottom: '0.5px solid var(--glass-border)', color: 'var(--amber)' }}>
+              <div className="px-5 py-2 text-[12px]" style={{ background: 'var(--amber-bg)', borderBottom: '1px solid var(--glass-border)', color: 'var(--amber)' }}>
                 {activeBacktest?.error || 'Walk-forward backtest data is not yet available for this model.'}
               </div>
             )}
@@ -504,10 +504,10 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={windowedChart} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }} tickMargin={10} minTickGap={30} />
-                  <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }} domain={['auto', 'auto']} tickFormatter={(v) => typeof v === 'number' ? v.toFixed(1) : v} />
+                  <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)' }} tickMargin={10} minTickGap={30} />
+                  <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)' }} domain={['auto', 'auto']} tickFormatter={(v) => typeof v === 'number' ? v.toFixed(1) : v} />
                   <Tooltip content={renderBacktestTooltip} />
-                  <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif', fontSize: '10px', color: 'var(--text-3)' }} />
+                  <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--text-3)' }} />
                   <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
                   <Line type="monotone" dataKey="portfolio" name={backtestModel === 'long' ? 'Long Horizon Picks' : 'Alpha Picks'} stroke={backtestModel === 'long' ? 'var(--green)' : 'var(--brand)'} strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
                   <Line type="monotone" dataKey="benchmark" name="NIFTY 50" stroke="var(--text-3)" strokeWidth={1.5} dot={false} strokeDasharray="5 5" />
@@ -517,10 +517,10 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
 
             {/* Holdings Log toggle */}
             {holdings.length > 0 && (
-              <div style={{ borderTop: '0.5px solid var(--glass-border)' }}>
+              <div style={{ borderTop: '1px solid var(--glass-border)' }}>
                 <button
                   onClick={() => setShowHoldings(h => !h)}
-                  className="w-full px-5 py-2.5 text-[11px] font-medium flex items-center justify-between transition-colors"
+                  className="w-full px-5 py-2.5 text-[12px] font-medium flex items-center justify-between transition-colors"
                   style={{ color: 'var(--text-3)', background: 'transparent' }}
                 >
                   <span className="typo-caption">Holdings Log (Rebalance History)</span>
@@ -528,7 +528,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                 </button>
                 {showHoldings && (
                   <div className="px-5 pb-4 overflow-x-auto scrollbar-none">
-                    <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
+                    <table className="w-full text-[12px]" style={{ borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ borderBottom: '1px solid var(--border)' }}>
                           <th className="typo-table-head py-2 pr-4 text-left whitespace-nowrap">From</th>
@@ -547,7 +547,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                                   <button
                                     key={t}
                                     onClick={() => onSelect(t)}
-                                    className="ticker-chip--link text-[10px] px-1.5 py-0.5 rounded font-medium transition-opacity"
+                                    className="ticker-chip--link text-[12px] px-1.5 py-0.5 rounded font-medium transition-opacity"
                                     style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)', border: 'none', cursor: 'pointer' }}
                                   >
                                     {t.replace('.NS', '')}
@@ -573,7 +573,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                   <InfoTooltip id="quant.horizon-comparison" />
                 </div>
                 <div className="px-5 pb-5 overflow-x-auto scrollbar-none">
-                  <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
+                  <table className="w-full text-[12px]" style={{ borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border)' }}>
                         <th className="typo-table-head py-2 pr-5 text-left">Model</th>
@@ -626,18 +626,18 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
 
             {/* Monthly Returns Tear-Sheet Matrix */}
             {monthlyReturnsMatrix.length > 0 && (
-              <div style={{ borderTop: '0.5px solid var(--glass-border)' }}>
+              <div style={{ borderTop: '1px solid var(--glass-border)' }}>
                 <div className="section-band flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <GridFour size={14} style={{ color: 'var(--blue)' }} />
                     <span className="typo-h3">Strategy Tear-Sheet | Monthly Return Matrix (%)</span>
                   </div>
-                  <span className="text-[10px] font-mono" style={{ color: 'var(--text-3)' }}>Walk-Forward Performance</span>
+                  <span className="text-[12px] font-mono" style={{ color: 'var(--text-3)' }}>Walk-Forward Performance</span>
                 </div>
                 <div className="px-5 pb-5 overflow-x-auto scrollbar-none">
-                  <table className="w-full text-[11px] text-center" style={{ borderCollapse: 'collapse' }}>
+                  <table className="w-full text-[12px] text-center" style={{ borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ borderBottom: '0.5px solid var(--border)' }}>
+                      <tr style={{ borderBottom: '1px solid var(--border)' }}>
                         <th className="py-2 pr-3 text-left typo-table-head">Year</th>
                         {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
                           <th key={m} className="py-2 px-1 typo-table-head text-center">{m}</th>
@@ -647,8 +647,8 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                     </thead>
                     <tbody>
                       {monthlyReturnsMatrix.map(r => (
-                        <tr key={r.year} style={{ borderBottom: '0.5px solid var(--border)' }}>
-                          <td className="py-2 pr-3 text-left font-mono font-bold" style={{ color: 'var(--text)' }}>{r.year}</td>
+                        <tr key={r.year} style={{ borderBottom: '1px solid var(--border)' }}>
+                          <td className="py-2 pr-3 text-left font-mono font-semibold" style={{ color: 'var(--text)' }}>{r.year}</td>
                           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => {
                             const val = r.months[m]
                             const bg = val == null ? 'transparent' : val > 0 ? `rgba(16, 185, 129, ${Math.min(0.4, Math.abs(val) / 25)})` : `rgba(239, 68, 68, ${Math.min(0.4, Math.abs(val) / 25)})`
@@ -659,7 +659,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                               </td>
                             )
                           })}
-                          <td className="py-2 pl-3 text-right font-mono font-bold" style={{ color: r.total >= 0 ? 'var(--green)' : 'var(--red)' }}>
+                          <td className="py-2 pl-3 text-right font-mono font-semibold" style={{ color: r.total >= 0 ? 'var(--green)' : 'var(--red)' }}>
                             {r.total >= 0 ? '+' : ''}{r.total.toFixed(1)}%
                           </td>
                         </tr>
@@ -688,7 +688,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
             <GlassCardHeader
               icon={Lightning}
               title="Monte Carlo Simulation"
-              badge={<span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>1,000 Paths</span>}
+              badge={<span className="text-[12px]  font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>1,000 Paths</span>}
             />
             <GlassCardContent className="p-5">
               <MonteCarloChart cagr={backtestStats?.cagr || 15} volatility={backtestStats?.volatility || 18} isDark={isDark} />
@@ -714,8 +714,8 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={radarData} layout="vertical" margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" horizontal={false} vertical={true} />
-                  <XAxis type="number" domain={[0, 100]} stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} />
-                  <YAxis dataKey="subject" type="category" stroke="var(--border)" tick={{ fontSize: 11, fill: 'var(--text-2)', fontFamily: 'Inter, system-ui, sans-serif' }} axisLine={false} tickLine={false} />
+                  <XAxis type="number" domain={[0, 100]} stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)' }} />
+                  <YAxis dataKey="subject" type="category" stroke="var(--border)" tick={{ fontSize: 12, fill: 'var(--text-2)', fontFamily: 'var(--font-ui)' }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={getRechartsTooltipStyle(isDark)} cursor={{ fill: 'var(--surface-2)' }} />
                   <Bar dataKey="A" name="Exposure" fill="var(--green)" radius={[0, 4, 4, 0]} barSize={20} />
                 </BarChart>
@@ -745,7 +745,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                       paddingAngle={2} dataKey="value"
                     >
                       {Object.entries(quantData.sector_allocation).map((_entry, index) => {
-                        const colors = ['#0D9488', '#2563EB', '#7C3AED', '#DB2777', '#EA580C', '#65A30D', '#0891B2', '#4F46E5', '#C026D3', '#E11D48']
+                        const colors = ['var(--chart-teal)', 'var(--chart-blue)', 'var(--chart-purple)', 'var(--chart-pink)', 'var(--chart-orange)', 'var(--green)', 'var(--chart-teal)', 'var(--chart-indigo)', 'var(--chart-purple)', 'var(--chart-pink)']
                         return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                       })}
                     </Pie>
@@ -755,7 +755,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
               </GlassCardContent>
               <GlassCardFooter className="flex flex-wrap gap-x-3 gap-y-1.5 justify-center px-4 pb-4 border-none">
                 {Object.entries(quantData.sector_allocation).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([name, val], i) => {
-                  const colors = ['#0D9488', '#2563EB', '#7C3AED', '#DB2777', '#EA580C', '#65A30D', '#0891B2', '#4F46E5', '#C026D3', '#E11D48']
+                  const colors = ['var(--chart-teal)', 'var(--chart-blue)', 'var(--chart-purple)', 'var(--chart-pink)', 'var(--chart-orange)', 'var(--green)', 'var(--chart-teal)', 'var(--chart-indigo)', 'var(--chart-purple)', 'var(--chart-pink)']
                   return (
                     <div key={name} className="flex items-center gap-1.5 typo-caption" style={{ color: 'var(--text-2)' }}>
                       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: colors[i % colors.length] }} />
@@ -793,7 +793,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
         <div className="section-band flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="p-1.5 shrink-0" style={{ background: 'var(--green-bg)', borderRadius: 'var(--radius)' }}>
-              <ClockCounterClockwise size={16} weight="duotone" style={{ color: 'var(--green)' }} />
+              <ClockCounterClockwise size={16} weight="regular" style={{ color: 'var(--green)' }} />
             </div>
             <div>
               <span className="typo-h2">Backtest Archive</span>
@@ -804,8 +804,8 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
           </div>
           <button
             onClick={() => loadRunIndex()}
-            className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg transition-all"
-            style={{ background: 'var(--glass-bg-subtle)', border: '0.5px solid var(--glass-border)', color: 'var(--text-3)', cursor: 'pointer' }}
+            className="flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-lg transition-all"
+            style={{ background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)', color: 'var(--text-3)', cursor: 'pointer' }}
           >
             <ArrowClockwise size={12} className={runsLoading ? 'animate-spin' : ''} />
             Refresh
@@ -836,7 +836,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
               }
               return Array.from(byDate.entries()).map(([date, runs]) => (
                 <div key={date} className="mb-3">
-                  <p className="text-[10px] font-mono font-semibold mb-2 px-1" style={{ color: 'var(--text-3)' }}>
+                  <p className="text-[12px] font-mono font-semibold mb-2 px-1" style={{ color: 'var(--text-3)' }}>
                     {date}
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -857,30 +857,30 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                           className="rounded-xl px-3 py-3 text-left transition-all"
                           style={{
                             background: isSelected ? 'var(--glass-bg-subtle)' : 'var(--glass-bg)',
-                            border: `0.5px solid ${isSelected ? 'var(--glass-border-strong)' : 'var(--glass-border)'}`,
+                            border: `1px solid ${isSelected ? 'var(--glass-border-strong)' : 'var(--glass-border)'}`,
                             cursor: run ? 'pointer' : 'default',
                             opacity: run ? 1 : 0.35,
                           }}
                         >
                           <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: modelBg, color: modelColor }}>
+                            <span className="text-[12px] px-1.5 py-0.5 rounded font-medium" style={{ background: modelBg, color: modelColor }}>
                               {model === 'short' ? 'Short' : 'Long'}
                             </span>
-                            <span className="text-[10px] font-mono font-semibold" style={{ color: 'var(--text-3)' }}>
+                            <span className="text-[12px] font-mono font-semibold" style={{ color: 'var(--text-3)' }}>
                               {horizon.toUpperCase()}
                             </span>
                           </div>
                           {run ? (
                             <>
-                              <p className="text-sm font-bold tabular-nums leading-tight" style={{ color: typeof cagr === 'number' && cagr >= 0 ? 'var(--green)' : 'var(--red)' }}>
+                              <p className="text-sm font-semibold tabular-nums leading-tight" style={{ color: typeof cagr === 'number' && cagr >= 0 ? 'var(--green)' : 'var(--red)' }}>
                                 {typeof cagr === 'number' ? `${cagr >= 0 ? '+' : ''}${cagr.toFixed(1)}%` : 'N/A'}
                               </p>
-                              <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-3)' }}>
+                              <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-3)' }}>
                                 CAGR / Sharpe {typeof sharpe === 'number' ? sharpe.toFixed(2) : 'N/A'}
                               </p>
                             </>
                           ) : (
-                            <p className="text-[10px]" style={{ color: 'var(--text-4)' }}>Pending</p>
+                            <p className="text-[12px]" style={{ color: 'var(--text-4)' }}>Pending</p>
                           )}
                         </button>
                       )
@@ -894,14 +894,14 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
 
         {/* Expanded selected run chart */}
         {selectedSlug && (
-          <div style={{ borderTop: '0.5px solid var(--glass-border)' }}>
-            <div className="px-5 py-3 flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--text-2)', borderBottom: '0.5px solid var(--glass-border)' }}>
+          <div style={{ borderTop: '1px solid var(--glass-border)' }}>
+            <div className="px-5 py-3 flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--text-2)', borderBottom: '1px solid var(--glass-border)' }}>
               <TrendUp size={13} style={{ color: 'var(--green)' }} />
               Run Detail: <span className="font-mono" style={{ color: 'var(--text-3)' }}>{selectedSlug}</span>
             </div>
 
             {runDataLoading ? (
-              <div className="p-8 text-center text-[11px]" style={{ color: 'var(--text-3)' }}>Loading run data…</div>
+              <div className="p-8 text-center text-[12px]" style={{ color: 'var(--text-3)' }}>Loading run data…</div>
             ) : selectedRunData ? (
               <div className="p-5 space-y-4">
                 {/* Stat chips */}
@@ -916,7 +916,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                   ] as const).map(stat => (
                     typeof stat.val === 'number' && (
                       <div key={stat.label} className="px-3 py-2 rounded-lg" style={{ background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>
-                        <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>{stat.label}</p>
+                        <p className="text-[12px]" style={{ color: 'var(--text-3)' }}>{stat.label}</p>
                         <p className="text-sm font-semibold tabular-nums" style={{ color: stat.color(stat.val) }}>{stat.fmt(stat.val)}</p>
                       </div>
                     )
@@ -928,10 +928,10 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={selectedChart} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                         <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                        <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} tickMargin={8} minTickGap={30} />
-                        <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} domain={['auto', 'auto']} tickFormatter={v => typeof v === 'number' ? v.toFixed(0) : v} />
+                        <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)' }} tickMargin={8} minTickGap={30} />
+                        <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)' }} domain={['auto', 'auto']} tickFormatter={v => typeof v === 'number' ? v.toFixed(0) : v} />
                         <Tooltip contentStyle={getRechartsTooltipStyle(isDark)} />
-                        <Legend verticalAlign="top" height={28} align="right" wrapperStyle={{ fontSize: '10px', color: 'var(--text-3)', fontFamily: 'Inter, system-ui, sans-serif' }} />
+                        <Legend verticalAlign="top" height={28} align="right" wrapperStyle={{ fontSize: '12px', color: 'var(--text-3)', fontFamily: 'var(--font-ui)' }} />
                         <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
                         <Line type="monotone" dataKey="portfolio" name={selectedRunData.model === 'long' ? 'Long Horizon' : 'Alpha Picks'} stroke={selectedRunData.model === 'long' ? 'var(--green)' : 'var(--brand)'} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
                         <Line type="monotone" dataKey="benchmark" name="NIFTY 50" stroke="var(--text-3)" strokeWidth={1.5} dot={false} strokeDasharray="5 5" />
@@ -954,7 +954,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
         {/* Header */}
         <div className="section-band flex items-center gap-3">
           <div className="p-1.5 shrink-0" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius)' }}>
-            <BookOpen size={16} weight="duotone" style={{ color: 'var(--brand)' }} />
+            <BookOpen size={16} weight="regular" style={{ color: 'var(--brand)' }} />
           </div>
           <div>
             <span className="typo-h2">Walk-Forward Backtest Methodology</span>
@@ -987,14 +987,14 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                       <div className="w-2 h-2 rounded-full" style={{ background: model.color }} />
                       <div>
                         <span className="text-xs font-semibold" style={{ color: model.color }}>{model.label}</span>
-                        <span className="text-[10px] ml-2" style={{ color: 'var(--text-3)' }}>{model.subtitle}</span>
+                        <span className="text-[12px] ml-2" style={{ color: 'var(--text-3)' }}>{model.subtitle}</span>
                       </div>
                     </div>
                     {/* 1Y / 6M columns */}
                     <div className="grid grid-cols-2 divide-x" style={{ borderColor: 'var(--glass-border)' }}>
                       {([{ label: '1 Year', stats: model.s1y }, { label: '6 Months', stats: model.s6m }] as const).map(col => (
                         <div key={col.label} className="p-4">
-                          <p className="text-[10px] font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>{col.label}</p>
+                          <p className="text-[12px] font-semibold mb-3  tracking-normal" style={{ color: 'var(--text-3)' }}>{col.label}</p>
                           {col.stats ? (
                             <div className="space-y-2.5">
                               {([
@@ -1007,13 +1007,13 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                                 { label: 'Daily Win Rate', value: col.stats.win_rate, fmt: (v: number) => `${v.toFixed(1)}%`, color: col.stats.win_rate >= 52 ? 'var(--green)' : 'var(--text-2)' },
                               ] as const).map(row => (
                                 <div key={row.label} className="flex items-center justify-between">
-                                  <span className="text-[11px]" style={{ color: 'var(--text-3)' }}>{row.label}</span>
+                                  <span className="text-[12px]" style={{ color: 'var(--text-3)' }}>{row.label}</span>
                                   <span className="text-[12px] font-semibold tabular-nums" style={{ color: row.color }}>{row.fmt(row.value)}</span>
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <p className="text-[11px]" style={{ color: 'var(--text-4)' }}>No data</p>
+                            <p className="text-[12px]" style={{ color: 'var(--text-4)' }}>No data</p>
                           )}
                         </div>
                       ))}
@@ -1023,7 +1023,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
               </div>
 
               {/* Benchmark note */}
-              <p className="text-[11px] mt-3 flex items-start gap-1.5" style={{ color: 'var(--text-3)' }}>
+              <p className="text-[12px] mt-3 flex items-start gap-1.5" style={{ color: 'var(--text-3)' }}>
                 <Info size={12} className="shrink-0 mt-0.5" />
                 Benchmark is NIFTY 50 (^NSEI) from the same period. Nifty data coverage may be partial, so benchmark returns are indicative.
                 All returns are gross of transaction costs and taxes.
@@ -1040,11 +1040,11 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
             <div className="space-y-5">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Lightning size={14} weight="duotone" style={{ color: 'var(--brand)' }} />
+                  <Lightning size={14} weight="regular" style={{ color: 'var(--brand)' }} />
                   <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Why Walk-Forward?</p>
                 </div>
                 <p className="text-[12px] leading-relaxed" style={{ color: 'var(--text-2)' }}>
-                  The scanner has only been running since June 2026, so <code className="text-[11px] px-1 py-0.5 rounded" style={{ background: 'var(--surface-3)', color: 'var(--text)' }}>factor_history</code> has just ~25 scan dates, which is insufficient for long-term backtesting.
+                  The scanner has only been running since June 2026, so <code className="text-[12px] px-1 py-0.5 rounded" style={{ background: 'var(--surface-3)', color: 'var(--text)' }}>factor_history</code> has just ~25 scan dates, which is insufficient for long-term backtesting.
                   Instead, we replay the scoring engine on <strong style={{ color: 'var(--text)' }}>2 full years</strong> of daily OHLCV data
                   (Jun 2024 → Jul 2026, 519 trading days, 561 tickers), simulating exactly what the model would have said at each historical rebalance date.
                 </p>
@@ -1056,7 +1056,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
 
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <ChartBar size={14} weight="duotone" style={{ color: 'var(--green)' }} />
+                  <ChartBar size={14} weight="regular" style={{ color: 'var(--green)' }} />
                   <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Protocol</p>
                 </div>
                 <div className="space-y-2">
@@ -1070,7 +1070,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                     { label: 'Benchmark', value: 'NIFTY 50 (^NSEI) daily returns' },
                     { label: 'Costs', value: 'None modelled (gross returns)' },
                   ] as const).map(row => (
-                    <div key={row.label} className="flex items-start gap-2 text-[11px]">
+                    <div key={row.label} className="flex items-start gap-2 text-[12px]">
                       <span className="shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--brand)', marginTop: 5 }} />
                       <span style={{ color: 'var(--text-3)' }}>{row.label}:</span>
                       <span className="font-medium" style={{ color: 'var(--text-2)' }}>{row.value}</span>
@@ -1087,10 +1087,10 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-2 h-2 rounded-full" style={{ background: 'var(--brand)' }} />
                   <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Short-term Model Signals</p>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>50% Tech + 50% Momentum</span>
+                  <span className="text-[12px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>50% Tech + 50% Momentum</span>
                 </div>
                 <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
-                  <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
+                  <table className="w-full text-[12px]" style={{ borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: 'var(--glass-bg-subtle)' }}>
                         <th className="px-3 py-2 text-left font-medium" style={{ color: 'var(--text-3)', borderBottom: '1px solid var(--glass-border)' }}>Signal</th>
@@ -1127,10 +1127,10 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-2 h-2 rounded-full" style={{ background: 'var(--green)' }} />
                   <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Long-term Model Signals</p>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--green-bg)', color: 'var(--green)' }}>Cross-sectional percentile rank</span>
+                  <span className="text-[12px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--green-bg)', color: 'var(--green)' }}>Cross-sectional percentile rank</span>
                 </div>
                 <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
-                  <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
+                  <table className="w-full text-[12px]" style={{ borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: 'var(--glass-bg-subtle)' }}>
                         <th className="px-3 py-2 text-left font-medium" style={{ color: 'var(--text-3)', borderBottom: '1px solid var(--glass-border)' }}>Factor</th>
@@ -1166,7 +1166,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <CheckCircle size={14} weight="duotone" style={{ color: 'var(--green)' }} />
+                <CheckCircle size={14} weight="regular" style={{ color: 'var(--green)' }} />
                 <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>What this backtest includes</p>
               </div>
               <ul className="space-y-1.5">
@@ -1180,8 +1180,8 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                   'Regime-aware RSI thresholds in the tech score',
                   'Volume confirmation via VPT signal',
                 ].map(item => (
-                  <li key={item} className="flex items-start gap-2 text-[11px]" style={{ color: 'var(--text-2)' }}>
-                    <span className="shrink-0 font-mono text-[10px] font-bold" style={{ color: 'var(--green)', marginTop: 1 }}>[+]</span>
+                  <li key={item} className="flex items-start gap-2 text-[12px]" style={{ color: 'var(--text-2)' }}>
+                    <span className="shrink-0 font-mono text-[12px] font-semibold" style={{ color: 'var(--green)', marginTop: 1 }}>[+]</span>
                     {item}
                   </li>
                 ))}
@@ -1190,7 +1190,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
 
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Prohibit size={14} weight="duotone" style={{ color: 'var(--amber)' }} />
+                <Prohibit size={14} weight="regular" style={{ color: 'var(--amber)' }} />
                 <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Known limitations</p>
               </div>
               <ul className="space-y-1.5">
@@ -1202,8 +1202,8 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                   'Small universe rebalances (< 10 valid stocks) fall back to previous holdings',
                   'Results are in-sample for the price data window; out-of-sample performance is unknown',
                 ].map(item => (
-                  <li key={item} className="flex items-start gap-2 text-[11px]" style={{ color: 'var(--text-2)' }}>
-                    <span className="shrink-0 font-mono text-[10px] font-bold" style={{ color: 'var(--amber)', marginTop: 1 }}>[-]</span>
+                  <li key={item} className="flex items-start gap-2 text-[12px]" style={{ color: 'var(--text-2)' }}>
+                    <span className="shrink-0 font-mono text-[12px] font-semibold" style={{ color: 'var(--amber)', marginTop: 1 }}>[-]</span>
                     {item}
                   </li>
                 ))}
@@ -1212,7 +1212,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
           </div>
 
           {/* - Academic references - */}
-          <div style={{ borderTop: '0.5px solid var(--glass-border)', paddingTop: 20 }}>
+          <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: 20 }}>
             <p className="section-label mb-3">Methodology &amp; References</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {([
@@ -1226,9 +1226,9 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                 { ref: 'Bernard & Thomas (1989)', detail: 'Post-Earnings Announcement Drift (PEAD/SUE) and earnings surprise momentum.' },
                 { ref: 'Piotroski (2000)', detail: 'Value Investing: The Use of Historical Financial Statement Information (F-Score).' },
               ] as const).map(({ ref, detail }) => (
-                <div key={ref} className="p-3 rounded-lg" style={{ background: 'var(--glass-bg-subtle)', border: '0.5px solid var(--glass-border)' }}>
-                  <p className="text-[11px] font-semibold mb-1" style={{ color: 'var(--text)' }}>{ref}</p>
-                  <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-3)' }}>{detail}</p>
+                <div key={ref} className="p-3 rounded-lg" style={{ background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>
+                  <p className="text-[12px] font-semibold mb-1" style={{ color: 'var(--text)' }}>{ref}</p>
+                  <p className="text-[12px] leading-relaxed" style={{ color: 'var(--text-3)' }}>{detail}</p>
                 </div>
               ))}
             </div>

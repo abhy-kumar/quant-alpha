@@ -121,3 +121,31 @@ test('take-profit uses the observed close and weighting changes realized holding
   const vol=simulateStrategy(h,{...config,topN:2,weightingScheme:'volatility_parity'})
   assert(vol.chart.at(-1).portfolio > equal.chart.at(-1).portfolio)
 })
+
+test('debt display units preserve zero, convert Yahoo percentages and reject missing values', () => {
+  const { debtEquityRatio } = load('src/utils/formatters.ts')
+  assert.equal(debtEquityRatio(161.98), 1.6198)
+  assert.equal(debtEquityRatio(0), 0)
+  assert.equal(debtEquityRatio(undefined), null)
+  assert.equal(debtEquityRatio(null), null)
+  assert.equal(debtEquityRatio(NaN), null)
+})
+
+test('shared text and chart-label colors meet 4.5:1 contrast in both themes', async () => {
+  const css = await fs.readFile('src/index.css', 'utf8')
+  const luminance = hex => {
+    const channels = [1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16) / 255)
+      .map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4)
+    return channels.reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index], 0)
+  }
+  for (const theme of [':root', '.dark']) {
+    const block = css.slice(css.indexOf(`${theme} {`)).split('}')[0]
+    const colors = Object.fromEntries([...block.matchAll(/--([\w-]+): (#[0-9a-f]{6})/g)].map(match => [match[1], match[2]]))
+    for (const text of ['text', 'text-2', 'text-3', 'text-4', 'brand', 'green', 'red', 'amber', 'chart-blue', 'chart-purple', 'chart-teal', 'chart-orange', 'chart-pink', 'chart-indigo']) {
+      for (const surface of ['bg', 'surface', 'surface-2']) {
+        const [low, high] = [luminance(colors[text]), luminance(colors[surface])].sort((a, b) => a - b)
+        assert.ok((high + .05) / (low + .05) >= 4.5, `${theme} ${text} on ${surface}`)
+      }
+    }
+  }
+})

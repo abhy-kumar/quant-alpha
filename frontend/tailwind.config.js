@@ -7,6 +7,8 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      fontSize: { xs: ['12px', '1.4'], sm: ['14px', '1.5'] },
+      borderRadius: { lg: 'var(--radius)', xl: 'var(--radius-lg)', '2xl': 'var(--radius-xl)' },
       colors: {
         bg: 'var(--bg-app)',
         card: 'var(--bg-card)',
@@ -44,8 +46,8 @@ export default {
         'progress': 'progress 2s ease-in-out infinite alternate',
       },
       fontFamily: {
-        sans: ['-apple-system', 'BlinkMacSystemFont', '"Product Sans"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
-        data: ['Space Mono', 'SF Mono', 'monospace'],
+        sans: ['var(--font-ui)'],
+        data: ['var(--font-ui)'], mono: ['var(--font-ui)'],
       },
     },
   },

@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useMemo, memo } from 'react'
+import { debtEquityRatio } from '../../utils/formatters'
+import { useState, useRef, useEffect, useMemo, useId, memo } from 'react'
 import type { DashboardData, ChartCandle, ScoreHistoryItem } from '../../types'
 import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
 import {
@@ -28,11 +29,14 @@ interface Props {
   scoreHistory: Record<string, ScoreHistoryItem[]>
   horizon: 'short'|'long'
   isLoggedIn?: boolean
+  onRequestSignIn?: () => void
 }
 
 function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]; selectedTicker: string; onSelect: (t: string) => void }) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const resultsId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -69,39 +73,59 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
   return (
     <div className="relative" ref={containerRef}>
       <div className="flex items-center gap-3 px-3 py-2.5 card" style={{ borderRadius: 'var(--radius-lg)' }}>
-        <MagnifyingGlass size={15} weight="light" style={{ color: 'var(--text-3)' }} />
+        <MagnifyingGlass size={15} weight="regular" style={{ color: 'var(--text-3)' }} />
         <input
           ref={inputRef}
-          type="text"
+          type="search"
+          role="combobox"
+          aria-label="Search stocks"
+          aria-autocomplete="list"
+          aria-expanded={Boolean(open && query)}
+          aria-controls={open && query ? resultsId : undefined}
+          aria-activedescendant={open && query && filtered[activeIndex] ? `${resultsId}-${activeIndex}` : undefined}
+          onKeyDown={event => {
+            if (event.key === 'Escape') { event.preventDefault(); setOpen(false) }
+            if (!open || !filtered.length) return
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+              event.preventDefault()
+              setActiveIndex(index => (index + (event.key === 'ArrowDown' ? 1 : -1) + filtered.length) % filtered.length)
+            }
+            if (event.key === 'Enter' && filtered[activeIndex]) {
+              event.preventDefault(); onSelect(filtered[activeIndex].Ticker); setOpen(false); setQuery('')
+            }
+          }}
           value={open ? query : selectedTicker.replace('.NS', '')}
           onFocus={() => { setOpen(true); setQuery('') }}
-          onChange={e => setQuery(e.target.value)}
+          onChange={e => { setQuery(e.target.value); setActiveIndex(0) }}
           placeholder="Search by symbol or company name"
           className="bg-transparent text-sm outline-none w-full"
           style={{ color: 'var(--text)' }}
         />
-        <kbd className="text-[10px] px-1.5 py-0.5 hidden sm:block rounded-md" style={{ color: 'var(--text-3)', background: 'var(--glass-bg-subtle)', border: '0.5px solid var(--glass-border)' }}>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'}K</kbd>
+        <kbd className="text-[12px] px-1.5 py-0.5 hidden sm:block rounded-md" style={{ color: 'var(--text-3)', background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'}K</kbd>
       </div>
       {open && query && (
         <div className="absolute z-50 top-full left-0 right-0 mt-1 glass-strong rounded-xl shadow-2xl overflow-hidden">
           {/* Scrollable content */}
-          <div className="max-h-60 overflow-y-auto scrollbar-none">
+          <div id={resultsId} role="listbox" aria-label="Stocks" className="max-h-60 overflow-y-auto">
             {filtered.length === 0 ? (
               <div className="p-3 text-xs text-center" style={{ color: 'var(--text-3)' }}>No results</div>
-            ) : filtered.map(d => (
+            ) : filtered.map((d, index) => (
             <button
               key={d.Ticker}
+              id={`${resultsId}-${index}`}
+              role="option"
+              aria-selected={index === activeIndex}
+              tabIndex={-1}
               onClick={() => { onSelect(d.Ticker); setOpen(false); setQuery('') }}
               className="w-full text-left px-3 py-2 text-sm flex items-center justify-between transition-colors"
               style={{
-                background: d.Ticker === selectedTicker ? 'var(--brand-soft)' : 'transparent',
+                background: index === activeIndex ? 'var(--brand-soft)' : 'transparent',
                 color: 'var(--text)',
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--glass-bg-subtle)')}
-              onMouseLeave={e => (e.currentTarget.style.background = d.Ticker === selectedTicker ? 'var(--brand-soft)' : 'transparent')}
+              onMouseEnter={() => setActiveIndex(index)}
             >
               <span className="font-medium">{d.Ticker.replace('.NS', '')}</span>
-              <span className="text-xs" style={{ color: 'var(--text-3)' }}>{d.Sector}</span>
+              <span className="text-xs" style={{ color: 'var(--text-3)' }}>{d.Long_Name || d.Sector}</span>
             </button>
           ))}
           </div>
@@ -114,15 +138,15 @@ function StockSearch({ data, selectedTicker, onSelect }: { data: DashboardData[]
 const ChartTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="glass-strong" style={{
+    <div className="tooltip-content" style={{
       borderRadius: 'var(--radius-lg)', padding: '8px 12px',
-      fontSize: 11, minWidth: 120,
+      fontSize: 12, minWidth: 120,
     }}>
       <p style={{ color: 'var(--text-3)', marginBottom: 4, fontWeight: 500 }}>{label}</p>
       {payload.map((p: any) => (
         <div key={p.name} style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
           <span style={{ color: p.color || 'var(--text-2)' }}>{p.name}</span>
-          <span style={{ fontFamily: 'SF Mono, Space Mono, monospace', fontWeight: 600, color: 'var(--text)' }}>
+          <span style={{ fontFamily: 'var(--font-ui)', fontWeight: 600, color: 'var(--text)' }}>
             {typeof p.value === 'number' ? p.value.toFixed(2) : p.value}
           </span>
         </div>
@@ -133,7 +157,7 @@ const ChartTooltip = ({ active, payload, label }: any) => {
 
 const Panel = ({ title, children }: { title: React.ReactNode; children: React.ReactNode }) => (
   <div className="overflow-hidden card" style={{ borderRadius: 'var(--radius-lg)' }}>
-    <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '0.5px solid var(--glass-border)', color: 'var(--text-2)' }}>
+    <div className="px-4 py-3 text-xs font-medium" style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
       {title}
     </div>
     {children}
@@ -142,7 +166,7 @@ const Panel = ({ title, children }: { title: React.ReactNode; children: React.Re
 
 const InfoBlock = ({ label, value, accent, tooltipId }: { label: string; value: React.ReactNode; accent?: string; tooltipId?: string }) => (
   <div className="flex flex-col gap-0.5">
-    <div className="typo-caption text-[11px] font-medium tracking-tight" style={{ color: 'var(--text-3)' }}>
+    <div className="typo-caption text-[12px] font-medium tracking-tight" style={{ color: 'var(--text-3)' }}>
       {tooltipId ? <InfoTooltip id={tooltipId}>{label}</InfoTooltip> : label}
     </div>
     <div className="typo-num text-[12px] font-semibold tracking-tight" style={{ color: accent || 'var(--text)' }}>{value}</div>
@@ -152,7 +176,7 @@ const InfoBlock = ({ label, value, accent, tooltipId }: { label: string; value: 
 function ChartingTabInner({
   data, selectedTicker, setSelectedTicker, chartData, chartLoading,
   chartPeriod, setChartPeriod, chartInterval, setChartInterval,
-  isDark, peerGroup, selectedAsset, scoreHistory, horizon, isLoggedIn = true
+  isDark, peerGroup, selectedAsset, scoreHistory, horizon, isLoggedIn = true, onRequestSignIn
 }: Props) {
   const rawTickerScores = scoreHistory[selectedTicker] || []
   const tickerScores = rawTickerScores.map(s => ({
@@ -205,38 +229,40 @@ function ChartingTabInner({
         {/* Quick Action Buttons */}
         <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => setIsThesisOpen(true)}
+            onClick={() => isLoggedIn ? setIsThesisOpen(true) : onRequestSignIn?.()}
             className="btn-glass text-xs py-1.5 px-3 w-full rounded-xl flex items-center justify-center gap-1.5"
             title="Institutional Investment Thesis"
           >
-            <Lightning size={13} weight="duotone" className="text-[var(--brand)]" /> Thesis
+            <Lightning size={13} weight="regular" className="text-[var(--brand)]" /> Thesis
           </button>
           <button
             onClick={() => setIsSizerOpen(true)}
             className="btn-glass text-xs py-1.5 px-3 w-full rounded-xl flex items-center justify-center gap-1.5"
             title="Calculate Risk & Position Size"
           >
-            <Calculator size={13} weight="duotone" className="text-[var(--brand)]" /> Sizer
+            <Calculator size={13} weight="regular" className="text-[var(--brand)]" /> Sizer
           </button>
           <button
-            onClick={() => setIsRadarOpen(true)}
+            onClick={() => isLoggedIn ? setIsRadarOpen(true) : onRequestSignIn?.()}
             className="btn-glass text-xs py-1.5 px-3 w-full rounded-xl flex items-center justify-center gap-1.5"
             title="10-Factor Radar Polygon Chart"
           >
-            <Sparkle size={13} weight="duotone" className="text-[var(--brand)]" /> Radar
+            <Sparkle size={13} weight="regular" className="text-[var(--brand)]" /> Radar
           </button>
           <button
-            onClick={() => setIsFactsheetOpen(true)}
+            onClick={() => isLoggedIn ? setIsFactsheetOpen(true) : onRequestSignIn?.()}
             className="btn-glass text-xs py-1.5 px-3 w-full rounded-xl flex items-center justify-center gap-1.5 font-medium"
             title="1-Page Printable Equity Research Factsheet"
           >
-            <FileText size={13} weight="duotone" className="text-[var(--brand)]" /> Factsheet
+            <FileText size={13} weight="regular" className="text-[var(--brand)]" /> Factsheet
           </button>
         </div>
 
+        {!isLoggedIn && <p className="typo-caption">Sign in for thesis, radar, and factsheet research.</p>}
+
         {/* Mobile: horizontal tab strip to switch between info panels */}
         <div className="xl:hidden">
-          <div className="flex gap-1 overflow-x-auto scrollbar-none p-1 rounded-xl glass-subtle" style={{ border: '0.5px solid var(--glass-border)' }}>
+          <div className="flex gap-1 overflow-x-auto scrollbar-none p-1 rounded-xl glass-subtle" style={{ border: '1px solid var(--glass-border)' }}>
             {([
               { id: 'profile',  label: 'Profile' },
               { id: 'tech',     label: 'Technical' },
@@ -247,12 +273,13 @@ function ChartingTabInner({
             ] as const).map(tab => (
               <button
                 key={tab.id}
+                aria-pressed={mobilePanelTab === tab.id}
                 onClick={() => setMobilePanelTab(tab.id)}
                 className="shrink-0 px-3 py-2 min-h-[44px] text-[12px] font-medium rounded-lg transition-all duration-200"
                 style={{
                   background: mobilePanelTab === tab.id ? 'var(--glass-bg-strong)' : 'transparent',
                   color: mobilePanelTab === tab.id ? 'var(--text)' : 'var(--text-3)',
-                  border: mobilePanelTab === tab.id ? '0.5px solid var(--glass-border-strong)' : '0.5px solid transparent',
+                  border: mobilePanelTab === tab.id ? '1px solid var(--glass-border-strong)' : '1px solid transparent',
                   boxShadow: mobilePanelTab === tab.id ? '0 1px 3px rgba(0,0,0,0.08), var(--glass-highlight)' : 'none',
                 }}
               >
@@ -298,7 +325,7 @@ function ChartingTabInner({
                   <InfoBlock label="MACD" value={num(selectedAsset?.MACD_Value)} tooltipId="chart.macd" />
                   <InfoBlock label="Supertrend" value={selectedAsset?.ST_Signal || '-'} tooltipId="chart.supertrend" />
                   <div className="col-span-3">
-                    <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.bull-bear">Bull / Neutral / Bear</InfoTooltip></div>
+                    <div className="text-[12px] mb-0.5" style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.bull-bear">Bull / Neutral / Bear</InfoTooltip></div>
                     <span style={{color:'var(--green)'}}>{selectedAsset?.Bull_Count ?? '-'}</span>
                     <span className="mx-1" style={{color:'var(--text-3)'}}>/</span>
                     <span style={{color:'var(--text-2)'}}>{selectedAsset?.Bull_Count != null && selectedAsset?.Bear_Count != null ? 15 - selectedAsset.Bull_Count - selectedAsset.Bear_Count : '-'}</span>
@@ -345,7 +372,7 @@ function ChartingTabInner({
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <InfoBlock label="Fund Score" value={num(selectedAsset?.Fund_Score)} accent={Number(selectedAsset?.Fund_Score) >= 5 ? 'var(--green)' : undefined} tooltipId="chart.fund-score" />
                   <InfoBlock label="Forward P/E" value={num(selectedAsset?.['Forward_P/E'])} tooltipId="chart.forward-pe" />
-                  <InfoBlock label="D/E" value={num(selectedAsset?.['Debt_to_Equity'])} tooltipId="chart.de" />
+                  <InfoBlock label="D/E" value={num(debtEquityRatio(selectedAsset?.Debt_to_Equity), 2)} tooltipId="chart.de" />
                   <InfoBlock label="ROE" value={`${num(selectedAsset?.['ROE_%'])}%`} tooltipId="chart.roe" />
                   <InfoBlock label="ROCE" value={`${num(selectedAsset?.['ROCE_%'])}%`} tooltipId="chart.roce" />
                   <InfoBlock label="Promoter" value={`${num(selectedAsset?.['Promoter_Holding_%'])}%`} tooltipId="chart.promoter" />
@@ -413,7 +440,7 @@ function ChartingTabInner({
               <InfoBlock label="MACD" value={num(selectedAsset?.MACD_Value)} tooltipId="chart.macd" />
               <InfoBlock label="Supertrend" value={selectedAsset?.ST_Signal || '-'} tooltipId="chart.supertrend" />
               <div className="col-span-2">
-                <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.bull-bear">Bull / Neutral / Bear</InfoTooltip></div>
+                <div className="text-[12px] mb-0.5" style={{ color: 'var(--text-3)' }}><InfoTooltip id="footer.bull-bear">Bull / Neutral / Bear</InfoTooltip></div>
                 <span style={{color:'var(--green)'}}>{selectedAsset?.Bull_Count ?? '-'}</span>
                 <span className="mx-1" style={{color:'var(--text-3)'}}>/</span>
                 <span style={{color:'var(--text-2)'}}>{selectedAsset?.Bull_Count != null && selectedAsset?.Bear_Count != null ? 15 - selectedAsset.Bull_Count - selectedAsset.Bear_Count : '-'}</span>
@@ -458,7 +485,7 @@ function ChartingTabInner({
               <InfoBlock label="3 Month" value={selectedAsset?.Momentum_3M != null ? `${(selectedAsset.Momentum_3M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_3M)} tooltipId="chart.mom-3m" />
               <InfoBlock label="6 Month" value={selectedAsset?.Momentum_6M != null ? `${(selectedAsset.Momentum_6M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_6M)} tooltipId="chart.mom-6m" />
               <InfoBlock label="12 Month" value={selectedAsset?.Momentum_12M != null ? `${(selectedAsset.Momentum_12M * 100).toFixed(2)}%` : '-'} accent={colorCode(selectedAsset?.Momentum_12M)} tooltipId="chart.mom-12m" />
-              <div className="col-span-2 pt-2" style={{ borderTop: '0.5px solid var(--glass-border)' }}>
+              <div className="col-span-2 pt-2" style={{ borderTop: '1px solid var(--glass-border)' }}>
                 <InfoBlock label="Risk-Adjusted" value={num(selectedAsset?.Risk_Adj_Mom)} accent={colorCode(selectedAsset?.Risk_Adj_Mom)} tooltipId="chart.risk-adj-mom" />
               </div>
             </div>
@@ -472,7 +499,7 @@ function ChartingTabInner({
             <div className="grid grid-cols-2 gap-3 text-sm">
               <InfoBlock label="Fund Score" value={num(selectedAsset?.Fund_Score)} accent={Number(selectedAsset?.Fund_Score) >= 5 ? 'var(--green)' : undefined} tooltipId="chart.fund-score" />
               <InfoBlock label="Forward P/E" value={num(selectedAsset?.['Forward_P/E'])} tooltipId="chart.forward-pe" />
-              <InfoBlock label="D/E" value={num(selectedAsset?.['Debt_to_Equity'])} tooltipId="chart.de" />
+              <InfoBlock label="D/E" value={num(debtEquityRatio(selectedAsset?.Debt_to_Equity), 2)} tooltipId="chart.de" />
               <InfoBlock label="ROE" value={`${num(selectedAsset?.['ROE_%'])}%`} tooltipId="chart.roe" />
               <InfoBlock label="ROCE" value={`${num(selectedAsset?.['ROCE_%'])}%`} tooltipId="chart.roce" />
               <InfoBlock label="Promoter" value={`${num(selectedAsset?.['Promoter_Holding_%'])}%`} tooltipId="chart.promoter" />
@@ -557,16 +584,16 @@ function ChartingTabInner({
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                      <XAxis dataKey="time" stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'}} tickMargin={10} minTickGap={30} />
-                      <YAxis yAxisId="price" domain={['auto', 'auto']} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'}} width={55} />
+                      <XAxis dataKey="time" stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)'}} tickMargin={10} minTickGap={30} />
+                      <YAxis yAxisId="price" domain={['auto', 'auto']} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)'}} width={55} />
                       <YAxis yAxisId="volume" orientation="right" domain={[0, dataMax => dataMax * 4]} hide={true} />
                       <Tooltip content={<ChartTooltip />} />
-                      <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif', fontSize: '10px', color: 'var(--text-3)'}}/>
+                      <Legend verticalAlign="top" height={30} align="right" wrapperStyle={{fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--text-3)'}}/>
                       <Bar yAxisId="volume" name="Volume" dataKey="volume" fill="var(--border)" maxBarSize={6} />
-                      <Area yAxisId="price" type="monotone" name="Close" dataKey="close" stroke="var(--brand)" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
-                      <Line yAxisId="price" type="monotone" name="SMA 50" dataKey="sma50" stroke="var(--blue)" strokeWidth={1} dot={false} />
-                      <Line yAxisId="price" type="monotone" name="SMA 200" dataKey="sma200" stroke="var(--amber)" strokeWidth={1} dot={false} strokeDasharray="5 5" />
-                      <Line yAxisId="price" type="monotone" name="Supertrend" dataKey="supertrend" stroke="#06B6D4" strokeWidth={1.5} dot={false} strokeDasharray="2 2" />
+                      <Area yAxisId="price" type="monotone" name="Close" dataKey="close" stroke="var(--text)" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
+                      <Line yAxisId="price" type="monotone" name="SMA 50" dataKey="sma50" stroke="var(--chart-blue)" strokeWidth={1} dot={false} />
+                      <Line yAxisId="price" type="monotone" name="SMA 200" dataKey="sma200" stroke="var(--chart-orange)" strokeWidth={1} dot={false} strokeDasharray="5 5" />
+                      <Line yAxisId="price" type="monotone" name="Supertrend" dataKey="supertrend" stroke="var(--chart-teal)" strokeWidth={1.5} dot={false} strokeDasharray="2 2" />
                     </ComposedChart>
                   </ResponsiveContainer>
                 ) : (
@@ -583,14 +610,14 @@ function ChartingTabInner({
                     <ComposedChart data={chartData}>
                       <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
                       <XAxis dataKey="time" hide={true} />
-                      <YAxis domain={[0, 100]} ticks={[30, 50, 70]} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'}} width={50} />
+                      <YAxis domain={[0, 100]} ticks={[30, 50, 70]} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)'}} width={50} />
                       <Tooltip content={<ChartTooltip />} />
                       <ReferenceLine y={70} stroke="var(--red)" strokeDasharray="3 3" strokeOpacity={0.5}
-                        label={{ value: '70', fontSize: 9, fill: 'var(--red)', position: 'right' }}/>
+                        label={{ value: '70', fontSize: 12, fill: 'var(--red)', position: 'right' }}/>
                       <ReferenceLine y={30} stroke="var(--green)" strokeDasharray="3 3" strokeOpacity={0.5}
-                        label={{ value: '30', fontSize: 9, fill: 'var(--green)', position: 'right' }}/>
+                        label={{ value: '30', fontSize: 12, fill: 'var(--green)', position: 'right' }}/>
                       <ReferenceLine y={50} stroke="var(--border-2)" strokeDasharray="2 4" strokeOpacity={0.4}/>
-                      <Line type="monotone" dataKey="rsi" name="RSI" stroke="#A855F7" strokeWidth={1.5} dot={false} />
+                      <Line type="monotone" dataKey="rsi" name="RSI" stroke="var(--chart-purple)" strokeWidth={1.5} dot={false} />
                     </ComposedChart>
                   </ResponsiveContainer>
                 )}
@@ -605,7 +632,7 @@ function ChartingTabInner({
                     <ComposedChart data={chartData}>
                       <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
                       <XAxis dataKey="time" hide={true} />
-                      <YAxis stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'}} width={50} />
+                      <YAxis stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)'}} width={50} />
                       <Tooltip content={<ChartTooltip />} />
                       <ReferenceLine y={0} stroke="var(--text-3)" strokeOpacity={0.4} strokeWidth={1}/>
                       <Bar dataKey="macd_hist" name="Histogram" maxBarSize={4}>
@@ -613,15 +640,15 @@ function ChartingTabInner({
                           <Cell
                             key={`macd-${index}`}
                             fill={Number(entry.macd_hist ?? 0) >= 0
-                              ? (isDark ? '#3DD68C' : '#0D7C3F')
-                              : (isDark ? '#FF6B6B' : '#C92A2A')
+                              ? 'var(--green)'
+                              : 'var(--red)'
                             }
                             fillOpacity={0.6}
                           />
                         ))}
                       </Bar>
                       <Line type="monotone" dataKey="macd" name="MACD" stroke="var(--blue)" strokeWidth={1.5} dot={false} />
-                      <Line type="monotone" dataKey="macd_signal" name="Signal" stroke="var(--amber)" strokeWidth={1} dot={false} strokeDasharray="3 3" />
+                      <Line type="monotone" dataKey="macd_signal" name="Signal" stroke="var(--chart-orange)" strokeWidth={1} dot={false} strokeDasharray="3 3" />
                     </ComposedChart>
                   </ResponsiveContainer>
                 )}
@@ -637,10 +664,10 @@ function ChartingTabInner({
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={tickerScores}>
                   <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="date" stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 9, fontFamily: 'Inter, system-ui, sans-serif'}} tickMargin={8} minTickGap={20} />
-                  <YAxis domain={[0, 10]} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif'}} width={35} />
+                  <XAxis dataKey="date" stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)'}} tickMargin={8} minTickGap={20} />
+                  <YAxis domain={[0, 10]} stroke="var(--border)" tick={{fill:'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)'}} width={35} />
                   <Tooltip content={<ChartTooltip />} />
-                  <Legend verticalAlign="top" height={24} align="right" wrapperStyle={{fontFamily: 'Inter, system-ui, sans-serif', fontSize: '9px', color: 'var(--text-3)'}}/>
+                  <Legend verticalAlign="top" height={24} align="right" wrapperStyle={{fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--text-3)'}}/>
                   <Line type="monotone" name="Composite" dataKey="composite" stroke="var(--brand)" strokeWidth={2} dot={{r: 2, fill: 'var(--brand)'}} />
                   <Line type="monotone" name="Tech" dataKey="tech" stroke="var(--blue)" strokeWidth={1} dot={false} strokeDasharray="4 2" />
                   <Line type="monotone" name="Fund" dataKey="fund" stroke="var(--green)" strokeWidth={1} dot={false} strokeDasharray="4 2" />
@@ -652,22 +679,22 @@ function ChartingTabInner({
         )}
 
         {/* Score Breakdown */}
-        {selectedAsset && (
+        {selectedAsset && isLoggedIn && (
         <div className="card p-5" style={{ borderRadius: 'var(--radius-xl)' }}>
             <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Score Breakdown</h3>
             <div className="space-y-2.5">
-              {scoreBar('Composite', Number(selectedAsset.Composite_Score) || 0, 0, 10, undefined, 'chart.score.composite')}
-              {scoreBar('Tech', Number(selectedAsset.Tech_Score) || 0, 0, 10, undefined, 'chart.score.tech')}
-              {scoreBar('Fund', Number(selectedAsset.Fund_Score) || 0, 0, 10, undefined, 'chart.score.fund')}
-              {scoreBar('Research', Number(selectedAsset.Research_Score) || 0, 0, 10, undefined, 'chart.score.research')}
+              {scoreBar('Composite', selectedAsset.Composite_Score ?? 0, 0, 10, undefined, 'chart.score.composite')}
+              {scoreBar('Tech', selectedAsset.Tech_Score ?? 0, 0, 10, undefined, 'chart.score.tech')}
+              {scoreBar('Fund', selectedAsset.Fund_Score ?? 0, 0, 10, undefined, 'chart.score.fund')}
+              {scoreBar('Research', selectedAsset.Research_Score ?? 0, 0, 10, undefined, 'chart.score.research')}
               <div className="pt-2 space-y-2.5" style={{ borderTop: '1px solid var(--border)' }}>
-                {scoreBar('Piotroski', Number(selectedAsset.Piotroski_F) || 0, 0, 9, undefined, 'chart.score.piotroski')}
-                {scoreBar('Gross Profit', Number(selectedAsset.Gross_Profit_Score) || 0, 0, 10, undefined, 'chart.score.gross-profit')}
-                {scoreBar('Earnings Q', Number(selectedAsset.Earnings_Quality) || 0, 0, 10, undefined, 'chart.score.earnings-quality')}
-                {scoreBar('Value', Number(selectedAsset.Value_Score) || 0, 0, 10, undefined, 'chart.score.value')}
-                {scoreBar('Investment', Number(selectedAsset.Investment_Score) || 0, 0, 10, undefined, 'chart.score.investment')}
-                {scoreBar('SUE', Number(selectedAsset.SUE_Score) || 0, 0, 10, undefined, 'chart.score.sue')}
-                {scoreBar('Volatility', Number(selectedAsset.Vol_60D) || 0, 0, 60, undefined, 'chart.score.volatility')}
+                {scoreBar('Piotroski', selectedAsset.Piotroski_F ?? 0, 0, 9, undefined, 'chart.score.piotroski')}
+                {scoreBar('Gross Profit', selectedAsset.Gross_Profit_Score ?? 0, 0, 10, undefined, 'chart.score.gross-profit')}
+                {scoreBar('Earnings Q', selectedAsset.Earnings_Quality ?? 0, 0, 10, undefined, 'chart.score.earnings-quality')}
+                {scoreBar('Value', selectedAsset.Value_Score ?? 0, 0, 10, undefined, 'chart.score.value')}
+                {scoreBar('Investment', selectedAsset.Investment_Score ?? 0, 0, 10, undefined, 'chart.score.investment')}
+                {scoreBar('SUE', selectedAsset.SUE_Score ?? 0, 0, 10, undefined, 'chart.score.sue')}
+                {scoreBar('Volatility', selectedAsset.Vol_60D ?? 0, 0, 60, undefined, 'chart.score.volatility')}
               </div>
             </div>
           </div>

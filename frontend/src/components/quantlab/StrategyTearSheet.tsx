@@ -48,10 +48,10 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
         ].map(item => (
           <div key={item.label} className="p-3 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] space-y-1">
             <p className="typo-caption text-[var(--text-3)]">{item.label}</p>
-            <p className="typo-stat text-base font-bold font-mono" style={{ color: item.color }}>
+            <p className="typo-stat text-base font-semibold font-mono" style={{ color: item.color }}>
               {item.val}
             </p>
-            <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>
+            <p className="text-[12px]" style={{ color: 'var(--text-3)' }}>
               {item.sub}
             </p>
           </div>
@@ -70,7 +70,7 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
                 onClick={() => setChartMode('equity')}
                 className={`px-2 py-0.5 text-xs rounded font-medium transition-colors ${
                   chartMode === 'equity'
-                    ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] font-bold'
+                    ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] font-semibold'
                     : 'text-[var(--text-3)] hover:text-[var(--text)]'
                 }`}
               >
@@ -80,7 +80,7 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
                 onClick={() => setChartMode('drawdown')}
                 className={`px-2 py-0.5 text-xs rounded font-medium transition-colors ${
                   chartMode === 'drawdown'
-                    ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] font-bold'
+                    ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] font-semibold'
                     : 'text-[var(--text-3)] hover:text-[var(--text)]'
                 }`}
               >
@@ -94,10 +94,10 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
             {chartMode === 'equity' ? (
               <LineChart data={chart} margin={{ top: 10, right: 20, bottom: 5, left: 0 }}>
                 <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} tickMargin={8} minTickGap={30} />
-                <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} domain={['auto', 'auto']} tickFormatter={v => typeof v === 'number' ? v.toFixed(0) : v} />
+                <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)' }} tickMargin={8} minTickGap={30} />
+                <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)' }} domain={['auto', 'auto']} tickFormatter={v => typeof v === 'number' ? v.toFixed(0) : v} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Legend verticalAlign="top" height={28} align="right" wrapperStyle={{ fontSize: '11px', color: 'var(--text-3)' }} />
+                <Legend verticalAlign="top" height={28} align="right" wrapperStyle={{ fontSize: '12px', color: 'var(--text-3)' }} />
                 <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" />
                 <Line type="monotone" dataKey="portfolio" name={`${config.name} (Rebased)`} stroke="var(--green)" strokeWidth={2.2} dot={false} activeDot={{ r: 4 }} />
                 <Line type="monotone" dataKey="benchmark" name="NIFTY 50 Benchmark" stroke="var(--text-3)" strokeWidth={1.5} dot={false} strokeDasharray="4 4" />
@@ -105,10 +105,10 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
             ) : (
               <AreaChart data={chart} margin={{ top: 10, right: 20, bottom: 5, left: 0 }}>
                 <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} tickMargin={8} minTickGap={30} />
-                <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif' }} domain={['auto', 0]} tickFormatter={v => `${v}%`} />
+                <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)' }} tickMargin={8} minTickGap={30} />
+                <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12, fontFamily: 'var(--font-ui)' }} domain={['auto', 0]} tickFormatter={v => `${v}%`} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(val: any) => `${Number(val).toFixed(2)}%`} />
-                <Legend verticalAlign="top" height={28} align="right" wrapperStyle={{ fontSize: '11px', color: 'var(--text-3)' }} />
+                <Legend verticalAlign="top" height={28} align="right" wrapperStyle={{ fontSize: '12px', color: 'var(--text-3)' }} />
                 <Area type="monotone" dataKey="drawdown" name="Strategy Drawdown" stroke="var(--red)" fill="rgba(239, 68, 68, 0.2)" strokeWidth={1.5} />
                 <Area type="monotone" dataKey="benchmarkDrawdown" name="NIFTY 50 Drawdown" stroke="var(--text-3)" fill="rgba(156, 163, 175, 0.1)" strokeWidth={1} strokeDasharray="3 3" />
               </AreaChart>
@@ -125,10 +125,10 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
             icon={ClockCounterClockwise}
             iconColor="var(--brand)"
             title="Monthly Returns Matrix"
-            badge={<span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--brand-soft)] text-[var(--brand-light)]">Walk-Forward</span>}
+            badge={<span className="text-[12px] font-mono px-2 py-0.5 rounded bg-[var(--brand-soft)] text-[var(--brand-light)]">Walk-Forward</span>}
           />
           <GlassCardContent className="p-4 overflow-x-auto scrollbar-none">
-            <table className="w-full text-[11px] border-collapse">
+            <table className="w-full text-[12px] border-collapse">
               <thead>
                 <tr className="border-b border-[var(--border)]">
                   <th className="py-2 px-2 text-left font-medium" style={{ color: 'var(--text-3)' }}>Year</th>
@@ -137,7 +137,7 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
                       {m}
                     </th>
                   ))}
-                  <th className="py-2 px-2 text-right font-bold" style={{ color: 'var(--text)' }}>Total</th>
+                  <th className="py-2 px-2 text-right font-semibold" style={{ color: 'var(--text)' }}>Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -152,12 +152,9 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
                       }
                       const isPos = val > 0
                       const isZero = val === 0
-                      const bg = isZero
-                        ? 'transparent'
-                        : isPos
-                        ? `rgba(16, 185, 129, ${Math.min(0.85, Math.abs(val) / 12)})`
-                        : `rgba(239, 68, 68, ${Math.min(0.85, Math.abs(val) / 12)})`
-                      const textColor = Math.abs(val) > 4 ? '#ffffff' : isPos ? 'var(--green)' : 'var(--red)'
+                      const bg = isZero ? 'transparent' : `color-mix(in srgb, var(${isPos ? '--green' : '--red'}) ${Math.min(18, Math.abs(val) * 2)}%, var(--surface))`
+                      const textColor = 'var(--text)'
+
 
                       return (
                         <td
@@ -170,7 +167,7 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
                       )
                     })}
                     <td
-                      className="py-2 px-2 text-right font-mono font-bold"
+                      className="py-2 px-2 text-right font-mono font-semibold"
                       style={{ color: row.total >= 0 ? 'var(--green)' : 'var(--red)' }}
                     >
                       {row.total > 0 ? `+${row.total.toFixed(1)}` : row.total.toFixed(1)}%
@@ -188,15 +185,15 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
             icon={Lightning}
             iconColor="var(--amber)"
             title="Alpha Decay by Horizon"
-            badge={<span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--brand-soft)] text-[var(--brand-light)]">Excess Return</span>}
+            badge={<span className="text-[12px] font-mono px-2 py-0.5 rounded bg-[var(--brand-soft)] text-[var(--brand-light)]">Excess Return</span>}
           />
           <GlassCardContent className="p-4 space-y-4">
             <div style={{ height: 160 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={alphaDecay} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="label" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 9 }} />
-                  <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 9 }} tickFormatter={v => `+${v}%`} />
+                  <XAxis dataKey="label" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12 }} />
+                  <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12 }} tickFormatter={v => `+${v}%`} />
                   <Tooltip contentStyle={tooltipStyle} formatter={(val: any) => `+${Number(val).toFixed(2)}% vs Nifty`} />
                   <Bar dataKey="excessReturnPct" name="Alpha vs Nifty" fill="var(--green)" radius={[4, 4, 0, 0]} barSize={24} />
                 </BarChart>
@@ -207,8 +204,8 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
                 <div key={item.label} className="flex justify-between items-center text-xs">
                   <span style={{ color: 'var(--text-2)' }}>{item.label}</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-[var(--green)]">+{item.excessReturnPct}%</span>
-                    <span className="text-[10px] text-[var(--text-3)] font-mono">({item.winRatePct}% Win)</span>
+                    <span className="font-mono font-semibold text-[var(--green)]">+{item.excessReturnPct}%</span>
+                    <span className="text-[12px] text-[var(--text-3)] font-mono">({item.winRatePct}% Win)</span>
                   </div>
                 </div>
               ))}
@@ -257,7 +254,7 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
               ) : (
                 trades.map((t, idx) => (
                   <tr key={idx} className="border-b border-[var(--border)] hover:bg-[var(--surface-2)] transition-colors">
-                    <td className="py-2.5 pr-4 font-bold">
+                    <td className="py-2.5 pr-4 font-semibold">
                       <button
                         onClick={() => onSelectTicker(t.ticker)}
                         className="ticker-link"
@@ -266,15 +263,15 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
                         {t.ticker.replace('.NS', '')}
                       </button>
                     </td>
-                    <td className="py-2.5 pr-4 font-mono text-[11px]" style={{ color: 'var(--text-3)' }}>{t.entryDate}</td>
-                    <td className="py-2.5 pr-4 font-mono text-[11px]" style={{ color: 'var(--text-3)' }}>{t.exitDate}</td>
+                    <td className="py-2.5 pr-4 font-mono text-[12px]" style={{ color: 'var(--text-3)' }}>{t.entryDate}</td>
+                    <td className="py-2.5 pr-4 font-mono text-[12px]" style={{ color: 'var(--text-3)' }}>{t.exitDate}</td>
                     <td className="py-2.5 pr-4 text-right font-mono" style={{ color: 'var(--text-2)' }}>₹{t.entryPrice.toFixed(2)}</td>
                     <td className="py-2.5 pr-4 text-right font-mono" style={{ color: 'var(--text)' }}>₹{t.exitPrice.toFixed(2)}</td>
-                    <td className="py-2.5 pr-4 text-right font-mono font-bold" style={{ color: t.returnPct >= 0 ? 'var(--green)' : 'var(--red)' }}>
+                    <td className="py-2.5 pr-4 text-right font-mono font-semibold" style={{ color: t.returnPct >= 0 ? 'var(--green)' : 'var(--red)' }}>
                       {t.returnPct >= 0 ? `+${t.returnPct.toFixed(2)}` : t.returnPct.toFixed(2)}%
                     </td>
-                    <td className="py-2.5 pr-4 text-right font-mono text-[11px]" style={{ color: 'var(--text-3)' }}>{t.holdingDays}d</td>
-                    <td className="py-2.5 text-right font-medium text-[11px]">
+                    <td className="py-2.5 pr-4 text-right font-mono text-[12px]" style={{ color: 'var(--text-3)' }}>{t.holdingDays}d</td>
+                    <td className="py-2.5 text-right font-medium text-[12px]">
                       <span
                         className="px-2 py-0.5 rounded font-medium"
                         style={{

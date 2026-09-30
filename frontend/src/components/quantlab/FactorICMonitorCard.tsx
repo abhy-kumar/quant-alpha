@@ -17,7 +17,7 @@ export const FactorICMonitorCard: React.FC<FactorICMonitorCardProps> = ({ factor
         iconColor="var(--brand)"
         title="Factor IC Efficacy Monitor"
         badge={
-          <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
+          <span className="text-[12px]  font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
             Rolling 3M
           </span>
         }
@@ -27,7 +27,7 @@ export const FactorICMonitorCard: React.FC<FactorICMonitorCardProps> = ({ factor
           <div key={f.factor} className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium" style={{ color: 'var(--text)' }}>{f.factor}</span>
-              <span className="font-mono text-[11px]" style={{ color: (f.ic_current ?? 0) >= 0.10 ? 'var(--green)' : 'var(--text-2)' }}>
+              <span className="font-mono text-[12px]" style={{ color: (f.ic_current ?? 0) >= 0.10 ? 'var(--green)' : 'var(--text-2)' }}>
                 IC: {(f.ic_current ?? 0) >= 0 ? '+' : ''}{f.ic_current?.toFixed(3) ?? 'N/A'} (t={f.t_stat?.toFixed(1) ?? 'N/A'})
               </span>
             </div>

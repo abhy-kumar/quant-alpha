@@ -24,7 +24,7 @@ export const EfficientFrontierCard: React.FC<EfficientFrontierCardProps> = ({ po
         icon={Target}
         title="Efficient Frontier"
         badge={
-          <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
+          <span className="text-[12px]  font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
             Mean-Variance Optimization
           </span>
         }
@@ -33,8 +33,8 @@ export const EfficientFrontierCard: React.FC<EfficientFrontierCardProps> = ({ po
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
             <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" />
-            <XAxis type="number" dataKey="volatility" name="Ann. Volatility (%)" unit="%" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10 }} />
-            <YAxis type="number" dataKey="return" name="Expected Return (%)" unit="%" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10 }} />
+            <XAxis type="number" dataKey="volatility" name="Ann. Volatility (%)" unit="%" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12 }} />
+            <YAxis type="number" dataKey="return" name="Expected Return (%)" unit="%" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12 }} />
             <ZAxis type="number" dataKey="sharpe" range={[40, 120]} name="Sharpe Ratio" />
             <Tooltip
               cursor={{ strokeDasharray: '3 3' }}
@@ -44,9 +44,9 @@ export const EfficientFrontierCard: React.FC<EfficientFrontierCardProps> = ({ po
                 return (
                   <div style={{ ...tooltipStyle, minWidth: 150 }}>
                     <p className="font-semibold text-xs mb-1" style={{ color: 'var(--brand)' }}>Optimized Portfolio</p>
-                    <p className="text-[11px]" style={{ color: 'var(--text)' }}>Volatility: <strong>{d.volatility}%</strong></p>
-                    <p className="text-[11px]" style={{ color: 'var(--green)' }}>Expected Return: <strong>+{d.return}%</strong></p>
-                    <p className="text-[11px]" style={{ color: 'var(--blue)' }}>Sharpe Ratio: <strong>{d.sharpe}</strong></p>
+                    <p className="text-[12px]" style={{ color: 'var(--text)' }}>Volatility: <strong>{d.volatility}%</strong></p>
+                    <p className="text-[12px]" style={{ color: 'var(--green)' }}>Expected Return: <strong>+{d.return}%</strong></p>
+                    <p className="text-[12px]" style={{ color: 'var(--blue)' }}>Sharpe Ratio: <strong>{d.sharpe}</strong></p>
                   </div>
                 )
               }}
@@ -55,7 +55,7 @@ export const EfficientFrontierCard: React.FC<EfficientFrontierCardProps> = ({ po
           </ScatterChart>
         </ResponsiveContainer>
       </GlassCardContent>
-      <GlassCardFooter className="px-5 pb-4 text-[11px] text-center text-[var(--text-3)] border-none">
+      <GlassCardFooter className="px-5 pb-4 text-[12px] text-center text-[var(--text-3)] border-none">
         Estimated from recorded daily returns and covariance of the current portfolio. Historical estimates may change.
       </GlassCardFooter>
     </GlassCard>

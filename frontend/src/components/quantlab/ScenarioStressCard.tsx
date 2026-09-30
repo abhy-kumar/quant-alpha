@@ -17,13 +17,13 @@ export const ScenarioStressCard: React.FC<ScenarioStressCardProps> = ({ scenario
         iconColor="var(--amber)"
         title="Macro Scenario Stress-Testing"
         badge={
-          <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
+          <span className="text-[12px]  font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
             Historical Crises
           </span>
         }
       />
       <GlassCardContent className="p-5 overflow-x-auto scrollbar-none">
-        <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
+        <table className="w-full text-[12px]" style={{ borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
               <th className="typo-table-head py-2 pr-4 text-left">Shock Event</th>
@@ -37,15 +37,15 @@ export const ScenarioStressCard: React.FC<ScenarioStressCardProps> = ({ scenario
             {scenarios.map((s, idx) => (
               <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td className="py-2.5 pr-4 font-medium" style={{ color: 'var(--text)' }}>{s.event_name}</td>
-                <td className="py-2.5 pr-4 hidden sm:table-cell text-[10px]" style={{ color: 'var(--text-3)' }}>{s.period}</td>
+                <td className="py-2.5 pr-4 hidden sm:table-cell text-[12px]" style={{ color: 'var(--text-3)' }}>{s.period}</td>
                 <td className="py-2.5 pr-4 text-right font-mono font-medium text-[var(--red)]">{s.benchmark_shock_pct.toFixed(1)}%</td>
                 <td
-                  className="py-2.5 pr-4 text-right font-mono font-bold"
+                  className="py-2.5 pr-4 text-right font-mono font-semibold"
                   style={{ color: s.simulated_portfolio_pct > s.benchmark_shock_pct ? 'var(--green)' : 'var(--red)' }}
                 >
                   {s.simulated_portfolio_pct.toFixed(1)}%
                 </td>
-                <td className="py-2.5 text-right font-medium text-[10px]" style={{ color: 'var(--brand-light)' }}>{s.factor_resilience}</td>
+                <td className="py-2.5 text-right font-medium text-[12px]" style={{ color: 'var(--brand-light)' }}>{s.factor_resilience}</td>
               </tr>
             ))}
           </tbody>

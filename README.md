@@ -12,7 +12,7 @@
 
 [Open the dashboard](https://quant-alpha-sage.vercel.app) · [Market data API](https://quant-alpha-sage.vercel.app/api/data?resource=market)
 
-![Dashboard preview](assets/dashboard-preview.png)
+![Dashboard preview](assets/dashboard-preview.jpg)
 
 ## What the platform does
 
@@ -38,6 +38,18 @@ research, not investment advice.
   Charts and the public screener remain available without signing in.
 
 The newsletter has been removed.
+
+## Interface and design system
+
+Every screen shares native system typography, neutral surfaces, semantic colors,
+consistent controls, and responsive layouts. Light and dark themes use the same
+hierarchy. Navigation uses restrained translucent material; research cards use
+opaque surfaces. Dialogs support keyboard focus, Escape dismissal, and focus
+restoration. The app respects reduced motion and transparency preferences.
+
+See [the design rules and audit](frontend/DESIGN.md) before adding UI components.
+Unavailable research scores appear as a dash. Debt/equity values are displayed as
+multiples, converting the source percentage consistently across the app.
 
 ## Research methodology and limits
 

@@ -55,3 +55,7 @@ export function formatMarketCap(capInBillions: number | undefined | null): strin
   }
   return `₹${n.toFixed(1)}B`
 }
+
+export function debtEquityRatio(value: number | null | undefined): number | null {
+  return value == null || !Number.isFinite(value) ? null : value / 100
+}

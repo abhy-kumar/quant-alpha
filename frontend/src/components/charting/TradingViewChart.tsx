@@ -1,3 +1,4 @@
+import { getCanvasChartTheme } from '../../utils/chartThemes'
 import React, { useEffect, useRef, useState, useMemo, useEffectEvent } from 'react'
 import {
   createChart,
@@ -11,6 +12,7 @@ import {
 } from 'lightweight-charts'
 import type {
   IChartApi,
+  IPriceLine,
   ISeriesApi,
   Time,
   CandlestickData,
@@ -81,6 +83,8 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   const bbLowerRef = useRef<ISeriesApi<'Line'> | null>(null)
 
   const rsiSeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
+  const overboughtRef = useRef<IPriceLine | null>(null)
+  const oversoldRef = useRef<IPriceLine | null>(null)
   const macdLineRef = useRef<ISeriesApi<'Line'> | null>(null)
   const macdSignalRef = useRef<ISeriesApi<'Line'> | null>(null)
   const macdHistRef = useRef<ISeriesApi<'Histogram'> | null>(null)
@@ -112,43 +116,37 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     macdHist?: number
   }>({})
 
-  // Theme colors calculation
-  const textColor = isDark ? '#94a3b8' : '#475569'
-  const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.06)'
-  const crosshairColor = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
-
-  // Dynamic Theme Update Effect (Zero Chart Re-creation, Instant Theme Shift)
+  // Resolve CSS tokens after the root theme has been applied.
   useEffect(() => {
-    const layout = { textColor, background: { type: ColorType.Solid, color: 'transparent' } }
+    const palette = getCanvasChartTheme()
+    const { textColor, gridColor, crosshairColor, fontFamily } = palette
+    const layout = { textColor, fontFamily, background: { type: ColorType.Solid, color: 'transparent' } }
     const grid = { vertLines: { color: gridColor }, horzLines: { color: gridColor } }
-
-    try {
-      if (mainChartRef.current) {
-        mainChartRef.current.applyOptions({
-          layout,
-          grid,
-          rightPriceScale: { borderColor: gridColor },
-          crosshair: { vertLine: { color: crosshairColor }, horzLine: { color: crosshairColor } },
-        })
-      }
-      if (rsiChartRef.current) {
-        rsiChartRef.current.applyOptions({ layout, grid, rightPriceScale: { borderColor: gridColor } })
-      }
-      if (macdChartRef.current) {
-        macdChartRef.current.applyOptions({ layout, grid, rightPriceScale: { borderColor: gridColor } })
-      }
-    } catch {
-      // Ignore if chart is in process of being unmounted
+    for (const chart of [mainChartRef.current, rsiChartRef.current, macdChartRef.current]) {
+      chart?.applyOptions({ layout, grid, rightPriceScale: { borderColor: gridColor },
+        crosshair: { vertLine: { color: crosshairColor }, horzLine: { color: crosshairColor } } })
     }
-  }, [isDark, textColor, gridColor, crosshairColor])
+    candleSeriesRef.current?.applyOptions({ upColor: palette.green, downColor: palette.red, wickUpColor: palette.green, wickDownColor: palette.red })
+    sma50SeriesRef.current?.applyOptions({ color: palette.blue })
+    sma200SeriesRef.current?.applyOptions({ color: palette.orange })
+    supertrendSeriesRef.current?.applyOptions({ color: palette.teal })
+    bbUpperRef.current?.applyOptions({ color: palette.purple })
+    bbLowerRef.current?.applyOptions({ color: palette.purple })
+    rsiSeriesRef.current?.applyOptions({ color: palette.purple })
+    overboughtRef.current?.applyOptions({ color: palette.red })
+    oversoldRef.current?.applyOptions({ color: palette.green })
+    macdLineRef.current?.applyOptions({ color: palette.blue })
+    macdSignalRef.current?.applyOptions({ color: palette.orange })
+  }, [isDark])
 
-  const currentChartSettings = useEffectEvent(() => ({ textColor, gridColor, crosshairColor, isLogScale }))
+  const currentChartSettings = useEffectEvent(() => ({ ...getCanvasChartTheme(), isLogScale }))
 
   // Main Chart Lifecycle Effect
   useEffect(() => {
     if (!containerRef.current) return
 
-    const { textColor, gridColor, crosshairColor, isLogScale } = currentChartSettings()
+    const palette = currentChartSettings()
+    const { textColor, gridColor, crosshairColor, fontFamily, isLogScale } = palette
     let isSubscribed = true
 
     // 1. Create Main Chart
@@ -158,8 +156,8 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       layout: {
         background: { type: ColorType.Solid, color: 'transparent' },
         textColor: textColor,
-        fontSize: 11,
-        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 12,
+        fontFamily,
       },
       grid: {
         vertLines: { color: gridColor },
@@ -185,17 +183,17 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
     // Main Candlestick Series
     const candleSeries = mainChart.addSeries(CandlestickSeries, {
-      upColor: '#22c55e',
-      downColor: '#ef4444',
+      upColor: palette.green,
+      downColor: palette.red,
       borderVisible: false,
-      wickUpColor: '#22c55e',
-      wickDownColor: '#ef4444',
+      wickUpColor: palette.green,
+      wickDownColor: palette.red,
     })
     candleSeriesRef.current = candleSeries
 
     // Volume Series
     const volumeSeries = mainChart.addSeries(HistogramSeries, {
-      color: '#3b82f6',
+      color: palette.blue,
       priceFormat: { type: 'volume' },
       priceScaleId: 'volume',
     })
@@ -206,14 +204,14 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
     // Indicator Overlays
     const sma50Series = mainChart.addSeries(LineSeries, {
-      color: '#3b82f6',
+      color: palette.blue,
       lineWidth: 2,
       title: 'SMA 50',
     })
     sma50SeriesRef.current = sma50Series
 
     const sma200Series = mainChart.addSeries(LineSeries, {
-      color: '#f59e0b',
+      color: palette.orange,
       lineWidth: 2,
       lineStyle: LineStyle.Dashed,
       title: 'SMA 200',
@@ -221,7 +219,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     sma200SeriesRef.current = sma200Series
 
     const supertrendSeries = mainChart.addSeries(LineSeries, {
-      color: '#06b6d4',
+      color: palette.teal,
       lineWidth: 2,
       lineStyle: LineStyle.Dotted,
       title: 'Supertrend',
@@ -229,7 +227,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     supertrendSeriesRef.current = supertrendSeries
 
     const bbUpper = mainChart.addSeries(LineSeries, {
-      color: 'rgba(168, 85, 247, 0.6)',
+      color: palette.purple,
       lineWidth: 1,
       lineStyle: LineStyle.Dashed,
       title: 'BB Upper',
@@ -237,7 +235,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     bbUpperRef.current = bbUpper
 
     const bbLower = mainChart.addSeries(LineSeries, {
-      color: 'rgba(168, 85, 247, 0.6)',
+      color: palette.purple,
       lineWidth: 1,
       lineStyle: LineStyle.Dashed,
       title: 'BB Lower',
@@ -253,8 +251,8 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         layout: {
           background: { type: ColorType.Solid, color: 'transparent' },
           textColor: textColor,
-          fontSize: 10,
-          fontFamily: 'Inter, system-ui, sans-serif',
+          fontSize: 12,
+          fontFamily,
         },
         grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
         rightPriceScale: { borderColor: gridColor, scaleMargins: { top: 0.1, bottom: 0.1 } },
@@ -263,14 +261,14 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       rsiChartRef.current = rsiChart
 
       const rsiSeries = rsiChart.addSeries(LineSeries, {
-        color: '#a855f7',
+        color: palette.purple,
         lineWidth: 2,
         title: 'RSI(14)',
       })
       rsiSeriesRef.current = rsiSeries
 
-      rsiSeries.createPriceLine({ price: 70, color: 'rgba(239, 68, 68, 0.6)', lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: '70 OB' })
-      rsiSeries.createPriceLine({ price: 30, color: 'rgba(34, 197, 94, 0.6)', lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: '30 OS' })
+      overboughtRef.current = rsiSeries.createPriceLine({ price: 70, color: palette.red, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: '70 OB' })
+      oversoldRef.current = rsiSeries.createPriceLine({ price: 30, color: palette.green, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: '30 OS' })
     }
 
     // 3. Create MACD Sub-Chart if enabled
@@ -282,8 +280,8 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         layout: {
           background: { type: ColorType.Solid, color: 'transparent' },
           textColor: textColor,
-          fontSize: 10,
-          fontFamily: 'Inter, system-ui, sans-serif',
+          fontSize: 12,
+          fontFamily,
         },
         grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
         rightPriceScale: { borderColor: gridColor, scaleMargins: { top: 0.1, bottom: 0.1 } },
@@ -292,20 +290,20 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       macdChartRef.current = macdChart
 
       const macdHist = macdChart.addSeries(HistogramSeries, {
-        color: '#22c55e',
+        color: palette.green,
         priceFormat: { type: 'volume' },
       })
       macdHistRef.current = macdHist
 
       const macdLine = macdChart.addSeries(LineSeries, {
-        color: '#3b82f6',
+        color: palette.blue,
         lineWidth: 2,
         title: 'MACD',
       })
       macdLineRef.current = macdLine
 
       const macdSignal = macdChart.addSeries(LineSeries, {
-        color: '#f59e0b',
+        color: palette.orange,
         lineWidth: 1,
         lineStyle: LineStyle.Dashed,
         title: 'Signal',
@@ -456,6 +454,8 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       bbUpperRef.current = null
       bbLowerRef.current = null
       rsiSeriesRef.current = null
+      overboughtRef.current = null
+      oversoldRef.current = null
       macdLineRef.current = null
       macdSignalRef.current = null
       macdHistRef.current = null
@@ -470,6 +470,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   useEffect(() => {
     if (!data || data.length === 0 || !candleSeriesRef.current) return
 
+    const palette = getCanvasChartTheme()
     try {
       const validPoints = data.filter((d) => d.time && d.close !== null)
 
@@ -484,7 +485,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       const volumeData: HistogramData[] = validPoints.map((d) => ({
         time: d.time as Time,
         value: d.volume ?? 0,
-        color: (d.close ?? 0) >= (d.open ?? 0) ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)',
+        color: (d.close ?? 0) >= (d.open ?? 0) ? palette.green : palette.red,
       }))
 
       candleSeriesRef.current.setData(candleData)
@@ -560,7 +561,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
           .map((d) => ({
             time: d.time as Time,
             value: d.macd_hist!,
-            color: d.macd_hist! >= 0 ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)',
+            color: d.macd_hist! >= 0 ? palette.green : palette.red,
           }))
 
         macdLineRef.current.setData(macdData)
@@ -574,7 +575,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     } catch {
       // Safe catch
     }
-  }, [height, data, showSma50, showSma200, showSupertrend, showBollinger, showRsi, showMacd])
+  }, [isDark, height, data, showSma50, showSma200, showSupertrend, showBollinger, showRsi, showMacd])
 
   // Handle Logarithmic Toggle
   useEffect(() => {
@@ -605,7 +606,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       {/* Top Toolbar Controls */}
       <div
         className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 card rounded-xl text-xs"
-        style={{ background: 'var(--glass-bg-subtle)', border: '0.5px solid var(--glass-border)' }}
+        style={{ background: 'var(--glass-bg-subtle)', border: '1px solid var(--glass-border)' }}
       >
         <div className="flex items-center gap-3 flex-wrap">
           <span className="font-semibold text-sm tracking-tight" style={{ color: 'var(--text)' }}>
@@ -617,7 +618,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
           {/* Scale Toggle */}
           <button
             onClick={() => setIsLogScale(!isLogScale)}
-            className="btn-glass text-[11px] py-1 px-2.5"
+            className="btn-glass text-[12px] py-1 px-2.5"
           >
             {isLogScale ? 'Log Scale' : 'Linear Scale'}
           </button>
@@ -630,9 +631,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
               type="checkbox"
               checked={showSma50}
               onChange={(e) => setShowSma50(e.target.checked)}
-              className="accent-blue-500 rounded"
+              className="accent-[var(--accent-fill)] rounded"
             />
-            <span style={{ color: showSma50 ? '#3b82f6' : 'var(--text-3)' }}>SMA 50</span>
+            <span style={{ color: showSma50 ? 'var(--chart-blue)' : 'var(--text-3)' }}>SMA 50</span>
           </label>
 
           <label className="flex items-center gap-1.5 cursor-pointer text-xs select-none">
@@ -640,9 +641,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
               type="checkbox"
               checked={showSma200}
               onChange={(e) => setShowSma200(e.target.checked)}
-              className="accent-amber-500 rounded"
+              className="accent-[var(--accent-fill)] rounded"
             />
-            <span style={{ color: showSma200 ? '#f59e0b' : 'var(--text-3)' }}>SMA 200</span>
+            <span style={{ color: showSma200 ? 'var(--chart-orange)' : 'var(--text-3)' }}>SMA 200</span>
           </label>
 
           <label className="flex items-center gap-1.5 cursor-pointer text-xs select-none">
@@ -652,7 +653,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
               onChange={(e) => setShowSupertrend(e.target.checked)}
               className="accent-cyan-500 rounded"
             />
-            <span style={{ color: showSupertrend ? '#06b6d4' : 'var(--text-3)' }}>Supertrend</span>
+            <span style={{ color: showSupertrend ? 'var(--chart-teal)' : 'var(--text-3)' }}>Supertrend</span>
           </label>
 
           <label className="flex items-center gap-1.5 cursor-pointer text-xs select-none">
@@ -660,9 +661,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
               type="checkbox"
               checked={showBollinger}
               onChange={(e) => setShowBollinger(e.target.checked)}
-              className="accent-purple-500 rounded"
+              className="accent-[var(--accent-fill)] rounded"
             />
-            <span style={{ color: showBollinger ? '#a855f7' : 'var(--text-3)' }}>Bollinger</span>
+            <span style={{ color: showBollinger ? 'var(--chart-purple)' : 'var(--text-3)' }}>Bollinger</span>
           </label>
         </div>
 
@@ -672,7 +673,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
               type="checkbox"
               checked={showRsi}
               onChange={(e) => setShowRsi(e.target.checked)}
-              className="accent-purple-500 rounded"
+              className="accent-[var(--accent-fill)] rounded"
             />
             <span style={{ color: 'var(--text-2)' }}>RSI(14)</span>
           </label>
@@ -682,7 +683,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
               type="checkbox"
               checked={showMacd}
               onChange={(e) => setShowMacd(e.target.checked)}
-              className="accent-blue-500 rounded"
+              className="accent-[var(--accent-fill)] rounded"
             />
             <span style={{ color: 'var(--text-2)' }}>MACD</span>
           </label>
@@ -691,7 +692,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
       {/* Interactive Crosshair HUD Banner */}
       <div
-        className="px-3 rounded-lg flex flex-nowrap items-center gap-x-3 text-[11px] font-mono glass-subtle h-[32px] min-h-[32px] max-h-[32px] overflow-x-auto scrollbar-none whitespace-nowrap shrink-0"
+        className="px-3 rounded-lg flex flex-nowrap items-center gap-x-3 text-[12px] font-mono glass-subtle h-[32px] min-h-[32px] max-h-[32px] overflow-x-auto scrollbar-none whitespace-nowrap shrink-0"
         style={{ color: 'var(--text-2)', border: '1px solid var(--glass-border)' }}
       >
         {hudInfo.time ? (
@@ -712,7 +713,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
               C: <strong style={{ color: 'var(--text)' }}>{formatNum(hudInfo.close)}</strong>
             </span>
             {hudInfo.chgPct !== undefined && (
-              <span className={`shrink-0 ${hudInfo.chgPct >= 0 ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}`}>
+              <span className={`shrink-0 ${hudInfo.chgPct >= 0 ? 'text-[var(--green)] font-semibold' : 'text-[var(--red)] font-semibold'}`}>
                 ({hudInfo.chgPct >= 0 ? '+' : ''}
                 {hudInfo.chgPct.toFixed(2)}%)
               </span>
@@ -722,12 +723,12 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
             </span>
 
             {showSma50 && hudInfo.sma50 && (
-              <span className="text-blue-400 shrink-0">
+              <span className="text-[var(--brand)] shrink-0">
                 SMA50: <strong>{formatNum(hudInfo.sma50)}</strong>
               </span>
             )}
             {showSma200 && hudInfo.sma200 && (
-              <span className="text-amber-400 shrink-0">
+              <span className="text-[var(--amber)] shrink-0">
                 SMA200: <strong>{formatNum(hudInfo.sma200)}</strong>
               </span>
             )}
@@ -737,7 +738,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
               </span>
             )}
             {showRsi && hudInfo.rsi && (
-              <span className="text-purple-400 shrink-0">
+              <span className="text-[var(--chart-purple)] shrink-0">
                 RSI: <strong>{formatNum(hudInfo.rsi, 1)}</strong>
               </span>
             )}
@@ -756,7 +757,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         {/* RSI Sub-Chart Container */}
         {showRsi && (
           <div className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--glass-border)' }}>
-            <div className="px-2 text-[10px] font-semibold text-purple-400 mb-1">RSI (14) Relative Strength</div>
+            <div className="px-2 text-[12px] font-semibold text-[var(--chart-purple)] mb-1">RSI (14) Relative Strength</div>
             <div ref={rsiContainerRef} className="w-full" style={{ height: 120 }} />
           </div>
         )}
@@ -764,7 +765,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         {/* MACD Sub-Chart Container */}
         {showMacd && (
           <div className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--glass-border)' }}>
-            <div className="px-2 text-[10px] font-semibold text-blue-400 mb-1">MACD (12, 26, 9)</div>
+            <div className="px-2 text-[12px] font-semibold text-[var(--brand)] mb-1">MACD (12, 26, 9)</div>
             <div ref={macdContainerRef} className="w-full" style={{ height: 130 }} />
           </div>
         )}

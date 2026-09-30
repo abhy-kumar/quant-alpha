@@ -1,5 +1,5 @@
 import React from 'react'
-import { createPortal } from 'react-dom'
+import { ModalShell } from '../common/ModalShell'
 import type { DashboardData } from '../../types'
 import { num, scoreColor, InfoTooltip } from '../common/shared'
 import { X, Minus } from '@phosphor-icons/react'
@@ -54,40 +54,27 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
     )
   }
 
-  return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-start justify-center p-3 sm:p-6 sm:pt-8 overflow-y-auto bg-black/80 backdrop-blur-xl" onClick={onClose}>
-      <div
-        className="relative w-full max-w-5xl flex flex-col card overflow-hidden shadow-2xl my-auto sm:my-0"
-        style={{
-          borderRadius: 'var(--radius-xl)',
-          background: 'var(--surface)',
-          border: '1px solid var(--border-2)',
-        }}
-      >
+  return (
+    <ModalShell title="Compare stocks" onClose={onClose} className="max-w-5xl overflow-hidden" overlayClassName="">
         {/* macOS Window Titlebar Header */}
         <div
           className="flex items-center justify-between px-6 py-4 glass-strong"
           style={{ borderBottom: '1px solid var(--border)' }}
         >
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
-            </div>
             <div className="h-4 w-px bg-white/10 mx-1" />
             <div>
               <h2 className="text-base font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
                 Stock Comparison
               </h2>
-              <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>
+              <p className="text-[12px]" style={{ color: 'var(--text-3)' }}>
                 {selectedAssets.length} stock{selectedAssets.length === 1 ? '' : 's'} selected for comparison
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            className="icon-button"
             style={{ color: 'var(--text-2)' }}
             aria-label="Close"
           >
@@ -104,18 +91,18 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
           ) : (
             <>
               {/* Factor Radar Chart */}
-              <div className="mb-6 card p-4">
-                <div className="text-xs font-semibold uppercase tracking-wider mb-2 text-center" style={{ color: 'var(--brand)' }}>
+              {selectedAssets.every(asset => asset.Composite_Score != null) && <div className="mb-6 card p-4">
+                <div className="text-xs font-semibold  tracking-normal mb-2 text-center" style={{ color: 'var(--brand)' }}>
                   Factor Radar
                 </div>
                 <FactorRadarChart assets={selectedAssets} />
-              </div>
+              </div>}
 
               <table className="w-full text-left border-collapse">
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--glass-border-strong)' }}>
                   <th
-                    className="py-3 px-4 text-xs font-bold uppercase tracking-wider sticky left-0 z-10 glass-strong"
+                    className="py-3 px-4 text-xs font-semibold  tracking-normal sticky left-0 z-10 glass-strong"
                     style={{ color: 'var(--text-3)' }}
                   >
                     Asset
@@ -129,20 +116,20 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                               onSelectTicker(asset.Ticker)
                               onClose()
                             }}
-                            className="font-bold text-sm cursor-pointer hover:underline"
+                            className="font-semibold text-sm cursor-pointer hover:underline"
                             style={{ color: 'var(--brand)' }}
                           >
                             {asset.Ticker.replace('.NS', '')}
                           </span>
                           <button
                             onClick={() => onRemoveTicker(asset.Ticker)}
-                            className="p-1 rounded text-red-500 hover:bg-red-500/10 transition-colors"
+                            className="p-1 rounded text-[var(--red)] hover:bg-[var(--red-bg)] transition-colors"
                             title="Remove from comparison"
                           >
                             <Minus size={14} />
                           </button>
                         </div>
-                        <span className="text-[10px] truncate max-w-[130px]" style={{ color: 'var(--text-3)' }}>
+                        <span className="text-[12px] truncate max-w-[130px]" style={{ color: 'var(--text-3)' }}>
                           {asset.Sector}
                         </span>
                       </div>
@@ -155,7 +142,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                 <tr style={{ background: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
                   <td
                     colSpan={selectedAssets.length + 1}
-                    className="py-1.5 px-4 text-[10px] font-bold uppercase tracking-wider"
+                    className="py-1.5 px-4 text-[12px] font-semibold  tracking-normal"
                     style={{ color: 'var(--brand)' }}
                   >
                     Valuation &amp; Profile
@@ -165,7 +152,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                 {renderMetricRow(
                   '1D Change',
                   (a) => (
-                    <span className={a['1d_Chg_%'] && a['1d_Chg_%'] >= 0 ? 'text-green-500' : 'text-red-500'}>
+                    <span className={a['1d_Chg_%'] && a['1d_Chg_%'] >= 0 ? 'text-[var(--green)]' : 'text-[var(--red)]'}>
                       {a['1d_Chg_%'] ? `${a['1d_Chg_%'] >= 0 ? '+' : ''}${a['1d_Chg_%'].toFixed(2)}%` : '-'}
                     </span>
                   ),
@@ -178,7 +165,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                 <tr style={{ background: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
                   <td
                     colSpan={selectedAssets.length + 1}
-                    className="py-1.5 px-4 text-[10px] font-bold uppercase tracking-wider"
+                    className="py-1.5 px-4 text-[12px] font-semibold  tracking-normal"
                     style={{ color: 'var(--blue)' }}
                   >
                     Composite &amp; Sub-Scores
@@ -187,7 +174,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                 {renderMetricRow(
                   'Composite Score',
                   (a) => (
-                    <span className={`px-2 py-0.5 rounded-md font-bold ${scoreColor(a.Composite_Score)}`}>
+                    <span className={`px-2 py-0.5 rounded-md font-semibold ${scoreColor(a.Composite_Score)}`}>
                       {num(a.Composite_Score)}/10
                     </span>
                   ),
@@ -206,7 +193,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                 <tr style={{ background: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
                   <td
                     colSpan={selectedAssets.length + 1}
-                    className="py-1.5 px-4 text-[10px] font-bold uppercase tracking-wider"
+                    className="py-1.5 px-4 text-[12px] font-semibold  tracking-normal"
                     style={{ color: 'var(--amber)' }}
                   >
                     Quantitative Factors
@@ -223,7 +210,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                 <tr style={{ background: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
                   <td
                     colSpan={selectedAssets.length + 1}
-                    className="py-1.5 px-4 text-[10px] font-bold uppercase tracking-wider"
+                    className="py-1.5 px-4 text-[12px] font-semibold  tracking-normal"
                     style={{ color: 'var(--green)' }}
                   >
                     Technicals &amp; Risk
@@ -244,22 +231,20 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
         {/* Footer */}
         <div
           className="flex items-center justify-between px-6 py-3 text-xs glass"
-          style={{ borderTop: '0.5px solid var(--border)' }}
+          style={{ borderTop: '1px solid var(--border)' }}
         >
           <span style={{ color: 'var(--text-3)' }}>Click a stock to view its chart</span>
-          <button
+          <button type="button" aria-label="Close dialog"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg font-medium transition-colors"
+            className="icon-button"
             style={{
-              background: 'var(--brand)',
-              color: '#ffffff',
+              background: 'var(--accent-fill)',
+              color: 'var(--on-accent)',
             }}
           >
             Close
           </button>
         </div>
-      </div>
-    </div>,
-    document.body
+    </ModalShell>
   )
 }

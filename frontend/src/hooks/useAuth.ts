@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import axios from 'axios'
 
 export function useAuth() {
@@ -16,7 +16,6 @@ export function useAuth() {
   const [loginPassword, setLoginPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [loginLoading, setLoginLoading] = useState(false)
-  const loginRef = useRef<HTMLDivElement>(null)
 
   const setLoginEmailClearErr = useCallback((v: string) => { setLoginEmail(v); setLoginError('') }, [])
   const setLoginPasswordClearErr = useCallback((v: string) => { setLoginPassword(v); setLoginError('') }, [])
@@ -62,16 +61,7 @@ export function useAuth() {
     } catch { setLoginError('Could not sign out. Please retry.') }
   }, [])
 
-  useEffect(() => {
-    if (!showLogin) return
-    const handleClick = (e: MouseEvent) => {
-      if (loginRef.current && !loginRef.current.contains(e.target as Node)) {
-        setShowLogin(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [showLogin])
+
 
   return {
     isLoggedIn,
@@ -84,7 +74,6 @@ export function useAuth() {
     loginError,
     setLoginError,
     loginLoading,
-    loginRef,
     handleLogin,
     handleLogout,
   }

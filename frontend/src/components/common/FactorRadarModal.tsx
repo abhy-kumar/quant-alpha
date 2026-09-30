@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { createPortal } from 'react-dom'
+import { ModalShell } from './ModalShell'
 import type { DashboardData } from '../../types'
 import { FactorRadarChart, extractFactorDimensions } from './FactorRadarChart'
 import { X, Sparkle, TrendUp, WarningOctagon, Info } from '@phosphor-icons/react'
@@ -29,28 +29,27 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
   const strengths = sortedFactors.slice(0, 3)
   const weaknesses = sortedFactors.slice(-2).reverse()
 
-  return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-start justify-center p-3 sm:p-6 sm:pt-10 overflow-y-auto bg-black/80 backdrop-blur-md" onClick={onClose}>
-      <div className="relative w-full max-w-2xl card p-5 sm:p-6 shadow-2xl rounded-2xl my-auto sm:my-0" style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)' }} onClick={e => e.stopPropagation()}>
+  return (
+    <ModalShell title="Factor profile" onClose={onClose} className="max-w-2xl p-5 sm:p-6" overlayClassName="">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: '0.5px solid var(--glass-border)' }}>
+        <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: '1px solid var(--glass-border)' }}>
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl text-[var(--brand)]" style={{ background: 'var(--brand-soft)' }}>
-              <Sparkle size={22} weight="duotone" />
+              <Sparkle size={22} weight="regular" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>{ticker} Factor DNA Radar</h3>
+                <h3 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{ticker} Factor DNA Radar</h3>
                 <span className={`badge rounded-full px-2.5 py-0.5 text-xs ${getBadgeClass(asset.Conviction)}`}>
                   {asset.Conviction || 'Hold'}
                 </span>
               </div>
-              <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>
+              <p className="text-[12px]" style={{ color: 'var(--text-3)' }}>
                 10-Dimension Academic Factor Decomposition • {asset.Sector || 'Equities'}
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-[var(--text-3)] transition-colors">
+          <button type="button" aria-label="Close dialog" onClick={onClose} className="icon-button">
             <X size={20} />
           </button>
         </div>
@@ -65,7 +64,7 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
           {/* Strengths */}
           <div className="p-3.5 rounded-xl" style={{ background: 'var(--surface-2)', border: '1px solid var(--glass-border)' }}>
             <div className="flex items-center gap-1.5 mb-2 font-semibold text-xs text-[var(--green)]">
-              <TrendUp size={15} weight="bold" />
+              <TrendUp size={15} weight="regular" />
               <span>Primary Factor Strengths</span>
             </div>
             <div className="space-y-2 text-xs">
@@ -73,11 +72,11 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
                 <div key={s.key} className="flex items-center justify-between py-1 border-b border-[var(--glass-border)] last:border-0">
                   <div>
                     <span className="font-medium block" style={{ color: 'var(--text)' }}>{s.label}</span>
-                    <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>{s.academicRef}</span>
+                    <span className="text-[12px]" style={{ color: 'var(--text-3)' }}>{s.academicRef}</span>
                   </div>
                   <div className="text-right">
-                    <span className="font-mono font-bold text-[var(--green)]">{s.score.toFixed(1)}/10</span>
-                    <span className="text-[10px] block" style={{ color: 'var(--text-2)' }}>{s.rawDesc}</span>
+                    <span className="font-mono font-semibold text-[var(--green)]">{s.score.toFixed(1)}/10</span>
+                    <span className="text-[12px] block" style={{ color: 'var(--text-2)' }}>{s.rawDesc}</span>
                   </div>
                 </div>
               ))}
@@ -87,7 +86,7 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
           {/* Vulnerabilities */}
           <div className="p-3.5 rounded-xl" style={{ background: 'var(--surface-2)', border: '1px solid var(--glass-border)' }}>
             <div className="flex items-center gap-1.5 mb-2 font-semibold text-xs text-[var(--red)]">
-              <WarningOctagon size={15} weight="bold" />
+              <WarningOctagon size={15} weight="regular" />
               <span>Factor Vulnerabilities</span>
             </div>
             <div className="space-y-2 text-xs">
@@ -95,11 +94,11 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
                 <div key={w.key} className="flex items-center justify-between py-1 border-b border-[var(--glass-border)] last:border-0">
                   <div>
                     <span className="font-medium block" style={{ color: 'var(--text)' }}>{w.label}</span>
-                    <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>{w.academicRef}</span>
+                    <span className="text-[12px]" style={{ color: 'var(--text-3)' }}>{w.academicRef}</span>
                   </div>
                   <div className="text-right">
-                    <span className="font-mono font-bold text-[var(--red)]">{w.score.toFixed(1)}/10</span>
-                    <span className="text-[10px] block" style={{ color: 'var(--text-2)' }}>{w.rawDesc}</span>
+                    <span className="font-mono font-semibold text-[var(--red)]">{w.score.toFixed(1)}/10</span>
+                    <span className="text-[12px] block" style={{ color: 'var(--text-2)' }}>{w.rawDesc}</span>
                   </div>
                 </div>
               ))}
@@ -108,12 +107,10 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
         </div>
 
         {/* Footer Note */}
-        <div className="flex items-center gap-2 p-2.5 rounded-xl text-[10.5px]" style={{ background: 'var(--surface-2)', color: 'var(--text-3)' }}>
+        <div className="flex items-center gap-2 p-2.5 rounded-xl text-[12px]" style={{ background: 'var(--surface-2)', color: 'var(--text-3)' }}>
           <Info size={14} className="shrink-0 text-[var(--brand)]" />
           <span>Factor scores are cross-sectionally ranked (0 to 10) against 150 top NSE liquid equities using point-in-time financial and market data.</span>
         </div>
-      </div>
-    </div>,
-    document.body
+    </ModalShell>
   )
 }

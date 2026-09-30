@@ -14,7 +14,7 @@ function seededRandom(initial: number) {
   return () => { seed = (1664525 * seed + 1013904223) >>> 0; return (seed+1)/4294967297 }
 }
 
-export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatility, isDark }) => {
+export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatility }) => {
   const simulationData = useMemo(() => {
     // Fixed seed keeps render calculations pure and scenario comparisons repeatable.
     const random = seededRandom(42)
@@ -76,8 +76,8 @@ export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatili
             <Warning size={14} className="text-[var(--red)]" /> 5th Percentile (Bear Case)
             <InfoTooltip id="mc.p5" />
           </div>
-          <div className="text-base font-bold font-mono text-[var(--red)]">
-            {finalP5 >= 100 ? '+' : ''}{(finalP5 - 100).toFixed(1)}% <span className="text-[11px] text-[var(--text-3)]">({finalP5.toFixed(1)})</span>
+          <div className="text-base font-semibold font-mono text-[var(--red)]">
+            {finalP5 >= 100 ? '+' : ''}{(finalP5 - 100).toFixed(1)}% <span className="text-[12px] text-[var(--text-3)]">({finalP5.toFixed(1)})</span>
           </div>
         </div>
 
@@ -86,8 +86,8 @@ export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatili
             <Target size={14} className="text-[var(--brand)]" /> 50th Percentile (Expected)
             <InfoTooltip id="mc.p50" />
           </div>
-          <div className="text-base font-bold font-mono text-[var(--brand)]">
-            +{ (finalP50 - 100).toFixed(1) }% <span className="text-[11px] text-[var(--text-3)]">({finalP50.toFixed(1)})</span>
+          <div className="text-base font-semibold font-mono text-[var(--brand)]">
+            +{ (finalP50 - 100).toFixed(1) }% <span className="text-[12px] text-[var(--text-3)]">({finalP50.toFixed(1)})</span>
           </div>
         </div>
 
@@ -96,8 +96,8 @@ export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatili
             <ChartLineUp size={14} className="text-[var(--green)]" /> 95th Percentile (Bull Case)
             <InfoTooltip id="mc.p95" />
           </div>
-          <div className="text-base font-bold font-mono text-[var(--green)]">
-            +{ (finalP95 - 100).toFixed(1) }% <span className="text-[11px] text-[var(--text-3)]">({finalP95.toFixed(1)})</span>
+          <div className="text-base font-semibold font-mono text-[var(--green)]">
+            +{ (finalP95 - 100).toFixed(1) }% <span className="text-[12px] text-[var(--text-3)]">({finalP95.toFixed(1)})</span>
           </div>
         </div>
       </div>
@@ -117,8 +117,8 @@ export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatili
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" />
-            <XAxis dataKey="day" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10 }} />
-            <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 10 }} domain={['auto', 'auto']} />
+            <XAxis dataKey="day" stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12 }} />
+            <YAxis stroke="var(--border)" tick={{ fill: 'var(--text-3)', fontSize: 12 }} domain={['auto', 'auto']} />
             <Tooltip
               content={({ active, payload, label }) => {
                 if (!active || !payload?.length) return null
@@ -126,11 +126,11 @@ export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatili
                 return (
                   <div
                     style={{
-                      background: isDark ? '#09090b' : '#ffffff',
+                      background: 'var(--surface)',
                       border: '1px solid var(--border)',
                       borderRadius: 'var(--radius)',
                       padding: '8px 12px',
-                      fontSize: '11px',
+                      fontSize: '12px',
                     }}
                   >
                     <p className="font-semibold mb-1" style={{ color: 'var(--text)' }}>{label}</p>
@@ -150,22 +150,22 @@ export const MonteCarloChart: React.FC<MonteCarloChartProps> = ({ cagr, volatili
 
       {/* Historical Crisis Stress Testing Matrix */}
       <div className="pt-2">
-        <div className="text-[11px] font-semibold uppercase tracking-wider mb-2 text-[var(--brand)]">
+        <div className="text-[12px] font-semibold  tracking-normal mb-2 text-[var(--brand)]">
           Historical Macro Crisis Stress Tests
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
           {crisisScenarios.map(sc => (
             <div key={sc.name} className="p-3 card">
               <div className="font-semibold text-[var(--text)] mb-1">{sc.name}</div>
-              <div className="flex justify-between items-center text-[11px] mb-1">
+              <div className="flex justify-between items-center text-[12px] mb-1">
                 <span className="text-[var(--text-3)]">Drawdown Shock:</span>
-                <span className="font-mono font-bold text-[var(--red)]">{sc.shock}%</span>
+                <span className="font-mono font-semibold text-[var(--red)]">{sc.shock}%</span>
               </div>
-              <div className="flex justify-between items-center text-[11px] mb-1">
+              <div className="flex justify-between items-center text-[12px] mb-1">
                 <span className="text-[var(--text-3)]">Est. Recovery:</span>
                 <span className="font-mono font-medium text-[var(--text-2)]">{sc.recovery}</span>
               </div>
-              <div className="text-[10px] text-[var(--text-3)] italic mt-1 pt-1" style={{ borderTop: '1px solid var(--border)' }}>
+              <div className="text-[12px] text-[var(--text-3)] italic mt-1 pt-1" style={{ borderTop: '1px solid var(--border)' }}>
                 {sc.impact}
               </div>
             </div>

@@ -1,3 +1,4 @@
+import { debtEquityRatio } from '../../utils/formatters'
 import { useMemo } from 'react'
 import type { DashboardData } from '../../types'
 import { scoreBar, SegmentedControl, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
@@ -11,7 +12,7 @@ function ConvictionDots({ conviction }: { conviction: string }) {
       {[1,2,3,4,5].map(i => (
         <span key={i} className={`dot ${i <= level ? `filled ${colorClass}` : ''}`}/>
       ))}
-      <span style={{ fontSize:10, color:'var(--text-3)', marginLeft:3 }}>{conviction}</span>
+      <span style={{ fontSize: 12, color:'var(--text-3)', marginLeft:3 }}>{conviction}</span>
     </div>
   )
 }
@@ -26,7 +27,7 @@ interface Props {
 function Metric({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] uppercase tracking-wider" style={{color:'var(--text-3)'}}>{label}</span>
+      <span className="text-[12px]  tracking-normal" style={{color:'var(--text-3)'}}>{label}</span>
       <span className="typo-num" style={{color: color||'var(--text)'}}>{value}</span>
     </div>
   )
@@ -34,13 +35,11 @@ function Metric({ label, value, color }: { label: string; value: string; color?:
 
 function SignalBadge({ label, bullish }: { label: string; bullish: boolean }) {
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-lg"
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[12px] font-medium rounded-lg"
       style={{
         background: bullish ? 'var(--green-bg)' : 'var(--red-bg)',
         color: bullish ? 'var(--green)' : 'var(--red)',
-        border: `0.5px solid ${bullish ? 'rgba(48, 209, 88, 0.3)' : 'rgba(255, 69, 58, 0.3)'}`,
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        border: `1px solid ${bullish ? 'rgba(48, 209, 88, 0.3)' : 'rgba(255, 69, 58, 0.3)'}`,
       }}>
       {bullish ? '↑' : '↓'} {label}
     </span>
@@ -180,7 +179,7 @@ function SignalsTabInner({ topPicks, horizon, setHorizon, onSelect }: Props) {
           const stSignal = s.ST_Signal || ''
           const macdVal = Number(s.MACD_Value)||0
           const momentum = Number(s.Momentum_12M)||0
-          const debtEq = s['Debt_to_Equity'] ? Number(s['Debt_to_Equity']) : null
+          const debtEq = debtEquityRatio(s.Debt_to_Equity)
           const sharpe = s['Sharpe'] ? Number(s['Sharpe']) : null
           const bullCount = s['Bull_Count'] ?? null
           const bearCount = s['Bear_Count'] ?? null
@@ -214,7 +213,7 @@ function SignalsTabInner({ topPicks, horizon, setHorizon, onSelect }: Props) {
                   }}>
                     {composite.toFixed(1)}
                   </span>
-                  <span style={{ fontSize:10, color:'var(--text-3)' }}>composite score</span>
+                  <span style={{ fontSize: 12, color:'var(--text-3)' }}>composite score</span>
                 </div>
               </div>
 
@@ -239,7 +238,7 @@ function SignalsTabInner({ topPicks, horizon, setHorizon, onSelect }: Props) {
               </div>
 
               {/* Bull/Bear + 52W range */}
-              <div className="flex items-center gap-3 mb-2.5 text-[11px]">
+              <div className="flex items-center gap-3 mb-2.5 text-[12px]">
                 {bullCount !== null && (
                   <div className="flex items-center gap-1 shrink-0" style={{minWidth:'90px'}}>
                     <span style={{color:'var(--text-3)'}}>Bull</span>
@@ -275,7 +274,7 @@ function SignalsTabInner({ topPicks, horizon, setHorizon, onSelect }: Props) {
               </div>
 
               {/* Radar chart */}
-              <div style={{borderTop:'0.5px solid var(--glass-border)',paddingTop:'8px'}}>
+              <div style={{borderTop:'1px solid var(--glass-border)',paddingTop:'8px'}}>
                 <ScoreRadar s={s} />
               </div>
               </GlassCardContent>

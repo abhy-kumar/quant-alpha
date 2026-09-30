@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createPortal } from 'react-dom'
+import { ModalShell } from './ModalShell'
 import { X, Copy, Check, ShareNetwork, WhatsappLogo, TwitterLogo, LinkedinLogo, PaperPlaneTilt } from '@phosphor-icons/react'
 import type { DashboardData } from '../../types'
 
@@ -56,58 +56,57 @@ export function SocialShareModal({ isOpen, onClose, asset, title }: Props) {
   const liUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`
   const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
 
-  return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 pt-12 sm:pt-20 bg-black/80 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md card p-6 rounded-2xl shadow-2xl relative my-auto sm:my-0" style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)' }} onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/10 text-[var(--text-3)] transition-colors">
+  return (
+    <ModalShell title="Share research" onClose={onClose} className="max-w-md p-5 sm:p-6" overlayClassName="">
+        <button type="button" aria-label="Close dialog" onClick={onClose} className="icon-button absolute top-4 right-4">
           <X size={18} />
         </button>
 
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-4 pr-10">
           <div className="p-2.5 rounded-xl text-[var(--brand)]" style={{ background: 'var(--brand-soft)' }}>
-            <ShareNetwork size={22} weight="duotone" />
+            <ShareNetwork size={22} weight="regular" />
           </div>
           <div>
-            <h3 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Share Quantitative Analysis</h3>
-            <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>Share research & signals with fellow investors</p>
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Share Quantitative Analysis</h3>
+            <p className="text-[12px]" style={{ color: 'var(--text-3)' }}>Share research & signals with fellow investors</p>
           </div>
         </div>
 
         {asset && (
           <div className="p-3.5 rounded-xl mb-4 text-xs font-mono" style={{ background: 'var(--surface-2)', border: '1px solid var(--glass-border)' }}>
-            <div className="flex items-center justify-between mb-1 font-bold" style={{ color: 'var(--text)' }}>
+            <div className="flex items-center justify-between mb-1 font-semibold" style={{ color: 'var(--text)' }}>
               <span>{ticker}</span>
               <span style={{ color: 'var(--brand)' }}>Score: {score}</span>
             </div>
-            <p className="text-[11px] font-sans line-clamp-2" style={{ color: 'var(--text-2)' }}>{shareText}</p>
+            <p className="text-[12px] font-sans line-clamp-2" style={{ color: 'var(--text-2)' }}>{shareText}</p>
           </div>
         )}
 
         <div className="grid grid-cols-4 gap-3 mb-5 text-center">
-          <a href={waUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:scale-105 transition-transform" style={{ background: 'rgba(37, 211, 102, 0.12)', color: '#25D366' }}>
+          <a href={waUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-[var(--surface-3)] transition-colors" style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}>
             <WhatsappLogo size={24} weight="fill" />
-            <span className="text-[10px] font-medium">WhatsApp</span>
+            <span className="text-[12px] font-medium">WhatsApp</span>
           </a>
 
-          <a href={twUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:scale-105 transition-transform" style={{ background: 'rgba(29, 155, 240, 0.12)', color: '#1DA1F2' }}>
+          <a href={twUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-[var(--surface-3)] transition-colors" style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}>
             <TwitterLogo size={24} weight="fill" />
-            <span className="text-[10px] font-medium">X / Twitter</span>
+            <span className="text-[12px] font-medium">X / Twitter</span>
           </a>
 
-          <a href={liUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:scale-105 transition-transform" style={{ background: 'rgba(10, 102, 194, 0.12)', color: '#0A66C2' }}>
+          <a href={liUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-[var(--surface-3)] transition-colors" style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}>
             <LinkedinLogo size={24} weight="fill" />
-            <span className="text-[10px] font-medium">LinkedIn</span>
+            <span className="text-[12px] font-medium">LinkedIn</span>
           </a>
 
-          <a href={tgUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:scale-105 transition-transform" style={{ background: 'rgba(0, 136, 204, 0.12)', color: '#0088cc' }}>
+          <a href={tgUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-[var(--surface-3)] transition-colors" style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}>
             <PaperPlaneTilt size={24} weight="fill" />
-            <span className="text-[10px] font-medium">Telegram</span>
+            <span className="text-[12px] font-medium">Telegram</span>
           </a>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center gap-2 p-2 rounded-xl" style={{ background: 'var(--surface-2)', border: '1px solid var(--glass-border)' }}>
-            <input type="text" readOnly value={shareUrl} className="bg-transparent text-xs font-mono flex-1 outline-none px-2 text-[var(--text-2)]" />
+            <input aria-label="Share link" type="text" readOnly value={shareUrl} className="bg-transparent text-xs font-mono flex-1 outline-none px-2 text-[var(--text-2)]" />
             <button onClick={handleCopy} className="btn-primary text-xs py-1.5 px-3 flex items-center gap-1.5">
               {copied ? <Check size={14} /> : <Copy size={14} />}
               <span>{copied ? 'Copied!' : 'Copy'}</span>
@@ -120,8 +119,6 @@ export function SocialShareModal({ isOpen, onClose, asset, title }: Props) {
             </button>
           )}
         </div>
-      </div>
-    </div>,
-    document.body
+    </ModalShell>
   )
 }
