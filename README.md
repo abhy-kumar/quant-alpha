@@ -382,6 +382,10 @@ JSON from static output; `api/data.ts` reads its function-bundled datasets.
 Strategy history is trimmed to the fields used by the rules and served in
 authenticated pages below Vercel's function response-size limit.
 Vercel must use the `frontend` project root and the Vite `dist` output directory.
+The data API locates its bundled files relative to the API module, so it works
+when Vercel mounts the full repository as the function root. `frontend/api/tsconfig.json`
+configures the standalone function compiler, which does not follow the browser
+build's TypeScript project references. The build checks both compiler configurations.
 
 Historical research now persists NIFTY prices, tracks shares between rebalances,
 charges costs on actual turnover, and executes trailing stops at the observed

@@ -1,7 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { readFile, stat } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { authenticated } from '../server/auth.js'
+// Function bundles preserve the frontend directory when deployed from this repo.
+const dataDirectory = fileURLToPath(new URL('../public/', import.meta.url))
 let strategyCache: { mtime: number; data: { dates: string[]; benchmark: number[]; prices: Record<string, unknown>; factors: Record<string, unknown>; methodology?: string } } | null = null
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   res.setHeader('Content-Type', 'application/json')
@@ -23,7 +26,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   if (resource !== 'market' && !loggedIn) return send(401, { error: 'Please sign in' })
   try {
     if (resource === 'strategies') {
-      const fullPath = resolve(process.cwd(), 'public', file)
+      const fullPath = resolve(dataDirectory, file)
       const mtime = (await stat(fullPath)).mtimeMs
       if (!strategyCache || strategyCache.mtime !== mtime) strategyCache = { mtime, data: JSON.parse(await readFile(fullPath, 'utf8')) }
       const history = strategyCache.data
@@ -35,12 +38,13 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       const dates = history.dates.slice(page * 10, (page+1) * 10)
       const last = dates[dates.length-1]
       const first = dates[0]
-      const prior = Object.keys(history.factors).filter(d => d < first).sort().at(-1)
+      const priorDates = Object.keys(history.factors).filter(d => d < first).sort()
+      const prior = priorDates[priorDates.length - 1]
       const factors = Object.fromEntries(Object.entries(history.factors).filter(([date]) => (date >= first && date <= last) || date === prior))
       return send(200, { dates, benchmark: history.benchmark.slice(page*10,(page+1)*10),
         prices: Object.fromEntries(dates.map(date => [date,history.prices[date]])), factors })
     }
-    const data = JSON.parse(await readFile(resolve(process.cwd(), 'public', file), 'utf8'))
+    const data = JSON.parse(await readFile(resolve(dataDirectory, file), 'utf8'))
     if (resource === 'market' && !loggedIn) {
       for (const stock of data.data || []) for (const field of Object.keys(stock)) {
         if (/Score|Conviction|ML_|Red_Flag|ATR_(Stop|Target|Chandelier)/i.test(field)) stock[field] = null
@@ -52,5 +56,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     if (resource === 'run' && data.version !== 3) return send(410, { error: 'Legacy run invalidated; regenerate this run' })
     if (resource === 'runs') data.runs = (data.runs || []).filter((r: { version?: number }) => r.version === 3)
     return send(200, data)
-  } catch { return send(503, { error: 'Data is temporarily unavailable' }) }
+  } catch (error) {
+    console.error('Unable to read bundled research data', { resource, file, error })
+    return send(503, { error: 'Data is temporarily unavailable' })
+  }
 }

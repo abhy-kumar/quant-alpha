@@ -2,11 +2,15 @@ const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const { Readable } = require('node:stream')
 const path = require('node:path')
+const { pathToFileURL } = require('node:url')
 const Module = require('node:module')
 const esbuild = require('esbuild')
+const fs = require('node:fs/promises')
+const os = require('node:os')
 function load(relative) {
   const filename = path.resolve(relative)
-  const code = esbuild.buildSync({ entryPoints: [filename], bundle: true, platform: 'node', format: 'cjs', write: false }).outputFiles[0].text
+  const code = esbuild.buildSync({ entryPoints: [filename], bundle: true, platform: 'node', format: 'cjs', write: false,
+    define: { 'import.meta.url': JSON.stringify(pathToFileURL(filename).href) } }).outputFiles[0].text
   const mod = new Module(filename, module); mod.paths = module.paths; mod._compile(code, filename)
   return mod.exports
 }
@@ -38,6 +42,33 @@ test('restricted resources reject guests and traversal', async () => {
   assert.equal((await call(data,'GET','/api/data?resource=quant')).statusCode,401)
   assert.equal((await call(data,'GET','/api/data?resource=run&slug=../../password')).statusCode,400)
   assert.equal((await call(data,'GET','/api/data?resource=market')).body.data.some(s => s.Composite_Score != null),false)
+})
+
+test('packaged data API reads private files from standalone and repository-root function mounts', async () => {
+  const originalDirectory = process.cwd()
+  const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'quant-alpha-function-'))
+  const output = esbuild.buildSync({ entryPoints: [path.resolve('api/data.ts')], bundle: true, platform: 'node', format: 'esm', write: false }).outputFiles[0].text
+  try {
+    for (const prefix of ['', 'frontend']) {
+      const project = path.join(temporary, prefix)
+      const apiDirectory = path.join(project, 'api')
+      const publicDirectory = path.join(project, 'public')
+      await fs.mkdir(apiDirectory, { recursive: true })
+      await fs.mkdir(publicDirectory, { recursive: true })
+      await fs.writeFile(path.join(apiDirectory, 'data.mjs'), output)
+      await fs.writeFile(path.join(publicDirectory, 'market_data.json'), JSON.stringify({ data: [{ Ticker: 'TEST.NS', Price: 100, Composite_Score: 9 }] }))
+      const handler = (await import(pathToFileURL(path.join(apiDirectory, 'data.mjs')).href)).default
+      process.chdir(temporary)
+      const result = await call(handler, 'GET', '/api/data?resource=market')
+      assert.equal(result.statusCode, 200)
+      assert.equal(result.body.data[0].Price, 100)
+      assert.equal(result.body.data[0].Composite_Score, null)
+    }
+  } finally {
+    process.chdir(originalDirectory)
+    assert(path.resolve(temporary).startsWith(path.resolve(os.tmpdir()) + path.sep))
+    await fs.rm(temporary, { recursive: true, force: true })
+  }
 })
 test('strategy history pages fit the hosted response limit and validate bounds', async () => {
   const cookie = 'qa_session=' + auth.newSession()
