@@ -9,8 +9,8 @@ import type { DashboardData, StrategyRuleConfig, StrategyBacktestResult, Strateg
 
 export const STRATEGY_PRESETS: Record<string, StrategyRuleConfig> = {
   momentum: {
-    name: 'Momentum Alpha Breakout',
-    description: 'High-conviction trend breakouts with volume confirmation and dynamic ATR trailing stop.',
+    name: 'Momentum breakout',
+    description: 'Trend and volume filters with an ATR trailing stop.',
     minPiotroski: 5,
     minRoe: 12,
     maxDebtEquity: 0,
@@ -27,8 +27,8 @@ export const STRATEGY_PRESETS: Record<string, StrategyRuleConfig> = {
     takeProfitPct: 25,
   },
   quality: {
-    name: 'Buffett-Piotroski Quality Compounder',
-    description: 'High-ROCE fortress balance sheets with top-tier accounting quality and low leverage.',
+    name: 'Quality',
+    description: 'High ROE and Piotroski F-Scores with low debt to equity.',
     minPiotroski: 7,
     minRoe: 18,
     maxDebtEquity: 0.6,
@@ -45,8 +45,8 @@ export const STRATEGY_PRESETS: Record<string, StrategyRuleConfig> = {
     takeProfitPct: 0,
   },
   valueRebound: {
-    name: 'Mean-Reversion Value Rebound',
-    description: 'Undervalued quality stocks recovering from oversold RSI pullbacks with volume confirmation.',
+    name: 'Value rebound',
+    description: 'Low P/E and RSI filters with financial quality and volume checks.',
     minPiotroski: 6,
     minRoe: 12,
     maxDebtEquity: 0.8,
@@ -63,8 +63,8 @@ export const STRATEGY_PRESETS: Record<string, StrategyRuleConfig> = {
     takeProfitPct: 15,
   },
   defensive: {
-    name: 'Defensive Low-Vol Yield',
-    description: 'Capital preservation strategy targeting low-beta, low-volatility compounders.',
+    name: 'Defensive',
+    description: 'Financial quality and trend filters with volatility-based portfolio weights.',
     minPiotroski: 6,
     minRoe: 15,
     maxDebtEquity: 0.5,
@@ -81,8 +81,8 @@ export const STRATEGY_PRESETS: Record<string, StrategyRuleConfig> = {
     takeProfitPct: 0,
   },
   garp: {
-    name: 'GARP Acceleration',
-    description: 'Growth at a Reasonable Price combining strong earnings quality with intermediate momentum.',
+    name: 'Growth at a reasonable price',
+    description: 'Profitability and valuation filters combined with momentum.',
     minPiotroski: 6,
     minRoe: 20,
     maxDebtEquity: 1.0,

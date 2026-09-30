@@ -147,10 +147,10 @@ export const tooltips: Record<string, TooltipEntry> = {
   'chart.peer.beta': { text: 'Beta (Volatility relative to market).', source: 'Market Data' },
   'chart.peer.conv': { text: 'Algorithmic conviction rating.', source: 'Quant Model' },
 
-  // quant.* — Quant Lab Tab
-  'quant.regime': { text: 'A composite score (0–100) determining the current market environment. Score ≥ 70 = Risk-On (Bull): momentum is strong, breadth is wide, volatility is low. Score ≤ 30 = Risk-Off (Bear): proceed with caution.', source: 'Market Regime Model' },
+  // quant.*: Quant Lab Tab
+  'quant.regime': { text: 'A composite score (0 to 100) determining the current market environment. Score ≥ 70 = Risk-On (Bull): momentum is strong, breadth is wide, volatility is low. Score ≤ 30 = Risk-Off (Bear): proceed with caution.', source: 'Market Regime Model' },
   'quant.breadth': { text: 'Market breadth: the % of index stocks currently trading above their 50-day moving average. High breadth (>60%) means a broad, healthy rally. Low breadth means only a handful of stocks are driving the index.', source: 'Market Breadth' },
-  'quant.vix': { text: 'India VIX — the market\'s "fear gauge". Measures implied volatility expected by options markets over the next 30 days. VIX < 15 = calm, VIX > 25 = elevated fear, VIX > 30 = panic.', source: 'NSE' },
+  'quant.vix': { text: 'India VIX measures expected volatility over the next 30 days, based on options prices. VIX < 15 indicates low expected volatility; VIX > 25 indicates elevated expected volatility.', source: 'NSE' },
   'quant.cagr': { text: 'Compound Annual Growth Rate of the strategy over the selected period. Answers: "if I had held this portfolio for a year, what annualised return would I have earned?" Computed from the rebased chart values.', source: 'Backtest Engine' },
   'quant.volatility': { text: 'Annualised standard deviation of the strategy\'s daily returns. Measures how much the portfolio swings day to day. Lower is better for risk-averse investors. < 20% = moderate, > 35% = high.', source: 'Backtest Engine' },
   'quant.sharpe': { text: 'Sharpe Ratio = (Strategy CAGR − Risk-Free Rate) / Annualised Volatility. Risk-free rate assumed 6.5% (approx. 10-yr Indian G-Sec). > 1.0 = good, > 1.5 = excellent, < 0 = the strategy did not compensate for its risk.', source: 'William F. Sharpe' },
@@ -161,7 +161,7 @@ export const tooltips: Record<string, TooltipEntry> = {
   'quant.factor.value': { text: 'Value factor exposure: measures how "cheap" the portfolio is on metrics like P/B, P/E, and EV/EBITDA relative to the broader screened universe. Expressed as a percentile rank (0 = cheapest, 100 = most expensive).', source: 'Fama & French (1992)' },
   'quant.factor.momentum': { text: 'Momentum factor: the aggregate trailing 12-month price return of the top picks, ranked against the screened universe. High momentum stocks tend to continue outperforming in the near term.', source: 'Jegadeesh & Titman (1993)' },
   'quant.factor.quality': { text: 'Quality factor: a composite of profitability metrics (ROE, Gross Profit/Assets, Piotroski F-Score). High quality companies generate durable earnings and tend to outperform over long horizons.', source: 'Novy-Marx (2013)' },
-  'quant.factor.lowvol': { text: 'Low Volatility factor: the inverse of 60-day annualised volatility, ranked across the universe. Counter-intuitively, low-volatility stocks have historically produced higher risk-adjusted returns — known as the "low-volatility anomaly".', source: 'Ang, Hodrick, Xing, Zhang (2006)' },
+  'quant.factor.lowvol': { text: 'Low Volatility factor: the inverse of 60-day annualised volatility, ranked across the universe. Counter-intuitively, low-volatility stocks have historically produced higher risk-adjusted returns, known as the "low-volatility anomaly".', source: 'Ang, Hodrick, Xing, Zhang (2006)' },
   'quant.sector': { text: 'Distribution of capital across GICS sectors within the top picks. Concentration in a single sector increases risk; diversification across 4+ sectors is generally healthier.', source: 'Portfolio Analytics' },
   'quant.correlation': { text: 'Pairwise correlation of daily returns between top picks. Green = positive correlation (move together), Red = negative (move in opposite directions). Lower average correlation = better diversification. Values near 1.0 offer no diversification benefit.', source: 'Portfolio Analytics' },
 }

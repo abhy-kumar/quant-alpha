@@ -17,13 +17,13 @@ export function SocialShareModal({ isOpen, onClose, asset, title }: Props) {
 
   const ticker = asset ? asset.Ticker.replace('.NS', '') : 'NSE Stock'
   const price = asset?.Price ? `₹${asset.Price.toLocaleString('en-IN')}` : ''
-  const score = asset?.Composite_Score ? `${asset.Composite_Score.toFixed(1)}/10` : ''
+  const score = asset?.Composite_Score != null ? `${asset.Composite_Score.toFixed(1)}/10` : ''
   const conv = asset?.Conviction || 'Analysis'
 
   const shareTitle = title || `Alpha Quant Analysis for ${ticker}`
   const shareText = asset
-    ? `📈 ${ticker} (${asset.Long_Name || ticker}) - Quant Score: ${score} [${conv}] | LTP: ${price}. Researched using 10 academic quantitative factors on Alpha Quant Research.`
-    : `🚀 Explore quantitative stock research & Piotroski F-Score analytics for top 150 NSE India equities on Alpha!`
+    ? `${ticker} (${asset.Long_Name || ticker}). ${price ? `Price: ${price}. ` : ''}${score ? `Research score: ${score} (${conv}). ` : ''}View the company chart and research on Alpha Quant.`
+    : 'NSE stock charts, company fundamentals, and quantitative research on Alpha Quant.'
 
   const shareUrl = asset
     ? `https://quant-alpha-sage.vercel.app/?ticker=${encodeURIComponent(ticker)}`
@@ -67,8 +67,8 @@ export function SocialShareModal({ isOpen, onClose, asset, title }: Props) {
             <ShareNetwork size={22} weight="regular" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Share Quantitative Analysis</h3>
-            <p className="text-[12px]" style={{ color: 'var(--text-3)' }}>Share research & signals with fellow investors</p>
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Share research</h3>
+            <p className="text-[12px]" style={{ color: 'var(--text-3)' }}>Send a link to this research</p>
           </div>
         </div>
 
@@ -76,7 +76,7 @@ export function SocialShareModal({ isOpen, onClose, asset, title }: Props) {
           <div className="p-3.5 rounded-xl mb-4 text-xs font-mono" style={{ background: 'var(--surface-2)', border: '1px solid var(--glass-border)' }}>
             <div className="flex items-center justify-between mb-1 font-semibold" style={{ color: 'var(--text)' }}>
               <span>{ticker}</span>
-              <span style={{ color: 'var(--brand)' }}>Score: {score}</span>
+              <span style={{ color: 'var(--brand)' }}>{score ? `Score: ${score}` : 'Score unavailable'}</span>
             </div>
             <p className="text-[12px] font-sans line-clamp-2" style={{ color: 'var(--text-2)' }}>{shareText}</p>
           </div>

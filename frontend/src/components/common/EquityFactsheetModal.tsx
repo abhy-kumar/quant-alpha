@@ -57,8 +57,8 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
               <FileText size={20} weight="regular" />
             </div>
             <div>
-              <h3 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Institutional Research Factsheet</h3>
-              <p className="text-[12px]" style={{ color: 'var(--text-3)' }}>1-Page Quantitative Equity Tear-Sheet</p>
+              <h3 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Research factsheet</h3>
+              <p className="text-[12px]" style={{ color: 'var(--text-3)' }}>One-page equity research</p>
             </div>
           </div>
 
@@ -90,16 +90,15 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
           {/* Institutional Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2.5 border-b border-[var(--glass-border)]">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="text-[12px] tracking-normal  font-semibold text-[var(--brand)] font-mono">ALPHA QUANT RESEARCH</span>
-                <span className="text-[12px] text-[var(--text-3)]">•</span>
                 <span className="text-[12px] text-[var(--text-3)]">FMS Delhi Quant Club</span>
               </div>
               <h1 className="text-lg sm:text-xl font-semibold mt-0.5" style={{ color: 'var(--text)' }}>
                 {ticker} <span className="text-xs font-normal text-[var(--text-2)]">({asset.Long_Name || ticker})</span>
               </h1>
               <p className="text-[12px] text-[var(--text-3)] mt-0.5">
-                NSE India • {asset.Sector || 'Equities'} • {asset.Industry || 'Industry N/A'}
+                NSE India, {asset.Sector || 'Equities'}, {asset.Industry || 'Industry unavailable'}
               </p>
             </div>
 
@@ -147,7 +146,7 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
             {/* Embedded Radar Chart */}
             <div className="p-2 card rounded-xl flex flex-col items-center justify-center">
               <span className="text-[12px]  font-semibold tracking-normal text-[var(--brand)] mb-0.5">
-                10-Factor Academic DNA Polygon
+                Factor profile
               </span>
               <FactorRadarChart asset={asset} peerGroup={peerGroup} size={185} showLegend={true} />
             </div>
@@ -155,7 +154,7 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
             {/* Financial Health & Valuation Table */}
             <div className="p-2.5 card rounded-xl flex flex-col justify-between">
               <span className="text-[12px]  font-semibold tracking-normal text-[var(--brand)] mb-1.5">
-                Financial Health & Valuation Matrix
+                Financial health and valuation
               </span>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                 <div className="flex justify-between py-1 border-b border-[var(--glass-border)]">
@@ -226,20 +225,20 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
           {/* Quantitative Thesis Brief */}
           <div className="p-3 card rounded-xl text-xs space-y-1">
             <span className="text-[12px]  font-semibold tracking-normal text-[var(--brand)]">
-              Algorithmic Thesis Summary
+              Research summary
             </span>
             <p className="text-[12px] leading-relaxed text-[var(--text-2)]">
-              {ticker} displays a Composite Factor Score of <strong>{num(asset.Composite_Score)}/10</strong> with a Piotroski financial resilience rating of <strong>{asset.Piotroski_F ?? '-'}/9</strong>. 
-              {asset.Momentum_12M != null && asset.Momentum_12M > 0.1 ? ` Strong 12-month relative momentum (+${(asset.Momentum_12M * 100).toFixed(1)}%) indicates sustained price trend persistence.` : ''}
-              {asset.Value_Score != null && asset.Value_Score > 6 ? ` Valuation multiples remain attractive relative to ${asset.Sector || 'sector'} industry peers.` : ''}
-              {asset.Beta != null && asset.Beta < 0.9 ? ` Low-beta defensive characteristics (${asset.Beta.toFixed(2)}x) offer favorable downside protection.` : ''}
+              {ticker} has a composite score of <strong>{num(asset.Composite_Score)}/10</strong> and a Piotroski F-Score of <strong>{asset.Piotroski_F ?? '-'}/9</strong>.
+              {asset.Momentum_12M != null && asset.Momentum_12M > 0.1 ? ` Its 12-month price return is +${(asset.Momentum_12M * 100).toFixed(1)}%.` : ''}
+              {asset.Value_Score != null && asset.Value_Score > 6 ? ` Its value score is ${num(asset.Value_Score)}/10.` : ''}
+              {asset.Beta != null && asset.Beta < 0.9 ? ` Its beta is ${asset.Beta.toFixed(2)}, below the market benchmark of 1.` : ''}
             </p>
           </div>
 
           {/* Academic & Legal Disclaimer */}
-          <div className="pt-2 border-t border-[var(--glass-border)] text-[12px] text-[var(--text-3)] flex items-center justify-between">
-            <span>Generated on {new Date().toLocaleDateString('en-IN', { dateStyle: 'medium' })} • Alpha Research Club, FMS Delhi</span>
-            <span>Academic quantitative research only • Not SEBI registered investment advice</span>
+          <div className="pt-2 border-t border-[var(--glass-border)] text-[12px] text-[var(--text-3)] flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+            <span>Generated on {new Date().toLocaleDateString('en-IN', { dateStyle: 'medium' })}. Alpha Research Club, FMS Delhi</span>
+            <span>Academic research only. Not investment advice.</span>
           </div>
         </div>
     </ModalShell>

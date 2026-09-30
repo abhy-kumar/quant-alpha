@@ -48,7 +48,10 @@ opaque surfaces. Dialogs support keyboard focus, Escape dismissal, and focus
 restoration. The app respects reduced motion and transparency preferences.
 
 See [the design rules and audit](frontend/DESIGN.md) before adding UI components.
-Unavailable research scores appear as a dash. Debt/equity values are displayed as
+The market strip includes every tracked stock. Interface copy uses plain language
+without decorative separators, and the footer keeps attribution and the research
+disclaimer without repeating the main navigation.
+Unavailable research scores are marked N/A. Debt/equity values are displayed as
 multiples, converting the source percentage consistently across the app.
 
 ## Research methodology and limits

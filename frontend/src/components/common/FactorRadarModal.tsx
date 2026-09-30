@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { ModalShell } from './ModalShell'
 import type { DashboardData } from '../../types'
 import { FactorRadarChart, extractFactorDimensions } from './FactorRadarChart'
-import { X, Sparkle, TrendUp, WarningOctagon, Info } from '@phosphor-icons/react'
+import { X, ChartLine, TrendUp, WarningOctagon, Info } from '@phosphor-icons/react'
 import { getBadgeClass } from '../../utils/formatters'
 
 interface Props {
@@ -35,17 +35,17 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
         <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: '1px solid var(--glass-border)' }}>
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl text-[var(--brand)]" style={{ background: 'var(--brand-soft)' }}>
-              <Sparkle size={22} weight="regular" />
+              <ChartLine size={22} weight="regular" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{ticker} Factor DNA Radar</h3>
+                <h3 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{ticker} factor profile</h3>
                 <span className={`badge rounded-full px-2.5 py-0.5 text-xs ${getBadgeClass(asset.Conviction)}`}>
                   {asset.Conviction || 'Hold'}
                 </span>
               </div>
               <p className="text-[12px]" style={{ color: 'var(--text-3)' }}>
-                10-Dimension Academic Factor Decomposition • {asset.Sector || 'Equities'}
+                10 research factors for {asset.Sector || 'equities'}
               </p>
             </div>
           </div>
@@ -65,7 +65,7 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
           <div className="p-3.5 rounded-xl" style={{ background: 'var(--surface-2)', border: '1px solid var(--glass-border)' }}>
             <div className="flex items-center gap-1.5 mb-2 font-semibold text-xs text-[var(--green)]">
               <TrendUp size={15} weight="regular" />
-              <span>Primary Factor Strengths</span>
+              <span>Highest scores</span>
             </div>
             <div className="space-y-2 text-xs">
               {strengths.map(s => (
@@ -87,7 +87,7 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
           <div className="p-3.5 rounded-xl" style={{ background: 'var(--surface-2)', border: '1px solid var(--glass-border)' }}>
             <div className="flex items-center gap-1.5 mb-2 font-semibold text-xs text-[var(--red)]">
               <WarningOctagon size={15} weight="regular" />
-              <span>Factor Vulnerabilities</span>
+              <span>Lowest scores</span>
             </div>
             <div className="space-y-2 text-xs">
               {weaknesses.map(w => (
@@ -109,7 +109,7 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
         {/* Footer Note */}
         <div className="flex items-center gap-2 p-2.5 rounded-xl text-[12px]" style={{ background: 'var(--surface-2)', color: 'var(--text-3)' }}>
           <Info size={14} className="shrink-0 text-[var(--brand)]" />
-          <span>Factor scores are cross-sectionally ranked (0 to 10) against 150 top NSE liquid equities using point-in-time financial and market data.</span>
+          <span>Factor scores range from 0 to 10 and are ranked against the screened NSE universe using financial and market data available at the scan date.</span>
         </div>
     </ModalShell>
   )

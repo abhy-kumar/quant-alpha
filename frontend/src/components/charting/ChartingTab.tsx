@@ -10,7 +10,7 @@ import { InvestmentThesisModal } from '../common/InvestmentThesisModal'
 import { PositionSizerModal } from '../common/PositionSizerModal'
 import { FactorRadarModal } from '../common/FactorRadarModal'
 import { EquityFactsheetModal } from '../common/EquityFactsheetModal'
-import { MagnifyingGlass, Lightning, Calculator, User, TrendUp, BookOpen, ChartBar, ShieldCheck, Scales, Sparkle, FileText } from '@phosphor-icons/react'
+import { MagnifyingGlass, Lightning, Calculator, User, TrendUp, BookOpen, ChartBar, ShieldCheck, Scales, ChartLine, FileText } from '@phosphor-icons/react'
 
 
 interface Props {
@@ -231,7 +231,7 @@ function ChartingTabInner({
           <button
             onClick={() => isLoggedIn ? setIsThesisOpen(true) : onRequestSignIn?.()}
             className="btn-glass text-xs py-1.5 px-3 w-full rounded-xl flex items-center justify-center gap-1.5"
-            title="Institutional Investment Thesis"
+            title="Investment thesis"
           >
             <Lightning size={13} weight="regular" className="text-[var(--brand)]" /> Thesis
           </button>
@@ -247,7 +247,7 @@ function ChartingTabInner({
             className="btn-glass text-xs py-1.5 px-3 w-full rounded-xl flex items-center justify-center gap-1.5"
             title="10-Factor Radar Polygon Chart"
           >
-            <Sparkle size={13} weight="regular" className="text-[var(--brand)]" /> Radar
+            <ChartLine size={13} weight="regular" className="text-[var(--brand)]" /> Radar
           </button>
           <button
             onClick={() => isLoggedIn ? setIsFactsheetOpen(true) : onRequestSignIn?.()}
@@ -572,7 +572,7 @@ function ChartingTabInner({
         ) : (
           <>
             {/* Classic Recharts View */}
-            <Panel title={<InfoTooltip id="chart.panel.price">{`${selectedTicker.replace('.NS', '')} — Price & Moving Averages (SMA 50 / 200 / Supertrend)`}</InfoTooltip>}>
+            <Panel title={<InfoTooltip id="chart.panel.price">{`${selectedTicker.replace('.NS', '')}: Price and moving averages (SMA 50 / 200 / Supertrend)`}</InfoTooltip>}>
               <div className="chart-main" role="img" aria-label={`${selectedTicker} price chart`}>
                 {chartData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
@@ -603,7 +603,7 @@ function ChartingTabInner({
             </Panel>
 
             {/* RSI with reference lines */}
-            <Panel title={<InfoTooltip id="chart.panel.rsi">RSI (14) — 30 Oversold / 70 Overbought</InfoTooltip>}>
+            <Panel title={<InfoTooltip id="chart.panel.rsi">RSI (14): 30 oversold / 70 overbought</InfoTooltip>}>
               <div className="chart-sub" role="img" aria-label={`${selectedTicker} RSI chart`}>
                 {chartData.length > 0 && (
                   <ResponsiveContainer width="100%" height="100%">
@@ -625,7 +625,7 @@ function ChartingTabInner({
             </Panel>
 
             {/* MACD with zero line */}
-            <Panel title={<InfoTooltip id="chart.panel.macd">MACD (12, 26, 9) — Histogram & Signal</InfoTooltip>}>
+            <Panel title={<InfoTooltip id="chart.panel.macd">MACD (12, 26, 9): Histogram and signal</InfoTooltip>}>
               <div className="chart-sub" role="img" aria-label={`${selectedTicker} MACD chart`}>
                 {chartData.length > 0 && (
                   <ResponsiveContainer width="100%" height="100%">

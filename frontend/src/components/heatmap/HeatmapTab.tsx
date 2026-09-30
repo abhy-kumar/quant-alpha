@@ -34,18 +34,18 @@ function HeatmapTab({ sectorMap, onSelect }: Props) {
   return <div className="space-y-5">
     <div className="flex flex-wrap justify-between items-center gap-3 text-xs text-[var(--text-3)]">
       <div className="flex flex-wrap items-center gap-4" aria-label="Score legend">
-        {hasScores ? <><span>Composite score</span>{[[3, 'Low · below 4'], [5, 'Mid · 4 to 7'], [8, 'High · 7 and above']].map(([value, label]) =>
+        {hasScores ? <><span>Composite score</span>{[[3, 'Low: below 4'], [5, 'Mid: 4 to 7'], [8, 'High: 7 and above']].map(([value, label]) =>
           <span key={label} className="flex items-center gap-1.5"><span aria-hidden="true" className="w-3 h-3 rounded-sm" style={tileColor(Number(value))} />{label}</span>)}</>
-          : <span>Sign in to view research scores. Unavailable scores appear as a dash.</span>}
+          : <span>Sign in to view research scores. Unavailable scores are marked N/A.</span>}
       </div>
-      <SegmentedControl label="Sort sectors" options={[{ key: 'score', label: 'By score' }, { key: 'alpha', label: 'A–Z' }]} value={sortMode} onChange={setSortMode} />
+      <SegmentedControl label="Sort sectors" options={[{ key: 'score', label: 'By score' }, { key: 'alpha', label: 'A to Z' }]} value={sortMode} onChange={setSortMode} />
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       {sectors.map(sector => {
         const stocks = sectorMap[sector]
         const average = sectorScores[sector]
         return <GlassCard key={sector}>
-          <GlassCardHeader icon={GridFour} title={sector} badge={<span className="typo-num-sm text-[var(--text-2)]">{average === null ? '—' : `${average.toFixed(1)} / 10`}</span>} />
+          <GlassCardHeader icon={GridFour} title={sector} badge={<span className="typo-num-sm text-[var(--text-2)]">{average === null ? 'N/A' : `${average.toFixed(1)} / 10`}</span>} />
           <GlassCardContent className="p-4">
             <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(4, Math.max(2, Math.ceil(Math.sqrt(stocks.length))))}, minmax(0, 1fr))` }}>
               {stocks.map(stock => {
@@ -55,7 +55,7 @@ function HeatmapTab({ sectorMap, onSelect }: Props) {
                   aria-label={`${ticker}, ${value === null ? 'score unavailable' : `score ${value.toFixed(1)}`}. View chart`}
                   className="heatmap-tile flex flex-col items-center justify-center px-1 py-3 rounded-lg min-w-0" style={tileColor(value)}>
                   <span className="w-full truncate text-xs font-semibold">{ticker}</span>
-                  <span className="typo-num-sm mt-1">{value === null ? '—' : value.toFixed(1)}</span>
+                  <span className="typo-num-sm mt-1">{value === null ? 'N/A' : value.toFixed(1)}</span>
                 </button>
               })}
             </div>

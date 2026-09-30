@@ -67,7 +67,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
                 )}
               </div>
               <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
-                {asset.Long_Name || ticker} — {asset.Sector || 'Equities'} | CMP: <strong className="font-mono text-[var(--text)]">₹{num(asset.Price)}</strong>
+                {asset.Long_Name || ticker}, {asset.Sector || 'Equities'}. Price: <strong className="font-mono text-[var(--text)]">₹{num(asset.Price)}</strong>
               </p>
             </div>
           </div>

@@ -346,7 +346,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
               Quantitative Studio
             </span>
             <span className="text-[12px] block" style={{ color: 'var(--text-3)' }}>
-              {activeLabView === 'standard' ? 'Institutional Model Portfolios, Factor Efficacy & Regime' : 'Custom Multi-Factor Strategy Rule Sandbox & Tear Sheet'}
+              {activeLabView === 'standard' ? 'Model portfolios, factor performance, and market conditions' : 'Build and test a strategy with your own rules'}
             </span>
           </div>
         </div>
@@ -459,7 +459,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                   <SegmentedControl
                     options={[
                       { key: 'short', label: 'Short-Term' },
-                      { key: 'long',  label: 'Long-Term (1M–6M)' },
+                      { key: 'long',  label: 'Long-Term (1M to 6M)' },
                     ]}
                     value={backtestModel}
                     onChange={(v) => setBacktestModel(v as 'short' | 'long')}
@@ -630,7 +630,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                 <div className="section-band flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <GridFour size={14} style={{ color: 'var(--blue)' }} />
-                    <span className="typo-h3">Strategy Tear-Sheet | Monthly Return Matrix (%)</span>
+                    <span className="typo-h3">Monthly strategy returns (%)</span>
                   </div>
                   <span className="text-[12px] font-mono" style={{ color: 'var(--text-3)' }}>Walk-Forward Performance</span>
                 </div>
@@ -1140,7 +1140,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                     </thead>
                     <tbody>
                       {([
-                        ['12–1m Momentum (JT)', '40%', 'Jegadeesh & Titman (1993)'],
+                        ['12-1m Momentum (JT)', '40%', 'Jegadeesh & Titman (1993)'],
                         ['6m Momentum (skip 1m)', '30%', 'Intermediate momentum'],
                         ['Low Volatility (63d)', '20%', 'Baker, Bradley & Wurgler (2011)'],
                         ['RSI mean-reversion', '10%', 'Overbought penalty gate'],

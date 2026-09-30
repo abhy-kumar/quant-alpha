@@ -293,7 +293,8 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
               <span className="font-mono" style={{ color: 'var(--brand)' }}>{factors[hoveredIdx].score.toFixed(1)}/10</span>
             </div>
             <div className="text-[12px] mt-0.5" style={{ color: 'var(--text-3)' }}>
-              {factors[hoveredIdx].rawDesc} • {factors[hoveredIdx].academicRef}
+              <span className="block">{factors[hoveredIdx].rawDesc}</span>
+              <span className="block">{factors[hoveredIdx].academicRef}</span>
             </div>
           </div>
         )}
@@ -306,12 +307,12 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
             <>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full" style={{ background: 'var(--brand)' }} />
-                <span className="font-medium" style={{ color: 'var(--text)' }}>{activeAsset.Ticker.replace('.NS', '')} Factor DNA</span>
+                <span className="font-medium" style={{ color: 'var(--text)' }}>{activeAsset.Ticker.replace('.NS', '')} factor profile</span>
               </div>
               {peerGroup && peerGroup.length > 0 && (
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-0.5 border-b-2 border-dashed border-[var(--amber)]" />
-                  <span>{activeAsset.Sector || 'Sector'} Avg Benchmark</span>
+                  <span>{activeAsset.Sector || 'Sector'} average</span>
                 </div>
               )}
             </>

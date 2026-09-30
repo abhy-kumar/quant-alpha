@@ -29,8 +29,8 @@ const TAB_SEO: Record<string, { title: string; description: string; path: string
     path: '/heatmap',
   },
   quantlab: {
-    title: 'Institutional Strategy Backtesting & Factor Lab | Alpha Quant',
-    description: 'Institutional backtesting lab tracking factor Information Coefficients (IC), Sharpe ratios, maximum drawdowns, and 1-year historical equity curves.',
+    title: 'Strategy Backtesting & Factor Lab | Alpha Quant',
+    description: 'Backtesting lab tracking factor Information Coefficients (IC), Sharpe ratios, maximum drawdowns, and 1-year historical equity curves.',
     path: '/quant',
   },
 }

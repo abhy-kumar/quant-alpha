@@ -61,10 +61,10 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
             </div>
             <div>
               <h3 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>
-                Position Sizer & Volatility Execution
+                Position size
               </h3>
               <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-                {ticker} — CMP: <strong className="font-mono text-[var(--text)]">₹{num(price)}</strong> | ATR(14): <strong className="font-mono text-[var(--brand)]">₹{num(atr)}</strong>
+                {ticker}, price: <strong className="font-mono text-[var(--text)]">₹{num(price)}</strong>, ATR(14): <strong className="font-mono text-[var(--brand)]">₹{num(atr)}</strong>
               </p>
             </div>
           </div>

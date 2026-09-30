@@ -77,9 +77,7 @@ function TabSkeleton() {
 
 function TapeInner({ data, flashTickers }: { data: DashboardData[]; flashTickers?: Record<string, 'up' | 'down'> }) {
   const items = useMemo(() => {
-    // Show top 40 liquid / top score stocks in the marquee to maintain 60fps GPU performance
-    const selected = data.slice(0, 40)
-    return selected.map(d => ({
+    return data.map(d => ({
       ticker: d.Ticker,
       t: d.Ticker.replace('.NS', ''),
       p: Number(d.Price) || 0,
@@ -92,17 +90,16 @@ function TapeInner({ data, flashTickers }: { data: DashboardData[]; flashTickers
   return (
     <div role="region" aria-label="Market prices" tabIndex={0} className="overflow-x-auto market-tape" style={{ borderBottom: '1px solid var(--glass-border)' }}>
       <div className="flex w-max whitespace-nowrap">
-        {items.map((x, i) => {
+        {items.map(x => {
           const flash = flashTickers?.[x.ticker]
           return (
             <span
-              key={i}
-              className={`inline-flex items-center px-4 py-1.5 text-[12px] shrink-0 transition-colors duration-500 rounded ${
+              key={x.ticker}
+              className={`inline-flex items-center gap-3 px-4 py-1.5 text-[12px] shrink-0 transition-colors duration-500 rounded ${
                 flash === 'up' ? 'bg-emerald-500/20' : flash === 'down' ? 'bg-rose-500/20' : ''
               }`}
             >
               <span className="font-semibold" style={{ color: 'var(--text)' }}>{x.t}</span>
-              <span style={{ color: 'var(--text-3)', opacity: 0.4, margin: '0 8px' }}>·</span>
               <span className="flex items-center gap-2">
                 <span className="font-mono text-right w-[65px] shrink-0" style={{ color: 'var(--text-2)' }}>{x.p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 <span className="font-mono text-right w-[60px] shrink-0 font-medium" style={{ color: x.c >= 0 ? 'var(--green)' : 'var(--red)' }}>{x.c >= 0 ? '▲' : '▼'} {Math.abs(x.c).toFixed(2)}%</span>
@@ -320,7 +317,7 @@ export default function App() {
               transition: 'background 300ms ease',
               boxShadow: isDynamic ? '0 0 6px var(--green)' : 'none' }}/>
             <span style={{ fontSize: 12, color: isDynamic ? 'var(--green)' : 'var(--text-3)', letterSpacing:'0.04em', fontWeight:600 }}>
-              NSE: {isDynamic ? 'Live · 30s' : 'Closed'}
+              NSE: {isDynamic ? 'Live, updates every 30s' : 'Closed'}
             </span>
           </div>
 
@@ -390,7 +387,7 @@ export default function App() {
       </div>
 
       {/* Content */}
-      <main id="main-content" tabIndex={-1} className="flex-1 max-w-[1400px] mx-auto w-full px-4 md:px-6 py-5 md:py-6 bottom-nav-pad md:pb-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 max-w-[1400px] mx-auto w-full px-4 md:px-6 py-5 md:py-6">
         <div className="mb-5">
           <h1 className="typo-h1">{TABS.find(tab => tab.id === activeTab)?.label}</h1>
           <p className="typo-caption mt-1">{{charting: 'Price history and company fundamentals', picks: 'Research signals for your investment horizon', fundamentals: 'Explore the NSE universe', heatmap: 'Research scores by sector', quantlab: 'Portfolio research and strategy analysis'}[activeTab]}</p>
@@ -440,15 +437,11 @@ export default function App() {
       </nav>
 
       {/* Footer */}
-      <footer className="mt-auto glass" style={{borderTop:'1px solid var(--glass-border)', borderRadius: 0 }}>
-        <div className="max-w-[1400px] mx-auto px-3 md:px-5 py-3 flex flex-col gap-2 text-[12px]" style={{color:'var(--text-3)'}}>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div className="flex items-center gap-3">
-              <span>Made with &#10084;&#65039; by Abhishek Kumar</span>
-              <span className="hidden sm:inline">|</span>
-              <span className="hidden sm:inline">Educational and academic research only. Not investment advice. Data from third-party sources may contain errors. Consult a SEBI-registered advisor before investing.</span>
-            </div>
-            <div className="flex items-center gap-3">
+      <footer className="mt-auto bottom-nav-pad md:pb-0" style={{ borderTop: '1px solid var(--glass-border)', background: 'var(--surface)' }}>
+        <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-4 space-y-2 typo-caption">
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+            <span>Built by Abhishek Kumar</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               {scanUpdated && <span className="font-mono">Last scan: {scanUpdated}</span>}
               <a href="https://github.com/abhy-kumar/quant-alpha" target="_blank" rel="noopener noreferrer"
                 style={{ color:'var(--text-3)', textDecoration:'none', display:'inline-flex', alignItems:'center', gap:3 }}>
@@ -457,21 +450,7 @@ export default function App() {
               </a>
             </div>
           </div>
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 pt-1 border-t border-[var(--glass-border)] opacity-80">
-            <a href="/" onClick={(e) => { e.preventDefault(); setActiveTab('charting') }} className="hover:text-[var(--text)] transition-colors">Charts</a>
-            <span>•</span>
-            <a href="/signals" onClick={(e) => { e.preventDefault(); setActiveTab('picks') }} className="hover:text-[var(--text)] transition-colors">Signals</a>
-            <span>•</span>
-            <a href="/screen" onClick={(e) => { e.preventDefault(); setActiveTab('fundamentals') }} className="hover:text-[var(--text)] transition-colors">Screener</a>
-            <span>•</span>
-            <a href="/heatmap" onClick={(e) => { e.preventDefault(); setActiveTab('heatmap') }} className="hover:text-[var(--text)] transition-colors">Heatmap</a>
-            <span>•</span>
-            <a href="/quant" onClick={(e) => { e.preventDefault(); setActiveTab('quantlab') }} className="hover:text-[var(--text)] transition-colors">Quant Lab</a>
-            <span>•</span>
-            <a href="/llms.txt" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text)] transition-colors">LLM API</a>
-            <span>•</span>
-            <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text)] transition-colors">Sitemap</a>
-          </div>
+          <p>Educational and academic research only. Not investment advice. Data from third-party sources may contain errors. Consult a SEBI-registered advisor before investing.</p>
         </div>
       </footer>
       {showLogin && !isLoggedIn && (
@@ -498,4 +477,3 @@ export default function App() {
     </div>
   )
 }
-

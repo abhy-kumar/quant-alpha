@@ -11,7 +11,7 @@ import { PositionSizerModal } from '../common/PositionSizerModal'
 import { FactorRadarModal } from '../common/FactorRadarModal'
 import { EquityFactsheetModal } from '../common/EquityFactsheetModal'
 import { exportToCSV } from '../../utils/exportUtils'
-import { Lightning, Calculator, Sparkle, FileText } from '@phosphor-icons/react'
+import { Lightning, Calculator, ChartLine, FileText } from '@phosphor-icons/react'
 
 interface Props {
   data: DashboardData[]
@@ -139,7 +139,7 @@ const ScreenerRow = memo(function ScreenerRow({
               {row.Red_Flags && row.Red_Flags.length > 0 && (
                 <div className="mb-4 p-2.5 rounded-xl bg-[var(--amber-bg)] border border-[var(--border)] text-xs text-[var(--amber)] flex items-center gap-2">
                   <span className="font-semibold">Forensic Flags:</span>
-                  <span className="text-[var(--amber)]">{row.Red_Flags.join(' • ')}</span>
+                  <span className="text-[var(--amber)]">{row.Red_Flags.join('; ')}</span>
                 </div>
               )}
 
@@ -228,14 +228,14 @@ const ScreenerRow = memo(function ScreenerRow({
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <button onClick={(e) => { e.stopPropagation(); onThesis(row) }} className="btn-glass text-xs py-1 px-3 rounded-full" title="Institutional Investment Thesis">
+                  <button onClick={(e) => { e.stopPropagation(); onThesis(row) }} className="btn-glass text-xs py-1 px-3 rounded-full" title="Investment thesis">
                     <Lightning size={13} weight="regular" className="text-[var(--brand)]" /> Thesis
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); onSizer(row) }} className="btn-glass text-xs py-1 px-3 rounded-full" title="Calculate Risk & Position Size">
                     <Calculator size={13} weight="regular" className="text-[var(--brand)]" /> Sizer
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); onRadar(row) }} className="btn-glass text-xs py-1 px-3 rounded-full" title="10-Factor Radar Polygon Chart">
-                    <Sparkle size={13} weight="regular" className="text-[var(--brand)]" /> Radar
+                    <ChartLine size={13} weight="regular" className="text-[var(--brand)]" /> Radar
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); onFactsheet(row) }} className="btn-glass text-xs py-1 px-3 rounded-full font-medium" title="1-Page Printable Equity Research Factsheet">
                     <FileText size={13} weight="regular" className="text-[var(--brand)]" /> Factsheet
@@ -461,7 +461,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
             <SegmentedControl
               options={[
                 { key: 'short', label: 'Short-Term' },
-                { key: 'long',  label: 'Long-Term (1M–6M)' },
+                { key: 'long',  label: 'Long-Term (1M to 6M)' },
               ]}
               value={horizonMode}
               onChange={(v) => {
@@ -1043,7 +1043,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                       <Calculator size={12} weight="regular" className="text-[var(--brand)]" /> Sizer
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); if (isLoggedIn) setRadarAsset(row); else onRequestSignIn?.() }} className="btn-glass text-[12px] py-1 px-2.5 rounded-full flex items-center gap-1">
-                      <Sparkle size={12} weight="regular" className="text-[var(--brand)]" /> Radar
+                      <ChartLine size={12} weight="regular" className="text-[var(--brand)]" /> Radar
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); if (isLoggedIn) setFactsheetAsset(row); else onRequestSignIn?.() }} className="btn-glass text-[12px] py-1 px-2.5 rounded-full flex items-center gap-1">
                       <FileText size={12} weight="regular" className="text-[var(--brand)]" /> Factsheet
@@ -1061,7 +1061,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 card text-xs" style={{ borderRadius: 'var(--radius-xl)' }}>
           <div className="flex items-center gap-2" style={{ color: 'var(--text-3)' }}>
             <span>
-              Showing <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{Math.min((validCurrentPage - 1) * pageSize + 1, filteredData.length)}</span>–<span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{Math.min(validCurrentPage * pageSize, filteredData.length)}</span> of <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{filteredData.length}</span> stocks
+              Showing <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{Math.min((validCurrentPage - 1) * pageSize + 1, filteredData.length)}</span> to <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{Math.min(validCurrentPage * pageSize, filteredData.length)}</span> of <span className="font-mono font-semibold" style={{ color: 'var(--text)' }}>{filteredData.length}</span> stocks
             </span>
           </div>
 

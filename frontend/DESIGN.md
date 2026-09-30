@@ -19,6 +19,10 @@ Signals, Screener, Heatmap, Quant Lab, sign-in, sharing, and research dialogs.
 - Geometry: 10px controls, 16px content cards, 20px dialogs. Navigation capsules
   and circular dismissal controls have separate, deliberate roles.
 - Prefer 4px spacing increments, 16–20px card padding, and 20–24px section gaps.
+- Write short, descriptive labels and factual research summaries. Use spacing
+  between metadata, and sentences or ordinary punctuation in prose. Avoid
+  decorative bullets, em dashes, emoji, and inflated claims. Keep the footer to
+  attribution, scan time, the source link, and the research disclaimer.
 
 ## Shared behavior
 
@@ -39,8 +43,9 @@ Signals, Screener, Heatmap, Quant Lab, sign-in, sharing, and research dialogs.
   must not widen the page. Bottom navigation and floating comparison controls
   account for the safe area.
 - Respect reduced motion, reduced transparency, and increased contrast settings.
-  The market strip scrolls manually; it does not continually animate.
-- Keep missing data visibly unavailable. Guest heatmap scores use a dash and a
+  The market strip includes every tracked stock and scrolls manually; it does not
+  continually animate.
+- Keep missing data visibly unavailable. Guest heatmap scores use N/A and a
   sign-in explanation. Debt/equity displays convert the source percentage into
   a multiple, matching the research filter units.
 
@@ -57,6 +62,8 @@ Signals, Screener, Heatmap, Quant Lab, sign-in, sharing, and research dialogs.
 | Collapsed desktop filters remaining visible | Conditional desktop filter visibility and a separate compact dialog |
 | Phone controls and radar labels clipping | Shorter controls, responsive radar geometry, contained scrolling |
 | Guest heatmap scores appearing as zero | Explicit unavailable state |
+| Market strip stopping after 40 stocks | Full screened universe with stable ticker keys |
+| Decorative separators, inflated labels, and repeated footer navigation | Plain copy, spacing between metadata, and a compact attribution footer |
 | Debt/equity shown as 161.98x instead of 1.62x | Consistent conversion in charts, signals, screener, factsheet, and thesis |
 
 Checked in a running browser at desktop, tablet, and phone widths, in light and
