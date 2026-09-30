@@ -1,438 +1,227 @@
 <div align="center">
-  <img src="assets/Alpha_v2_Final-Light.svg" alt="Alpha Research Platform" width="320" />
-  <br /><br />
-  <p><strong>Institutional-grade multi-factor quantitative research, machine learning alpha engine, and analytics platform for the National Stock Exchange of India (NSE).</strong></p>
-  <p><em>Engineered for the Alpha Research & Investment Club, Faculty of Management Studies (FMS), University of Delhi.</em></p>
-
-  <br />
-
-  [![GitHub Actions Status](https://img.shields.io/github/actions/workflow/status/abhy-kumar/quant-alpha/daily_scan.yml?branch=main&label=daily%20scan&logo=github&style=flat-square)](https://github.com/abhy-kumar/quant-alpha/actions/workflows/daily_scan.yml)
-  [![Last Commit](https://img.shields.io/github/last-commit/abhy-kumar/quant-alpha?label=last%20update&color=00C805&style=flat-square)](https://github.com/abhy-kumar/quant-alpha/commits/main)
-  [![Python Version](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white&style=flat-square)](https://www.python.org/)
-  [![React Version](https://img.shields.io/badge/react-19.0-61DAFB?logo=react&logoColor=black&style=flat-square)](https://react.dev/)
-  [![TypeScript](https://img.shields.io/badge/typescript-5.6-3178C6?logo=typescript&logoColor=white&style=flat-square)](https://www.typescriptlang.org/)
-  [![License](https://img.shields.io/badge/license-Apache%202.0%20%2B%20Commons%20Clause-orange?style=flat-square)](./LICENSE)
-
-  <br /><br />
-
-  <a href="https://quant-alpha-sage.vercel.app"><strong>Live Platform Dashboard »</strong></a> &nbsp;&bull;&nbsp;
-  <a href="https://quant-alpha-sage.vercel.app/api/live_data"><strong>Live Data API Endpoint »</strong></a>
-
+  <img src="assets/Alpha_v2_Final-Light.svg" alt="Quant Alpha" width="320" />
+  <p><strong>NSE stock screening, factor research, and portfolio analysis.</strong></p>
+  <p>Built for the Alpha Research & Investment Club, Faculty of Management Studies (FMS), University of Delhi.</p>
 </div>
 
-<br />
+[![Market scan](https://img.shields.io/github/actions/workflow/status/abhy-kumar/quant-alpha/daily_scan.yml?branch=main&label=market%20scan)](https://github.com/abhy-kumar/quant-alpha/actions/workflows/daily_scan.yml)
+[![Code checks](https://img.shields.io/github/actions/workflow/status/abhy-kumar/quant-alpha/checks.yml?branch=main&label=code%20checks)](https://github.com/abhy-kumar/quant-alpha/actions/workflows/checks.yml)
+[![Python](https://img.shields.io/badge/Python-3.12-blue)](https://www.python.org/)
+[![React](https://img.shields.io/badge/React-19-blue)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6-blue)](https://www.typescriptlang.org/)
 
-<div align="center">
-  <img src="assets/dashboard-preview.png" alt="Quant Alpha Dashboard Interface" width="900" style="border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.15);" />
-</div>
+[Open the dashboard](https://quant-alpha-sage.vercel.app) · [Market data API](https://quant-alpha-sage.vercel.app/api/data?resource=market)
 
-<br />
+![Dashboard preview](assets/dashboard-preview.png)
 
----
+## What the platform does
 
-## Executive Summary
+Quant Alpha combines NSE price data, financial statements, technical indicators,
+and recorded factor snapshots. It provides charts, a stock screener, a sector
+heatmap, research signals, and Quant Lab portfolio tools. It is for educational
+research, not investment advice.
 
-**Quant Alpha** is a production-grade quantitative research suite engineered to identify equity mispricings across the NSE universe. The platform integrates academic factor research (Piotroski F-Score, Novy-Marx Gross Profitability, Fama-French Value/Quality, Titman Investment, PEAD SUE, and Low Volatility) with a walk-forward Gradient Boosted Machine Learning model to calculate sector-neutral alpha scores, probability outperformance metrics, and walk-forward portfolio backtests.
+- **Scoring and signals:** sector-relative value, quality, momentum, and volatility
+  factors; forensic warnings; ATR trade-plan and position-sizing tools.
+- **Charts:** daily and weekly price history, technical indicators, and live quotes.
+  Quotes refresh every 30 seconds during trading hours and every five minutes when
+  closed, using stable cached requests and the NSE holiday calendar.
+- **Portfolio analysis:** Max Sharpe, minimum volatility, risk parity, measured
+  efficient-frontier estimates, correlations, and factor information coefficients.
+- **Backtest studio:** short/long price-factor proxies across 1Y and 6M windows,
+  with NIFTY benchmark prices, shares held between rebalances, turnover costs,
+  and close-triggered stops that include gap losses.
+- **Strategy builder:** recorded factor-snapshot replay with presets, selected
+  weighting rules, ATR stops, take-profit exits, and trade logs. No matching stocks
+  means cash; unavailable historical periods are not synthesized.
+- **Shared research account:** server-validated sessions for Signals and Quant Lab.
+  Charts and the public screener remain available without signing in.
 
----
+The newsletter has been removed.
 
-## Key System Capabilities
+## Research methodology and limits
 
-### 1. Machine Learning Walk-Forward Engine (`engine/ml_engine.py`)
-- **Ensemble Classifier**: Fits a `HistGradientBoostingClassifier` on historical scan outcome records in SQLite (`market_scans.db`).
-- **Probability Outperformance**: Computes real-time outperformance probability `P(Return_21d > Nifty_21d)` and maps stocks into conviction tiers (*Strong Alpha*, *Moderate Alpha*, *Neutral*, *Low Alpha*).
+ML labels require a 21-session return at least one percentage point above NIFTY.
+Training uses chronological folds, purged by whole scan-date groups, and the same
+feature scales as prediction. Models are versioned and expire daily. Until enough
+mature validation history exists, outputs are explicitly labeled as an
+**uncalibrated factor heuristic**, not an ML probability.
 
-### 2. Sector-Neutral Multi-Factor Scoring & Z-Score Normalization (`engine/scoring.py` & `engine/recommendation.py`)
-- **Cross-Sectional Sector Z-Score Normalization**: Evaluates fundamental metrics (P/E, ROE, ROCE, Debt/Equity) relative to empirical industry sector distributions (`mean_sector, std_sector`).
-- **Outlier Mitigation**: Applies continuous non-linear mapping `5.0 + 4.5 * tanh(Z / 1.8)` to bound z-scores between 0.5 and 9.8 without discrete cliff-edge distortions.
-- **Dynamic Market-Regime Adaptive Factor Weighting**: Dynamically shifts factor weights between Momentum & Technical Breakouts in **Risk-On Bull** markets (`VIX < 14, Nifty > 200 SMA`) and Piotroski Quality, Low Beta & Debt Safety in **Risk-Off Bear** regimes.
+Longer outcomes continue to mature after the 21-session outcome is filled. Missing
+outcomes do not count as losses. Factor IC uses daily cross-sectional Spearman
+correlations over a calendar quarter; insufficient samples display N/A.
 
-### 3. Forensic Accounting & Red-Flag Circuit Breakers (`engine/recommendation.py`)
-- **Disqualifier Detection**: Hard circuit breakers scan for promoter pledging (> 20%), severe leverage distress (D/E > 2.5x with negative ROE), deep operational insolvency (ROE < -15%), and blow-off tops (Z_60 > 2.5, RSI > 80).
-- **Safety Gating**: Automatically caps conviction ratings at **"Caution"** or **"Avoid"** and attaches forensic warning badges across the Screener and Investment Thesis modals.
+The archived factor history currently begins in June 2026. Price-factor backtests
+are proxies, not historical replays of today's fundamental model. The recorded
+universe is not a complete historical index-constituent database. Missing benchmark
+coverage or held-stock execution prices cannot produce invented returns. The
+sandbox charges 20 basis points per trade leg and liquidates/re-enters at scheduled
+rebalances. Macro stress cards use explicit illustrative shock assumptions.
+Portfolio estimates and simulations are research tools, not forecasts.
 
-### 4. ATR Volatility Execution & Position Sizing Engine (`engine/recommendation.py` & `frontend/`)
-- **Stock-Specific Trade Plans**: Generates exact execution parameters based on 14-day Average True Range (ATR):
-  - **Dynamic Stop-Loss**: `Entry - (2.0 x ATR_14)`
-  - **Target 1 (50% Partial Trim)**: `Entry + (2.5 x ATR_14)`
-  - **Target 2 (Runner)**: `Entry + (4.5 x ATR_14)`
-  - **Chandelier Trailing Exit**: `Highest High_22 - (3.0 x ATR_14)`
-- **Auto ATR Position Sizer Modal**: Calculates precise portfolio capital allocation and share count based on dollar risk per share.
+## Local setup
 
-### 5. Multi-Horizon Dual Recommendation Profiles
-- **Tactical Swing Radar (1W–1M Horizon)**: Short-term momentum breakouts, RSI swing setups, VPT volume surges, and 52-week high leadership.
-- **Strategic Compounder (6M–2Y Horizon)**: Long-horizon Fama-French profitability, Piotroski F-Score >= 7, ROCE > 20%, and Novy-Marx Gross Profitability.
+Use Python 3.12 and Node.js 24. Run Python commands through the virtual environment.
+The examples below use Windows PowerShell; on macOS/Linux use `.venv/bin/python`
+instead of `.venv/Scripts/python.exe`.
 
-### 6. Portfolio Optimization & Equal Risk Contribution (`engine/quant_engine.py`)
-- **Three-Way Allocation Engine**: Computes **Max Sharpe** (tangency portfolio maximizing risk-adjusted alpha), **Min Volatility** (quadratic risk-minimization), and **Risk Parity (Equal Risk Contribution / ERC)** equalizing the marginal risk contribution across assets to eliminate single-stock volatility concentration.
-- **Historical Macro Crisis Stress-Testing**: Simulates portfolio drawdown sensitivities against major historical shocks (2020 Covid Liquidity Shock, 2022 Global Rate Hike, 2024 Election Volatility, High-Multiple Valuation Resets).
-- **Factor Information Coefficient (IC) Efficacy Monitor**: Tracks rolling 3-month Spearman rank Information Coefficients (`IC = corr(Factor_t, Return_t+21d)`) and t-statistics across academic factors.
-
-### 7. Sub-Minute Fast Live Market Polling & Edge Architecture (`frontend/src/hooks/useMarketData.ts`)
-- **15-Second In-Memory Polling**: Sub-minute price refreshing during active NSE trading hours (9:15 AM – 3:30 PM IST) with reactive green/red live tick flash animations.
-- **10-Second Vercel Edge Cache**: Optimized `Cache-Control: s-maxage=10, stale-while-revalidate=20` to guarantee fresh quotes without hitting rate limits.
-- **Smart Focus Refresh**: Automatically triggers immediate background updates when focusing or switching back to the browser tab.
-
-### 8. Walk-Forward Portfolio Backtesting Studio (`engine/backtest_engine.py`)
-- **Look-Ahead-Free Rebalancing**: Replays signals strictly using point-in-time data across 2-year OHLCV price histories (monthly rebalance, Top-10 equal-weight).
-- **Multi-Model & Multi-Horizon Evaluation**: Supports Short-Term (Technical + Momentum) and Long-Term (Jegadeesh-Titman + Low Volatility) scoring across 1Y (252 trading days) and 6M (126 trading days) horizons.
-
-### 9. Interactive Strategy Builder & Quantitative Sandbox (`frontend/src/utils/strategyEngine.ts`)
-- **Custom Multi-Factor Rule Creator**: Construct trading systems by combining fundamental safety filters (Piotroski F-Score >= 7, ROE, D/E, P/E) with technical breakout triggers (Momentum percentile, RSI allowed range, 50-Day SMA trend alignment, VPT volume surge).
-- **1-Click Strategy Presets**: Instant load presets for *Momentum Alpha Breakout*, *Buffett-Piotroski Quality Compounder*, *Mean-Reversion Value Rebound*, *Defensive Low-Vol Yield*, and *GARP Acceleration*.
-- **Institutional Performance Tear Sheet**: Real-time vectorized simulation engine generates equity growth curves vs NIFTY 50, underwater drawdown profiles, monthly returns calendar heatmap matrices, forward alpha decay horizon curves (5d, 21d, 63d, 126d), and trade-by-trade logs with CSV export.
-
-### 10. Macro Market Regime Detection (`engine/regime_engine.py`)
-- Calculates aggregate market breadth percentage (% of NSE stocks above 200 SMA), India VIX volatility, and Nifty trend indices to output a dynamic 0–100 **Regime Score** (*Risk-On*, *Neutral*, *Risk-Off*).
-
-### 11. Current-Gen Technical SEO & Generative Engine Optimization (GEO) (`frontend/`)
-- **Dynamic Route & Ticker Metadata Engine (`SeoHead.tsx`)**: Dynamically updates `<title>`, `<meta name="description">`, `<link rel="canonical">`, Open Graph (`og:*`), and Twitter Cards (`twitter:*`) per route (`/`, `/signals`, `/screen`, `/heatmap`, `/quant`) and active stock ticker (`?ticker=RELIANCE.NS`).
-- **Comprehensive JSON-LD Structured Data**:
-  - `WebSite` with `SearchAction` (Sitelinks Searchbox for stock tickers)
-  - `Dataset` schema for `market_data.json` & `quant_data.json` for Google Dataset Search indexation
-  - `WebApplication` & `EducationalOrganization` schemas
-  - Dynamic `BreadcrumbList` & ticker-level `FinancialProduct` / `ItemPage` schemas
-  - `FAQPage` for Google Rich Snippets & "People Also Ask" ranking
-- **Crawler & Zero-JS Indexability**: Full semantic `<noscript>` crawler fallback body with platform overview, 10 academic research factor breakdown, FAQ, and direct route links.
-- **Core Web Vitals Performance**: Non-render-blocking Google Fonts loading (`rel="preload" as="style"`), DNS prefetching (`dns-prefetch`), resource preconnecting (`fonts.googleapis.com`, `va.vercel-scripts.com`), and PWA touch tags.
-- **Search Console Compliance**: Multi-route XML sitemap (`sitemap.xml`) with ISO 8601 `<lastmod>` timestamps and image tags, and bot-friendly crawler routing (`robots.txt`).
-- **Internal Link Equity Distribution**: Footer internal linking matrix connecting all primary SPA routes.
-- **Generative Engine Optimization (GEO) for AI Search**: Implements `public/llms.txt` and `public/llms-full.txt` adhering to the `llmstxt.org` standard for AI search engines (Perplexity, ChatGPT, Claude, Google Search Overviews).
-- **1-Click Viral Social Share Engine (`SocialShareModal.tsx`)**: Deep-link social sharing templates for WhatsApp, X (Twitter), LinkedIn, Telegram, and native mobile Web Share API.
-
-### 12. Modern Apple HIG Interface & Institutional Modals (`frontend/src/`)
-- **1-Click Strategy Presets**: Screener drawer presets for Buffett-Munger Quality, Minervini Stage 2 Breakouts, PEAD Momentum, Defensive Low-Beta, and Deep Value Moats.
-- **1-Click Institutional Equity Factsheet (PDF Tear-Sheet Generator)**: Produces an exact 1-page A4 Wall Street / Dalal Street factsheet with 10-factor radar polygons, key financial metrics, valuation multiples, and risk profiles.
-- **10-Factor Multi-Dimensional Radar Polygon Chart**: Compares 10 academic factors simultaneously against sector peer group benchmarks.
-- **Interactive Correlation Matrix Heatmap**: Displays pairwise asset co-movement and diversification matrices in Quant Lab.
-- **Centered Floating Segmented Control**: Mathematically centered 5-tab pill navigation bar (`rounded-full`, `blur(24px) saturate(180%)`) matching macOS & visionOS floating toolbar standards.
-- **TradingView Canvas Charting**: Built on `@tradingview/lightweight-charts` with real-time indicators (SMA 50/200, Supertrend, Bollinger Bands, RSI, MACD) and log/linear scaling.
-
----
-
-## Repository File Structure
-
-Below is the complete, exhaustive directory tree representing **every single file** in the repository:
-
-```text
-stock-dashboard/
-├── .agents/
-│   └── AGENTS.md                                 # Workspace rules & database split/join instructions
-├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md                         # Issue template for bug reporting
-│   │   └── feature_request.md                    # Issue template for feature proposals
-│   ├── workflows/
-│   │   └── daily_scan.yml                        # GitHub Actions automated scan & weekend backfill workflow
-│   ├── CONTRIBUTING.md                           # Code contribution guidelines
-│   ├── PULL_REQUEST_TEMPLATE.md                  # Pull request template
-│   └── SECURITY.md                               # Security vulnerability reporting policy
-├── assets/
-│   ├── Alpha_v2_Final-Dark.svg                   # Brand vector logo (dark theme)
-│   ├── Alpha_v2_Final-Light.svg                  # Brand vector logo (light theme)
-│   ├── dashboard-preview.png                     # High-resolution dashboard screenshot
-│   └── fmsLogo.svg                               # FMS Delhi institutional logo
-├── data/
-│   ├── horizon_analysis.csv                      # Statistical horizon evaluation outputs
-│   ├── horizon_ic_study.csv                      # Information Coefficient (IC) decay analysis
-│   ├── ic_by_horizon.csv                         # Information Coefficient summary table
-│   ├── market_scans.db.part_000                  # SQLite database chunk part 1 (Git tracked)
-│   ├── market_scans.db.part_001                  # SQLite database chunk part 2 (Git tracked)
-│   ├── ml_alpha_model.joblib                     # Serialized scikit-learn ML Alpha model
-│   └── recommendation_performance.csv            # Historical signal performance log
-├── data_pipeline/
-│   ├── __init__.py                               # Python package marker
-│   ├── data_fetcher.py                           # Financial statements & yfinance historical ingestion
-│   ├── data_pipeline.py                          # SQLite database schema, WAL mode, migrations & outcome tracking
-│   ├── live_updater.py                           # Real-time intra-day price updater
-│   └── nse_fetcher.py                            # NSE Bhavcopy downloader & liquid universe filter
-├── engine/
-│   ├── __init__.py                               # Python package marker
-│   ├── backtest_engine.py                        # Walk-forward portfolio backtest engine & cache exporter
-│   ├── indicators.py                             # Technical indicators (RSI, MACD, Supertrend, ADX, Ichimoku)
-│   ├── ml_engine.py                              # Walk-Forward ML Alpha classifier & probability engine
-│   ├── quant_engine.py                           # Mean-variance portfolio optimizer (Sharpe / Min Vol)
-│   ├── recommendation.py                         # Conviction badge generator, growth normalizer & signal math
-│   ├── regime_engine.py                          # Market regime scoring engine (VIX, Breadth, Nifty Trend)
-│   ├── research_factors.py                       # Academic research factors (Piotroski, Novy-Marx, Fama-French, SUE)
-│   ├── scanner.py                                # Main orchestration engine for market scans
-│   └── scoring.py                                # Composite & sector-neutral z-score calculator
-├── frontend/
-│   ├── api/
-│   │   ├── chart.ts                              # Vercel serverless proxy endpoint for historical OHLCV data
-│   │   ├── live_data.ts                          # Vercel serverless proxy endpoint for live quotes
-│   │   └── login.ts                              # Vercel serverless endpoint for authentication
-│   ├── public/
-│   │   ├── backtest_runs/                        # Static JSON backtest runs served to frontend
-│   │   │   ├── index.json                        # Index manifest of exported backtest snapshots
-│   │   │   ├── long-1y-2026-07-25.json           # 1Y Long-term backtest run snapshot
-│   │   │   ├── long-6m-2026-07-25.json           # 6M Long-term backtest run snapshot
-│   │   │   ├── short-1y-2025-07-01.json          # Benchmark 1Y Short-term backtest run
-│   │   │   ├── short-1y-2026-07-25.json          # 1Y Short-term backtest run snapshot
-│   │   │   └── short-6m-2026-07-25.json          # 6M Short-term backtest run snapshot
-│   │   ├── dashboard-preview.png                 # Public web asset preview image
-│   │   ├── favicon.svg                           # Website favicon SVG
-│   │   ├── icons.svg                             # PWA icon set manifest
-│   │   ├── llms.txt                              # Summary descriptor for LLM crawlers
-│   │   ├── llms-full.txt                         # Full technical manual for AI Search engines
-│   │   ├── logo-dark.svg                         # Dark theme logo vector
-│   │   ├── logo-light.svg                        # Light theme logo vector
-│   │   ├── manifest.json                         # Web App Manifest specification
-│   │   ├── market_data.json                      # Aggregated static market scan JSON output
-│   │   ├── quant_data.json                       # Aggregated static quant engine JSON output
-│   │   ├── robots.txt                            # Search engine crawler policies
-│   │   ├── score_history.json                    # Historical ticker score trends JSON
-│   │   └── sitemap.xml                           # XML site map for indexing
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── charting/
-│   │   │   │   ├── ChartingTab.tsx               # Full-screen interactive charting view
-│   │   │   │   └── TradingViewChart.tsx          # Lightweight Charts canvas integration
-│   │   │   ├── common/
-│   │   │   │   ├── EquityFactsheetModal.tsx      # 1-click institutional printable factsheet (PDF tear-sheet)
-│   │   │   │   ├── FactorRadarChart.tsx          # 10-dimensional academic factor radar / spider chart component
-│   │   │   │   ├── FactorRadarModal.tsx          # Expanded factor radar & strengths modal
-│   │   │   │   ├── GlassCard.tsx                 # Glassmorphic card container component
-│   │   │   │   ├── InvestmentThesisModal.tsx     # Institutional investment thesis modal
-│   │   │   │   ├── PositionSizerModal.tsx        # Risk management & position sizing calculator modal
-│   │   │   │   ├── SeoHead.tsx                   # Dynamic route title, meta, canonical & JSON-LD component
-│   │   │   │   ├── SocialShareModal.tsx          # 1-click social growth share modal
-│   │   │   │   └── shared.tsx                    # Shared UI primitives, tooltips & segmented controls
-│   │   │   ├── heatmap/
-│   │   │   │   └── HeatmapTab.tsx                # Dynamic sector treemap & heatmap component
-│   │   │   ├── quantlab/
-│   │   │   │   ├── CorrelationHeatmapCard.tsx    # Pairwise asset correlation matrix heatmap card
-│   │   │   │   ├── EfficientFrontierCard.tsx     # Markowitz Mean-Variance Efficient Frontier scatter card
-│   │   │   │   ├── FactorICMonitorCard.tsx       # 3-Month rolling Factor Information Coefficient monitor card
-│   │   │   │   ├── ModelPortfoliosCard.tsx       # 3-way Max Sharpe, Min Volatility & Risk Parity allocation card
-│   │   │   │   ├── MonteCarloChart.tsx           # Monte Carlo simulation area chart component
-│   │   │   │   ├── QuantLabTab.tsx               # Portfolio optimizer, backtest studio & factor exposure
-│   │   │   │   ├── ScenarioStressCard.tsx        # Historical macro crisis scenario stress-testing card
-│   │   │   │   ├── StrategyBuilderDrawer.tsx     # Interactive multi-factor strategy rule builder control drawer
-│   │   │   │   └── StrategyTearSheet.tsx         # Comprehensive strategy performance report & trade log
-│   │   │   ├── screener/
-│   │   │   │   ├── ComparisonModal.tsx           # Multi-asset side-by-side comparison modal
-│   │   │   │   └── ScreenerTab.tsx               # Primary quantitative screening matrix table & filter drawer
-│   │   │   ├── signals/
-│   │   │   │   └── SignalsTab.tsx                # Conviction signals & top pick trade cards
-│   │   │   └── LiquidGlassRoot.tsx               # Glassmorphism container wrapper
-│   │   ├── data/
-│   │   │   └── tooltipContent.ts                 # Explanatory financial tooltips dictionary
-│   │   ├── hooks/
-│   │   │   ├── useAuth.ts                        # Authentication state controller hook
-│   │   │   ├── useChartData.ts                   # Historical OHLCV fetching & caching hook
-│   │   │   ├── useMarketData.ts                  # Market data live updater & 15s polling hook
-│   │   │   └── useWatchlist.ts                   # User watchlist state persistence hook
-│   │   ├── utils/
-│   │   │   ├── chartThemes.ts                    # Shared Recharts theme tokens & tooltip styling
-│   │   │   ├── exportUtils.ts                    # CSV data exporter utility
-│   │   │   ├── formatters.ts                     # Currency, percentage & numeric formatting utilities
-│   │   │   └── strategyEngine.ts                 # Fast vectorized multi-factor strategy simulation engine
-│   │   ├── App.tsx                               # Application root component, navigation & state controller
-│   │   ├── index.css                             # Global CSS variables, Apple HIG tokens & typography rules
-│   │   ├── main.tsx                              # React DOM application entrypoint
-│   │   └── types.ts                              # TypeScript interface definitions & data contracts
-│   ├── .gitignore                                # Frontend build artifacts & local environment exclusions
-│   ├── eslint.config.js                          # ESLint code quality configuration
-│   ├── index.html                                # HTML5 root document shell
-│   ├── package-lock.json                         # Locked frontend npm dependencies tree
-│   ├── package.json                              # Frontend package manifest & scripts
-│   ├── postcss.config.js                         # PostCSS CSS processor configuration
-│   ├── tailwind.config.js                        # TailwindCSS build configuration
-│   ├── tsconfig.app.json                         # App-specific TypeScript compiler options
-│   ├── tsconfig.json                             # Root TypeScript project configuration
-│   ├── tsconfig.node.json                        # Node-specific TypeScript options
-│   ├── vercel.json                               # Vercel deployment & route routing configuration
-│   └── vite.config.ts                            # Vite bundler & dev server configuration
-├── notifications/
-│   ├── __init__.py                               # Python package marker
-│   ├── generate_score_history.py                 # Exports historical composite score trends to static JSON
-│   ├── telegram_bot.py                           # Broadcasts daily alpha signals to Telegram channel
-│   └── weekend_update.py                         # Weekend job: outcome backfill & backtest snapshot generation
-├── tests/
-│   ├── test_data_collection.py                   # Tests for NSE/yfinance ingestion functions
-│   ├── test_e2e_recommendation.py                # End-to-end integration test for scanner pipeline
-│   ├── test_indicators.py                        # Unit tests for technical indicator math
-│   ├── test_recommendation_edge_cases.py         # Unit tests for growth sanitization, loss penalties & DB pragmas
-│   ├── test_recommendation_enhancements.py       # Unit tests for forensic red flags, ATR execution & sector Z-scores
-│   ├── test_research_factors.py                  # Unit tests for academic research factor scoring
-│   ├── test_risk_parity_and_backtest.py          # Unit tests for Risk Parity, Factor IC & Scenario Stress Tests
-│   ├── test_scoring.py                           # Unit tests for sector normalization & composite z-scores
-│   └── test_strategy_engine.py                   # Unit tests for strategy simulation & drawdown math
-├── .gitignore                                    # Git exclusion rules (DB binary, virtual environments)
-├── CODE_OF_CONDUCT.md                            # Contributor code of conduct specification
-├── LICENSE                                       # Project license specification (Apache 2.0 + Commons Clause)
-├── README.md                                     # Project README documentation
-├── bse_fetcher.py                                # Utility script to fetch BSE ticker mapping
-├── check_db.py                                   # Database integrity & record count inspection tool
-├── config.py                                     # Global system configuration parameters & weights
-├── db_split_join.py                              # Database chunking utility (40MB split/join for Git)
-├── documentation.md                              # Comprehensive architectural reference document
-├── explore_data.py                               # Exploratory data analysis CLI helper
-├── horizon_analysis.py                           # Predictive horizon & Information Coefficient study script
-├── package-lock.json                             # Root Node package lock file
-├── populate_ath.py                               # Utility to populate All-Time High price records
-├── populate_cache.py                             # Pre-populates local OHLCV price cache
-├── replace_tooltips.py                           # Tooltip content updating utility script
-├── requirements.txt                              # Python environment dependency requirements
-├── run_custom_backtest.py                        # CLI tool to trigger on-demand walk-forward backtests
-├── scheduler.py                                  # APScheduler daemon for automated market close scans
-├── utils.py                                      # Central logging & utility functions
-└── verify_backtest.py                            # Verification script for backtest engine sanity checks
-```
-
----
-
-## Important: Database Chunking Protocol (`db_split_join.py`)
-
-Due to GitHub's 50MB file size limit for repositories, the primary SQLite database (`data/market_scans.db`) is not committed directly. Instead, it is chunked into 40MB binary parts (`data/market_scans.db.part_*`).
-
-### Required Commands:
-- **Before running scripts locally**: Join the database parts into `data/market_scans.db`:
-  ```bash
-  python db_split_join.py join
-  ```
-- **After generating new scan data or modifying DB schemas**: Split `data/market_scans.db` back into part files before committing:
-  ```bash
-  python db_split_join.py split
-  ```
-
----
-
-## Local Setup & Development
-
-### 1. Prerequisites
-- Python 3.12+ (or Python 3.14)
-- Node.js 20+ & npm
-
-### 2. Environment Initialization
-```bash
-# Clone the repository
+```powershell
 git clone https://github.com/abhy-kumar/quant-alpha.git
-cd stock-dashboard
-
-# Setup Python virtual environment
+Set-Location quant-alpha
 python -m venv .venv
-
-# Activate environment (Windows)
-.venv\Scripts\activate
-# Activate environment (macOS/Linux)
-# source .venv/bin/activate
-
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Rejoin SQLite database parts
-python db_split_join.py join
+& .venv/Scripts/python.exe -m pip install -r requirements.txt pytest
+& .venv/Scripts/python.exe db_split_join.py join
 ```
 
-### 3. Backend Execution & Testing
-```bash
-# Execute full unit & integration test suite (88 tests)
-pytest tests/ -v
+Start the frontend from a second terminal:
 
-# Run full market scan engine
-python -m engine.scanner
-
-# Run on-demand custom walk-forward backtest
-python run_custom_backtest.py --as_of 2026-07-25 --model short --horizon 1y
-```
-
-### 4. Frontend Web Interface
-```bash
-cd frontend
-npm install
+```powershell
+Set-Location frontend
+npm ci
+Copy-Item .env.example .env.local
+# Fill AUTH_EMAIL and AUTH_PASSWORD in .env.local before signing in.
 npm run dev
 ```
 
----
+The Vite development server provides the local API endpoints too. Environment
+files and the joined database are ignored by Git.
 
-## Continuous Integration & Automated Operations
+## Validation and data maintenance
 
-The platform uses GitHub Actions ([`.github/workflows/daily_scan.yml`](.github/workflows/daily_scan.yml)) to run automated market scans and data refreshes:
+From the repository root:
 
-- **Weekday Post-Market Scan**: Runs automatically post market close (4:11 PM IST) to update prices, run ML models, regenerate static JSON payloads (`market_data.json`, `quant_data.json`), and push changes.
-- **Weekend Outcome Backfill & Backtest Generation**: Runs every Saturday (9:07 AM IST) to update forward outcome returns (`Return_21d`, `Return_63d`), execute walk-forward backtests, and export cached backtest snapshots (`backtest_runs/`).
+```powershell
+& .venv/Scripts/python.exe -m pytest -q
+& .venv/Scripts/python.exe -m engine.scanner
+```
 
----
-
-## License & Attribution
-
-Developed for the **Alpha Research and Investment Club, Faculty of Management Studies (FMS), University of Delhi**.  
-Released under the [Apache License 2.0 with Commons Clause](./LICENSE).
-
-## September 2026 audit fixes and deployment
-
-The newsletter has been removed. The shared account is retained with signed,
-eight-hour, HttpOnly sessions, server authorization for research data, and route
-guards. Local-storage flags no longer grant access. Configure `AUTH_EMAIL` and a
-**new** `AUTH_PASSWORD` in Vercel's server environment; the historical password
-appears in Git history and must not be reused. Optionally configure a random
-`AUTH_SESSION_SECRET`. Never use a `VITE_` prefix for credentials. For local
-development copy `frontend/.env.example` to `frontend/.env.local` and fill it in.
-Redeploy after changing Vercel settings. Without them, public charts/screener
-remain usable and the shared login fails closed. Session cookies expire after
-eight hours. The process-local login throttle is basic protection; configure
-Vercel Firewall rate limiting if stronger distributed enforcement is needed.
-
-Research JSON remains tracked for the scan pipeline. **A public Git repository
-makes those datasets and historical source files public.** The login gate protects
-the hosted API and views, not GitHub copies. The Vite build excludes research
-JSON from static output; `api/data.ts` reads its function-bundled datasets.
-Strategy history is trimmed to the fields used by the rules and served in
-authenticated pages below Vercel's function response-size limit.
-Vercel must use the `frontend` project root and the Vite `dist` output directory.
-The data API locates its bundled files relative to the API module, so it works
-when Vercel mounts the full repository as the function root. `frontend/api/tsconfig.json`
-configures the standalone function compiler, which does not follow the browser
-build's TypeScript project references. The build checks both compiler configurations.
-
-Historical research now persists NIFTY prices, tracks shares between rebalances,
-charges costs on actual turnover, and executes trailing stops at the observed
-close including gap losses. Liquidity and signals use prior information. Missing
-benchmark coverage or held-stock execution prices cannot produce invented
-returns. These price-only replay models are proxies, not historical replays of
-today's fundamental model. The archived-factor replay and interactive sandbox
-use the stored factor snapshots. The sandbox liquidates and re-enters at each
-scheduled rebalance with 20bps charged per leg, implements selected weights,
-ATR stops and take-profit exits, and holds cash when no stocks match. Historical
-coverage begins with recorded factors; missing periods are never synthesized.
-The recorded universe is not a complete historical index-constituent database.
-
-ML validation is chronological and purged by whole scan-date groups. Prediction
-uses the same feature scales as training; the target is a 21-session NIFTY excess
-return of at least one percentage point. Models are versioned and expire daily.
-Insufficient mature validation history explicitly activates an uncalibrated
-factor heuristic rather than an ML probability. Longer outcomes continue to
-mature after 21-day labels are filled. Null outcomes do not count as losses.
-Factor IC uses daily cross-sectional observations over a calendar quarter;
-insufficient samples produce N/A. The frontier uses measured covariance and
-returns. Macro shock cards remain explicitly illustrative assumptions.
-
-Fundamental cache hits preserve acquisition timestamps, and Actions retain the
-application caches. Quotes use stable GET requests, slower polling when closed,
-and bounded symbol validation. NSE 2026 holidays are verified in
-`frontend/server/market_calendar.json`; refresh this calendar for later years
-from the linked official NSE API. Daily charts expose daily/weekly candles only.
-Workflow generation failures propagate, output files are written atomically,
-and automated commits rebase instead of resetting source history. Manual runs
-no longer launch both the daily and weekend jobs. Dependency overrides were
-repaired and the lockfile updated. Modal hook ordering and stale chart callbacks
-were corrected. Type-migration and React performance lint checks remain warnings;
-hook ordering and other correctness checks remain errors.
-
-To repair stored research, use the project's virtual environment:
+The scanner makes external data requests and regenerates stored research. To
+repair quote gaps and historical outcomes explicitly:
 
 ```powershell
 & .venv/Scripts/python.exe db_split_join.py join
 & .venv/Scripts/python.exe scripts/repair_quote_gaps.py
 & .venv/Scripts/python.exe scripts/backfill_research.py
 & .venv/Scripts/python.exe db_split_join.py split
-& .venv/Scripts/python.exe -m pytest -q
 ```
 
-Only commit split database parts. Legacy backtest caches are invalidated by
-engine version and source-price fingerprints. Corrected runs are exported anew.
-Run `npm test`, `npm run lint`, and `npm run build` in `frontend`; the new code-check
-workflow runs Python in a virtual environment and checks that private datasets
-are absent from the static build.
+From `frontend`:
+
+```powershell
+npm test
+npm run lint
+npm run build
+```
+
+The build checks the browser TypeScript projects and the standalone function
+configuration before building with Vite. Frontend tests cover sessions,
+authorization, packaged data paths, pagination, and strategy execution. Type
+migration and React performance rules currently produce lint warnings; hook
+ordering and other correctness checks remain errors.
+
+### Database chunks
+
+`data/market_scans.db` is local-only. Git tracks 40 MiB chunks named
+`data/market_scans.db.part_*`. Join them before running database scripts; checkpoint
+SQLite WAL writes before splitting a database that has been modified. Commit only
+the parts, never the joined database or its WAL files. Corrected backtest caches
+are versioned and invalidated when their source-price fingerprint changes.
+
+An installed local pre-commit hook may split the joined database automatically.
+Keep that database current after pulling new parts so the hook cannot replace
+fresh parts with an older local copy. Activate the virtual environment before
+committing if the hook invokes `python`.
+
+## Deploying on Vercel
+
+Connect this GitHub repository and use these project settings:
+
+| Setting | Value |
+| --- | --- |
+| Framework | Vite |
+| Root directory | `frontend` |
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| Node.js | 24.x |
+
+Configure the server environment variables for each deployment environment used:
+
+| Variable | Purpose |
+| --- | --- |
+| `AUTH_EMAIL` | Shared account email |
+| `AUTH_PASSWORD` | New shared account password |
+| `AUTH_SESSION_SECRET` | Optional random signing secret; otherwise derived from the password |
+
+**Do not reuse the historical hardcoded password:** it remains in Git history.
+Never prefix credentials with `VITE_`, which exposes values to browser code.
+Redeploy after changing environment settings. Without the required login settings,
+the shared login fails closed while public charts/screener remain available.
+
+Sessions use signed, HttpOnly, SameSite=Strict cookies, expire after eight hours,
+and use Secure cookies in production. Browser local-storage flags do not grant
+access. The login throttle is process-local; use Vercel Firewall rate limiting if
+distributed enforcement is required.
+
+### Private data packaging and API access
+
+Research JSON is tracked under `frontend/public` for the scan pipeline, but Vite
+removes it from the static `dist` output. `vercel.json` includes those datasets in
+the data function bundle. The API resolves files relative to its module rather
+than `process.cwd()`, accommodating both standalone and repository-root function
+mounts. `frontend/api/tsconfig.json` configures Vercel's function compiler, which
+does not follow the browser build's TypeScript project references.
+
+| Request | Access |
+| --- | --- |
+| `/api/data?resource=market` | Public market facts; research fields require a session |
+| `/api/data?resource=quant` | Signed-in research account |
+| `/api/data?resource=scores` | Signed-in research account |
+| `/api/data?resource=strategies` and `&page=N` | Signed-in account; bounded history pages |
+| `/api/data?resource=runs` and `resource=run&slug=...` | Signed-in account; versioned backtest archive |
+| `/api/chart` and `/api/live_data` | Public; validated parameters |
+
+**A public GitHub repository exposes tracked datasets and historical source.**
+The shared login protects hosted API access and views, not copies on GitHub.
+
+If market data returns 503, check the function logs for missing bundled files or
+invalid JSON. If the function compiler reports unsupported language-library
+methods, check `api/tsconfig.json`; a successful browser build alone does not
+validate Vercel's compiler configuration.
+
+## Automation
+
+`.github/workflows/daily_scan.yml` runs weekday scans at approximately 4:07 AM,
+9:37 AM, 12:37 PM, 4:11 PM, and 10:07 PM IST, and a Saturday outcome backfill at
+9:07 AM IST. GitHub schedules can be delayed. Manual dispatch runs the daily scan
+only. Application caches preserve acquisition timestamps across runs, and
+concurrency prevents overlapping publications. Generation errors fail the job;
+generated commits rebase before pushing. Telegram broadcasting uses the optional
+`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` GitHub secrets.
+
+`.github/workflows/checks.yml` runs Python tests in a virtual environment and
+frontend tests, lint, and build checks. It also verifies that research datasets
+are absent from the static output.
+
+The 2026 NSE calendar lives in `frontend/server/market_calendar.json` and
+`engine/market_calendar.py`. Refresh it from the linked NSE source for later years.
+
+## Code map
+
+| Path | Responsibility |
+| --- | --- |
+| `data_pipeline/` | Price/fundamental ingestion, SQLite persistence, forward outcomes |
+| `engine/` | Scanning, factors, recommendations, ML, portfolios, backtests |
+| `engine/strategy_history.py` | Exports recorded factor history for the sandbox |
+| `frontend/api/` | Vercel data, chart, quote, and login endpoints |
+| `frontend/server/` | Session signing and market calendar |
+| `frontend/src/` | React dashboard, charts, screener, and Quant Lab |
+| `frontend/tests/` and `tests/` | Frontend and Python regression checks |
+| `notifications/` | Telegram signals and weekend research refresh |
+| `scripts/` | Quote-gap repair and research backfill |
+| `db_split_join.py` | Joins/splits the local SQLite database |
+
+## License and attribution
+
+Developed for the Alpha Research and Investment Club, Faculty of Management
+Studies (FMS), University of Delhi. Released under the
+[Apache License 2.0 with Commons Clause](LICENSE).
