@@ -10,6 +10,19 @@ export interface FactorDimension {
 }
 
 export function extractFactorDimensions(asset: DashboardData): FactorDimension[] {
+  if (asset.Ranking_Factors) {
+    const descriptions: Record<string, string> = {
+      quality: 'Profitability and financial strength, compared with accounting peers',
+      value: 'Earnings, book value and cash flow relative to current price',
+      momentum: 'Six and twelve month returns, excluding the latest month',
+      trend: 'Price relative to the 50 and 200 session averages',
+      stability: 'Recent volatility and downside variation',
+    }
+    return Object.entries(asset.Ranking_Factors).map(([key, score]) => ({
+      key, label: key.charAt(0).toUpperCase() + key.slice(1), score,
+      rawDesc: `${score.toFixed(1)}/10`, academicRef: descriptions[key] || '',
+    }))
+  }
   const piotroskiScore = asset.Piotroski_F != null ? (asset.Piotroski_F / 9) * 10 : 5.0
   const momentumScore = asset.RS_Percentile != null 
     ? asset.RS_Percentile / 10 
@@ -87,12 +100,13 @@ export function FactorRadarChart({ asset, assets, peerGroup = [], size = 320, sh
   // Sector peer benchmark factors
   const peerFactors = useMemo(() => {
     if (!peerGroup || peerGroup.length === 0 || !factors.length) return null
-    const allDims = peerGroup.map(p => extractFactorDimensions(p))
+    const allDims = peerGroup.filter(p => p.Ranking_Version === activeAsset?.Ranking_Version).map(p => extractFactorDimensions(p))
+    if (!allDims.length) return null
     return factors.map((f, i) => {
       const avg = allDims.reduce((acc, dims) => acc + dims[i].score, 0) / allDims.length
       return { ...f, score: avg }
     })
-  }, [peerGroup, factors])
+  }, [peerGroup, factors, activeAsset?.Ranking_Version])
 
   if (!activeAsset && (!assets || assets.length === 0)) return null
 

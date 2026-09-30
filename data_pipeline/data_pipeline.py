@@ -318,7 +318,7 @@ def store_factor_history(rows_data: list[dict], scan_date: str):
         ))
 
     if rows:
-        conn.executemany(f"INSERT OR REPLACE INTO factor_history ({col_str}) VALUES ({placeholders})", rows)
+        conn.executemany(f"INSERT OR IGNORE INTO factor_history ({col_str}) VALUES ({placeholders})", rows)
         conn.commit()
         logger.info(f"Stored factor history for {len(rows)} stocks.")
     conn.close()

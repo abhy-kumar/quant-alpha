@@ -1,0 +1,57 @@
+{
+  "stocks": 469,
+  "json_bytes": 1975523,
+  "api_bytes": 1356224,
+  "price_date": "2026-09-30",
+  "journal_rows": 469,
+  "horizons": {
+    "short": {
+      "labels": {
+        "Strong Buy": 43,
+        "Buy": 86,
+        "Hold": 126,
+        "Caution": 104,
+        "Avoid": 78,
+        "Insufficient data": 32
+      },
+      "top3": [
+        "LAURUSLABS.NS",
+        "DIVISLAB.NS",
+        "WELCORP.NS"
+      ]
+    },
+    "long": {
+      "labels": {
+        "Strong Buy": 32,
+        "Buy": 101,
+        "Hold": 130,
+        "Caution": 107,
+        "Avoid": 72,
+        "Insufficient data": 27
+      },
+      "top3": [
+        "LUPIN.NS",
+        "HEROMOTOCO.NS",
+        "ENGINERSIN.NS"
+      ]
+    }
+  },
+  "forward_validation": {
+    "version": "ranking-v3.0",
+    "snapshots": 469,
+    "status": "Forward validation pending",
+    "method": "Saved inputs only. Enter at the next session close after recording. Actual deployment time is not recorded; delayed publication requires separate verification. Fixed horizon, 20bp each side. Overlapping outcomes are not independent trades.",
+    "horizons": {
+      "short": {
+        "matured": 0,
+        "pending": 437,
+        "missing_quotes": 0
+      },
+      "long": {
+        "matured": 0,
+        "pending": 442,
+        "missing_quotes": 0
+      }
+    }
+  }
+}

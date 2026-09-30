@@ -32,9 +32,11 @@ def generate():
     cursor = conn.cursor()
 
     try:
-        cursor.execute("""
+        columns = {row[1] for row in cursor.execute('PRAGMA table_info(historical_scans)')}
+        version = 'Ranking_Version' if 'Ranking_Version' in columns else 'NULL'
+        cursor.execute(f"""
             SELECT Ticker, Scan_Date, Composite_Score, Composite_Score_Tech, Composite_Score_Fund,
-                   Tech_Score, Fund_Score, Research_Score
+                   Tech_Score, Fund_Score, Research_Score, {version} AS Model_Version
             FROM historical_scans
             WHERE Composite_Score IS NOT NULL
             ORDER BY Ticker, Scan_Date
@@ -60,6 +62,7 @@ def generate():
 
         result[ticker].append({
             "date": row["Scan_Date"][:10],
+            "model_version": row["Model_Version"],
             "composite": safe_float(row["Composite_Score"]),
             "composite_tech": safe_float(row["Composite_Score_Tech"]),
             "composite_fund": safe_float(row["Composite_Score_Fund"]),

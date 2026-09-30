@@ -45,7 +45,7 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
                 </span>
               </div>
               <p className="text-[12px]" style={{ color: 'var(--text-3)' }}>
-                10 research factors for {asset.Sector || 'equities'}
+                {factors.length} {asset.Ranking_Version ? 'ranking' : 'research'} factors for {asset.Sector || 'equities'}
               </p>
             </div>
           </div>
@@ -109,7 +109,7 @@ const FactorRadarModalContent: React.FC<Omit<Props, 'asset'> & { asset: Dashboar
         {/* Footer Note */}
         <div className="flex items-center gap-2 p-2.5 rounded-xl text-[12px]" style={{ background: 'var(--surface-2)', color: 'var(--text-3)' }}>
           <Info size={14} className="shrink-0 text-[var(--brand)]" />
-          <span>Factor scores range from 0 to 10 and are ranked against the screened NSE universe using financial and market data available at the scan date.</span>
+          <span>Scores range from 0 to 10. Accounting factors use sector or accounting peers; price factors use the screened equity universe. Missing inputs receive a neutral score and reduce data coverage.</span>
         </div>
     </ModalShell>
   )

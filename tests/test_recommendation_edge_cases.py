@@ -47,9 +47,9 @@ def test_loss_making_firm_valuation_penalty():
     assert score_unprofitable > 0.0
 
 
-def test_growth_input_sanitization_fund_score():
-    """eps_growth and rev_growth passed as percentages (>3.0) should be sanitized to decimal."""
-    # Growth passed as decimal (0.25 -> 25%)
+def test_growth_inputs_remain_decimal_above_three_hundred_percent():
+    """Growth is always fractional. Increasing growth across 300% must not collapse the score."""
+    # Growth just below 300%.
     score_decimal = compute_fund_score(
         roe_pct=18.0,
         pe=25.0,
@@ -58,11 +58,11 @@ def test_growth_input_sanitization_fund_score():
         div_yield_pct=1.2,
         mkt_cap_b=100.0,
         sharpe=1.2,
-        eps_growth=0.25,
-        rev_growth=0.20,
+        eps_growth=2.99,
+        rev_growth=2.99,
     )
 
-    # Growth passed as percentage (25.0 -> 25%)
+    # Growth just above 300%.
     score_percentage = compute_fund_score(
         roe_pct=18.0,
         pe=25.0,
@@ -71,16 +71,16 @@ def test_growth_input_sanitization_fund_score():
         div_yield_pct=1.2,
         mkt_cap_b=100.0,
         sharpe=1.2,
-        eps_growth=25.0,
-        rev_growth=20.0,
+        eps_growth=3.01,
+        rev_growth=3.01,
     )
 
     # Scores should be virtually identical
     assert np.isclose(score_decimal, score_percentage, atol=0.05)
 
 
-def test_growth_sanitization_in_research_factors():
-    """Verify SUE and Investment factors sanitize percentage growth inputs."""
+def test_research_growth_inputs_keep_declared_units():
+    """Extreme growth keeps its magnitude rather than becoming moderate growth."""
     info_dec = {
         "earningsGrowth": 0.20,
         "revenueGrowth": 0.15,
@@ -103,11 +103,11 @@ def test_growth_sanitization_in_research_factors():
 
     sue_dec = compute_sue_factor(info_dec, None)
     sue_pct = compute_sue_factor(info_pct, None)
-    assert np.isclose(sue_dec, sue_pct, atol=0.05)
+    assert sue_pct >= sue_dec
 
     inv_dec = compute_investment_factor(info_dec)
     inv_pct = compute_investment_factor(info_pct)
-    assert np.isclose(inv_dec, inv_pct, atol=0.05)
+    assert inv_pct < inv_dec
 
 
 def test_trend_aware_bollinger_band_signal():

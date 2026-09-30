@@ -958,7 +958,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
           </div>
           <div>
             <span className="typo-h2">Walk-Forward Backtest Methodology</span>
-            <p className="typo-caption mt-0.5" style={{ color: 'var(--text-3)' }}>Model methodology, performance metrics, and evaluation rules</p>
+            <p className="typo-caption mt-0.5" style={{ color: 'var(--text-3)' }}>Historical price strategies and earlier model snapshots. These results do not validate the current five-factor ranking.</p>
           </div>
         </div>
 

@@ -1,3 +1,4 @@
+import { topRanked } from './utils/ranking'
 import React, { useEffect, useLayoutEffect, useState, useMemo, memo, lazy, Suspense } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { TrendUp, ChartBar, StackSimple, Moon, Sun, WarningCircle, Database, Pulse, SignOut, LockSimple } from '@phosphor-icons/react'
@@ -242,10 +243,7 @@ export default function App() {
 
 
   const topPicks = useMemo(() => {
-    let f = [...data].filter(d => !d.Ticker.includes('BEES') && d.Sector!=='ETF')
-    if (horizon==='short') f = f.filter(d=>{const v=Number(d.Fund_Score);return isNaN(v)||v>=5}).sort((a,b)=>Number(b.Composite_Score||0)-Number(a.Composite_Score||0))
-    else f = f.filter(d=>{const v=Number(d.Research_Score);return !isNaN(v)&&v>5}).sort((a,b)=>Number(b.Composite_Score_Fund||0)-Number(a.Composite_Score_Fund||0))
-    return f.slice(0,3)
+    return topRanked(data, horizon)
   }, [data, horizon])
 
   const sectorMap = useMemo(() => {

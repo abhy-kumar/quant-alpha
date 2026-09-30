@@ -230,6 +230,7 @@ def get_liquid_universe(top_n: int = 500, include_db_universe: bool = True) -> l
     """
     tickers_set = set()
     ordered_tickers: list[str] = []
+    turnover = {}
 
     def _add_ticker(sym: str):
         s = str(sym).strip().upper()
@@ -254,6 +255,17 @@ def get_liquid_universe(top_n: int = 500, include_db_universe: bool = True) -> l
                 conn.close()
                 for (t,) in rows:
                     _add_ticker(t)
+                with sqlite3.connect(db_path) as liquidity_conn:
+                    liquidity = liquidity_conn.execute('''
+                        SELECT Ticker, AVG(Close * Volume) FROM (
+                            SELECT Ticker, Close, Volume,
+                                   ROW_NUMBER() OVER (PARTITION BY Ticker ORDER BY Date DESC) AS rn
+                            FROM daily_ohlcv
+                            WHERE Date >= date((SELECT MAX(Date) FROM daily_ohlcv), '-60 days')
+                              AND Close > 0 AND Volume > 0
+                        ) WHERE rn <= 30 GROUP BY Ticker HAVING COUNT(*) >= 10
+                    ''').fetchall()
+                turnover.update({t: value for t, value in liquidity if value is not None})
                 logger.info(f"Loaded {len(ordered_tickers)} core tickers from database.")
             except Exception as e:
                 logger.debug(f"Could not load universe from DB: {e}")
@@ -264,8 +276,11 @@ def get_liquid_universe(top_n: int = 500, include_db_universe: bool = True) -> l
         if not bhav_df.empty and "TURNOVER_LACS" in bhav_df.columns:
             bhav_df = bhav_df.dropna(subset=["SYMBOL", "TURNOVER_LACS"])
             top_bhav = bhav_df.nlargest(max(top_n, 200), "TURNOVER_LACS")
-            for sym in top_bhav["SYMBOL"].dropna():
-                _add_ticker(str(sym).strip())
+            for _, row in top_bhav.iterrows():
+                sym = str(row['SYMBOL']).strip()
+                _add_ticker(sym)
+                ticker = sym if sym.endswith(('.NS', '.BO')) else sym + '.NS'
+                turnover.setdefault(ticker, float(row['TURNOVER_LACS']) * 100_000)
             logger.info(f"Merged Bhav copy turnover leaders. Total universe: {len(ordered_tickers)}")
     except Exception as e:
         logger.debug(f"Bhav copy merge failed: {e}")
@@ -275,7 +290,11 @@ def get_liquid_universe(top_n: int = 500, include_db_universe: bool = True) -> l
         for s in _FALLBACK_SYMBOLS:
             _add_ticker(s)
 
-    if top_n > 0 and len(ordered_tickers) > top_n:
+    # Database row order is not a measure of liquidity. Prefer sustained traded
+    # value; use the latest bhav copy only for newly discovered symbols.
+    if turnover:
+        ordered_tickers.sort(key=lambda t: (-turnover.get(t, 0), t))
+    if turnover and top_n > 0 and len(ordered_tickers) > top_n:
         return ordered_tickers[:top_n]
     return ordered_tickers
 

@@ -1,4 +1,5 @@
 import { debtEquityRatio } from '../../utils/formatters'
+import { horizonHistory } from '../../utils/ranking'
 import { useState, useRef, useEffect, useMemo, useId, memo } from 'react'
 import type { DashboardData, ChartCandle, ScoreHistoryItem } from '../../types'
 import { num, colorCode, scoreColor, scoreBar, SegmentedControl, InfoTooltip, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
@@ -179,10 +180,7 @@ function ChartingTabInner({
   isDark, peerGroup, selectedAsset, scoreHistory, horizon, isLoggedIn = true, onRequestSignIn
 }: Props) {
   const rawTickerScores = scoreHistory[selectedTicker] || []
-  const tickerScores = rawTickerScores.map(s => ({
-    ...s,
-    composite: horizon === 'long' ? (s.composite_fund ?? s.composite) : horizon === 'short' ? (s.composite_tech ?? s.composite) : s.composite,
-  }))
+  const tickerScores = horizonHistory(rawTickerScores, selectedAsset?.Ranking_Version, horizon)
   const price = Number(selectedAsset?.Price) || 0
   const ath = selectedAsset?.All_Time_High ? Number(selectedAsset.All_Time_High) : null
 

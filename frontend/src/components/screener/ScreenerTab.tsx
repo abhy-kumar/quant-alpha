@@ -1,7 +1,8 @@
 import { debtEquityRatio } from '../../utils/formatters'
+import { horizonHistory } from '../../utils/ranking'
 import { ModalShell } from '../common/ModalShell'
 import React, { useState, useMemo, useDeferredValue, useEffect, memo } from 'react'
-import type { DashboardData } from '../../types'
+import type { DashboardData, ScoreHistoryItem } from '../../types'
 import { num, colorCode, scoreColor, getSignalLabel, getBadgeClass, SortHeader, MiniSparkline, InfoTooltip } from '../common/shared'
 import { SegmentedControl } from '../common/shared'
 import { Info, Funnel, X, Star, Scales, DownloadSimple, CaretLeft, CaretRight, CaretDoubleLeft, CaretDoubleRight } from '@phosphor-icons/react'
@@ -18,13 +19,13 @@ interface Props {
   onSelect: (ticker: string) => void
   watchlist: string[]
   toggleWatchlist: (ticker: string) => void
-  scoreHistory: Record<string, {date: string; composite: number}[]>
+  scoreHistory: Record<string, ScoreHistoryItem[]>
   flashTickers?: Record<string, 'up'|'down'>
   isLoggedIn?: boolean
   onRequestSignIn?: () => void
 }
 
-const CONVICTION_OPTIONS = ['Strong Buy', 'Buy', 'Hold', 'Caution', 'Avoid']
+const CONVICTION_OPTIONS = ['Strong Buy', 'Buy', 'Hold', 'Caution', 'Avoid', 'Insufficient data']
 
 interface RowProps {
   row: DashboardData
@@ -35,7 +36,7 @@ interface RowProps {
   isLoggedIn: boolean
   scoreCol: string
   convCol: string
-  scoreHistory: Record<string, {date: string; composite: number}[]>
+  scoreHistory: Record<string, ScoreHistoryItem[]>
   onToggleExpand: (ticker: string) => void
   onSelect: (ticker: string) => void
   onToggleCompare: (ticker: string) => void
@@ -94,7 +95,7 @@ const ScreenerRow = memo(function ScreenerRow({
         </td>
         {isLoggedIn && <td className={`py-2 px-2 text-right font-medium font-mono ${scoreColor((row as any)[scoreCol])}`}>{num((row as any)[scoreCol])}</td>}
         <td className="py-2 px-2 text-center">
-          <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} ticker={row.Ticker} />
+          <MiniSparkline values={horizonHistory(scoreHistory[row.Ticker] || [], row.Ranking_Version, scoreCol === 'Composite_Score_Long' ? 'long' : 'short').slice(-10).map(s => s.composite)} ticker={row.Ticker} />
         </td>
         <td className={`py-2 px-2 text-right font-medium font-mono hidden md:table-cell ${scoreColor(row.Tech_Score)}`}>{num(row.Tech_Score)}</td>
         <td className={`py-2 px-2 text-right font-medium font-mono hidden lg:table-cell`}>{num(row.Fund_Score)}</td>
@@ -164,7 +165,7 @@ const ScreenerRow = memo(function ScreenerRow({
                   </div>
                 </div>
                 <div>
-                  <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Factor Scores</h4>
+                  <h4 className="section-label mb-3" style={{ color: 'var(--brand)' }}>Research diagnostics</h4>
                   <div className="space-y-1.5 text-[12px]">
                     {[
                       ['Piotroski F-Score', `${row.Piotroski_F ?? '-'}/9`, 'research.piotroski'],
@@ -252,7 +253,7 @@ const ScreenerRow = memo(function ScreenerRow({
 
 export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist, scoreHistory, flashTickers = {}, isLoggedIn = true, onRequestSignIn }: Props) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
-  const [sortKey, setSortKey] = useState<string>(() => isLoggedIn ? 'Composite_Score' : 'Ticker')
+  const [sortKey, setSortKey] = useState<string>(() => isLoggedIn ? 'Composite_Score_Tech' : 'Ticker')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(() => isLoggedIn ? 'desc' : 'asc')
   const [showFilters, setShowFilters] = useState(false)
   const [isCompact, setIsCompact] = useState(() => window.matchMedia('(max-width: 639px)').matches)
@@ -273,15 +274,15 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
   const [factsheetAsset, setFactsheetAsset] = useState<DashboardData | null>(null)
 
   // Active score and conviction column names driven by the horizon toggle
-  const scoreCol   = horizonMode === 'long' ? 'Composite_Score_Long' : 'Composite_Score'
-  const convCol    = horizonMode === 'long' ? 'Conviction_Long'      : 'Conviction'
+  const scoreCol   = horizonMode === 'long' ? 'Composite_Score_Long' : 'Composite_Score_Tech'
+  const convCol    = horizonMode === 'long' ? 'Conviction_Long'      : 'Tactical_Conviction'
 
   useEffect(() => {
     if (!isLoggedIn) {
       setSortKey('Ticker')
       setSortDir('asc')
     } else {
-      setSortKey(horizonMode === 'long' ? 'Composite_Score_Long' : 'Composite_Score')
+      setSortKey(horizonMode === 'long' ? 'Composite_Score_Long' : 'Composite_Score_Tech')
       setSortDir('desc')
     }
   }, [isLoggedIn, horizonMode])
@@ -357,7 +358,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
       if (stringFields.has(sortKey)) {
         return sortDir === 'asc' ? String(av || '').localeCompare(String(bv || '')) : String(bv || '').localeCompare(String(av || ''))
       }
-      return sortDir === 'asc' ? (Number(av) || 0) - (Number(bv) || 0) : (Number(bv) || 0) - (Number(av) || 0)
+      return (sortDir === 'asc' ? (Number(av) || 0) - (Number(bv) || 0) : (Number(bv) || 0) - (Number(av) || 0)) || a.Ticker.localeCompare(b.Ticker)
     })
     return arr
   }, [uniqueData, sortKey, sortDir, minComposite, minPiotroski, selectedSectors, selectedConvictions, minMarketCap, maxDE, minROE, maxPE, minRSI, maxRSI, deferredSearch, minValue, maxBeta, scoreCol, convCol])
@@ -468,57 +469,30 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 setHorizonMode(v as 'short' | 'long')
                 // Switch default sort to the matching score column if logged in
                 if (isLoggedIn) {
-                  setSortKey(v === 'long' ? 'Composite_Score_Long' : 'Composite_Score')
+                  setSortKey(v === 'long' ? 'Composite_Score_Long' : 'Composite_Score_Tech')
                   setSortDir('desc')
                 }
               }}
             />
-            <span className="text-xs hidden sm:inline" style={{ color: 'var(--text-3)' }}>9-Factor Quantitative Model | Cross-Sectional Ranking</span>
+            <span className="text-xs hidden sm:inline" style={{ color: 'var(--text-3)' }}>Quality, value, momentum, trend and stability</span>
           </div>
         </div>
-        {horizonMode === 'short' ? (
-          <div className="grid grid-cols-5 sm:grid-cols-9 gap-3 text-center">
-            {[
-              ['Piotroski', '0.08', 'var(--green)'],
-              ['Profitability', '0.15', 'var(--green)'],
-              ['Earnings Q', '0.10', 'var(--green)'],
-              ['Momentum', '0.20', 'var(--brand)'],
-              ['Value', '0.15', 'var(--blue)'],
-              ['Low Vol', '0.07', 'var(--text-2)'],
-              ['Beta', '0.05', 'var(--text-2)'],
-              ['Investment', '0.10', 'var(--text-2)'],
-              ['SUE', '0.10', 'var(--text-2)'],
-            ].map(([label, weight, color]) => (
-              <div key={label} className="flex flex-col items-center">
-                <span className="text-sm font-mono font-medium" style={{ color }}>{weight}</span>
-                <span className="text-[12px] mt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-5 sm:grid-cols-8 gap-3 text-center">
-            {[
-              ['Profitability', '0.18', 'var(--green)'],
-              ['Momentum+52W', '0.20', 'var(--brand)'],
-              ['Value', '0.18', 'var(--blue)'],
-              ['Investment', '0.12', 'var(--text-2)'],
-              ['SUE', '0.10', 'var(--text-2)'],
-              ['Low Vol', '0.10', 'var(--text-2)'],
-              ['Piotroski', '0.07', 'var(--green)'],
-              ['Earnings Q', '0.05', 'var(--green)'],
-            ].map(([label, weight, color]) => (
-              <div key={label} className="flex flex-col items-center">
-                <span className="text-sm font-mono font-medium" style={{ color }}>{weight}</span>
-                <span className="text-[12px] mt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-5 gap-3 text-center">
+          {(horizonMode === 'short'
+            ? [['Quality', 15], ['Value', 10], ['Momentum', 35], ['Trend', 25], ['Stability', 15]]
+            : [['Quality', 35], ['Value', 30], ['Momentum', 15], ['Trend', 5], ['Stability', 15]]
+          ).map(([label, weight]) => (
+            <div key={label} className="flex flex-col items-center">
+              <span className="text-sm font-mono font-medium" style={{ color: 'var(--brand)' }}>{weight}%</span>
+              <span className="text-[12px] mt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
+            </div>
+          ))}
+        </div>
         <div className="mt-3 pt-2 flex flex-wrap gap-3 text-[12px]" style={{ borderTop: '1px solid var(--glass-border)', color: 'var(--text-3)' }}>
           {horizonMode === 'short' ? (
-            <span>Composite Weights: Technical 35% | Fundamental 25% | Research 40%</span>
+            <span>Recommendations require at least 70% data coverage.</span>
           ) : (
-            <span>Long Horizon: Technical 15% | Fundamental 35% | Research 50%</span>
+            <span>Recommendations require at least 75% data coverage.</span>
           )}
         </div>
       </div>
@@ -539,7 +513,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 Ticker: d.Ticker,
                 Company: d.Long_Name || d.Ticker,
                 Sector: d.Sector,
-                Score: horizonMode === 'long' ? d.Composite_Score_Long : d.Composite_Score,
+                Score: horizonMode === 'long' ? d.Composite_Score_Long : d.Composite_Score_Tech,
                 Conviction: horizonMode === 'long' ? d.Conviction_Long : d.Conviction,
                 Price: d.Price,
                 Change_Pct: d["1d_Chg_%"],
@@ -898,7 +872,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  {isLoggedIn && <span className={`text-sm font-mono font-medium ${scoreColor(row.Composite_Score)}`}>{num(row.Composite_Score)}</span>}
+                  {isLoggedIn && <span className={`text-sm font-mono font-medium ${scoreColor(row[scoreCol])}`}>{num(row[scoreCol])}</span>}
                   <button aria-label={`${watchlist.includes(row.Ticker) ? 'Remove' : 'Add'} ${row.Ticker.replace('.NS', '')} ${watchlist.includes(row.Ticker) ? 'from' : 'to'} watchlist`} aria-pressed={watchlist.includes(row.Ticker)} onClick={() => toggleWatchlist(row.Ticker)}
                     onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.75)')}
                     onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
@@ -915,7 +889,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                   {row['1d_Chg_%'] != null ? `${row['1d_Chg_%'] > 0 ? '+' : ''}${row['1d_Chg_%'].toFixed(2)}%` : '-'}
                 </span>
                 <span className="hidden xs:inline" style={{ color: 'var(--text-3)' }}>{row.Sector || '-'}</span>
-                <MiniSparkline values={(scoreHistory[row.Ticker] || []).slice(-10).map(s => s.composite)} width={48} height={16} ticker={row.Ticker} />
+                <MiniSparkline values={horizonHistory(scoreHistory[row.Ticker] || [], row.Ranking_Version, horizonMode).slice(-10).map(s => s.composite)} width={48} height={16} ticker={row.Ticker} />
               </div>
 
               {/* Row 3: Tech, Fund, Research, F-Score, Value + expand */}

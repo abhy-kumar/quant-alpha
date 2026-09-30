@@ -1,3 +1,4 @@
+import { horizonScore, horizonConviction } from '../../utils/ranking'
 import { debtEquityRatio } from '../../utils/formatters'
 import { useMemo } from 'react'
 import type { DashboardData } from '../../types'
@@ -47,23 +48,10 @@ function SignalBadge({ label, bullish }: { label: string; bullish: boolean }) {
 }
 
 function ScoreRadar({ s }: { s: DashboardData }) {
-  const techRaw = Number(s.Tech_Score) || 0
-  const fundRaw = Number(s.Fund_Score) || 0
-  const researchRaw = Number(s.Research_Score) || 0
-  const piotroski = Number(s.Piotroski_F) || 0
-  const momentum = (Number(s.Momentum_12M) || 0) * 100
-  const value = Number(s.Value_Score) || 0
-  const vol = Number(s.Vol_60D) || 0
-
-  const axes = [
-    { label: 'Tech', value: Math.max(0, Math.min(10, (techRaw + 1) * 5)), raw: techRaw.toFixed(1) },
-    { label: 'Fund', value: Math.max(0, Math.min(10, fundRaw)), raw: fundRaw.toFixed(1) },
-    { label: 'Research', value: Math.max(0, Math.min(10, researchRaw)), raw: researchRaw.toFixed(1) },
-    { label: 'Quality', value: Math.max(0, Math.min(10, (piotroski / 9) * 10)), raw: `${piotroski}/9` },
-    { label: 'Mom', value: Math.max(0, Math.min(10, ((momentum + 100) / 200) * 10)), raw: `${momentum >= 0 ? '+' : ''}${momentum.toFixed(1)}%` },
-    { label: 'Value', value: Math.max(0, Math.min(10, value)), raw: value.toFixed(1) },
-    { label: 'Vol', value: Math.max(0, Math.min(10, ((60 - vol) / 60) * 10)), raw: `${vol.toFixed(1)}%` },
-  ]
+  const axes = Object.entries(s.Ranking_Factors ?? {}).map(([label, value]) => ({
+    label: label.charAt(0).toUpperCase() + label.slice(1), value, raw: value.toFixed(1),
+  }))
+  if (!axes.length) return null
 
   const cx = 100, cy = 100, r = 70, n = axes.length
   const toXY = (i: number, val: number) => {
@@ -114,18 +102,11 @@ function ScoreRadar({ s }: { s: DashboardData }) {
 function SignalsTabInner({ topPicks, horizon, setHorizon, onSelect }: Props) {
   const avgScore = useMemo(() => {
     if (!topPicks.length) return 0
-    const scoreKey = horizon === 'long' ? 'Composite_Score_Fund' : horizon === 'short' ? 'Composite_Score_Tech' : 'Composite_Score'
-    return topPicks.reduce((sum, p) => sum + (Number(p[scoreKey as keyof DashboardData]) || Number(p.Composite_Score) || 0), 0) / topPicks.length
+    return topPicks.reduce((sum, row) => sum + horizonScore(row, horizon), 0) / topPicks.length
   }, [topPicks, horizon])
 
   const bullishCount = useMemo(() => {
-    const threshold = horizon === 'long' ? 7.5 : 7
-    return topPicks.filter(p => {
-      const score = horizon === 'long' 
-        ? Number(p.Composite_Score_Fund) || Number(p.Composite_Score) || 0
-        : Number(p.Composite_Score) || 0
-      return score >= threshold
-    }).length
+    return topPicks.filter(row => ['Buy', 'Strong Buy'].includes(horizonConviction(row, horizon))).length
   }, [topPicks, horizon])
 
   const avgMomentum = useMemo(() => {
@@ -161,16 +142,13 @@ function SignalsTabInner({ topPicks, horizon, setHorizon, onSelect }: Props) {
         </div>
       </div>
 
+      {!topPicks.length && <p className="surface-card p-6" style={{ color: 'var(--text-2)' }}>No stocks currently meet the data coverage and recommendation requirements for this horizon.</p>}
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {topPicks.map((s, i) => {
           const change = Number(s['1d_Chg_%'])||0
           const price = Number(s.Price)||0
-          const composite = horizon === 'long' 
-            ? Number(s.Composite_Score_Fund) || Number(s.Composite_Score) || 0
-            : horizon === 'short'
-            ? Number(s.Composite_Score_Tech) || Number(s.Composite_Score) || 0
-            : Number(s.Composite_Score) || 0
+          const composite = horizonScore(s, horizon)
           const rsi = Number(s.RSI_Value)||0
           const pe = s['P/E'] ? Number(s['P/E']) : null
           const mcap = s['Market_Cap_B'] ? Number(s['Market_Cap_B']) : null
@@ -191,8 +169,8 @@ function SignalsTabInner({ topPicks, horizon, setHorizon, onSelect }: Props) {
             <GlassCard key={s.Ticker} onClick={()=>onSelect(s.Ticker)} className="cursor-pointer">
               <GlassCardHeader
                 title={s.Ticker.replace('.NS', '')}
-                subtitle={`#${i + 1} in ${s.Sector || 'Equities'}`}
-                badge={s.Conviction ? <ConvictionDots conviction={s.Conviction} /> : undefined}
+                subtitle={`Rank ${i + 1}, ${s.Sector || 'Equities'}`}
+                badge={<ConvictionDots conviction={horizonConviction(s, horizon)} />}
               />
               <GlassCardContent className="p-4">
 
@@ -213,15 +191,16 @@ function SignalsTabInner({ topPicks, horizon, setHorizon, onSelect }: Props) {
                   }}>
                     {composite.toFixed(1)}
                   </span>
-                  <span style={{ fontSize: 12, color:'var(--text-3)' }}>composite score</span>
+                  <span style={{ fontSize: 12, color:'var(--text-3)' }}>{horizon === 'long' ? 'long-term score' : 'short-term score'}</span>
                 </div>
               </div>
 
               {/* Sub-score bars */}
               <div className="mb-3 space-y-1.5">
-                {scoreBar('Technical', (Number(s.Tech_Score) || 0) <= 1.0 ? Math.max(0, Math.min(10, ((Number(s.Tech_Score) || 0) + 1) * 5)) : Math.min(10, Number(s.Tech_Score) || 0), 0, 10)}
-                {scoreBar('Fundamental', Number(s.Fund_Score) || 0, 0, 10)}
-                {scoreBar('Research', Number(s.Research_Score) || 0, 0, 10)}
+                {Object.entries(s.Ranking_Factors ?? {}).map(([name, value]) => (
+                  <div key={name}>{scoreBar(name.charAt(0).toUpperCase() + name.slice(1), value, 0, 10)}</div>
+                ))}
+                <p className="text-xs" style={{ color: 'var(--text-3)' }}>Data coverage {Math.round((s.Ranking_Coverage?.[horizon] ?? 0) * 100)}%</p>
               </div>
 
               {/* Key metrics grid */}

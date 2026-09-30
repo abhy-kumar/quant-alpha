@@ -1,25 +1,7 @@
-"""
-scoring.py
-----------
-Scoring and composite calculation for the stock scanner.
+"""Scanner diagnostics and versioned, coverage-aware stock rankings.
 
-Separates scoring logic from data acquisition and orchestration.
-Implements horizon-specific composite scores based on academic literature:
-  - Short-term: Technical + Research (momentum/mean-reversion driven)
-  - Long-term: Value + Quality + Low Volatility (Fama-French factor model)
-  - Balanced: Equal blend for general use
-
-All scoring uses continuous sigmoid/tanh functions; no discrete step-function
-buckets or hard min/max caps. Quality penalties are smooth multiplicative
-multipliers that compound without destroying relative stock differentiation.
-
-Factor weights derived from:
-  - Fama & French (1992, 1993, 2015): Value, Investment, Profitability
-  - Novy-Marx (2013): Gross Profitability (strongest accounting predictor)
-  - Jegadeesh & Titman (1993): Momentum
-  - Baker, Bradley & Wurgler (2011): Low Volatility
-  - Frazzini & Pedersen (2014): Betting Against Beta
-  - Bernard & Thomas (1989): Post-Earnings Announcement Drift (SUE)
+The ranking specification lives in engine/ranking.py. Research diagnostics are
+displayed separately and do not add another overlapping vote to the final score.
 """
 
 import numpy as np
@@ -77,335 +59,26 @@ def compute_sector_medians(raw_data: dict, sector_data: dict) -> dict:
 
 
 def compute_all_scores(rows_intermediate: list, rs_composites: list, nifty_df, sector_medians: dict, regime_score: int) -> list:
-    """
-    Compute tech, fundamental, research, and composite scores for all stocks.
-
-    Composite scores (all 0-10 scale):
-      - composite_score: Balanced blend (35% tech, 30% fund, 35% research)
-      - composite_score_tech: Short-term oriented (50% tech, 15% fund, 35% research)
-      - composite_score_fund: Long-term oriented (10% tech, 40% fund, 50% research)
-      - composite_score_mom: Momentum-driven (20% tech, 10% fund, 70% research)
-    """
-    rs_series = pd.Series(rs_composites) if rs_composites else pd.Series(dtype=float)
-
-    final_rows = []
+    """Compute diagnostics, then rank each equity with the versioned five-pillar model."""
+    from engine.ranking import apply_ranking, midpoint_percentile
+    peers = [x['rs_composite'] for x in rows_intermediate if not x.get('is_etf')]
     for item in rows_intermediate:
-        info = item["info"]
-        tech = item["tech"]
-        met = item["met"]
-        latest = item["latest"]
-        df = item.get("df")
-        is_etf = item["is_etf"]
-
-        score = tech["score"]
-
-        if len(rs_series) > 0:
-            rs_pctile = sum(rs_series <= item["rs_composite"]) / len(rs_series) * 100
-        else:
-            rs_pctile = np.nan
-
-        fwd_pe = _safe_float(info.get("forwardPE"), item["pe"])
-        div_yield_pct = round(_safe_float(info.get("dividendYield"), 0), 2)
-        mkt_cap_b = round((_safe_float(info.get("marketCap"), 0)) / 1e9, 2)
-        eps_growth = _safe_float(info.get("earningsGrowth"))
-        rev_growth = _safe_float(info.get("revenueGrowth"))
-
-        if is_etf:
-            fund_score = 5.0
-            research = _default_research()
-        else:
-            medians = sector_medians.get(item["sector"], {})
-            fund_score = compute_fund_score(
-                item["roe"], item["pe"], fwd_pe, item["debt_eq"],
-                div_yield_pct, mkt_cap_b, met["Sharpe"],
-                eps_growth, rev_growth,
-                roce_pct=_safe_float(info.get("roce")),
-                promoter_holding=_safe_float(info.get("promoter_holding")),
-                promoter_pledging=_safe_float(info.get("promoter_pledging")),
-                sector_medians=medians
-            )
-            research = compute_research_composite(info, df, nifty_df, sector_medians.get(item["sector"]))
-
-        norm_tech = (score + 1) * 5
-        sentiment = _safe_float(info.get("news_sentiment"))
-        # Sentiment: tanh-based smooth multiplier, max ±12%; no binary threshold
-        # sentiment=+0.30 → ×1.10, sentiment=0.0 → ×1.00, sentiment=-0.30 → ×0.90
-        if not np.isnan(sentiment):
-            sentiment_mult = 1.0 + 0.12 * np.tanh(sentiment / 0.15)
-            norm_tech = max(0.0, min(10.0, norm_tech * sentiment_mult))
-
-        research_composite = research["research_composite"]
-
-        # Store raw scores for cross-sectional ranking (composites computed after ranking)
-        item["norm_tech"] = norm_tech
-        item["fund_score"] = fund_score
-        item["final_tech"] = score
-        item["rs_pctile"] = rs_pctile
-        item["research"] = research
-        item["research_composite_long_raw"] = research.get("research_composite_long", 5.0)
-
-        final_rows.append(item)
-
-    # ── Cross-Sectional Momentum Normalization (Short-term) ─────────────────
-    _mom_raw = [
-        x["research"].get("momentum_composite", np.nan)
-        for x in final_rows
-        if not x.get("is_etf") and not np.isnan(x["research"].get("momentum_composite", np.nan))
-    ]
-    if len(_mom_raw) >= 5:
-        _mom_mean = float(np.mean(_mom_raw))
-        _mom_std  = float(np.std(_mom_raw))
-        _mom_std  = max(_mom_std, 0.02)
-        for item in final_rows:
-            if item.get("is_etf"):
-                continue
-            raw_mom = item["research"].get("momentum_composite", np.nan)
-            if np.isnan(raw_mom):
-                continue
-            old_mom_score = item["research"].get("momentum_score", 5.0)
-            z = (raw_mom - _mom_mean) / _mom_std
-            new_mom_score = float(5.0 + 4.5 * np.tanh(z / 1.5))
-            delta = (new_mom_score - old_mom_score) * 0.20
-            item["research"]["momentum_score"]     = new_mom_score
-            item["research"]["research_composite"] = max(
-                0.0, min(10.0, item["research"]["research_composite"] + delta)
-            )
-
-    # ── Cross-Sectional Momentum Normalization (Long-term) ──────────────────
-    _mom_long_raw = [
-        x["research"].get("momentum_composite_long", np.nan)
-        for x in final_rows
-        if not x.get("is_etf") and not np.isnan(x["research"].get("momentum_composite_long", np.nan))
-    ]
-    if len(_mom_long_raw) >= 5:
-        _mlm = float(np.mean(_mom_long_raw))
-        _mls = float(max(np.std(_mom_long_raw), 0.02))
-        for item in final_rows:
-            if item.get("is_etf"):
-                continue
-            raw_lmom = item["research"].get("momentum_composite_long", np.nan)
-            if np.isnan(raw_lmom):
-                continue
-            old_lmom_score = item["research"].get("momentum_score_long", 5.0)
-            z_l = (raw_lmom - _mlm) / _mls
-            new_lmom_score = float(5.0 + 4.5 * np.tanh(z_l / 1.5))
-            delta_l = (new_lmom_score - old_lmom_score) * 0.20
-            item["research"]["momentum_score_long"] = new_lmom_score
-            item["research_composite_long_raw"] = max(
-                0.0, min(10.0, item.get("research_composite_long_raw", 5.0) + delta_l)
-            )
-
-    # ── Cross-Sectional Percentile Metadata ─────────────────────────────────
-    if len(final_rows) > 2:
-        raw_funds = pd.Series([x["fund_score"] for x in final_rows])
-        raw_research = pd.Series([x["research"]["research_composite"] for x in final_rows])
-        raw_research_long = pd.Series([x.get("research_composite_long_raw", 5.0) for x in final_rows])
-
-        for item in final_rows:
-            if item.get("is_etf"):
-                continue
-
-            fund_pctile = (raw_funds <= item["fund_score"]).sum() / len(raw_funds) * 100
-            item["fund_score_pctile"] = fund_pctile
-
-            res_pctile = (raw_research <= item["research"]["research_composite"]).sum() / len(raw_research) * 100
-            item["research_pctile"] = res_pctile
-
-            res_long_pctile = (raw_research_long <= item.get("research_composite_long_raw", 5.0)).sum() / len(raw_research_long) * 100
-            item["research_long_pctile"] = res_long_pctile
-
-    # ── Smooth Quality Penalty Multipliers ──────────────────────────────────
-    for item in final_rows:
-        if item.get("is_etf"):
-            item["quality_gated"] = False
-            item["quality_penalty"] = 1.0
-            item["quality_reasons"] = []
-            continue
-
-        info = item["info"]
-        research = item["research"]
-        pe = _safe_float(info.get("trailingPE"))
-        z_score = _safe_float(research.get("z_score_60", 0), default=0)
-        reversion_sig = research.get("reversion_signal", 0)
-        roe = _safe_float(info.get("returnOnEquity"), default=0)
-        debt_eq = _safe_float(info.get("debtToEquity"), default=0)
-
-        mult = 1.0
-        reasons = []
-
-        if not np.isnan(pe) and pe > 0:
-            pe_mult = np.exp(-0.013 * max(0.0, pe - 35))
-            if pe_mult < 0.95:
-                reasons.append(f"P/E={pe:.1f}")
-            mult *= pe_mult
-
-        if z_score > 1.5:
-            z_mult = max(0.0, 1.0 - 0.12 * (z_score - 1.5))
-            reasons.append(f"Z={z_score:.2f}")
-            mult *= z_mult
-
-        if reversion_sig == -1:
-            mult *= 0.93
-            if not any("overbought" in r for r in reasons):
-                reasons.append("overbought_reversion")
-
-        if roe <= 0:
-            roe_mult = max(0.0, 1.0 + 0.02 * roe)
-            reasons.append(f"ROE={roe:.1f}%")
-            mult *= roe_mult
-
-        if debt_eq > 150:
-            de_mult = max(0.0, 1.0 - 0.002 * (debt_eq - 150))
-            reasons.append(f"D/E={debt_eq:.1f}")
-            mult *= de_mult
-
-        item["quality_penalty"] = float(mult)
-        item["quality_gated"]   = len(reasons) > 0
-        item["quality_reasons"] = reasons
-
-    # ── Convex Regime Factor Weight Allocation (Lambda in [0, 1]) ───────────────
-    # Bull regime (regime_score=+5): Tech 40%, Research 40% (Momentum-oriented), Fund 20%
-    # Bear regime (regime_score=-5): Fund 50% (Quality/Value-oriented), Research 30% (Low Vol), Tech 20%
-    lambda_regime = max(0.0, min(1.0, (float(regime_score) + 5.0) / 10.0))
-    w_tech = lambda_regime * 0.40 + (1.0 - lambda_regime) * 0.20
-    w_fund = lambda_regime * 0.20 + (1.0 - lambda_regime) * 0.50
-    w_res  = lambda_regime * 0.40 + (1.0 - lambda_regime) * 0.30
-
-    # ── Compute forensic red flags and ATR trade plans for all stocks ──────────
-    for item in final_rows:
-        info = item["info"]
-        df = item.get("df")
-        price = _safe_float(item["latest"]["Close"]) if "latest" in item and "Close" in item["latest"] else _safe_float(item.get("pe", 100))
-        atr = _safe_float(item["latest"].get("ATR", np.nan)) if "latest" in item else np.nan
-        h22 = _safe_float(df["High"].iloc[-22:].max()) if (df is not None and len(df) >= 22) else price
-        
-        item["red_flags"] = check_forensic_red_flags(info, df, {**item.get("met", {}), "z_score_60": item["research"].get("z_score_60", 0), "RSI": item["latest"].get("RSI", 50), "sig_supertrend": item["tech"].get("sig_supertrend", 0)})
-        item["trade_plan"] = generate_atr_trade_plan(price, atr, h22)
-
-    # ── Compute composite scores directly from normalized component values ─
-    for item in final_rows:
-        norm_tech = item["norm_tech"]
-        fund_score = item["fund_score"]
-        res_score = item["research"].get("research_composite", 5.0)
-        res_long_score = item.get("research_composite_long_raw", 5.0)
-
-        raw_composite       = (norm_tech * w_tech) + (fund_score * w_fund) + (res_score * w_res)
-        raw_composite_tech  = (norm_tech * 0.50) + (fund_score * 0.10) + (res_score * 0.40)
-        raw_composite_fund  = (norm_tech * 0.10) + (fund_score * 0.40) + (res_score * 0.50)
-        raw_composite_mom   = (res_score * 0.70) + (norm_tech * 0.20) + (fund_score * 0.10)
-        raw_composite_long  = (norm_tech * 0.15) + (fund_score * 0.35) + (res_long_score * 0.50)
-
-        # ── RS Percentile Tilt (gentle ±4% tilt) ─────────────────────────────
-        rs_pctile = item.get("rs_pctile", np.nan)
-        if not np.isnan(rs_pctile):
-            rs_adj = 0.04 * (rs_pctile - 50.0) / 50.0   # ±4% gentle tilt
-            raw_composite       = max(0.0, raw_composite       * (1.0 + rs_adj))
-            raw_composite_tech  = max(0.0, raw_composite_tech  * (1.0 + rs_adj))
-            raw_composite_mom   = max(0.0, raw_composite_mom   * (1.0 + rs_adj))
-            raw_composite_fund  = max(0.0, raw_composite_fund  * (1.0 + rs_adj * 0.5))
-            raw_composite_long  = max(0.0, raw_composite_long  * (1.0 + rs_adj * 0.5))
-
-        # ── Quality Penalty Multiplier ────────────────────────────────────────
-        quality_mult = item.get("quality_penalty", 1.0)
-        raw_composite       = max(0.0, raw_composite       * quality_mult)
-        raw_composite_tech  = max(0.0, raw_composite_tech  * quality_mult)
-        raw_composite_fund  = max(0.0, raw_composite_fund  * quality_mult)
-        raw_composite_mom   = max(0.0, raw_composite_mom   * quality_mult)
-
-        item["composite_score"]       = min(10.0, raw_composite)
-        item["composite_score_tech"]  = min(10.0, raw_composite_tech)
-        item["composite_score_fund"]  = min(10.0, raw_composite_fund)
-        item["composite_score_mom"]   = min(10.0, raw_composite_mom)
-
-        # ── Long-Horizon Quality Penalty ─────────────────────────────────────────
-        quality_mult_long = 1.0
-        if not item.get("is_etf"):
-            info_l = item["info"]
-            pe_l   = _safe_float(info_l.get("trailingPE"))
-            roe_l  = _safe_float(info_l.get("returnOnEquity"), default=0)
-            de_l   = _safe_float(info_l.get("debtToEquity"), default=0)
-            if not np.isnan(pe_l) and pe_l > 0:
-                quality_mult_long *= np.exp(-0.013 * max(0.0, pe_l - 35))
-            if roe_l <= 0:
-                quality_mult_long *= max(0.0, 1.0 + 0.02 * roe_l)
-            if de_l > 150:
-                quality_mult_long *= max(0.0, 1.0 - 0.002 * (de_l - 150))
-        raw_composite_long = max(0.0, raw_composite_long * quality_mult_long)
-        item["composite_score_long"] = min(10.0, raw_composite_long)
-
-    all_comp_scores = pd.Series([x.get("composite_score", 5.0) for x in final_rows])
-    all_comp_long_scores = pd.Series([x.get("composite_score_long", 5.0) for x in final_rows])
-    for item in final_rows:
-        if len(all_comp_scores) > 0:
-            comp_pctile = sum(all_comp_scores <= item.get("composite_score", 5.0)) / len(all_comp_scores) * 100
-        else:
-            comp_pctile = 50.0
-
-        if len(all_comp_long_scores) > 0:
-            comp_long_pctile = sum(all_comp_long_scores <= item.get("composite_score_long", 5.0)) / len(all_comp_long_scores) * 100
-        else:
-            comp_long_pctile = 50.0
-
-        weekly_st_dir = _safe_float(item["latest"].get("Weekly_ST_Direction", np.nan))
-        weekly_bullish = weekly_st_dir == -1
-
-        conviction = get_conviction_rating(
-            comp_pctile, regime_score, weekly_bullish,
-            norm_tech=item.get("norm_tech"),
-            fund_score=item.get("fund_score"),
-            research_composite=item["research"].get("research_composite"),
-            red_flags=item.get("red_flags", []),
-        )
-        item["conviction"] = conviction
-
-        # Long-horizon conviction
-        conviction_long = get_conviction_rating(
-            comp_long_pctile, regime_score, weekly_bullish=True,
-            norm_tech=item.get("norm_tech"),
-            fund_score=item.get("fund_score"),
-            research_composite=item.get("research_composite_long_raw"),
-            red_flags=item.get("red_flags", []),
-        )
-        item["conviction_long"] = conviction_long
-
-        # Tactical Swing conviction (1W–1M short horizon)
-        comp_tech_score = item.get("composite_score_tech", 5.0)
-        tactical_pctile = sum(all_comp_scores <= comp_tech_score) / len(all_comp_scores) * 100 if len(all_comp_scores) > 0 else 50.0
-        tactical_conviction = get_conviction_rating(
-            tactical_pctile, regime_score, weekly_bullish=weekly_bullish,
-            norm_tech=item.get("norm_tech"),
-            fund_score=item.get("fund_score"),
-            research_composite=item["research"].get("research_composite"),
-            red_flags=item.get("red_flags", []),
-        )
-        item["tactical_conviction"] = tactical_conviction
-
-    # ── Call ML Alpha Engine ─────────────────────────────────────────────────
-    try:
-        from engine.ml_engine import predict_stock_alpha, get_ml_model
-        ml_model = get_ml_model()
-        for item in final_rows:
-            stock_dict = {
-                "Tech_Score": item["norm_tech"],
-                "Fund_Score": item["fund_score"],
-                "Research_Score": item["research"].get("research_composite", 5.0),
-                "Piotroski_F": item["research"].get("piotroski_f_score", 5),
-                "Gross_Profit_Score": item["research"].get("gross_profit_score", 5.0),
-                "Earnings_Quality": item["research"].get("earnings_quality_score", 5.0),
-                "Risk_Adj_Mom": item["research"].get("risk_adj_mom", 0.0),
-                "Vol_60D": item["research"].get("vol_60d", 0.25) * 100,
-                "Z_Score_60": item["research"].get("z_score_60", 0.0),
-                "RSI_Value": item["latest"].get("RSI", 50.0),
-                "ADX_Value": item["latest"].get("ADX", 20.0),
-            }
-            ml_pred = predict_stock_alpha(stock_dict, ml_model)
-            item["ml_alpha_prob"] = ml_pred["ml_alpha_prob"]
-            item["ml_conviction"] = ml_pred["ml_conviction"]
-            item["ml_method"] = ml_pred["method"]
-    except Exception as e:
-        log.warning(f"ML Alpha prediction skipped: {e}")
-
-    return final_rows
+        item['research'] = (_default_research() if item['is_etf'] else
+            compute_research_composite(item['info'], item.get('df'), nifty_df, sector_medians.get(item['sector'])))
+        item['final_tech'] = item['tech']['score']
+        item['rs_pctile'] = midpoint_percentile(item['rs_composite'], peers)
+        latest, frame = item['latest'], item.get('df')
+        price = _safe_float(latest.get('Close'))
+        high = frame['High'].tail(22).max() if frame is not None and 'High' in frame else price
+        item['trade_plan'] = generate_atr_trade_plan(price, _safe_float(latest.get('ATR')), high)
+        # Legacy predictions cannot be calibrated for a newly defined feature set.
+        item['ml_alpha_prob'] = np.nan
+        item['ml_conviction'] = 'Not calibrated'
+        item['ml_method'] = 'Not calibrated for ranking-v3'
+    reference_date = (str(pd.Timestamp(nifty_df.index[-1]).date())
+                      if nifty_df is not None and len(nifty_df) else None)
+    return apply_ranking(rows_intermediate, reference_date=reference_date,
+                         trading_dates=nifty_df.index if nifty_df is not None and len(nifty_df) else None)
 
 
 def _default_research() -> dict:
@@ -446,6 +119,13 @@ def build_output_row(item: dict) -> dict:
     chg = (close / _safe_float(item["prev"]["Close"]) - 1) * 100
 
     return {
+        "Ranking_Version": item.get('ranking_version'),
+        "Ranking_Inputs": item.get('ranking_inputs', {}),
+        "Ranking_Price_Date": item.get('ranking_price_date'),
+        "Ranking_Factors": item.get('ranking_factors', {}),
+        "Ranking_Coverage": item.get('ranking_horizon_coverage', {}),
+        "Ranking_Eligible": item.get('ranking_eligible', {}),
+        "Ranking_Percentiles": item.get('ranking_percentiles', {}),
         "Ticker":           item["ticker"].upper(),
         "Sector":           item["sector"],
         "Industry":         item["industry"],

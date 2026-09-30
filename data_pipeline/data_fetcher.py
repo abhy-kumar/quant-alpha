@@ -128,13 +128,25 @@ def _fetch_yoy_financials(t: yf.Ticker, info: dict):
         curr_ta = _safe_float(annual_bs.loc[ta_idx].iloc[0]) if ta_idx is not None else np.nan
         prev_ta = _safe_float(annual_bs.loc[ta_idx].iloc[1]) if ta_idx is not None else np.nan
 
+        if np.isfinite(curr_ta) and curr_ta > 0:
+            info['totalAssets'] = curr_ta
+            info['_statement_assets'] = True
+        if np.isfinite(curr_gp):
+            info['grossProfits'] = curr_gp
+        ebit_idx = next((i for i in annual_fs.index if str(i).lower() == 'ebit'), None)
+        liabilities_idx = next((i for i in annual_bs.index if str(i).lower() in ('current liabilities', 'total current liabilities')), None)
+        if ebit_idx is not None and liabilities_idx is not None:
+            capital = curr_ta - _safe_float(annual_bs.loc[liabilities_idx].iloc[0])
+            if capital > 0:
+                info['roce'] = 100 * _safe_float(annual_fs.loc[ebit_idx].iloc[0]) / capital
+
         # Current Ratio YoY
         curr_cr = _safe_float(info.get('currentRatio'))
-        cr_idx = next((i for i in annual_bs.index if 'current' in str(i).lower() and 'ratio' not in str(i).lower()), None)
+        cr_idx = next((i for i in annual_bs.index if str(i).lower() in ('current assets', 'total current assets')), None)
         if cr_idx is not None:
             curr_ca = _safe_float(annual_bs.loc[cr_idx].iloc[0])
             prev_ca = _safe_float(annual_bs.loc[cr_idx].iloc[1])
-            cl_idx = next((i for i in annual_bs.index if 'current liability' in str(i).lower()), None)
+            cl_idx = next((i for i in annual_bs.index if str(i).lower() in ('current liabilities', 'total current liabilities')), None)
             if cl_idx is not None:
                 curr_cl = _safe_float(annual_bs.loc[cl_idx].iloc[0])
                 prev_cl = _safe_float(annual_bs.loc[cl_idx].iloc[1])
@@ -158,17 +170,17 @@ def _fetch_yoy_financials(t: yf.Ticker, info: dict):
         prev_shares = _safe_float(annual_bs.loc[so_idx].iloc[1]) if so_idx is not None else np.nan
 
         # Compute and store YoY deltas
-        if not np.isnan(curr_debt) and not np.isnan(prev_debt) and prev_debt != 0:
-            info['yoy_leverage_change'] = (curr_debt - prev_debt) / abs(prev_debt)
+        if np.isfinite(curr_debt) and np.isfinite(prev_debt) and curr_ta > 0 and prev_ta > 0:
+            info['yoy_leverage_change'] = curr_debt / curr_ta - prev_debt / prev_ta
 
         if not np.isnan(curr_ta) and not np.isnan(prev_ta) and prev_ta > 0:
             info['yoy_asset_growth'] = (curr_ta - prev_ta) / abs(prev_ta)
 
-            # Gross Margin YoY (GP/Assets)
+            # Gross margin is gross profit divided by sales.
             if not np.isnan(curr_gp) and not np.isnan(curr_ta) and curr_ta > 0:
-                curr_gm = curr_gp / curr_ta
+                curr_gm = curr_gp / curr_rev if curr_rev > 0 else np.nan
                 if not np.isnan(prev_gp) and not np.isnan(prev_ta) and prev_ta > 0:
-                    prev_gm = prev_gp / prev_ta
+                    prev_gm = prev_gp / prev_rev if prev_rev > 0 else np.nan
                     info['yoy_gross_margin_change'] = curr_gm - prev_gm
 
             # Asset Turnover YoY
@@ -226,7 +238,7 @@ def fetch_ohlcv_with_retry(ticker: str, period: str = PERIOD) -> pd.DataFrame:
         try:
             df = yf.download(
                 ticker, period=period, interval=INTERVAL,
-                auto_adjust=True, progress=False, session=_YF_SESSION
+                auto_adjust=True, progress=False
             )
             if df.empty:
                 raise ValueError("Empty OHLCV response")
@@ -301,10 +313,11 @@ def fetch_fundamentals(ticker: str) -> dict:
     cached_info = cache_manager.get("fundamentals", sym, ttl=CACHE_TTL_FUNDAMENTALS)
     cached_sector = cache_manager.get("sector", sym, ttl=CACHE_TTL_SECTOR)
 
-    if cached_info and cached_sector:
+    if cached_info and cached_sector and cached_info.get('_schema_version') == 3:
         info = dict(cached_info)
         info["news_sentiment"] = _fetch_news_sentiment(sym)
         return info
+    cached_info = cached_info if cached_info and cached_info.get('_schema_version') == 3 else None
     info = dict(cached_info) if cached_info else {}
     fetched_new = False
 
@@ -313,10 +326,12 @@ def fetch_fundamentals(ticker: str) -> dict:
 
     if needs_fundamentals or needs_sector:
         try:
-            t = yf.Ticker(ticker, session=_YF_SESSION)
+            t = yf.Ticker(ticker)
             new_info = t.info or {}
             info.update(new_info)
             fetched_new = bool(new_info)
+            if fetched_new:
+                _fetch_yoy_financials(t, info)
 
             missing_critical = (
                 pd.isna(_safe_float(info.get('operatingCashflow'))) or
@@ -334,7 +349,7 @@ def fetch_fundamentals(ticker: str) -> dict:
     needs_fundamentals = (
         pd.isna(_safe_float(info.get('trailingPE'))) or
         pd.isna(_safe_float(info.get('returnOnEquity'))) or
-        pd.isna(_safe_float(info.get('roce')))
+        (info.get('sector') != 'Financial Services' and pd.isna(_safe_float(info.get('roce'))))
     )
 
     now_ts = time.time()
@@ -352,23 +367,16 @@ def fetch_fundamentals(ticker: str) -> dict:
     if pd.isna(_safe_float(info.get('promoter_holding'))):
         _fetch_promoter_from_screener(sym, info)
 
-    if _safe_float(info.get('totalAssets')) is None or np.isnan(_safe_float(info.get('totalAssets'), default=np.nan)):
-        bv = _safe_float(info.get('bookValue'), default=0)
-        shares = _safe_float(info.get('sharesOutstanding'), default=0)
-        total_debt = _safe_float(info.get('totalDebt'), default=0)
-        total_cash = _safe_float(info.get('totalCash'), default=0)
-        if bv > 0 and shares > 0:
-            info['totalAssets'] = bv * shares + total_debt - total_cash
-
     if pd.isna(_safe_float(info.get('yoy_asset_growth'), default=np.nan)):
         try:
-            t = yf.Ticker(ticker, session=_YF_SESSION)
+            t = yf.Ticker(ticker)
             _fetch_yoy_financials(t, info)
         except Exception:
             pass
 
     if fetched_new or not cached_info:
         if info:
+            info['_schema_version'] = 3
             cache_manager.set("fundamentals", sym, info)
 
     info['news_sentiment'] = _fetch_news_sentiment(sym)
@@ -418,8 +426,6 @@ def _fetch_from_screener(sym: str, info: dict, cached_sector, needs_fundamentals
                         info['trailingPE'] = val
                     elif 'roce' in name:
                         info['roce'] = val
-                        if pd.isna(_safe_float(info.get('returnOnEquity'))):
-                            info['returnOnEquity'] = val / 100.0
                     elif 'roe' in name and pd.isna(_safe_float(info.get('returnOnEquity'))):
                         info['returnOnEquity'] = val / 100.0
                     elif 'promoter holding' in name:
@@ -478,7 +484,7 @@ def _parse_screener_peers(peers_table, sym: str, info: dict):
                 if debt_idx != -1 and pd.isna(_safe_float(info.get('debtToEquity'))):
                     try:
                         raw_de = float(cells[debt_idx].text.strip().replace(',', ''))
-                        info['debtToEquity'] = raw_de if raw_de > 10 else raw_de * 100.0
+                        info['debtToEquity'] = raw_de * 100.0
                     except (ValueError, IndexError):
                         pass
             else:
@@ -496,7 +502,7 @@ def _parse_screener_peers(peers_table, sym: str, info: dict):
                 if debt_idx != -1:
                     try:
                         raw_de = float(cells[debt_idx].text.strip().replace(',', ''))
-                        peer_data['debt_eq'] = raw_de if raw_de > 10 else raw_de * 100.0
+                        peer_data['debt_eq'] = raw_de * 100.0
                     except (ValueError, IndexError):
                         pass
                 peers.append(peer_data)
@@ -532,7 +538,7 @@ def _parse_screener_ratios(soup, info: dict):
         elif 'quick ratio' in name_text and pd.isna(_safe_float(info.get('quickRatio'))):
             info['quickRatio'] = val
         elif 'debt to equity' in name_text and pd.isna(_safe_float(info.get('debtToEquity'))):
-            info['debtToEquity'] = val if val > 10 else val * 100.0
+            info['debtToEquity'] = val * 100.0
         elif 'roce' in name_text:
             info['roce'] = val
 

@@ -1,4 +1,9 @@
 export interface DashboardData {
+  Ranking_Version?: string
+  Ranking_Factors?: Record<string, number>
+  Ranking_Coverage?: Record<string, number>
+  Ranking_Eligible?: Record<string, boolean>
+  Ranking_Percentiles?: Record<string, number | null>
   Ticker: string
   Sector: string
   Industry?: string
@@ -270,6 +275,7 @@ export interface ChartCandle {
 
 export interface ScoreHistoryItem {
   date: string
+  model_version?: string | null
   composite: number
   composite_tech?: number
   composite_fund?: number

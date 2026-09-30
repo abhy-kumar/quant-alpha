@@ -14,7 +14,7 @@ MAX_WORKERS_OHLCV = 4
 MAX_WORKERS_FUNDAMENTALS = 2
 
 # Cache Expirations (in seconds)
-CACHE_TTL_FUNDAMENTALS = 30 * 24 * 3600  # 30 days
+CACHE_TTL_FUNDAMENTALS = 24 * 3600  # refresh once daily; reprice ratios every scan
 CACHE_TTL_NEWS = 24 * 3600               # 24 hours
 CACHE_TTL_ATH = 90 * 24 * 3600           # 90 days
 CACHE_TTL_SECTOR = 90 * 24 * 3600        # 90 days

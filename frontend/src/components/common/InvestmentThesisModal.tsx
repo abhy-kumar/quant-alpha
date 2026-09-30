@@ -1,4 +1,3 @@
-import { debtEquityRatio } from '../../utils/formatters'
 import React from 'react'
 import { ModalShell } from './ModalShell'
 import type { DashboardData } from '../../types'
@@ -21,23 +20,23 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
   if (!isOpen || !asset) return null
 
   const ticker = asset.Ticker.replace('.NS', '')
-  const isHighQuality = (asset.Piotroski_F || 0) >= 6 && (asset.Earnings_Quality || 0) >= 5
-  const isMomentumLeader = (asset.Momentum_12M || 0) > 0.15
-  const isValuationAttractive = (asset.Value_Score || 0) >= 5.5
+  const factors = asset.Ranking_Factors
+  const isHighQuality = factors ? factors.quality >= 6.5 : false
+  const isMomentumLeader = factors ? factors.momentum >= 6.5 : false
+  const isValuationAttractive = factors ? factors.value >= 6.5 : false
 
   const catalysts = [
-    isMomentumLeader && `Strong 12M price momentum (+${((asset.Momentum_12M || 0) * 100).toFixed(1)}%) with high relative strength.`,
-    isHighQuality && `Solid financial health with Piotroski F-Score of ${asset.Piotroski_F}/9 and earnings quality of ${asset.Earnings_Quality}/10.`,
-    isValuationAttractive && `Attractive valuation metrics with Value Score of ${num(asset.Value_Score)}/10 relative to sector peers.`,
+    isMomentumLeader && `Momentum ranks at ${num(factors?.momentum)}/10 across screened equities.`,
+    isHighQuality && `Quality ranks at ${num(factors?.quality)}/10 against accounting peers.`,
+    isValuationAttractive && `Value ranks at ${num(factors?.value)}/10 against accounting peers.`,
     asset.Sig_Supertrend === 1 && `Technical Supertrend signal is in a bullish trend.`,
-    asset["ROCE_%"] != null && Number(asset["ROCE_%"]) > 15 && `High return on capital employed (ROCE: ${Number(asset["ROCE_%"]).toFixed(1)}%).`,
   ].filter(Boolean)
 
   const risks = [
+    ...(asset.Red_Flags || []),
+    factors && factors.stability < 3 && `Stability ranks at ${num(factors.stability)}/10 across screened equities.`,
+    asset.Ranking_Coverage && asset.Ranking_Coverage.balanced < .85 && `Some ranking inputs are unavailable. Balanced data coverage is ${Math.round(asset.Ranking_Coverage.balanced * 100)}%.`,
     asset.Beta != null && asset.Beta > 1.2 && `High beta volatility (${asset.Beta.toFixed(2)}x Nifty 50).`,
-    debtEquityRatio(asset.Debt_to_Equity) != null && debtEquityRatio(asset.Debt_to_Equity)! > 1.5 && `High Debt/Equity ratio (${num(debtEquityRatio(asset.Debt_to_Equity), 2)}x).`,
-    asset['P/E'] != null && Number(asset['P/E']) > 45 && `High P/E valuation multiple (${num(asset['P/E'])}x).`,
-    asset['Promoter_Pledging_%'] != null && Number(asset['Promoter_Pledging_%']) > 15 && `Promoter share pledging alert (${asset['Promoter_Pledging_%']}%).`,
     asset.Sig_RSI === -1 && `RSI > 70 indicates an overbought condition.`,
   ].filter(Boolean)
 
@@ -57,12 +56,12 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
                 </span>
                 {asset.Tactical_Conviction && (
                   <span className={`badge rounded-full px-2.5 py-0.5 text-[12px] ${getBadgeClass(asset.Tactical_Conviction)}`}>
-                    Tactical (1W-1M): {asset.Tactical_Conviction}
+                    Short term: {asset.Tactical_Conviction}
                   </span>
                 )}
                 {asset.Conviction_Long && (
                   <span className={`badge rounded-full px-2.5 py-0.5 text-[12px] ${getBadgeClass(asset.Conviction_Long)}`}>
-                    Strategic (6M-2Y): {asset.Conviction_Long}
+                    Long term: {asset.Conviction_Long}
                   </span>
                 )}
               </div>
@@ -85,7 +84,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
           <div className="mb-4 p-3 rounded-xl bg-[var(--amber-bg)] border border-[var(--border)] flex items-start gap-2.5 text-xs text-[var(--amber)]">
             <Warning size={18} className="shrink-0 mt-0.5 text-[var(--amber)]" />
             <div>
-              <div className="font-semibold text-[var(--amber)]">Forensic Disqualifiers Flagged ({asset.Red_Flags.length})</div>
+              <div className="font-semibold text-[var(--amber)]">Ranking risk flags ({asset.Red_Flags.length})</div>
               <div className="mt-1 text-[12px] text-[var(--amber)] flex flex-wrap gap-2">
                 {asset.Red_Flags.map((flag, idx) => (
                   <span key={idx} className="px-2 py-0.5 rounded-md bg-[var(--amber-bg)] border border-[var(--border)]">
@@ -99,9 +98,9 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
           <div className="mb-4 p-2.5 rounded-xl bg-[var(--green-bg)] border border-[var(--border)] flex items-center justify-between text-xs text-[var(--green)]">
             <div className="flex items-center gap-2">
               <ShieldCheck size={18} weight="fill" className="text-[var(--green)]" />
-              <span className="font-semibold text-[var(--green)]">Forensic & Governance Safety: Clean</span>
+              <span className="font-semibold text-[var(--green)]">No ranking risk flags in available data</span>
             </div>
-            <span className="text-[12px] text-[var(--green)]">0 Pledging & Debt Disqualifiers</span>
+            <span className="text-[12px] text-[var(--text-3)]">Coverage varies by company</span>
           </div>
         )}
 
@@ -114,25 +113,25 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
             </div>
           </div>
           <div className="p-3 card text-center">
-            <span className="text-[12px]  font-semibold tracking-normal text-[var(--text-3)]">Tactical (Tech)</span>
-            <div className={`text-lg font-semibold font-mono mt-1 ${scoreColor(asset.Tactical_Score || asset.Composite_Score_Tech)}`}>
-              {num(asset.Tactical_Score || asset.Composite_Score_Tech)}
+            <span className="text-[12px]  font-semibold tracking-normal text-[var(--text-3)]">Short term</span>
+            <div className={`text-lg font-semibold font-mono mt-1 ${scoreColor(asset.Composite_Score_Tech)}`}>
+              {num(asset.Composite_Score_Tech)}
             </div>
           </div>
           <div className="p-3 card text-center">
-            <span className="text-[12px]  font-semibold tracking-normal text-[var(--text-3)]">Strategic (Fund)</span>
-            <div className={`text-lg font-semibold font-mono mt-1 ${scoreColor(asset.Composite_Score_Long || asset.Fund_Score)}`}>
-              {num(asset.Composite_Score_Long || asset.Fund_Score)}
+            <span className="text-[12px]  font-semibold tracking-normal text-[var(--text-3)]">Long term</span>
+            <div className={`text-lg font-semibold font-mono mt-1 ${scoreColor(asset.Composite_Score_Long)}`}>
+              {num(asset.Composite_Score_Long)}
             </div>
           </div>
           <div className="p-3 card text-center">
-            <span className="text-[12px]  font-semibold tracking-normal text-[var(--text-3)]">F-Score</span>
+            <span className="text-[12px]  font-semibold tracking-normal text-[var(--text-3)]">Quality</span>
             <div className="text-lg font-semibold font-mono mt-1 text-[var(--text)]">
-              {asset.Piotroski_F ?? '-'}/9
+              {num(factors?.quality)}/10
             </div>
           </div>
           <div className="p-3 card text-center">
-            <span className="text-[12px]  font-semibold tracking-normal text-[var(--brand)]">{asset.ML_Method?.startsWith('NIFTY') ? 'ML Alpha Probability' : 'Factor Heuristic'}</span>
+            <span className="text-[12px]  font-semibold tracking-normal text-[var(--brand)]">{asset.ML_Method?.startsWith('NIFTY') ? 'ML Alpha Probability' : asset.Ranking_Version ? 'Probability unavailable' : 'Factor Heuristic'}</span>
             <div className="text-lg font-semibold font-mono mt-1 text-[var(--brand)]">
               {asset.ML_Alpha_Prob != null ? `${asset.ML_Alpha_Prob}${asset.ML_Method?.startsWith('NIFTY') ? '%' : '/100'}` : 'N/A'}
             </div>

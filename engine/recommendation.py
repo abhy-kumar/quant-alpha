@@ -52,10 +52,6 @@ def compute_fund_score(
     sub_weights = {}
 
     # ── Growth input sanitization (convert percentage to decimal if needed) ──
-    if not np.isnan(eps_growth) and abs(eps_growth) > 3.0:
-        eps_growth = eps_growth / 100.0
-    if not np.isnan(rev_growth) and abs(rev_growth) > 3.0:
-        rev_growth = rev_growth / 100.0
 
     # ── ROE (Sector Z-Score Normalization) ──────────────────────────────────
     # Profitability factor (Fama & French 2015, RMW factor)

@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 
 from utils import log, _safe_float
-from config import MAX_WORKERS_OHLCV, MAX_WORKERS_FUNDAMENTALS
+from config import MAX_WORKERS_OHLCV, MAX_WORKERS_FUNDAMENTALS, CACHE_TTL_FUNDAMENTALS, MIN_ROWS
 from engine.indicators import add_indicators, compute_metrics
 from data_pipeline.nse_fetcher import get_liquid_universe, download_bhav_copy, get_market_breadth, get_fii_dii_activity, get_put_call_ratio
 from data_pipeline.data_fetcher import (
@@ -30,6 +30,7 @@ from data_pipeline.data_pipeline import (
     update_outcome_tracking, store_regime_history, store_scan_summary,
 )
 from notifications.generate_score_history import generate as generate_score_history
+from data_pipeline.quote_fallback import stored_prices, complete_from_bhav, retain_newer_benchmark
 import engine.quant_engine as quant_engine
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -69,6 +70,7 @@ def _fetch_market_indicators():
         breadth = get_market_breadth(bhav_df)
         breadth_pct = breadth.get("breadth_pct", 0.5)
 
+    nifty_df = retain_newer_benchmark('^NSEI', nifty_df)
     return nifty_df, vix_df, fii_dii, pcr_data, breadth_pct
 
 
@@ -113,7 +115,9 @@ def _fetch_info_batch(ohlcv_results: dict, progress_callback=None) -> tuple[dict
         try:
             info = fetch_fundamentals(ticker)
             if not info or not isinstance(info, dict):
-                info = cache_manager.get("fundamentals", sym) or {}
+                info = cache_manager.get("fundamentals", sym, ttl=CACHE_TTL_FUNDAMENTALS) or {}
+            info = dict(info)
+            info['_ranking_fundamentals_valid'] = info.get('_schema_version') == 3
             fifty_two_high = _safe_float(info.get("fiftyTwoWeekHigh"))
             fifty_two_low = _safe_float(info.get("fiftyTwoWeekLow"))
             base_high = np.nanmax([df_high, fifty_two_high]) if not np.isnan(np.nanmax([df_high, fifty_two_high])) else df_high
@@ -123,7 +127,7 @@ def _fetch_info_batch(ohlcv_results: dict, progress_callback=None) -> tuple[dict
             return ticker, info, ath, ath_source, atl, atl_source, None
         except Exception as e:
             # Fallback to cached fundamentals or safe neutral defaults
-            cached_info = cache_manager.get("fundamentals", sym) or {}
+            cached_info = cache_manager.get("fundamentals", sym, ttl=CACHE_TTL_FUNDAMENTALS) or {}
             base_high = df_high
             base_low = df_low
             ath, ath_source = get_ath(ticker, base_high)
@@ -134,7 +138,8 @@ def _fetch_info_batch(ohlcv_results: dict, progress_callback=None) -> tuple[dict
                 "industry": cached_info.get("industry", "Other"),
                 "fiftyTwoWeekHigh": base_high,
                 "fiftyTwoWeekLow": base_low,
-                **cached_info
+                **cached_info,
+                '_ranking_fundamentals_valid': cached_info.get('_schema_version') == 3,
             }
             return ticker, fallback_info, ath, ath_source, atl, atl_source, e
 
@@ -148,6 +153,8 @@ def _fetch_info_batch(ohlcv_results: dict, progress_callback=None) -> tuple[dict
             if err:
                 log.debug(f"Info notice for {t}: {err}")
             completed += 1
+            if completed % 25 == 0:
+                log.info(f"Fundamentals completed: {completed}/{total}")
             if progress_callback:
                 progress_callback(total + completed, total * 2, f"Fetching Info {t}")
 
@@ -188,14 +195,16 @@ def _build_intermediate_rows(raw_data: dict, nifty_df, etf_list: list) -> tuple[
         sector = "ETF" if is_etf else (info.get("sector", "Unknown") or "Unknown")
         industry = "Exchange Traded Fund" if is_etf else (info.get("industry", "Unknown") or "Unknown")
 
-        pe = _safe_float(info.get("trailingPE"))
-        close = _safe_float(latest["Close"])
-        if pd.isna(pe):
-            eps = _safe_float(info.get("trailingEps"))
-            if not pd.isna(eps) and eps != 0 and close > 0:
-                pe = close / eps
-
-        roe_pct = round((_safe_float(info.get("returnOnEquity"), 0)) * 100, 2)
+        close = _safe_float(latest['Close'])
+        eps = _safe_float(info.get('trailingEps'))
+        pe = close / eps if np.isfinite(eps) and eps != 0 and close > 0 else np.nan
+        shares = _safe_float(info.get('sharesOutstanding'))
+        if np.isfinite(shares) and shares > 0:
+            info['marketCap'] = shares * close
+        info['trailingPE'] = pe
+        dividend = _safe_float(info.get('dividendRate'))
+        info['dividendYield'] = dividend / close * 100 if np.isfinite(dividend) and close > 0 else np.nan
+        roe_pct = round(_safe_float(info.get('returnOnEquity')) * 100, 2)
         debt_eq = _safe_float(info.get("debtToEquity"))
 
         if not is_etf and sector != "Unknown":
@@ -270,6 +279,11 @@ def _archive_scan(result_df: pd.DataFrame, scan_time: datetime) -> None:
         os.makedirs("data", exist_ok=True)
         conn = sqlite3.connect("data/market_scans.db")
         sql_df = result_df.copy()
+        import json
+        from engine.ranking_history import clean
+        for column in sql_df.select_dtypes(include='object').columns:
+            sql_df[column] = sql_df[column].map(lambda value: json.dumps(clean(value), allow_nan=False)
+                                              if isinstance(value, (dict, list, tuple)) else value)
         sql_df["Scan_Date"] = scan_time.strftime("%Y-%m-%d %H:%M:%S")
         sql_df["Scan_Date_UTC"] = scan_time.astimezone(timezone.utc).isoformat()
         cursor = conn.cursor()
@@ -290,21 +304,7 @@ def _archive_scan(result_df: pd.DataFrame, scan_time: datetime) -> None:
                         dtype = "INTEGER"
                     cursor.execute(f'ALTER TABLE historical_scans ADD COLUMN "{col}" {dtype}')
         else:
-            cursor.execute('''
-                CREATE TABLE historical_scans (
-                    Scan_Date TEXT,
-                    Scan_Date_UTC TEXT,
-                    Ticker TEXT,
-                    Composite_Score REAL,
-                    Tech_Score REAL,
-                    Fund_Score REAL,
-                    Research_Score REAL,
-                    Conviction TEXT,
-                    Sector TEXT,
-                    Price REAL,
-                    UNIQUE(Scan_Date, Ticker)
-                )
-            ''')
+            sql_df.head(0).to_sql('historical_scans', conn, index=False)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_scan_date ON historical_scans(Scan_Date)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_ticker ON historical_scans(Ticker)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_composite ON historical_scans(Composite_Score)")
@@ -323,6 +323,8 @@ def _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pc
     scan_date = scan_time.strftime("%Y-%m-%d")
     try:
         store_daily_ohlcv({**ohlcv_results, "^NSEI": nifty_df}, scan_date)
+        from engine.ranking_history import store_ranking_history
+        store_ranking_history(final_rows, scan_date)
         store_factor_history(final_rows, scan_date)
         create_outcome_entries(final_rows, scan_date)
         update_outcome_tracking(scan_date, ohlcv_results)
@@ -338,7 +340,7 @@ def _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pc
         raise
 
 
-def run_scanner(progress_callback=None) -> pd.DataFrame:
+def run_scanner(progress_callback=None, use_stored_prices=False) -> pd.DataFrame:
     """Main scanner entry point. Orchestrates the full scan pipeline."""
     scan_time = datetime.now(IST)
     scan_start = time.time()
@@ -351,11 +353,26 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
     total = len(tickers)
 
     log.info(f"Fetching OHLCV for {total} tickers...")
-    ohlcv_results = _fetch_ohlcv_batch(tickers, progress_callback)
+    if use_stored_prices:
+        ohlcv_results = {t: df for t,df in stored_prices(tickers).items() if len(df) >= MIN_ROWS}
+    else:
+        ohlcv_results = _fetch_ohlcv_batch(tickers, progress_callback)
+    bhav, bhav_date = download_bhav_copy()
+    ohlcv_results, supplements = complete_from_bhav(ohlcv_results, bhav, bhav_date)
+    # Also repair today's gaps for historical holdings outside the current screen.
+    if bhav_date is not None:
+        prior = stored_prices(before=str(pd.Timestamp(bhav_date).date()), latest_only=True)
+        _, supplemental_history = complete_from_bhav(prior, bhav, bhav_date)
+        if supplemental_history:
+            store_daily_ohlcv(supplemental_history, scan_time.strftime('%Y-%m-%d'))
+    ohlcv_results = {t: add_indicators(df) for t,df in ohlcv_results.items()}
+    log.info(f'Completed {len(supplements)} lagging histories from the official NSE daily file')
     log.info(f"OHLCV succeeded for {len(ohlcv_results)} tickers")
 
     log.info("Fetching fundamental data...")
     info_results = _fetch_info_batch(ohlcv_results, progress_callback)
+    # Preserve fetched inputs even if a later scoring/publication stage fails.
+    cache_manager.save_all()
     log.info(f"Info succeeded for {len(info_results)} tickers")
 
     raw_data = {}
@@ -424,16 +441,19 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
             "fii_net": fii_dii.get("fii_net", 0),
             "dii_net": fii_dii.get("dii_net", 0),
             "pcr": pcr_data.get("pcr", 1.0),
-            "scan_version": "2.0",
-            "factors": ["tech", "fund", "research", "momentum"],
+            "scan_version": "ranking-v3.0",
+            "factors": ["quality", "value", "momentum", "trend", "stability"],
             "sector_summary": sector_summary,
-            "outcome_accuracy": outcome_accuracy,
+            "outcome_accuracy": {},
+            "legacy_outcome_accuracy": outcome_accuracy,
+            "validation_status": "Forward validation pending for ranking-v3.0",
             "data": result_df.to_dict(orient="records")
         }
 
         os.makedirs("frontend/public", exist_ok=True)
         from utils import atomic_json
-        atomic_json("frontend/public/market_data.json", output_data)
+        from engine.ranking_history import clean
+        atomic_json("frontend/public/market_data.json", clean(output_data))
 
         cache_manager.save_all()
         log.info(f"Successfully saved {len(result_df)} tickers to frontend/public/market_data.json")
@@ -453,4 +473,7 @@ def run_scanner(progress_callback=None) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    run_scanner()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--stored-prices', action='store_true', help='Rescore saved OHLCV plus the latest official NSE daily file')
+    run_scanner(use_stored_prices=parser.parse_args().stored_prices)

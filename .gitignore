@@ -35,3 +35,5 @@ data/market_scans.db
 frontend/.env.*
 !frontend/.env.example
 data/ml_alpha_model.joblib
+
+data/research_prices/

@@ -47,10 +47,11 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const data = JSON.parse(await readFile(resolve(dataDirectory, file), 'utf8'))
     if (resource === 'market' && !loggedIn) {
       for (const stock of data.data || []) for (const field of Object.keys(stock)) {
-        if (/Score|Conviction|ML_|Red_Flag|ATR_(Stop|Target|Chandelier)/i.test(field)) stock[field] = null
+        if (/Score|Conviction|ML_|Ranking_|Red_Flag|ATR_(Stop|Target|Chandelier)/i.test(field)) stock[field] = null
       }
       delete data.sector_summary
       delete data.outcome_accuracy
+      delete data.legacy_outcome_accuracy
     }
     if (resource === 'quant' && data.data_version !== 3) return send(503, { error: 'Research data is being regenerated' })
     if (resource === 'run' && data.version !== 3) return send(410, { error: 'Legacy run invalidated; regenerate this run' })

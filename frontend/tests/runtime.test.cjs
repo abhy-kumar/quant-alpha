@@ -56,13 +56,15 @@ test('packaged data API reads private files from standalone and repository-root 
       await fs.mkdir(apiDirectory, { recursive: true })
       await fs.mkdir(publicDirectory, { recursive: true })
       await fs.writeFile(path.join(apiDirectory, 'data.mjs'), output)
-      await fs.writeFile(path.join(publicDirectory, 'market_data.json'), JSON.stringify({ data: [{ Ticker: 'TEST.NS', Price: 100, Composite_Score: 9 }] }))
+      await fs.writeFile(path.join(publicDirectory, 'market_data.json'), JSON.stringify({ data: [{ Ticker: 'TEST.NS', Price: 100, Composite_Score: 9, Ranking_Factors: {quality: 9}, Ranking_Eligible: {short: true} }] }))
       const handler = (await import(pathToFileURL(path.join(apiDirectory, 'data.mjs')).href)).default
       process.chdir(temporary)
       const result = await call(handler, 'GET', '/api/data?resource=market')
       assert.equal(result.statusCode, 200)
       assert.equal(result.body.data[0].Price, 100)
       assert.equal(result.body.data[0].Composite_Score, null)
+      assert.equal(result.body.data[0].Ranking_Factors, null)
+      assert.equal(result.body.data[0].Ranking_Eligible, null)
     }
   } finally {
     process.chdir(originalDirectory)
@@ -148,4 +150,28 @@ test('shared text and chart-label colors meet 4.5:1 contrast in both themes', as
       }
     }
   }
+})
+
+test('ranking uses the selected horizon, preserves zero, excludes incomplete data and never forces three picks', () => {
+  const {topRanked,horizonScore,horizonConviction}=load('src/utils/ranking.ts')
+  const rows=[
+    {Ticker:'A.NS',Sector:'Technology',Composite_Score_Tech:9,Composite_Score_Long:6,Tactical_Conviction:'Buy',Conviction_Long:'Hold',Ranking_Eligible:{short:true,long:true}},
+    {Ticker:'B.NS',Sector:'Technology',Composite_Score_Tech:6,Composite_Score_Long:9,Tactical_Conviction:'Hold',Conviction_Long:'Buy',Ranking_Eligible:{short:true,long:true}},
+    {Ticker:'C.NS',Sector:'Technology',Composite_Score_Tech:10,Composite_Score_Long:10,Tactical_Conviction:'Buy',Conviction_Long:'Buy',Ranking_Eligible:{short:false,long:false}},
+  ]
+  assert.deepEqual(topRanked(rows,'short').map(r=>r.Ticker),['A.NS'])
+  assert.deepEqual(topRanked(rows,'long').map(r=>r.Ticker),['B.NS'])
+  assert.equal(horizonScore({...rows[0],Composite_Score_Tech:0},'short'),0)
+  assert.equal(horizonConviction(rows[0],'long'),'Hold')
+})
+
+test('score history never mixes model versions or substitutes another horizon', () => {
+  const {horizonHistory}=load('src/utils/ranking.ts')
+  const history=[
+    {date:'2026-09-29',composite:9,composite_tech:8,composite_fund:7},
+    {date:'2026-09-30',model_version:'ranking-v3.0',composite:6,composite_tech:0,composite_fund:5},
+    {date:'2026-10-01',model_version:'ranking-v3.0',composite:7,composite_fund:6},
+  ]
+  assert.deepEqual(horizonHistory(history,'ranking-v3.0','short').map(r=>r.composite),[0])
+  assert.deepEqual(horizonHistory(history,'ranking-v3.0','long').map(r=>r.composite),[5,6])
 })

@@ -56,12 +56,19 @@ multiples, converting the source percentage consistently across the app.
 
 ## Research methodology and limits
 
-ML labels require a 21-session return at least one percentage point above NIFTY.
-Training uses chronological folds, purged by whole scan-date groups, and the same
-feature scales as prediction. Models are versioned and expire daily. Until enough
-mature validation history exists, outputs are explicitly labeled as an
-**uncalibrated factor heuristic**, not an ML probability.
+The versioned ranking combines quality, value, momentum, trend and stability.
+Short- and long-term scores have explicit weights, sector comparisons and data
+coverage requirements. Financial companies use suitable accounting measures.
+Signals and Screener use the same horizon-specific score and recommendation.
+The top picks can be empty when no stock qualifies.
 
+The universe is selected by traded value, not alphabetically. Every new daily
+recommendation retains its model version, inputs and coverage in an immutable
+history. Old ML probabilities are not reused for the new model.
+
+See [the full ranking specification and validation](docs/RANKING.md), including
+the chronological comparison against ridge regression and gradient boosting.
+The weights are a documented starting specification; optimality is not claimed.
 Longer outcomes continue to mature after the 21-session outcome is filled. Missing
 outcomes do not count as losses. Factor IC uses daily cross-sectional Spearman
 correlations over a calendar quarter; insufficient samples display N/A.
