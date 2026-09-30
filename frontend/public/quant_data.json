@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-23 13:05:10",
+  "last_updated": "2026-09-30 11:52:54",
   "model_portfolios": {
     "max_sharpe": {
       "INDOBORAX.NS": 0.5286,
@@ -38,44 +38,44 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.051,
-      "ic_3m_rolling": -0.066,
-      "t_stat": 1.14,
-      "status": "Moderate Alpha"
+      "ic_current": 0.01,
+      "ic_3m_rolling": -0.069,
+      "t_stat": 0.22,
+      "status": "Neutral / Decaying"
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.252,
-      "ic_3m_rolling": 0.209,
-      "t_stat": 5.8,
+      "ic_current": 0.206,
+      "ic_3m_rolling": 0.163,
+      "t_stat": 4.68,
       "status": "Strong Alpha"
     },
     {
       "factor": "Low Volatility",
-      "ic_current": -0.192,
-      "ic_3m_rolling": -0.209,
-      "t_stat": -4.36,
+      "ic_current": -0.165,
+      "ic_3m_rolling": -0.203,
+      "t_stat": -3.73,
       "status": "Neutral / Decaying"
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": -0.097,
-      "ic_3m_rolling": -0.252,
-      "t_stat": -2.16,
+      "ic_current": -0.046,
+      "ic_3m_rolling": -0.133,
+      "t_stat": -1.03,
       "status": "Neutral / Decaying"
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": -0.086,
-      "ic_3m_rolling": -0.087,
-      "t_stat": -1.92,
+      "ic_current": -0.065,
+      "ic_3m_rolling": -0.016,
+      "t_stat": -1.44,
       "status": "Neutral / Decaying"
     },
     {
       "factor": "Composite Multi-Factor Alpha",
-      "ic_current": -0.015,
-      "ic_3m_rolling": -0.043,
-      "t_stat": -0.33,
+      "ic_current": -0.042,
+      "ic_3m_rolling": 0.081,
+      "t_stat": -0.95,
       "status": "Neutral / Decaying"
     }
   ],
