@@ -32,6 +32,7 @@ import sqlite3
 import hashlib
 import json
 import os
+import logging
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -685,8 +686,13 @@ def run_walkforward_backtest(
             cash *= (1 + RISK_FREE_RATE) ** (1 / 252)
         for t in list(shares):
             price = row.get(t)
-            if pd.isna(price) or price <= 0:
-                raise ValueError(f"Missing executable close for held stock {t} on {prices.index[idx].date()}")
+            if pd.isna(price) or not np.isfinite(price) or price <= 0:
+                # Invalidate this result without blocking unrelated market data.
+                # Never drop the holding, fill its price, or publish a partial NAV.
+                message = f"Missing executable close for held stock {t} on {prices.index[idx].date()}; backtest unavailable until quotes are refreshed"
+                logging.getLogger(__name__).warning(message)
+                return {"chart": [], "holdings": [], "stats": {}, "error": message,
+                        "status": "unavailable", "version": BACKTEST_VERSION}
             last_prices[t] = float(price)
             if stop_loss_pct > 0 and price <= peaks[t] * (1 - stop_loss_pct):
                 # Close-triggered execution: the actual close includes any gap loss.

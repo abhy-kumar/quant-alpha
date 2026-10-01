@@ -102,6 +102,29 @@ def _fetch_ohlcv_batch(tickers: list, progress_callback=None) -> tuple[dict, int
     return ohlcv_results
 
 
+def _refresh_research_prices(current_prices, benchmark, scan_date):
+    """Keep recently traded historical stocks current even after they leave the screen.
+
+    Refresh full adjusted histories so corporate actions do not splice incompatible
+    price bases. These quotes belong to research only, not today's ranked universe.
+    """
+    if benchmark is None or benchmark.empty:
+        return
+    target = pd.Timestamp(benchmark.index[-1]).date()
+    prior = stored_prices(latest_only=True)
+    stale = sorted(
+        ticker for ticker, frame in prior.items()
+        if ticker.endswith('.NS') and ticker not in current_prices and not frame.empty
+        and 0 < (target - pd.Timestamp(frame.index[-1]).date()).days <= 7
+    )
+    if not stale:
+        return
+    log.info(f'Refreshing {len(stale)} historical stocks outside the current screen')
+    refreshed = _fetch_ohlcv_batch(stale)
+    if refreshed:
+        store_daily_ohlcv(refreshed, scan_date)
+
+
 def _fetch_info_batch(ohlcv_results: dict, progress_callback=None) -> tuple[dict, int]:
     """Fetch fundamental info for all valid tickers in parallel with safe fallback."""
     valid_tickers = list(ohlcv_results.keys())
@@ -365,6 +388,8 @@ def run_scanner(progress_callback=None, use_stored_prices=False) -> pd.DataFrame
         _, supplemental_history = complete_from_bhav(prior, bhav, bhav_date)
         if supplemental_history:
             store_daily_ohlcv(supplemental_history, scan_time.strftime('%Y-%m-%d'))
+    if not use_stored_prices:
+        _refresh_research_prices(ohlcv_results, nifty_df, scan_time.strftime('%Y-%m-%d'))
     ohlcv_results = {t: add_indicators(df) for t,df in ohlcv_results.items()}
     log.info(f'Completed {len(supplements)} lagging histories from the official NSE daily file')
     log.info(f"OHLCV succeeded for {len(ohlcv_results)} tickers")

@@ -216,9 +216,15 @@ validate Vercel's compiler configuration.
 9:37 AM, 12:37 PM, 4:11 PM, and 10:07 PM IST, and a Saturday outcome backfill at
 9:07 AM IST. GitHub schedules can be delayed. Manual dispatch runs the daily scan
 only. Application caches preserve acquisition timestamps across runs, and
-concurrency prevents overlapping publications. Generation errors fail the job;
-generated commits rebase before pushing. Telegram broadcasting uses the optional
-`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` GitHub secrets.
+concurrency prevents overlapping publications. Scans also refresh recently traded
+historical stocks that have left the current screen, keeping research holdings
+covered while the exchange's daily file is still pending. If a held stock still
+lacks a valid close, that backtest is marked unavailable with the ticker and date;
+no partial performance is published or cached, and market data can still update.
+Other generation errors fail the job. Generated commits rebase before pushing.
+Telegram broadcasting runs after publication using the optional
+`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` GitHub secrets. Manual runs leave
+broadcasts off unless the `send_notifications` option is selected.
 
 `.github/workflows/checks.yml` runs Python tests in a virtual environment and
 frontend tests, lint, and build checks. It also verifies that research datasets

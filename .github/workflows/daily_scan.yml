@@ -15,6 +15,11 @@ on:
     # Weekend update: ~9:07 AM IST Saturday = 03:37 UTC Saturday
     - cron: "37 3 * * 6"
   workflow_dispatch:
+    inputs:
+      send_notifications:
+        description: Send the optional Telegram broadcast after publishing
+        type: boolean
+        default: false
 
 # Prevent overlapping runs - if a new scan triggers while one is running,
 # finish the current publication before starting another run.
@@ -65,19 +70,20 @@ jobs:
           .venv/bin/python -m engine.scanner
           .venv/bin/python db_split_join.py split
 
-      - name: Broadcast daily Telegram signals (optional)
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          .venv/bin/python -m notifications.telegram_bot
-
       - name: Commit and push updated data
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add frontend/public/market_data.json frontend/public/quant_data.json frontend/public/score_history.json frontend/public/backtest_runs/ frontend/public/strategy_history.json data/market_scans.db.part_*
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update market data [skip ci]" && git pull --rebase origin main && git push origin HEAD:main)
+
+      - name: Broadcast daily Telegram signals (optional)
+        if: github.event_name != 'workflow_dispatch' || inputs.send_notifications
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          .venv/bin/python -m notifications.telegram_bot
 
   weekend_update:
     runs-on: ubuntu-latest

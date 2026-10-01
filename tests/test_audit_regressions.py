@@ -40,10 +40,15 @@ def test_future_liquidity_cannot_admit_an_illiquid_stock():
     result=simulate(p,v,as_of_date=str(p.index[64].date()),top_n=2)
     assert all('A.NS' not in h['tickers'] for h in result['holdings'])
 
-def test_missing_held_quote_fails_instead_of_renormalizing():
-    p,v=market();p.loc[p.index[62],'A.NS']=np.nan
-    with pytest.raises(ValueError,match='Missing executable'):
-        simulate(p,v,top_n=1)
+@pytest.mark.parametrize('missing', [np.nan, np.inf, 0., -1.])
+def test_missing_held_quote_invalidates_only_affected_backtest(missing):
+    p,v=market();p.loc[p.index[62],'A.NS']=missing
+    result=simulate(p,v,top_n=1)
+    assert result['status']=='unavailable'
+    assert 'A.NS' in result['error'] and str(p.index[62].date()) in result['error']
+    assert result['chart']==[] and result['holdings']==[] and result['stats']=={}
+    p['A.NS']=100.
+    assert simulate(p,v,top_n=1)['chart']
 
 def test_cv_uses_entire_date_groups_and_only_past_mature_labels():
     groups=np.repeat(np.arange(120),5);X=np.zeros((len(groups),1))
