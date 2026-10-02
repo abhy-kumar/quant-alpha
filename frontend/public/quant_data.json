@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-02 10:33:15",
+  "last_updated": "2026-10-02 13:53:18",
   "model_portfolios": {
     "max_sharpe": {
       "WELCORP.NS": 0.4204,
@@ -192,8 +192,8 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.008,
-      "ic_3m_rolling": 0.046,
+      "ic_current": 0.029,
+      "ic_3m_rolling": 0.047,
       "t_stat": 2.15,
       "sample_dates": 47,
       "status": "Observed positive IC"
@@ -232,7 +232,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": -0.076,
+      "ic_current": -0.086,
       "ic_3m_rolling": -0.007,
       "t_stat": 0.29,
       "sample_dates": 47,
@@ -1860,7 +1860,7 @@
       },
       {
         "date": "2026-03-17",
-        "portfolio": 74.9637,
+        "portfolio": 74.9636,
         "benchmark": 94.1104
       },
       {
@@ -2190,7 +2190,7 @@
       },
       {
         "date": "2026-06-25",
-        "portfolio": 100.6989,
+        "portfolio": 100.6988,
         "benchmark": 96.0055
       },
       {
@@ -2230,7 +2230,7 @@
       },
       {
         "date": "2026-07-08",
-        "portfolio": 94.8481,
+        "portfolio": 94.848,
         "benchmark": 95.3113
       },
       {
