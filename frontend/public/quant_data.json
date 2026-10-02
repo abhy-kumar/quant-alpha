@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-02 13:53:18",
+  "last_updated": "2026-10-02 16:28:53",
   "model_portfolios": {
     "max_sharpe": {
       "WELCORP.NS": 0.4204,
@@ -2190,7 +2190,7 @@
       },
       {
         "date": "2026-06-25",
-        "portfolio": 100.6988,
+        "portfolio": 100.6989,
         "benchmark": 96.0055
       },
       {
@@ -2230,7 +2230,7 @@
       },
       {
         "date": "2026-07-08",
-        "portfolio": 94.848,
+        "portfolio": 94.8481,
         "benchmark": 95.3113
       },
       {
