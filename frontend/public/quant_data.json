@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-01 21:39:31",
+  "last_updated": "2026-10-02 01:54:04",
   "model_portfolios": {
     "max_sharpe": {
       "WELCORP.NS": 0.4204,
@@ -192,15 +192,15 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.038,
-      "ic_3m_rolling": 0.047,
+      "ic_current": 0.013,
+      "ic_3m_rolling": 0.046,
       "t_stat": 2.15,
       "sample_dates": 47,
       "status": "Observed positive IC"
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.193,
+      "ic_current": 0.206,
       "ic_3m_rolling": -0.094,
       "t_stat": -0.7,
       "sample_dates": 47,
@@ -208,7 +208,7 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": -0.152,
+      "ic_current": -0.166,
       "ic_3m_rolling": 0.046,
       "t_stat": 0.08,
       "sample_dates": 47,
@@ -216,7 +216,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": -0.104,
+      "ic_current": -0.105,
       "ic_3m_rolling": 0.037,
       "t_stat": 0.78,
       "sample_dates": 47,
@@ -224,7 +224,7 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": -0.097,
+      "ic_current": -0.107,
       "ic_3m_rolling": -0.03,
       "t_stat": -0.57,
       "sample_dates": 47,
@@ -232,7 +232,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": -0.073,
+      "ic_current": -0.071,
       "ic_3m_rolling": -0.007,
       "t_stat": 0.29,
       "sample_dates": 47,
@@ -4257,7 +4257,7 @@
       },
       {
         "date": "2026-02-11",
-        "portfolio": 100.769,
+        "portfolio": 100.7689,
         "benchmark": 103.5796
       },
       {
@@ -4302,7 +4302,7 @@
       },
       {
         "date": "2026-02-24",
-        "portfolio": 100.6187,
+        "portfolio": 100.6186,
         "benchmark": 101.4677
       },
       {
