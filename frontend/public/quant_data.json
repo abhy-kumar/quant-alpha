@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-02 21:03:07",
+  "last_updated": "2026-10-03 09:31:17",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.2727272727272727,
@@ -195,7 +195,7 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.029,
+      "ic_current": 0.022,
       "ic_3m_rolling": 0.047,
       "t_stat": 2.15,
       "sample_dates": 47,
@@ -203,7 +203,7 @@
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.201,
+      "ic_current": 0.186,
       "ic_3m_rolling": -0.094,
       "t_stat": -0.7,
       "sample_dates": 47,
@@ -211,23 +211,23 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": -0.163,
-      "ic_3m_rolling": 0.046,
+      "ic_current": -0.121,
+      "ic_3m_rolling": 0.047,
       "t_stat": 0.08,
       "sample_dates": 47,
       "status": "Observed positive IC"
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": -0.099,
-      "ic_3m_rolling": 0.037,
+      "ic_current": -0.01,
+      "ic_3m_rolling": 0.039,
       "t_stat": 0.78,
       "sample_dates": 47,
       "status": "Observed positive IC"
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": -0.107,
+      "ic_current": -0.099,
       "ic_3m_rolling": -0.03,
       "t_stat": -0.57,
       "sample_dates": 47,
@@ -235,7 +235,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": -0.086,
+      "ic_current": -0.046,
       "ic_3m_rolling": -0.007,
       "t_stat": 0.29,
       "sample_dates": 47,
@@ -1863,7 +1863,7 @@
       },
       {
         "date": "2026-03-17",
-        "portfolio": 74.9637,
+        "portfolio": 74.9636,
         "benchmark": 94.1104
       },
       {
@@ -2193,7 +2193,7 @@
       },
       {
         "date": "2026-06-25",
-        "portfolio": 100.6989,
+        "portfolio": 100.6988,
         "benchmark": 96.0055
       },
       {
@@ -2233,7 +2233,7 @@
       },
       {
         "date": "2026-07-08",
-        "portfolio": 94.8481,
+        "portfolio": 94.848,
         "benchmark": 95.3113
       },
       {
