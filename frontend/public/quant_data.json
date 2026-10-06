@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-06 14:16:24",
+  "last_updated": "2026-10-06 17:00:44",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.2480751924807519,
@@ -34,10 +34,10 @@
     }
   },
   "factor_exposures": {
-    "Value": 57.0,
+    "Value": 57.1,
     "Momentum": 84.7,
     "Quality": 67.2,
-    "Low_Volatility": 40.0
+    "Low_Volatility": 39.9
   },
   "efficient_frontier": [
     {
@@ -1843,7 +1843,7 @@
       },
       {
         "date": "2026-03-09",
-        "portfolio": 79.7085,
+        "portfolio": 79.7086,
         "benchmark": 97.4583
       },
       {
@@ -4220,7 +4220,7 @@
       },
       {
         "date": "2026-01-28",
-        "portfolio": 114.6836,
+        "portfolio": 114.6835,
         "benchmark": 102.7907
       },
       {
