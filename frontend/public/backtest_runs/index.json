@@ -6,18 +6,18 @@
       "as_of_date": "2026-10-06",
       "model": "long",
       "horizon": "6m",
-      "created_at": "2026-10-06 11:19:43",
+      "created_at": "2026-10-06 14:16:22",
       "data_start": "2026-04-06",
       "data_end": "2026-10-06",
       "n_chart_pts": 126,
       "stats": {
-        "total_return": 14.1,
-        "cagr": 30.12,
-        "volatility": 17.3,
-        "sharpe": 1.25,
-        "max_drawdown": -8.09,
-        "info_ratio": 1.97,
-        "win_rate": 53.6
+        "total_return": 19.38,
+        "cagr": 42.41,
+        "volatility": 16.8,
+        "sharpe": 1.82,
+        "max_drawdown": -5.45,
+        "info_ratio": 2.84,
+        "win_rate": 50.4
       }
     },
     {
@@ -26,18 +26,18 @@
       "as_of_date": "2026-10-06",
       "model": "long",
       "horizon": "1y",
-      "created_at": "2026-10-06 11:19:26",
+      "created_at": "2026-10-06 14:16:04",
       "data_start": "2025-09-26",
       "data_end": "2026-10-06",
       "n_chart_pts": 252,
       "stats": {
-        "total_return": 24.11,
-        "cagr": 23.42,
-        "volatility": 18.98,
-        "sharpe": 0.89,
-        "max_drawdown": -15.86,
-        "info_ratio": 2.26,
-        "win_rate": 57.4
+        "total_return": 27.79,
+        "cagr": 26.97,
+        "volatility": 18.64,
+        "sharpe": 1.07,
+        "max_drawdown": -15.64,
+        "info_ratio": 2.55,
+        "win_rate": 58.2
       }
     },
     {
@@ -46,7 +46,7 @@
       "as_of_date": "2026-10-06",
       "model": "short",
       "horizon": "6m",
-      "created_at": "2026-10-06 11:18:58",
+      "created_at": "2026-10-06 14:15:37",
       "data_start": "2026-04-06",
       "data_end": "2026-10-06",
       "n_chart_pts": 126,
@@ -66,18 +66,18 @@
       "as_of_date": "2026-10-06",
       "model": "short",
       "horizon": "1y",
-      "created_at": "2026-10-06 11:18:09",
+      "created_at": "2026-10-06 14:14:47",
       "data_start": "2025-09-26",
       "data_end": "2026-10-06",
       "n_chart_pts": 252,
       "stats": {
-        "total_return": 13.37,
-        "cagr": 13.0,
-        "volatility": 34.75,
-        "sharpe": 0.35,
+        "total_return": 14.38,
+        "cagr": 13.98,
+        "volatility": 34.77,
+        "sharpe": 0.38,
         "max_drawdown": -29.27,
-        "info_ratio": 0.84,
-        "win_rate": 54.2
+        "info_ratio": 0.87,
+        "win_rate": 52.6
       }
     },
     {
@@ -401,5 +401,5 @@
       }
     }
   ],
-  "exported_at": "2026-10-06 11:19:46"
+  "exported_at": "2026-10-06 14:16:25"
 }
