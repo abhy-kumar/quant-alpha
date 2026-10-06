@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-05 23:00:21",
+  "last_updated": "2026-10-06 02:50:28",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.2518,
@@ -34,8 +34,8 @@
     }
   },
   "factor_exposures": {
-    "Value": 57.2,
-    "Momentum": 84.7,
+    "Value": 57.4,
+    "Momentum": 84.6,
     "Quality": 67.1,
     "Low_Volatility": 38.9
   },
@@ -195,15 +195,15 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": -0.003,
-      "ic_3m_rolling": 0.046,
+      "ic_current": -0.014,
+      "ic_3m_rolling": 0.045,
       "t_stat": 2.15,
       "sample_dates": 48,
       "status": "Observed positive IC"
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.214,
+      "ic_current": 0.216,
       "ic_3m_rolling": -0.088,
       "t_stat": -0.7,
       "sample_dates": 48,
@@ -211,7 +211,7 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": -0.187,
+      "ic_current": -0.19,
       "ic_3m_rolling": 0.042,
       "t_stat": 0.08,
       "sample_dates": 48,
@@ -219,7 +219,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": -0.05,
+      "ic_current": -0.047,
       "ic_3m_rolling": 0.037,
       "t_stat": 0.78,
       "sample_dates": 48,
@@ -227,7 +227,7 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": -0.097,
+      "ic_current": -0.1,
       "ic_3m_rolling": -0.031,
       "t_stat": -0.57,
       "sample_dates": 48,
@@ -235,7 +235,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": -0.01,
+      "ic_current": -0.015,
       "ic_3m_rolling": -0.007,
       "t_stat": 0.29,
       "sample_dates": 48,
@@ -1858,7 +1858,7 @@
       },
       {
         "date": "2026-03-13",
-        "portfolio": 72.5025,
+        "portfolio": 72.5024,
         "benchmark": 93.0105
       },
       {
@@ -2303,7 +2303,7 @@
       },
       {
         "date": "2026-07-27",
-        "portfolio": 93.9031,
+        "portfolio": 93.903,
         "benchmark": 96.4047
       },
       {
