@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-07 21:37:29",
+  "last_updated": "2026-10-08 02:20:36",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.23977602239776025,
@@ -196,7 +196,7 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.014,
+      "ic_current": -0.007,
       "ic_3m_rolling": 0.043,
       "t_stat": 2.15,
       "sample_dates": 50,
@@ -204,7 +204,7 @@
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.239,
+      "ic_current": 0.241,
       "ic_3m_rolling": -0.075,
       "t_stat": -0.7,
       "sample_dates": 50,
@@ -212,7 +212,7 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": -0.188,
+      "ic_current": -0.191,
       "ic_3m_rolling": 0.033,
       "t_stat": 0.08,
       "sample_dates": 50,
@@ -220,7 +220,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.02,
+      "ic_current": 0.023,
       "ic_3m_rolling": 0.036,
       "t_stat": 0.78,
       "sample_dates": 50,
@@ -228,7 +228,7 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": -0.162,
+      "ic_current": -0.165,
       "ic_3m_rolling": -0.037,
       "t_stat": -0.57,
       "sample_dates": 50,
@@ -236,7 +236,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": -0.002,
+      "ic_current": -0.007,
       "ic_3m_rolling": -0.008,
       "t_stat": 0.29,
       "sample_dates": 50,
