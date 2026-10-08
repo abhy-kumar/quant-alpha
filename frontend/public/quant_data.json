@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-08 14:37:16",
+  "last_updated": "2026-10-08 17:42:55",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.2498,
@@ -1338,8 +1338,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "HEROMOTOCO.NS",
           "LUPIN.NS",
+          "HEROMOTOCO.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1350,8 +1350,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "HEROMOTOCO.NS": 0.1,
           "LUPIN.NS": 0.1,
+          "HEROMOTOCO.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
@@ -1867,7 +1867,7 @@
       },
       {
         "date": "2026-02-23",
-        "portfolio": 80.7291,
+        "portfolio": 80.7292,
         "benchmark": 104.4772
       },
       {
@@ -2227,7 +2227,7 @@
       },
       {
         "date": "2026-06-12",
-        "portfolio": 91.9668,
+        "portfolio": 91.9669,
         "benchmark": 95.9847
       },
       {
@@ -3115,7 +3115,7 @@
       },
       {
         "date": "2026-05-04",
-        "portfolio": 115.369,
+        "portfolio": 115.3689,
         "benchmark": 100.5082
       },
       {
