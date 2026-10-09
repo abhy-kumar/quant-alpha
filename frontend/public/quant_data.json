@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-08 21:34:07",
+  "last_updated": "2026-10-09 02:35:31",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.2498,
@@ -37,7 +37,7 @@
     "Value": 62.5,
     "Momentum": 83.6,
     "Quality": 66.4,
-    "Low_Volatility": 38.3
+    "Low_Volatility": 38.4
   },
   "efficient_frontier": [
     {
@@ -195,7 +195,7 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.068,
+      "ic_current": 0.037,
       "ic_3m_rolling": 0.043,
       "t_stat": 2.15,
       "sample_dates": 51,
@@ -203,7 +203,7 @@
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.174,
+      "ic_current": 0.182,
       "ic_3m_rolling": -0.07,
       "t_stat": -0.7,
       "sample_dates": 51,
@@ -211,7 +211,7 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": -0.132,
+      "ic_current": -0.139,
       "ic_3m_rolling": 0.029,
       "t_stat": 0.08,
       "sample_dates": 51,
@@ -219,7 +219,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.038,
+      "ic_current": 0.035,
       "ic_3m_rolling": 0.036,
       "t_stat": 0.78,
       "sample_dates": 51,
@@ -227,7 +227,7 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": -0.074,
+      "ic_current": -0.078,
       "ic_3m_rolling": -0.038,
       "t_stat": -0.57,
       "sample_dates": 51,
@@ -235,7 +235,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.037,
+      "ic_current": 0.038,
       "ic_3m_rolling": -0.007,
       "t_stat": 0.29,
       "sample_dates": 51,
@@ -2226,7 +2226,7 @@
       },
       {
         "date": "2026-06-12",
-        "portfolio": 91.9668,
+        "portfolio": 91.9669,
         "benchmark": 95.9847
       },
       {
@@ -4751,7 +4751,7 @@
     "horizon": "6m"
   },
   "market_regime": {
-    "score": -3,
+    "score": -4,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.10555972952667167
