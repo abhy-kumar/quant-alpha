@@ -1,6 +1,46 @@
 {
   "runs": [
     {
+      "slug": "long-6m-2026-10-12",
+      "version": 3,
+      "as_of_date": "2026-10-12",
+      "model": "long",
+      "horizon": "6m",
+      "created_at": "2026-10-12 11:57:22",
+      "data_start": "2026-04-10",
+      "data_end": "2026-10-12",
+      "n_chart_pts": 126,
+      "stats": {
+        "total_return": 14.08,
+        "cagr": 29.71,
+        "volatility": 16.98,
+        "sharpe": 1.27,
+        "max_drawdown": -9.09,
+        "info_ratio": 2.74,
+        "win_rate": 54.4
+      }
+    },
+    {
+      "slug": "short-6m-2026-10-12",
+      "version": 3,
+      "as_of_date": "2026-10-12",
+      "model": "short",
+      "horizon": "6m",
+      "created_at": "2026-10-12 11:56:55",
+      "data_start": "2026-04-10",
+      "data_end": "2026-10-12",
+      "n_chart_pts": 126,
+      "stats": {
+        "total_return": 30.59,
+        "cagr": 69.37,
+        "volatility": 25.05,
+        "sharpe": 2.02,
+        "max_drawdown": -9.5,
+        "info_ratio": 3.15,
+        "win_rate": 57.6
+      }
+    },
+    {
       "slug": "long-6m-2026-10-09",
       "version": 3,
       "as_of_date": "2026-10-09",
@@ -641,5 +681,5 @@
       }
     }
   ],
-  "exported_at": "2026-10-12 02:02:54"
+  "exported_at": "2026-10-12 11:57:26"
 }
