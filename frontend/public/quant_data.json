@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-12 11:57:24",
+  "last_updated": "2026-10-12 16:47:05",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.2899,
@@ -36,9 +36,9 @@
   },
   "factor_exposures": {
     "Value": 61.2,
-    "Momentum": 83.8,
+    "Momentum": 83.7,
     "Quality": 68.3,
-    "Low_Volatility": 41.3
+    "Low_Volatility": 41.5
   },
   "efficient_frontier": [
     {
@@ -204,7 +204,7 @@
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.203,
+      "ic_current": 0.197,
       "ic_3m_rolling": -0.063,
       "t_stat": -0.7,
       "sample_dates": 53,
@@ -220,7 +220,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.025,
+      "ic_current": 0.027,
       "ic_3m_rolling": 0.04,
       "t_stat": 0.78,
       "sample_dates": 53,
@@ -228,7 +228,7 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": -0.029,
+      "ic_current": -0.025,
       "ic_3m_rolling": -0.037,
       "t_stat": -0.57,
       "sample_dates": 53,
@@ -236,7 +236,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.018,
+      "ic_current": 0.021,
       "ic_3m_rolling": -0.003,
       "t_stat": 0.29,
       "sample_dates": 53,
