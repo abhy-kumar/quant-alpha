@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-12 23:15:43",
+  "last_updated": "2026-10-13 03:30:54",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.2627,
@@ -1356,8 +1356,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "HEROMOTOCO.NS",
           "LUPIN.NS",
+          "HEROMOTOCO.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1368,8 +1368,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "HEROMOTOCO.NS": 0.1,
           "LUPIN.NS": 0.1,
+          "HEROMOTOCO.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
@@ -3124,7 +3124,7 @@
     "horizon": "6m"
   },
   "market_regime": {
-    "score": -2,
+    "score": -3,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.4941751221345359
