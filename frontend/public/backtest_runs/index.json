@@ -6,18 +6,18 @@
       "as_of_date": "2026-10-13",
       "model": "long",
       "horizon": "6m",
-      "created_at": "2026-10-13 15:03:18",
+      "created_at": "2026-10-13 17:52:22",
       "data_start": "2026-04-13",
       "data_end": "2026-10-13",
       "n_chart_pts": 126,
       "stats": {
-        "total_return": 14.82,
-        "cagr": 31.77,
-        "volatility": 16.99,
-        "sharpe": 1.34,
+        "total_return": 12.35,
+        "cagr": 26.16,
+        "volatility": 16.92,
+        "sharpe": 1.09,
         "max_drawdown": -9.14,
-        "info_ratio": 2.39,
-        "win_rate": 57.6
+        "info_ratio": 2.11,
+        "win_rate": 55.2
       }
     },
     {
@@ -26,18 +26,18 @@
       "as_of_date": "2026-10-13",
       "model": "short",
       "horizon": "6m",
-      "created_at": "2026-10-13 15:03:04",
+      "created_at": "2026-10-13 17:52:07",
       "data_start": "2026-04-13",
       "data_end": "2026-10-13",
       "n_chart_pts": 126,
       "stats": {
-        "total_return": 32.18,
-        "cagr": 74.51,
-        "volatility": 24.01,
-        "sharpe": 2.19,
+        "total_return": 32.43,
+        "cagr": 75.18,
+        "volatility": 23.42,
+        "sharpe": 2.26,
         "max_drawdown": -8.05,
-        "info_ratio": 2.99,
-        "win_rate": 59.2
+        "info_ratio": 3.05,
+        "win_rate": 60.0
       }
     },
     {
@@ -46,7 +46,7 @@
       "as_of_date": "2026-10-13",
       "model": "short",
       "horizon": "1y",
-      "created_at": "2026-10-13 15:02:36",
+      "created_at": "2026-10-13 17:51:38",
       "data_start": "2025-10-06",
       "data_end": "2026-10-13",
       "n_chart_pts": 252,
@@ -741,5 +741,5 @@
       }
     }
   ],
-  "exported_at": "2026-10-13 15:03:20"
+  "exported_at": "2026-10-13 17:52:24"
 }
