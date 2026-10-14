@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-13 21:37:30",
+  "last_updated": "2026-10-14 01:29:10",
   "model_portfolios": {
     "max_sharpe": {
       "LAURUSLABS.NS": 0.2925,
@@ -196,7 +196,7 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": -0.004,
+      "ic_current": -0.013,
       "ic_3m_rolling": 0.043,
       "t_stat": 2.15,
       "sample_dates": 54,
@@ -204,7 +204,7 @@
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.119,
+      "ic_current": 0.148,
       "ic_3m_rolling": -0.059,
       "t_stat": -0.7,
       "sample_dates": 54,
@@ -212,7 +212,7 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": -0.153,
+      "ic_current": -0.169,
       "ic_3m_rolling": 0.026,
       "t_stat": 0.08,
       "sample_dates": 54,
@@ -220,7 +220,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.033,
+      "ic_current": 0.026,
       "ic_3m_rolling": 0.04,
       "t_stat": 0.78,
       "sample_dates": 54,
@@ -228,16 +228,16 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": 0.023,
-      "ic_3m_rolling": -0.036,
+      "ic_current": -0.006,
+      "ic_3m_rolling": -0.037,
       "t_stat": -0.57,
       "sample_dates": 54,
       "status": "Observed nonpositive IC"
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.034,
-      "ic_3m_rolling": -0.002,
+      "ic_current": 0.022,
+      "ic_3m_rolling": -0.003,
       "t_stat": 0.29,
       "sample_dates": 54,
       "status": "Observed nonpositive IC"
@@ -2022,7 +2022,7 @@
       },
       {
         "date": "2026-04-08",
-        "portfolio": 89.1833,
+        "portfolio": 89.1832,
         "benchmark": 95.6922
       },
       {
@@ -2167,7 +2167,7 @@
       },
       {
         "date": "2026-05-21",
-        "portfolio": 106.8415,
+        "portfolio": 106.8414,
         "benchmark": 94.3258
       },
       {
@@ -2192,7 +2192,7 @@
       },
       {
         "date": "2026-05-29",
-        "portfolio": 112.9624,
+        "portfolio": 112.9623,
         "benchmark": 93.8993
       },
       {
