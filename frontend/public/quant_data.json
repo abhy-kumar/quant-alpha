@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-14 20:24:26",
+  "last_updated": "2026-10-15 00:54:27",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.26087391260873916,
@@ -198,7 +198,7 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.012,
+      "ic_current": 0.005,
       "ic_3m_rolling": 0.042,
       "t_stat": 2.15,
       "sample_dates": 55,
@@ -206,7 +206,7 @@
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.115,
+      "ic_current": 0.139,
       "ic_3m_rolling": -0.055,
       "t_stat": -0.7,
       "sample_dates": 55,
@@ -214,15 +214,15 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": -0.149,
-      "ic_3m_rolling": 0.023,
+      "ic_current": -0.172,
+      "ic_3m_rolling": 0.022,
       "t_stat": 0.08,
       "sample_dates": 55,
       "status": "Observed positive IC"
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.087,
+      "ic_current": 0.068,
       "ic_3m_rolling": 0.041,
       "t_stat": 0.78,
       "sample_dates": 55,
@@ -230,7 +230,7 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": 0.034,
+      "ic_current": 0.019,
       "ic_3m_rolling": -0.036,
       "t_stat": -0.57,
       "sample_dates": 55,
@@ -238,7 +238,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.119,
+      "ic_current": 0.111,
       "ic_3m_rolling": -0.0,
       "t_stat": 0.29,
       "sample_dates": 55,
@@ -1380,8 +1380,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "HEROMOTOCO.NS",
           "LUPIN.NS",
+          "HEROMOTOCO.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1392,8 +1392,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "HEROMOTOCO.NS": 0.1,
           "LUPIN.NS": 0.1,
+          "HEROMOTOCO.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
@@ -2707,7 +2707,7 @@
       },
       {
         "date": "2026-08-12",
-        "portfolio": 107.4029,
+        "portfolio": 107.4028,
         "benchmark": 100.8446
       },
       {
