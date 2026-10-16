@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-16 12:25:27",
+  "last_updated": "2026-10-16 15:19:49",
   "model_portfolios": {
     "max_sharpe": {
       "LAURUSLABS.NS": 0.279,
@@ -36,7 +36,7 @@
   },
   "factor_exposures": {
     "Value": 61.7,
-    "Momentum": 83.7,
+    "Momentum": 83.8,
     "Quality": 65.3,
     "Low_Volatility": 45.2
   },
@@ -1398,8 +1398,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "LUPIN.NS",
           "HEROMOTOCO.NS",
+          "LUPIN.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1410,8 +1410,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "LUPIN.NS": 0.1,
           "HEROMOTOCO.NS": 0.1,
+          "LUPIN.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
@@ -4081,7 +4081,7 @@
       },
       {
         "date": "2026-05-22",
-        "portfolio": 103.8918,
+        "portfolio": 103.8917,
         "benchmark": 97.3957
       },
       {
@@ -4406,7 +4406,7 @@
       },
       {
         "date": "2026-08-25",
-        "portfolio": 108.5084,
+        "portfolio": 108.5083,
         "benchmark": 99.922
       },
       {
@@ -4566,7 +4566,7 @@
       },
       {
         "date": "2026-10-12",
-        "portfolio": 109.5093,
+        "portfolio": 109.5092,
         "benchmark": 91.8279
       },
       {
@@ -4812,7 +4812,7 @@
     "horizon": "6m"
   },
   "market_regime": {
-    "score": 1,
+    "score": 3,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.5961538461538461
