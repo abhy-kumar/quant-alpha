@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-15 20:07:52",
+  "last_updated": "2026-10-16 00:45:13",
   "model_portfolios": {
     "max_sharpe": {
       "LAURUSLABS.NS": 0.26697330266973307,
@@ -196,7 +196,7 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": -0.008,
+      "ic_current": -0.0,
       "ic_3m_rolling": 0.041,
       "t_stat": 22.14,
       "sample_dates": 55,
@@ -204,7 +204,7 @@
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.121,
+      "ic_current": 0.151,
       "ic_3m_rolling": -0.049,
       "t_stat": -0.71,
       "sample_dates": 55,
@@ -212,15 +212,15 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": -0.168,
-      "ic_3m_rolling": 0.018,
+      "ic_current": -0.196,
+      "ic_3m_rolling": 0.017,
       "t_stat": 0.04,
       "sample_dates": 55,
       "status": "Observed positive IC"
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.044,
+      "ic_current": 0.024,
       "ic_3m_rolling": 0.042,
       "t_stat": 0.29,
       "sample_dates": 55,
@@ -228,16 +228,16 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": 0.042,
-      "ic_3m_rolling": -0.03,
+      "ic_current": 0.022,
+      "ic_3m_rolling": -0.031,
       "t_stat": -1.06,
       "sample_dates": 55,
       "status": "Observed nonpositive IC"
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.11,
-      "ic_3m_rolling": 0.003,
+      "ic_current": 0.093,
+      "ic_3m_rolling": 0.002,
       "t_stat": -0.54,
       "sample_dates": 55,
       "status": "Observed positive IC"
@@ -1388,8 +1388,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "LUPIN.NS",
           "HEROMOTOCO.NS",
+          "LUPIN.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1400,8 +1400,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "LUPIN.NS": 0.1,
           "HEROMOTOCO.NS": 0.1,
+          "LUPIN.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
@@ -2340,7 +2340,7 @@
       },
       {
         "date": "2026-04-27",
-        "portfolio": 102.3613,
+        "portfolio": 102.3612,
         "benchmark": 99.57
       },
       {
@@ -2475,7 +2475,7 @@
       },
       {
         "date": "2026-06-05",
-        "portfolio": 105.1656,
+        "portfolio": 105.1655,
         "benchmark": 96.5696
       },
       {
