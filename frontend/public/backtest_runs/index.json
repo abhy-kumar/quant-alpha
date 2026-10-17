@@ -6,7 +6,7 @@
       "as_of_date": "2026-10-16",
       "model": "long",
       "horizon": "6m",
-      "created_at": "2026-10-16 19:48:54",
+      "created_at": "2026-10-17 08:09:04",
       "data_start": "2026-04-17",
       "data_end": "2026-10-16",
       "n_chart_pts": 126,
@@ -26,7 +26,7 @@
       "as_of_date": "2026-10-16",
       "model": "short",
       "horizon": "6m",
-      "created_at": "2026-10-16 19:48:30",
+      "created_at": "2026-10-17 08:08:39",
       "data_start": "2026-04-17",
       "data_end": "2026-10-16",
       "n_chart_pts": 126,
@@ -46,7 +46,67 @@
       "as_of_date": "2026-10-16",
       "model": "short",
       "horizon": "1y",
-      "created_at": "2026-10-16 19:47:34",
+      "created_at": "2026-10-17 08:07:43",
+      "data_start": "2025-10-09",
+      "data_end": "2026-10-16",
+      "n_chart_pts": 252,
+      "stats": {
+        "total_return": 19.4,
+        "cagr": 19.02,
+        "volatility": 25.85,
+        "sharpe": 0.57,
+        "max_drawdown": -16.93,
+        "info_ratio": 1.27,
+        "win_rate": 52.6
+      }
+    },
+    {
+      "slug": "long-6m-2026-10-17",
+      "version": 3,
+      "as_of_date": "2026-10-17",
+      "model": "long",
+      "horizon": "6m",
+      "created_at": "2026-10-17 08:06:09",
+      "data_start": "2026-04-17",
+      "data_end": "2026-10-16",
+      "n_chart_pts": 126,
+      "stats": {
+        "total_return": 9.03,
+        "cagr": 18.94,
+        "volatility": 16.01,
+        "sharpe": 0.76,
+        "max_drawdown": -9.22,
+        "info_ratio": 1.78,
+        "win_rate": 55.2
+      }
+    },
+    {
+      "slug": "short-6m-2026-10-17",
+      "version": 3,
+      "as_of_date": "2026-10-17",
+      "model": "short",
+      "horizon": "6m",
+      "created_at": "2026-10-17 08:05:44",
+      "data_start": "2026-04-17",
+      "data_end": "2026-10-16",
+      "n_chart_pts": 126,
+      "stats": {
+        "total_return": 28.2,
+        "cagr": 64.63,
+        "volatility": 25.29,
+        "sharpe": 1.85,
+        "max_drawdown": -7.15,
+        "info_ratio": 2.57,
+        "win_rate": 58.4
+      }
+    },
+    {
+      "slug": "short-1y-2026-10-17",
+      "version": 3,
+      "as_of_date": "2026-10-17",
+      "model": "short",
+      "horizon": "1y",
+      "created_at": "2026-10-17 08:04:48",
       "data_start": "2025-10-09",
       "data_end": "2026-10-16",
       "n_chart_pts": 252,
@@ -881,5 +941,5 @@
       }
     }
   ],
-  "exported_at": "2026-10-16 19:48:58"
+  "exported_at": "2026-10-17 08:09:08"
 }
