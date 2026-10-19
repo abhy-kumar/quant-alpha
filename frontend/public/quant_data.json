@@ -1,202 +1,202 @@
 {
-  "last_updated": "2026-10-19 09:54:50",
+  "last_updated": "2026-10-19 14:44:02",
   "model_portfolios": {
     "max_sharpe": {
-      "LAURUSLABS.NS": 0.3328334333133373,
-      "SHREEJISPG.NS": 0.21985602879424118,
-      "WELCORP.NS": 0.17766446710657868,
-      "KARURVYSYA.NS": 0.09818036392721456,
-      "KTKBANK.NS": 0.07188562287542492,
-      "GESHIP.NS": 0.058888222355528895,
-      "IBULLSLTD.NS": 0.040691861627674464
+      "LAURUSLABS.NS": 0.334,
+      "SHREEJISPG.NS": 0.221,
+      "WELCORP.NS": 0.178,
+      "KARURVYSYA.NS": 0.0973,
+      "KTKBANK.NS": 0.0714,
+      "GESHIP.NS": 0.0584,
+      "IBULLSLTD.NS": 0.0399
     },
     "min_volatility": {
-      "LAURUSLABS.NS": 0.2727,
-      "GESHIP.NS": 0.2118,
-      "KARURVYSYA.NS": 0.1501,
-      "PNBHOUSING.NS": 0.12,
-      "KTKBANK.NS": 0.1041,
-      "SHREEJISPG.NS": 0.0528,
-      "IBULLSLTD.NS": 0.0351,
-      "WELCORP.NS": 0.0343,
-      "SOUTHBANK.NS": 0.0106
+      "LAURUSLABS.NS": 0.27264547090581887,
+      "GESHIP.NS": 0.21175764847030593,
+      "KARURVYSYA.NS": 0.14997000599880023,
+      "PNBHOUSING.NS": 0.1200759848030394,
+      "KTKBANK.NS": 0.10417916416716656,
+      "SHREEJISPG.NS": 0.052789442111577684,
+      "IBULLSLTD.NS": 0.03519296140771846,
+      "WELCORP.NS": 0.03429314137172565,
+      "SOUTHBANK.NS": 0.010597880423915218
     },
     "risk_parity": {
-      "GESHIP.NS": 0.1335,
-      "LAURUSLABS.NS": 0.13,
-      "KARURVYSYA.NS": 0.1156,
-      "PNBHOUSING.NS": 0.105,
-      "KTKBANK.NS": 0.1005,
-      "SHREEJISPG.NS": 0.0915,
-      "WELCORP.NS": 0.088,
-      "SOUTHBANK.NS": 0.0859,
-      "FILATEX.NS": 0.0765,
-      "IBULLSLTD.NS": 0.0735
+      "GESHIP.NS": 0.1335133513351335,
+      "LAURUSLABS.NS": 0.13001300130013002,
+      "KARURVYSYA.NS": 0.11551155115511552,
+      "PNBHOUSING.NS": 0.10501050105010501,
+      "KTKBANK.NS": 0.10051005100510052,
+      "SHREEJISPG.NS": 0.0915091509150915,
+      "WELCORP.NS": 0.088008800880088,
+      "SOUTHBANK.NS": 0.0859085908590859,
+      "FILATEX.NS": 0.0765076507650765,
+      "IBULLSLTD.NS": 0.0735073507350735
     }
   },
   "factor_exposures": {
-    "Value": 65.9,
-    "Momentum": 82.6,
-    "Quality": 60.5,
-    "Low_Volatility": 50.5
+    "Value": 65.7,
+    "Momentum": 82.8,
+    "Quality": 60.7,
+    "Low_Volatility": 50.7
   },
   "efficient_frontier": [
     {
       "volatility": 19.81,
-      "return": 67.15,
+      "return": 67.17,
       "sharpe": 3.06
     },
     {
       "volatility": 19.82,
-      "return": 68.72,
+      "return": 68.74,
       "sharpe": 3.14
     },
     {
       "volatility": 19.86,
-      "return": 70.29,
+      "return": 70.32,
       "sharpe": 3.21
     },
     {
       "volatility": 19.93,
-      "return": 71.86,
+      "return": 71.89,
       "sharpe": 3.28
     },
     {
       "volatility": 20.03,
-      "return": 73.43,
+      "return": 73.47,
       "sharpe": 3.34
     },
     {
       "volatility": 20.15,
-      "return": 74.99,
+      "return": 75.05,
       "sharpe": 3.4
     },
     {
       "volatility": 20.3,
-      "return": 76.56,
+      "return": 76.62,
       "sharpe": 3.45
     },
     {
       "volatility": 20.48,
-      "return": 78.13,
+      "return": 78.2,
       "sharpe": 3.5
     },
     {
       "volatility": 20.69,
-      "return": 79.7,
+      "return": 79.77,
       "sharpe": 3.54
     },
     {
       "volatility": 20.95,
-      "return": 81.27,
+      "return": 81.35,
       "sharpe": 3.57
     },
     {
-      "volatility": 21.24,
-      "return": 82.84,
-      "sharpe": 3.59
-    },
-    {
-      "volatility": 21.58,
-      "return": 84.4,
-      "sharpe": 3.61
-    },
-    {
-      "volatility": 21.95,
-      "return": 85.97,
-      "sharpe": 3.62
-    },
-    {
-      "volatility": 22.36,
-      "return": 87.54,
-      "sharpe": 3.62
-    },
-    {
-      "volatility": 22.81,
-      "return": 89.11,
-      "sharpe": 3.62
-    },
-    {
-      "volatility": 23.28,
-      "return": 90.68,
-      "sharpe": 3.62
-    },
-    {
-      "volatility": 23.79,
-      "return": 92.25,
+      "volatility": 21.25,
+      "return": 82.92,
       "sharpe": 3.6
     },
     {
+      "volatility": 21.58,
+      "return": 84.5,
+      "sharpe": 3.61
+    },
+    {
+      "volatility": 21.96,
+      "return": 86.07,
+      "sharpe": 3.62
+    },
+    {
+      "volatility": 22.37,
+      "return": 87.65,
+      "sharpe": 3.63
+    },
+    {
+      "volatility": 22.81,
+      "return": 89.22,
+      "sharpe": 3.63
+    },
+    {
+      "volatility": 23.29,
+      "return": 90.8,
+      "sharpe": 3.62
+    },
+    {
+      "volatility": 23.8,
+      "return": 92.37,
+      "sharpe": 3.61
+    },
+    {
       "volatility": 24.33,
-      "return": 93.82,
+      "return": 93.95,
       "sharpe": 3.59
     },
     {
-      "volatility": 24.9,
-      "return": 95.38,
+      "volatility": 24.91,
+      "return": 95.52,
       "sharpe": 3.57
     },
     {
-      "volatility": 25.52,
-      "return": 96.95,
-      "sharpe": 3.54
+      "volatility": 25.53,
+      "return": 97.1,
+      "sharpe": 3.55
     },
     {
       "volatility": 26.18,
-      "return": 98.52,
+      "return": 98.67,
       "sharpe": 3.52
     },
     {
-      "volatility": 26.87,
-      "return": 100.09,
-      "sharpe": 3.48
+      "volatility": 26.88,
+      "return": 100.25,
+      "sharpe": 3.49
     },
     {
-      "volatility": 27.66,
-      "return": 101.66,
+      "volatility": 27.67,
+      "return": 101.82,
       "sharpe": 3.44
     },
     {
-      "volatility": 28.56,
-      "return": 103.23,
+      "volatility": 28.57,
+      "return": 103.4,
       "sharpe": 3.39
     },
     {
-      "volatility": 29.56,
-      "return": 104.79,
-      "sharpe": 3.32
+      "volatility": 29.58,
+      "return": 104.97,
+      "sharpe": 3.33
     },
     {
-      "volatility": 30.66,
-      "return": 106.36,
+      "volatility": 30.67,
+      "return": 106.55,
       "sharpe": 3.26
     },
     {
-      "volatility": 31.83,
-      "return": 107.93,
+      "volatility": 31.85,
+      "return": 108.12,
       "sharpe": 3.19
     },
     {
-      "volatility": 33.08,
-      "return": 109.5,
-      "sharpe": 3.11
+      "volatility": 33.1,
+      "return": 109.7,
+      "sharpe": 3.12
     },
     {
-      "volatility": 35.38,
-      "return": 111.07,
+      "volatility": 35.44,
+      "return": 111.27,
       "sharpe": 2.96
     },
     {
-      "volatility": 42.21,
-      "return": 112.64,
-      "sharpe": 2.51
+      "volatility": 42.19,
+      "return": 112.85,
+      "sharpe": 2.52
     }
   ],
   "data_version": 3,
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": -0.051,
+      "ic_current": -0.05,
       "ic_3m_rolling": 0.038,
       "t_stat": 10.14,
       "sample_dates": 55,
@@ -204,7 +204,7 @@
     },
     {
       "factor": "6M Momentum",
-      "ic_current": 0.098,
+      "ic_current": 0.092,
       "ic_3m_rolling": -0.045,
       "t_stat": -0.75,
       "sample_dates": 55,
@@ -212,7 +212,7 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": -0.092,
+      "ic_current": -0.097,
       "ic_3m_rolling": 0.019,
       "t_stat": 0.12,
       "sample_dates": 55,
@@ -220,7 +220,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.052,
+      "ic_current": 0.047,
       "ic_3m_rolling": 0.048,
       "t_stat": 0.23,
       "sample_dates": 55,
@@ -228,7 +228,7 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": 0.096,
+      "ic_current": 0.106,
       "ic_3m_rolling": -0.02,
       "t_stat": -4.71,
       "sample_dates": 55,
@@ -236,7 +236,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.106,
+      "ic_current": 0.113,
       "ic_3m_rolling": 0.008,
       "t_stat": -0.95,
       "sample_dates": 55,
@@ -717,8 +717,8 @@
       },
       {
         "date": "2026-10-19",
-        "portfolio": 95.8266,
-        "benchmark": 96.8279
+        "portfolio": 95.871,
+        "benchmark": 96.8931
       }
     ],
     "holdings": [
@@ -847,11 +847,11 @@
       }
     ],
     "stats": {
-      "total_return": -4.17,
-      "cagr": -11.37,
-      "volatility": 13.34,
-      "sharpe": -1.34,
-      "max_drawdown": -5.62,
+      "total_return": -4.13,
+      "cagr": -11.25,
+      "volatility": 13.33,
+      "sharpe": -1.33,
+      "max_drawdown": -5.57,
       "info_ratio": -0.18,
       "win_rate": 60.2
     },
@@ -1302,8 +1302,8 @@
       },
       {
         "date": "2026-10-19",
-        "portfolio": 97.541,
-        "benchmark": 96.8279
+        "portfolio": 97.7526,
+        "benchmark": 96.8931
       }
     ],
     "holdings": [
@@ -1408,8 +1408,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "HEROMOTOCO.NS",
           "LUPIN.NS",
+          "HEROMOTOCO.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1420,8 +1420,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "HEROMOTOCO.NS": 0.1,
           "LUPIN.NS": 0.1,
+          "HEROMOTOCO.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
@@ -1432,13 +1432,13 @@
       }
     ],
     "stats": {
-      "total_return": -2.46,
-      "cagr": -6.81,
+      "total_return": -2.25,
+      "cagr": -6.23,
       "volatility": 14.08,
-      "sharpe": -0.9,
+      "sharpe": -0.85,
       "max_drawdown": -7.39,
-      "info_ratio": 0.16,
-      "win_rate": 58.0
+      "info_ratio": 0.19,
+      "win_rate": 59.1
     },
     "version": 3,
     "methodology": "Prior-close price signals; close execution; shares held between rebalances; 20bps per leg; historical liquidity; close-triggered trailing stops"
@@ -2702,8 +2702,8 @@
       },
       {
         "date": "2026-10-19",
-        "portfolio": 148.1969,
-        "benchmark": 90.4617
+        "portfolio": 148.1624,
+        "benchmark": 90.5226
       }
     ],
     "holdings": [
@@ -3086,12 +3086,12 @@
       }
     ],
     "stats": {
-      "total_return": 48.2,
-      "cagr": 46.84,
+      "total_return": 48.16,
+      "cagr": 46.81,
       "volatility": 24.68,
       "sharpe": 1.46,
       "max_drawdown": -13.06,
-      "info_ratio": 2.44,
+      "info_ratio": 2.43,
       "win_rate": 54.2
     },
     "version": 3,
@@ -3730,8 +3730,8 @@
       },
       {
         "date": "2026-10-19",
-        "portfolio": 117.6289,
-        "benchmark": 93.8793
+        "portfolio": 117.6159,
+        "benchmark": 93.9425
       }
     ],
     "holdings": [
@@ -3940,12 +3940,12 @@
       }
     ],
     "stats": {
-      "total_return": 17.63,
-      "cagr": 38.52,
+      "total_return": 17.62,
+      "cagr": 38.49,
       "volatility": 26.64,
       "sharpe": 1.12,
       "max_drawdown": -9.67,
-      "info_ratio": 1.85,
+      "info_ratio": 1.84,
       "win_rate": 56.0
     },
     "version": 3,
@@ -4066,7 +4066,7 @@
       },
       {
         "date": "2026-05-18",
-        "portfolio": 102.6668,
+        "portfolio": 102.6669,
         "benchmark": 97.0659
       },
       {
@@ -4596,8 +4596,8 @@
       },
       {
         "date": "2026-10-19",
-        "portfolio": 106.4572,
-        "benchmark": 93.8793
+        "portfolio": 106.4267,
+        "benchmark": 93.9425
       }
     ],
     "holdings": [
@@ -4806,12 +4806,12 @@
       }
     ],
     "stats": {
-      "total_return": 6.46,
-      "cagr": 13.38,
+      "total_return": 6.43,
+      "cagr": 13.31,
       "volatility": 16.47,
       "sharpe": 0.45,
       "max_drawdown": -10.21,
-      "info_ratio": 1.6,
+      "info_ratio": 1.59,
       "win_rate": 53.6
     },
     "version": 3,
@@ -4822,10 +4822,10 @@
     "horizon": "6m"
   },
   "market_regime": {
-    "score": 2,
+    "score": -2,
     "nifty_trend": "bearish",
     "vix": 0.0,
-    "breadth": 0.5961538461538461
+    "breadth": 0.1836887392442948
   },
   "sector_allocation": {
     "Financial Services": 40.0,
@@ -4876,18 +4876,18 @@
         0.27,
         -0.1,
         1.0,
-        0.0,
+        -0.0,
         -0.0,
         -0.03,
         0.22,
         0.07,
-        -0.06,
+        -0.07,
         -0.01
       ],
       [
         -0.16,
         0.02,
-        0.0,
+        -0.0,
         1.0,
         0.21,
         0.11,
@@ -4905,7 +4905,7 @@
         0.01,
         0.29,
         0.23,
-        0.34,
+        0.33,
         0.07
       ],
       [
@@ -4947,9 +4947,9 @@
       [
         -0.12,
         0.11,
-        -0.06,
+        -0.07,
         0.47,
-        0.34,
+        0.33,
         0.03,
         -0.02,
         0.06,
