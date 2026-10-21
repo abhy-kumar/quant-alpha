@@ -6,17 +6,17 @@
       "as_of_date": "2026-10-21",
       "model": "long",
       "horizon": "6m",
-      "created_at": "2026-10-21 09:39:24",
+      "created_at": "2026-10-21 12:58:26",
       "data_start": "2026-04-21",
       "data_end": "2026-10-21",
       "n_chart_pts": 126,
       "stats": {
-        "total_return": -0.74,
-        "cagr": -1.47,
-        "volatility": 16.08,
-        "sharpe": -0.42,
-        "max_drawdown": -9.11,
-        "info_ratio": 0.95,
+        "total_return": -0.55,
+        "cagr": -1.09,
+        "volatility": 16.02,
+        "sharpe": -0.4,
+        "max_drawdown": -8.94,
+        "info_ratio": 0.88,
         "win_rate": 50.4
       }
     },
@@ -26,18 +26,18 @@
       "as_of_date": "2026-10-21",
       "model": "short",
       "horizon": "6m",
-      "created_at": "2026-10-21 09:39:11",
+      "created_at": "2026-10-21 12:58:13",
       "data_start": "2026-04-21",
       "data_end": "2026-10-21",
       "n_chart_pts": 126,
       "stats": {
-        "total_return": -1.16,
-        "cagr": -2.3,
-        "volatility": 26.81,
-        "sharpe": -0.2,
-        "max_drawdown": -17.48,
-        "info_ratio": 0.65,
-        "win_rate": 51.2
+        "total_return": 4.24,
+        "cagr": 8.63,
+        "volatility": 26.53,
+        "sharpe": 0.2,
+        "max_drawdown": -16.87,
+        "info_ratio": 1.01,
+        "win_rate": 53.6
       }
     },
     {
@@ -46,18 +46,18 @@
       "as_of_date": "2026-10-21",
       "model": "short",
       "horizon": "1y",
-      "created_at": "2026-10-21 09:38:41",
+      "created_at": "2026-10-21 12:57:44",
       "data_start": "2025-10-13",
       "data_end": "2026-10-21",
       "n_chart_pts": 252,
       "stats": {
-        "total_return": 26.91,
-        "cagr": 26.28,
-        "volatility": 27.73,
-        "sharpe": 0.77,
-        "max_drawdown": -12.83,
-        "info_ratio": 1.56,
-        "win_rate": 54.2
+        "total_return": 24.4,
+        "cagr": 23.83,
+        "volatility": 28.24,
+        "sharpe": 0.69,
+        "max_drawdown": -13.95,
+        "info_ratio": 1.43,
+        "win_rate": 53.4
       }
     },
     {
@@ -1061,5 +1061,5 @@
       }
     }
   ],
-  "exported_at": "2026-10-21 09:39:27"
+  "exported_at": "2026-10-21 12:58:29"
 }
