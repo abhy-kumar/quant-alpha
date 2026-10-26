@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-26 14:15:45",
+  "last_updated": "2026-10-26 17:03:50",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.3064,
@@ -36,9 +36,9 @@
   },
   "factor_exposures": {
     "Value": 63.1,
-    "Momentum": 80.3,
+    "Momentum": 80.1,
     "Quality": 69.6,
-    "Low_Volatility": 53.2
+    "Low_Volatility": 53.3
   },
   "efficient_frontier": [
     {
@@ -2317,7 +2317,7 @@
       },
       {
         "date": "2026-06-23",
-        "portfolio": 132.0675,
+        "portfolio": 132.0674,
         "benchmark": 93.1164
       },
       {
@@ -2327,7 +2327,7 @@
       },
       {
         "date": "2026-06-25",
-        "portfolio": 129.739,
+        "portfolio": 129.7389,
         "benchmark": 94.0227
       },
       {
@@ -2352,7 +2352,7 @@
       },
       {
         "date": "2026-07-03",
-        "portfolio": 131.7531,
+        "portfolio": 131.753,
         "benchmark": 94.8625
       },
       {
@@ -2447,7 +2447,7 @@
       },
       {
         "date": "2026-07-30",
-        "portfolio": 122.9933,
+        "portfolio": 122.9932,
         "benchmark": 95.0434
       },
       {
