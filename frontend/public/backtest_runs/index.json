@@ -6,18 +6,18 @@
       "as_of_date": "2026-10-26",
       "model": "long",
       "horizon": "6m",
-      "created_at": "2026-10-26 10:07:10",
+      "created_at": "2026-10-26 14:15:44",
       "data_start": "2026-04-24",
       "data_end": "2026-10-26",
       "n_chart_pts": 126,
       "stats": {
-        "total_return": 10.18,
-        "cagr": 21.1,
-        "volatility": 16.98,
-        "sharpe": 0.85,
+        "total_return": 11.01,
+        "cagr": 22.9,
+        "volatility": 17.19,
+        "sharpe": 0.93,
         "max_drawdown": -7.63,
-        "info_ratio": 1.77,
-        "win_rate": 56.0
+        "info_ratio": 1.84,
+        "win_rate": 57.6
       }
     },
     {
@@ -26,17 +26,17 @@
       "as_of_date": "2026-10-26",
       "model": "short",
       "horizon": "6m",
-      "created_at": "2026-10-26 10:06:51",
+      "created_at": "2026-10-26 14:15:26",
       "data_start": "2026-04-24",
       "data_end": "2026-10-26",
       "n_chart_pts": 126,
       "stats": {
-        "total_return": 6.62,
-        "cagr": 13.48,
-        "volatility": 27.4,
-        "sharpe": 0.37,
+        "total_return": 6.42,
+        "cagr": 13.06,
+        "volatility": 27.39,
+        "sharpe": 0.36,
         "max_drawdown": -15.15,
-        "info_ratio": 1.02,
+        "info_ratio": 1.0,
         "win_rate": 55.2
       }
     },
@@ -46,17 +46,17 @@
       "as_of_date": "2026-10-26",
       "model": "short",
       "horizon": "1y",
-      "created_at": "2026-10-26 10:06:09",
+      "created_at": "2026-10-26 14:14:45",
       "data_start": "2025-10-16",
       "data_end": "2026-10-26",
       "n_chart_pts": 252,
       "stats": {
-        "total_return": 34.51,
-        "cagr": 33.48,
-        "volatility": 38.01,
-        "sharpe": 0.81,
-        "max_drawdown": -28.57,
-        "info_ratio": 1.36,
+        "total_return": 29.3,
+        "cagr": 28.44,
+        "volatility": 38.14,
+        "sharpe": 0.7,
+        "max_drawdown": -29.81,
+        "info_ratio": 1.24,
         "win_rate": 56.2
       }
     },
@@ -1301,5 +1301,5 @@
       }
     }
   ],
-  "exported_at": "2026-10-26 10:07:13"
+  "exported_at": "2026-10-26 14:15:47"
 }
