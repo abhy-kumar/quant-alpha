@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-27 13:15:01",
+  "last_updated": "2026-10-27 16:07:54",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.35883588358835883,
@@ -32,10 +32,10 @@
     }
   },
   "factor_exposures": {
-    "Value": 68.0,
-    "Momentum": 76.5,
-    "Quality": 64.0,
-    "Low_Volatility": 64.0
+    "Value": 67.9,
+    "Momentum": 76.6,
+    "Quality": 64.1,
+    "Low_Volatility": 64.1
   },
   "efficient_frontier": [
     {
@@ -193,7 +193,7 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.038,
+      "ic_current": 0.044,
       "ic_3m_rolling": 0.034,
       "t_stat": 6.36,
       "sample_dates": 53,
@@ -201,7 +201,7 @@
     },
     {
       "factor": "6M Momentum",
-      "ic_current": -0.133,
+      "ic_current": -0.134,
       "ic_3m_rolling": -0.029,
       "t_stat": -0.8,
       "sample_dates": 53,
@@ -209,7 +209,7 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": 0.177,
+      "ic_current": 0.183,
       "ic_3m_rolling": 0.01,
       "t_stat": 1.36,
       "sample_dates": 53,
@@ -217,7 +217,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.158,
+      "ic_current": 0.157,
       "ic_3m_rolling": 0.058,
       "t_stat": 7.78,
       "sample_dates": 53,
@@ -225,7 +225,7 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": 0.115,
+      "ic_current": 0.105,
       "ic_3m_rolling": -0.009,
       "t_stat": -2.31,
       "sample_dates": 53,
@@ -233,7 +233,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.159,
+      "ic_current": 0.158,
       "ic_3m_rolling": 0.027,
       "t_stat": 1.05,
       "sample_dates": 53,
@@ -1455,8 +1455,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "HEROMOTOCO.NS",
           "LUPIN.NS",
+          "HEROMOTOCO.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1467,8 +1467,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "HEROMOTOCO.NS": 0.1,
           "LUPIN.NS": 0.1,
+          "HEROMOTOCO.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
@@ -4869,7 +4869,7 @@
     "horizon": "6m"
   },
   "market_regime": {
-    "score": -1,
+    "score": 1,
     "nifty_trend": "bearish",
     "vix": 0.0,
     "breadth": 0.7176997759522031
