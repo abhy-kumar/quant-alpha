@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-26 21:16:33",
+  "last_updated": "2026-10-27 01:58:57",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.3615,
@@ -33,7 +33,7 @@
   },
   "factor_exposures": {
     "Value": 68.0,
-    "Momentum": 76.1,
+    "Momentum": 76.2,
     "Quality": 63.9,
     "Low_Volatility": 63.9
   },
@@ -1445,8 +1445,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "HEROMOTOCO.NS",
           "LUPIN.NS",
+          "HEROMOTOCO.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1457,8 +1457,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "HEROMOTOCO.NS": 0.1,
           "LUPIN.NS": 0.1,
+          "HEROMOTOCO.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
@@ -2314,7 +2314,7 @@
       },
       {
         "date": "2026-06-23",
-        "portfolio": 132.0675,
+        "portfolio": 132.0674,
         "benchmark": 93.1164
       },
       {
@@ -2349,7 +2349,7 @@
       },
       {
         "date": "2026-07-03",
-        "portfolio": 131.7531,
+        "portfolio": 131.753,
         "benchmark": 94.8625
       },
       {
@@ -2444,7 +2444,7 @@
       },
       {
         "date": "2026-07-30",
-        "portfolio": 122.9933,
+        "portfolio": 122.9932,
         "benchmark": 95.0434
       },
       {
@@ -4513,127 +4513,127 @@
       },
       {
         "date": "2026-09-18",
-        "portfolio": 112.414,
+        "portfolio": 111.7461,
         "benchmark": 97.6921
       },
       {
         "date": "2026-09-21",
-        "portfolio": 112.4272,
+        "portfolio": 111.6839,
         "benchmark": 97.9762
       },
       {
         "date": "2026-09-22",
-        "portfolio": 112.8301,
+        "portfolio": 111.8879,
         "benchmark": 97.6193
       },
       {
         "date": "2026-09-23",
-        "portfolio": 114.7474,
+        "portfolio": 114.1147,
         "benchmark": 98.1122
       },
       {
         "date": "2026-09-24",
-        "portfolio": 113.3206,
+        "portfolio": 112.5593,
         "benchmark": 96.5066
       },
       {
         "date": "2026-09-25",
-        "portfolio": 113.3088,
+        "portfolio": 112.2989,
         "benchmark": 96.8305
       },
       {
         "date": "2026-09-28",
-        "portfolio": 112.6915,
+        "portfolio": 111.7652,
         "benchmark": 95.323
       },
       {
         "date": "2026-09-29",
-        "portfolio": 111.9661,
+        "portfolio": 111.3844,
         "benchmark": 95.055
       },
       {
         "date": "2026-09-30",
-        "portfolio": 112.101,
+        "portfolio": 111.2054,
         "benchmark": 94.6544
       },
       {
         "date": "2026-10-01",
-        "portfolio": 110.4096,
+        "portfolio": 109.9695,
         "benchmark": 93.8237
       },
       {
         "date": "2026-10-05",
-        "portfolio": 111.5808,
+        "portfolio": 111.2811,
         "benchmark": 94.3836
       },
       {
         "date": "2026-10-06",
-        "portfolio": 113.9781,
+        "portfolio": 113.7508,
         "benchmark": 95.3057
       },
       {
         "date": "2026-10-07",
-        "portfolio": 114.2938,
+        "portfolio": 114.0647,
         "benchmark": 94.5815
       },
       {
         "date": "2026-10-08",
-        "portfolio": 112.2891,
+        "portfolio": 112.2245,
         "benchmark": 93.0281
       },
       {
         "date": "2026-10-09",
-        "portfolio": 113.451,
+        "portfolio": 113.6588,
         "benchmark": 94.2359
       },
       {
         "date": "2026-10-12",
-        "portfolio": 114.207,
+        "portfolio": 114.4627,
         "benchmark": 93.5785
       },
       {
         "date": "2026-10-13",
-        "portfolio": 115.0588,
+        "portfolio": 115.4099,
         "benchmark": 95.0791
       },
       {
         "date": "2026-10-14",
-        "portfolio": 114.755,
+        "portfolio": 115.1456,
         "benchmark": 94.6638
       },
       {
         "date": "2026-10-15",
-        "portfolio": 112.5192,
+        "portfolio": 113.1913,
         "benchmark": 96.2315
       },
       {
         "date": "2026-10-16",
-        "portfolio": 113.1921,
+        "portfolio": 113.4228,
         "benchmark": 96.8541
       },
       {
         "date": "2026-10-19",
-        "portfolio": 112.7841,
+        "portfolio": 112.5743,
         "benchmark": 95.7779
       },
       {
         "date": "2026-10-21",
-        "portfolio": 110.7946,
+        "portfolio": 110.8327,
         "benchmark": 95.4532
       },
       {
         "date": "2026-10-22",
-        "portfolio": 110.4239,
+        "portfolio": 110.1644,
         "benchmark": 94.9356
       },
       {
         "date": "2026-10-23",
-        "portfolio": 109.2589,
+        "portfolio": 108.9078,
         "benchmark": 94.5688
       },
       {
         "date": "2026-10-26",
-        "portfolio": 111.0105,
+        "portfolio": 110.2281,
         "benchmark": 95.2098
       }
     ],
@@ -4796,7 +4796,7 @@
           "FEDERALBNK.NS",
           "RADICO.NS",
           "HONASA.NS",
-          "SANSERA.NS"
+          "KTKBANK.NS"
         ],
         "weights": {
           "MON100.NS": 0.1,
@@ -4808,7 +4808,7 @@
           "FEDERALBNK.NS": 0.1,
           "RADICO.NS": 0.1,
           "HONASA.NS": 0.1,
-          "SANSERA.NS": 0.1
+          "KTKBANK.NS": 0.1
         },
         "equity_ratio": 1.0
       },
@@ -4823,9 +4823,9 @@
           "GRWRHITECH.NS",
           "FEDERALBNK.NS",
           "RADICO.NS",
-          "SANSERA.NS",
           "PAISALO.NS",
-          "SONACOMS.NS"
+          "SONACOMS.NS",
+          "ARVIND.NS"
         ],
         "weights": {
           "MON100.NS": 0.1,
@@ -4835,21 +4835,21 @@
           "GRWRHITECH.NS": 0.1,
           "FEDERALBNK.NS": 0.1,
           "RADICO.NS": 0.1,
-          "SANSERA.NS": 0.1,
           "PAISALO.NS": 0.1,
-          "SONACOMS.NS": 0.1
+          "SONACOMS.NS": 0.1,
+          "ARVIND.NS": 0.1
         },
         "equity_ratio": 1.0
       }
     ],
     "stats": {
-      "total_return": 11.01,
-      "cagr": 22.9,
-      "volatility": 17.19,
-      "sharpe": 0.93,
+      "total_return": 10.23,
+      "cagr": 21.2,
+      "volatility": 16.99,
+      "sharpe": 0.86,
       "max_drawdown": -7.63,
-      "info_ratio": 1.84,
-      "win_rate": 57.6
+      "info_ratio": 1.78,
+      "win_rate": 56.0
     },
     "version": 3,
     "methodology": "Prior-close price signals; close execution; shares held between rebalances; 20bps per leg; historical liquidity; close-triggered trailing stops",
