@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-28 14:04:28",
+  "last_updated": "2026-10-28 16:55:20",
   "model_portfolios": {
     "max_sharpe": {
       "LAURUSLABS.NS": 0.426957304269573,
@@ -36,7 +36,7 @@
   "factor_exposures": {
     "Value": 63.0,
     "Momentum": 79.5,
-    "Quality": 65.6,
+    "Quality": 65.7,
     "Low_Volatility": 61.2
   },
   "efficient_frontier": [
@@ -195,9 +195,9 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.044,
-      "ic_3m_rolling": 0.034,
-      "t_stat": 6.36,
+      "ic_current": 0.052,
+      "ic_3m_rolling": 0.035,
+      "t_stat": 6.52,
       "sample_dates": 53,
       "status": "Observed positive IC"
     },
@@ -235,8 +235,8 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.158,
-      "ic_3m_rolling": 0.027,
+      "ic_current": 0.156,
+      "ic_3m_rolling": 0.026,
       "t_stat": 1.05,
       "sample_dates": 53,
       "status": "Observed positive IC"
@@ -1761,7 +1761,7 @@
       },
       {
         "date": "2026-01-02",
-        "portfolio": 104.654,
+        "portfolio": 104.6541,
         "benchmark": 101.8783
       },
       {
@@ -1811,7 +1811,7 @@
       },
       {
         "date": "2026-01-19",
-        "portfolio": 116.3367,
+        "portfolio": 116.3368,
         "benchmark": 99.003
       },
       {
@@ -2361,7 +2361,7 @@
       },
       {
         "date": "2026-07-03",
-        "portfolio": 122.4221,
+        "portfolio": 122.4222,
         "benchmark": 93.916
       },
       {
@@ -2411,7 +2411,7 @@
       },
       {
         "date": "2026-07-17",
-        "portfolio": 122.419,
+        "portfolio": 122.4191,
         "benchmark": 94.1615
       },
       {
@@ -2471,7 +2471,7 @@
       },
       {
         "date": "2026-08-04",
-        "portfolio": 120.605,
+        "portfolio": 120.6051,
         "benchmark": 95.2473
       },
       {
