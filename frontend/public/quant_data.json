@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-27 21:03:05",
+  "last_updated": "2026-10-28 01:57:56",
   "model_portfolios": {
     "max_sharpe": {
       "LAURUSLABS.NS": 0.4137,
@@ -195,9 +195,9 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.044,
-      "ic_3m_rolling": 0.034,
-      "t_stat": 6.36,
+      "ic_current": 0.051,
+      "ic_3m_rolling": 0.035,
+      "t_stat": 6.52,
       "sample_dates": 53,
       "status": "Observed positive IC"
     },
@@ -235,8 +235,8 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.158,
-      "ic_3m_rolling": 0.027,
+      "ic_current": 0.156,
+      "ic_3m_rolling": 0.026,
       "t_stat": 1.05,
       "sample_dates": 53,
       "status": "Observed positive IC"
@@ -2281,7 +2281,7 @@
       },
       {
         "date": "2026-06-11",
-        "portfolio": 125.142,
+        "portfolio": 125.1419,
         "benchmark": 90.0884
       },
       {
@@ -2446,7 +2446,7 @@
       },
       {
         "date": "2026-07-29",
-        "portfolio": 131.7621,
+        "portfolio": 131.7622,
         "benchmark": 94.3226
       },
       {
