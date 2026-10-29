@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-29 14:17:46",
+  "last_updated": "2026-10-29 17:11:10",
   "model_portfolios": {
     "max_sharpe": {
       "LAURUSLABS.NS": 0.40700000000000003,
@@ -34,9 +34,9 @@
   },
   "factor_exposures": {
     "Value": 60.4,
-    "Momentum": 79.2,
+    "Momentum": 79.3,
     "Quality": 67.7,
-    "Low_Volatility": 62.8
+    "Low_Volatility": 62.7
   },
   "efficient_frontier": [
     {
@@ -1476,8 +1476,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "LUPIN.NS",
           "HEROMOTOCO.NS",
+          "LUPIN.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1488,8 +1488,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "LUPIN.NS": 0.1,
           "HEROMOTOCO.NS": 0.1,
+          "LUPIN.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
@@ -1760,7 +1760,7 @@
       },
       {
         "date": "2026-01-01",
-        "portfolio": 103.5185,
+        "portfolio": 103.5184,
         "benchmark": 101.0745
       },
       {
@@ -2015,7 +2015,7 @@
       },
       {
         "date": "2026-03-18",
-        "portfolio": 95.1847,
+        "portfolio": 95.1846,
         "benchmark": 91.9176
       },
       {
