@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-29 21:30:14",
+  "last_updated": "2026-10-30 02:27:40",
   "model_portfolios": {
     "max_sharpe": {
       "LAURUSLABS.NS": 0.38396160383961603,
@@ -1761,7 +1761,7 @@
       },
       {
         "date": "2026-01-01",
-        "portfolio": 103.5185,
+        "portfolio": 103.5184,
         "benchmark": 101.0745
       },
       {
