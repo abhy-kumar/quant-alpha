@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-02 20:36:36",
+  "last_updated": "2026-11-02 23:46:26",
   "model_portfolios": {
     "max_sharpe": {
       "KARURVYSYA.NS": 0.5314,
@@ -704,7 +704,7 @@
       },
       {
         "date": "2026-10-15",
-        "portfolio": 96.5557,
+        "portfolio": 96.5558,
         "benchmark": 97.3519
       },
       {
