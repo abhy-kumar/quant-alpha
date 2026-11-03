@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-03 15:09:03",
+  "last_updated": "2026-11-03 18:06:47",
   "model_portfolios": {
     "max_sharpe": {
       "KARURVYSYA.NS": 0.5202,
@@ -33,9 +33,9 @@
     }
   },
   "factor_exposures": {
-    "Value": 72.1,
-    "Momentum": 72.7,
-    "Quality": 64.2,
+    "Value": 72.2,
+    "Momentum": 72.5,
+    "Quality": 64.3,
     "Low_Volatility": 68.1
   },
   "efficient_frontier": [
@@ -194,9 +194,9 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.099,
-      "ic_3m_rolling": 0.026,
-      "t_stat": 1.16,
+      "ic_current": 0.101,
+      "ic_3m_rolling": 0.025,
+      "t_stat": 1.11,
       "sample_dates": 49,
       "status": "Observed positive IC"
     },
@@ -210,7 +210,7 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": 0.359,
+      "ic_current": 0.36,
       "ic_3m_rolling": -0.003,
       "t_stat": 0.5,
       "sample_dates": 49,
@@ -218,7 +218,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.19,
+      "ic_current": 0.192,
       "ic_3m_rolling": 0.057,
       "t_stat": 0.77,
       "sample_dates": 49,
@@ -234,7 +234,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.066,
+      "ic_current": 0.069,
       "ic_3m_rolling": 0.028,
       "t_stat": 1.1,
       "sample_dates": 49,
@@ -705,7 +705,7 @@
       },
       {
         "date": "2026-10-15",
-        "portfolio": 96.5557,
+        "portfolio": 96.5558,
         "benchmark": 97.3519
       },
       {
@@ -1506,8 +1506,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "LUPIN.NS",
           "HEROMOTOCO.NS",
+          "LUPIN.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1518,8 +1518,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "LUPIN.NS": 0.1,
           "HEROMOTOCO.NS": 0.1,
+          "LUPIN.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
@@ -1725,7 +1725,7 @@
       },
       {
         "date": "2025-12-17",
-        "portfolio": 92.2998,
+        "portfolio": 92.2999,
         "benchmark": 99.432
       },
       {
@@ -1775,7 +1775,7 @@
       },
       {
         "date": "2026-01-01",
-        "portfolio": 99.0572,
+        "portfolio": 99.0573,
         "benchmark": 100.6951
       },
       {
@@ -2090,7 +2090,7 @@
       },
       {
         "date": "2026-04-08",
-        "portfolio": 74.9244,
+        "portfolio": 74.9245,
         "benchmark": 92.4182
       },
       {
@@ -2685,7 +2685,7 @@
       },
       {
         "date": "2026-09-29",
-        "portfolio": 98.4926,
+        "portfolio": 98.4927,
         "benchmark": 87.4842
       },
       {
