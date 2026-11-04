@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-03 22:04:51",
+  "last_updated": "2026-11-04 02:47:05",
   "model_portfolios": {
     "max_sharpe": {
       "LAURUSLABS.NS": 1.0
@@ -188,15 +188,15 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.101,
-      "ic_3m_rolling": 0.026,
+      "ic_current": 0.107,
+      "ic_3m_rolling": 0.027,
       "t_stat": 1.16,
       "sample_dates": 49,
       "status": "Observed positive IC"
     },
     {
       "factor": "6M Momentum",
-      "ic_current": -0.201,
+      "ic_current": -0.21,
       "ic_3m_rolling": -0.007,
       "t_stat": -0.25,
       "sample_dates": 49,
@@ -204,7 +204,7 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": 0.362,
+      "ic_current": 0.368,
       "ic_3m_rolling": -0.003,
       "t_stat": 0.5,
       "sample_dates": 49,
@@ -212,7 +212,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.188,
+      "ic_current": 0.191,
       "ic_3m_rolling": 0.057,
       "t_stat": 0.77,
       "sample_dates": 49,
@@ -220,7 +220,7 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": 0.104,
+      "ic_current": 0.113,
       "ic_3m_rolling": -0.01,
       "t_stat": 1.18,
       "sample_dates": 49,
@@ -228,7 +228,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.082,
+      "ic_current": 0.075,
       "ic_3m_rolling": 0.028,
       "t_stat": 1.1,
       "sample_dates": 49,
@@ -699,7 +699,7 @@
       },
       {
         "date": "2026-10-15",
-        "portfolio": 96.5558,
+        "portfolio": 96.5557,
         "benchmark": 97.3519
       },
       {
@@ -1500,8 +1500,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "HEROMOTOCO.NS",
           "LUPIN.NS",
+          "HEROMOTOCO.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1512,8 +1512,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "HEROMOTOCO.NS": 0.1,
           "LUPIN.NS": 0.1,
+          "HEROMOTOCO.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
