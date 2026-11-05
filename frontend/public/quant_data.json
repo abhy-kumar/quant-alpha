@@ -1,36 +1,36 @@
 {
-  "last_updated": "2026-11-04 22:16:28",
+  "last_updated": "2026-11-05 02:50:25",
   "model_portfolios": {
     "max_sharpe": {
       "LAURUSLABS.NS": 0.9158,
       "CHENNPETRO.NS": 0.0842
     },
     "min_volatility": {
-      "LALPATHLAB.NS": 0.2388,
-      "DIVISLAB.NS": 0.212,
-      "AUROPHARMA.NS": 0.1522,
-      "AJANTPHARM.NS": 0.1406,
-      "UNIONBANK.NS": 0.0978,
-      "GESHIP.NS": 0.0966,
-      "CHENNPETRO.NS": 0.0599
+      "LALPATHLAB.NS": 0.23882388238823885,
+      "DIVISLAB.NS": 0.21202120212021203,
+      "AUROPHARMA.NS": 0.15221522152215222,
+      "AJANTPHARM.NS": 0.1406140614061406,
+      "UNIONBANK.NS": 0.09780978097809781,
+      "GESHIP.NS": 0.0967096709670967,
+      "CHENNPETRO.NS": 0.059905990599059905
     },
     "risk_parity": {
       "LALPATHLAB.NS": 0.1426,
       "DIVISLAB.NS": 0.1246,
       "AJANTPHARM.NS": 0.1184,
       "AUROPHARMA.NS": 0.1141,
-      "GESHIP.NS": 0.1027,
+      "GESHIP.NS": 0.1028,
       "UNIONBANK.NS": 0.094,
       "CHENNPETRO.NS": 0.0865,
       "LAURUSLABS.NS": 0.0854,
-      "ENGINERSIN.NS": 0.0739,
+      "ENGINERSIN.NS": 0.0738,
       "GRWRHITECH.NS": 0.0578
     }
   },
   "factor_exposures": {
     "Value": 53.9,
     "Momentum": 75.7,
-    "Quality": 67.0,
+    "Quality": 66.9,
     "Low_Volatility": 64.5
   },
   "efficient_frontier": [
@@ -56,7 +56,7 @@
     },
     {
       "volatility": 17.94,
-      "return": 29.61,
+      "return": 29.6,
       "sharpe": 1.29
     },
     {
@@ -86,7 +86,7 @@
     },
     {
       "volatility": 19.93,
-      "return": 42.76,
+      "return": 42.75,
       "sharpe": 1.82
     },
     {
@@ -121,7 +121,7 @@
     },
     {
       "volatility": 23.76,
-      "return": 58.1,
+      "return": 58.09,
       "sharpe": 2.17
     },
     {
@@ -189,15 +189,15 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.118,
-      "ic_3m_rolling": 0.026,
-      "t_stat": 2.94,
+      "ic_current": 0.12,
+      "ic_3m_rolling": 0.025,
+      "t_stat": 2.57,
       "sample_dates": 47,
       "status": "Observed positive IC"
     },
     {
       "factor": "6M Momentum",
-      "ic_current": -0.205,
+      "ic_current": -0.21,
       "ic_3m_rolling": 0.01,
       "t_stat": -0.32,
       "sample_dates": 47,
@@ -205,7 +205,7 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": 0.361,
+      "ic_current": 0.365,
       "ic_3m_rolling": -0.008,
       "t_stat": 0.6,
       "sample_dates": 47,
@@ -213,7 +213,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.178,
+      "ic_current": 0.185,
       "ic_3m_rolling": 0.058,
       "t_stat": 0.77,
       "sample_dates": 47,
@@ -221,7 +221,7 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": 0.083,
+      "ic_current": 0.084,
       "ic_3m_rolling": -0.014,
       "t_stat": 0.39,
       "sample_dates": 47,
@@ -229,7 +229,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": 0.034,
+      "ic_current": 0.032,
       "ic_3m_rolling": 0.032,
       "t_stat": 0.72,
       "sample_dates": 47,
@@ -1511,8 +1511,8 @@
           "CHENNPETRO.NS",
           "ENGINERSIN.NS",
           "GNFC.NS",
-          "LUPIN.NS",
           "HEROMOTOCO.NS",
+          "LUPIN.NS",
           "GESHIP.NS",
           "MAHABANK.NS",
           "NMDC.NS",
@@ -1523,8 +1523,8 @@
           "CHENNPETRO.NS": 0.1,
           "ENGINERSIN.NS": 0.1,
           "GNFC.NS": 0.1,
-          "LUPIN.NS": 0.1,
           "HEROMOTOCO.NS": 0.1,
+          "LUPIN.NS": 0.1,
           "GESHIP.NS": 0.1,
           "MAHABANK.NS": 0.1,
           "NMDC.NS": 0.1,
@@ -2630,7 +2630,7 @@
       },
       {
         "date": "2026-09-11",
-        "portfolio": 118.0686,
+        "portfolio": 118.0685,
         "benchmark": 90.2141
       },
       {
@@ -4184,7 +4184,7 @@
       },
       {
         "date": "2026-06-08",
-        "portfolio": 96.7933,
+        "portfolio": 96.7934,
         "benchmark": 95.0353
       },
       {
