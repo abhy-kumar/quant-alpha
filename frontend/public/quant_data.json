@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-06 15:19:29",
+  "last_updated": "2026-11-06 17:49:21",
   "model_portfolios": {
     "max_sharpe": {
       "LAURUSLABS.NS": 0.4109,
@@ -1252,7 +1252,7 @@
       },
       {
         "date": "2026-09-07",
-        "portfolio": 100.3221,
+        "portfolio": 100.3222,
         "benchmark": 100.6614
       },
       {
@@ -2296,7 +2296,7 @@
       },
       {
         "date": "2026-05-19",
-        "portfolio": 89.2173,
+        "portfolio": 89.2174,
         "benchmark": 91.2672
       },
       {
@@ -2646,7 +2646,7 @@
       },
       {
         "date": "2026-08-27",
-        "portfolio": 97.538,
+        "portfolio": 97.5381,
         "benchmark": 93.0945
       },
       {
@@ -2866,7 +2866,7 @@
       },
       {
         "date": "2026-11-02",
-        "portfolio": 85.7051,
+        "portfolio": 85.7052,
         "benchmark": 90.5825
       },
       {
@@ -4770,7 +4770,7 @@
       },
       {
         "date": "2026-11-04",
-        "portfolio": 103.162,
+        "portfolio": 103.1621,
         "benchmark": 99.1084
       },
       {
