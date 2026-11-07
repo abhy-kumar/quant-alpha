@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-06 21:51:58",
+  "last_updated": "2026-11-07 10:44:19",
   "model_portfolios": {
     "max_sharpe": {
       "DIVISLAB.NS": 0.5509,
@@ -190,48 +190,48 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.06,
-      "ic_3m_rolling": 0.026,
-      "t_stat": 1.59,
+      "ic_current": 0.055,
+      "ic_3m_rolling": 0.025,
+      "t_stat": 1.6,
       "sample_dates": 48,
       "status": "Observed positive IC"
     },
     {
       "factor": "6M Momentum",
-      "ic_current": -0.353,
-      "ic_3m_rolling": 0.002,
+      "ic_current": -0.394,
+      "ic_3m_rolling": -0.001,
       "t_stat": -0.27,
       "sample_dates": 48,
-      "status": "Observed positive IC"
+      "status": "Observed nonpositive IC"
     },
     {
       "factor": "Low Volatility",
-      "ic_current": 0.504,
-      "ic_3m_rolling": 0.009,
+      "ic_current": 0.548,
+      "ic_3m_rolling": 0.014,
       "t_stat": 0.38,
       "sample_dates": 48,
       "status": "Observed positive IC"
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.157,
-      "ic_3m_rolling": 0.062,
+      "ic_current": 0.199,
+      "ic_3m_rolling": 0.065,
       "t_stat": 1.54,
       "sample_dates": 48,
       "status": "Observed positive IC"
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": 0.222,
-      "ic_3m_rolling": -0.007,
+      "ic_current": 0.198,
+      "ic_3m_rolling": -0.01,
       "t_stat": 0.37,
       "sample_dates": 48,
       "status": "Observed nonpositive IC"
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": -0.038,
-      "ic_3m_rolling": 0.031,
+      "ic_current": -0.033,
+      "ic_3m_rolling": 0.03,
       "t_stat": 1.04,
       "sample_dates": 48,
       "status": "Observed positive IC"
@@ -1135,7 +1135,7 @@
       },
       {
         "date": "2026-08-05",
-        "portfolio": 102.1355,
+        "portfolio": 102.1356,
         "benchmark": 104.2406
       },
       {
@@ -1250,7 +1250,7 @@
       },
       {
         "date": "2026-09-07",
-        "portfolio": 100.3221,
+        "portfolio": 100.3222,
         "benchmark": 100.6614
       },
       {
@@ -2294,7 +2294,7 @@
       },
       {
         "date": "2026-05-19",
-        "portfolio": 89.2173,
+        "portfolio": 89.2174,
         "benchmark": 91.2672
       },
       {
@@ -2644,7 +2644,7 @@
       },
       {
         "date": "2026-08-27",
-        "portfolio": 97.538,
+        "portfolio": 97.5381,
         "benchmark": 93.0945
       },
       {
@@ -4768,7 +4768,7 @@
       },
       {
         "date": "2026-11-04",
-        "portfolio": 103.162,
+        "portfolio": 103.1621,
         "benchmark": 99.1084
       },
       {
