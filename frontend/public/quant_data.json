@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-09 12:55:01",
+  "last_updated": "2026-11-09 17:32:55",
   "model_portfolios": {
     "max_sharpe": {
       "LAURUSLABS.NS": 0.7851785178517852,
@@ -28,10 +28,10 @@
     }
   },
   "factor_exposures": {
-    "Value": 52.6,
-    "Momentum": 78.1,
+    "Value": 52.5,
+    "Momentum": 78.0,
     "Quality": 63.7,
-    "Low_Volatility": 71.0
+    "Low_Volatility": 71.2
   },
   "efficient_frontier": [
     {
@@ -189,7 +189,7 @@
   "factor_ic_monitor": [
     {
       "factor": "Piotroski F-Score",
-      "ic_current": 0.076,
+      "ic_current": 0.08,
       "ic_3m_rolling": 0.026,
       "t_stat": 0.37,
       "sample_dates": 48,
@@ -197,7 +197,7 @@
     },
     {
       "factor": "6M Momentum",
-      "ic_current": -0.358,
+      "ic_current": -0.354,
       "ic_3m_rolling": -0.004,
       "t_stat": -0.6,
       "sample_dates": 48,
@@ -205,7 +205,7 @@
     },
     {
       "factor": "Low Volatility",
-      "ic_current": 0.487,
+      "ic_current": 0.483,
       "ic_3m_rolling": 0.023,
       "t_stat": 0.69,
       "sample_dates": 48,
@@ -213,7 +213,7 @@
     },
     {
       "factor": "Quality (ROE)",
-      "ic_current": 0.143,
+      "ic_current": 0.138,
       "ic_3m_rolling": 0.064,
       "t_stat": 1.45,
       "sample_dates": 48,
@@ -221,7 +221,7 @@
     },
     {
       "factor": "Value (Earnings Yield)",
-      "ic_current": 0.212,
+      "ic_current": 0.208,
       "ic_3m_rolling": -0.007,
       "t_stat": 0.19,
       "sample_dates": 48,
@@ -229,7 +229,7 @@
     },
     {
       "factor": "Composite Multi-Factor",
-      "ic_current": -0.016,
+      "ic_current": -0.017,
       "ic_3m_rolling": 0.03,
       "t_stat": -0.06,
       "sample_dates": 48,
@@ -1254,7 +1254,7 @@
       },
       {
         "date": "2026-09-07",
-        "portfolio": 100.3222,
+        "portfolio": 100.3221,
         "benchmark": 100.6614
       },
       {
