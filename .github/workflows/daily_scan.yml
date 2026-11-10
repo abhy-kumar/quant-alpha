@@ -48,7 +48,7 @@ jobs:
           cache: pip
 
       - name: Restore application caches
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             data/sector_cache.json
@@ -72,10 +72,33 @@ jobs:
 
       - name: Commit and push updated data
         run: |
+          set -euo pipefail
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add frontend/public/market_data.json frontend/public/quant_data.json frontend/public/score_history.json frontend/public/backtest_runs/ frontend/public/strategy_history.json data/market_scans.db.part_*
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update market data [skip ci]" && git pull --rebase origin main && git push origin HEAD:main)
+          git config --local http.postBuffer 524288000
+          git add frontend/public/market_data.json frontend/public/quant_data.json frontend/public/score_history.json frontend/public/backtest_runs/ frontend/public/strategy_history.json
+          # Quoted pathspec so deleted/renamed DB parts are staged too
+          git add -A -- 'data/market_scans.db.part_*'
+          if git diff --staged --quiet; then
+            echo "No data changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: auto-update market data [skip ci]"
+          # Unstaged by-products are never published; log and drop them so the rebase is clean.
+          git status --short --untracked-files=no
+          git reset --hard --quiet HEAD
+          # Large binary pushes can fail transiently; rebase on latest main and retry.
+          for attempt in 1 2 3 4 5; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            echo "::warning::Push attempt $attempt failed; retrying."
+            sleep $((attempt * 20))
+          done
+          echo "::error::Could not push updated data after 5 attempts."
+          exit 1
 
       - name: Broadcast daily Telegram signals (optional)
         if: github.event_name != 'workflow_dispatch' || inputs.send_notifications
@@ -102,7 +125,7 @@ jobs:
           cache: pip
 
       - name: Restore application caches
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             data/sector_cache.json
@@ -126,8 +149,31 @@ jobs:
 
       - name: Commit and push updated quant data
         run: |
+          set -euo pipefail
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add frontend/public/quant_data.json frontend/public/backtest_runs/ frontend/public/strategy_history.json data/market_scans.db.part_*
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: weekend outcome backfill + quant update [skip ci]" && git pull --rebase origin main && git push origin HEAD:main)
+          git config --local http.postBuffer 524288000
+          git add frontend/public/quant_data.json frontend/public/backtest_runs/ frontend/public/strategy_history.json
+          # Quoted pathspec so deleted/renamed DB parts are staged too
+          git add -A -- 'data/market_scans.db.part_*'
+          if git diff --staged --quiet; then
+            echo "No data changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: weekend outcome backfill + quant update [skip ci]"
+          # Unstaged by-products are never published; log and drop them so the rebase is clean.
+          git status --short --untracked-files=no
+          git reset --hard --quiet HEAD
+          # Large binary pushes can fail transiently; rebase on latest main and retry.
+          for attempt in 1 2 3 4 5; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            echo "::warning::Push attempt $attempt failed; retrying."
+            sleep $((attempt * 20))
+          done
+          echo "::error::Could not push updated data after 5 attempts."
+          exit 1
 
