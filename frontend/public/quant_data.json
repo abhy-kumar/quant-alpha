@@ -1,187 +1,189 @@
 {
-  "last_updated": "2026-11-10 18:21:12",
+  "last_updated": "2026-11-10 22:04:29",
   "model_portfolios": {
     "max_sharpe": {
-      "LAURUSLABS.NS": 0.8232,
-      "KARURVYSYA.NS": 0.1768
+      "KARURVYSYA.NS": 0.4318,
+      "GLAND.NS": 0.35,
+      "GRWRHITECH.NS": 0.1416,
+      "UNIONBANK.NS": 0.0766
     },
     "min_volatility": {
-      "LALPATHLAB.NS": 0.27670000000000006,
-      "PNB.NS": 0.21700000000000003,
-      "AUROPHARMA.NS": 0.20850000000000002,
-      "AJANTPHARM.NS": 0.18600000000000003,
-      "KARURVYSYA.NS": 0.09930000000000001,
-      "ENGINERSIN.NS": 0.012500000000000002
+      "LALPATHLAB.NS": 0.24967503249675033,
+      "PNB.NS": 0.19708029197080293,
+      "AUROPHARMA.NS": 0.17788221177882213,
+      "AJANTPHARM.NS": 0.15518448155184483,
+      "GLAND.NS": 0.12618738126187382,
+      "KARURVYSYA.NS": 0.08869113088691132
     },
     "risk_parity": {
-      "LALPATHLAB.NS": 0.1536,
-      "AJANTPHARM.NS": 0.1264,
-      "AUROPHARMA.NS": 0.121,
-      "KARURVYSYA.NS": 0.109,
-      "PNB.NS": 0.1052,
-      "LAURUSLABS.NS": 0.0894,
-      "UNIONBANK.NS": 0.0882,
-      "ENGINERSIN.NS": 0.0768,
-      "MARKSANS.NS": 0.0719,
-      "GRWRHITECH.NS": 0.0585
+      "LALPATHLAB.NS": 0.1491149114911491,
+      "AJANTPHARM.NS": 0.1209120912091209,
+      "AUROPHARMA.NS": 0.11991199119911991,
+      "GLAND.NS": 0.11351135113511351,
+      "KARURVYSYA.NS": 0.10561056105610561,
+      "PNB.NS": 0.1032103210321032,
+      "UNIONBANK.NS": 0.0857085708570857,
+      "ENGINERSIN.NS": 0.0744074407440744,
+      "MARKSANS.NS": 0.0709070907090709,
+      "GRWRHITECH.NS": 0.05670567056705671
     }
   },
   "factor_exposures": {
-    "Value": 58.1,
-    "Momentum": 79.0,
-    "Quality": 65.1,
-    "Low_Volatility": 65.6
+    "Value": 61.2,
+    "Momentum": 78.7,
+    "Quality": 63.1,
+    "Low_Volatility": 67.0
   },
   "efficient_frontier": [
     {
-      "volatility": 17.9,
-      "return": 16.96,
-      "sharpe": 0.58
+      "volatility": 17.47,
+      "return": 19.31,
+      "sharpe": 0.73
     },
     {
-      "volatility": 17.92,
-      "return": 19.36,
-      "sharpe": 0.72
+      "volatility": 17.5,
+      "return": 20.42,
+      "sharpe": 0.8
     },
     {
-      "volatility": 17.99,
-      "return": 21.76,
-      "sharpe": 0.85
+      "volatility": 17.58,
+      "return": 21.54,
+      "sharpe": 0.86
+    },
+    {
+      "volatility": 17.71,
+      "return": 22.65,
+      "sharpe": 0.91
+    },
+    {
+      "volatility": 17.89,
+      "return": 23.77,
+      "sharpe": 0.97
     },
     {
       "volatility": 18.1,
-      "return": 24.16,
-      "sharpe": 0.98
+      "return": 24.89,
+      "sharpe": 1.02
     },
     {
-      "volatility": 18.26,
-      "return": 26.56,
-      "sharpe": 1.1
+      "volatility": 18.34,
+      "return": 26.0,
+      "sharpe": 1.06
     },
     {
-      "volatility": 18.46,
-      "return": 28.97,
+      "volatility": 18.62,
+      "return": 27.12,
+      "sharpe": 1.11
+    },
+    {
+      "volatility": 18.93,
+      "return": 28.23,
+      "sharpe": 1.15
+    },
+    {
+      "volatility": 19.27,
+      "return": 29.35,
+      "sharpe": 1.19
+    },
+    {
+      "volatility": 19.64,
+      "return": 30.47,
       "sharpe": 1.22
     },
     {
-      "volatility": 18.69,
-      "return": 31.37,
+      "volatility": 20.05,
+      "return": 31.58,
+      "sharpe": 1.25
+    },
+    {
+      "volatility": 20.51,
+      "return": 32.7,
+      "sharpe": 1.28
+    },
+    {
+      "volatility": 21.01,
+      "return": 33.81,
+      "sharpe": 1.3
+    },
+    {
+      "volatility": 21.55,
+      "return": 34.93,
+      "sharpe": 1.32
+    },
+    {
+      "volatility": 22.14,
+      "return": 36.04,
       "sharpe": 1.33
     },
     {
-      "volatility": 18.97,
-      "return": 33.77,
-      "sharpe": 1.44
-    },
-    {
-      "volatility": 19.28,
-      "return": 36.17,
-      "sharpe": 1.54
-    },
-    {
-      "volatility": 19.63,
-      "return": 38.57,
-      "sharpe": 1.63
-    },
-    {
-      "volatility": 20.01,
-      "return": 40.97,
-      "sharpe": 1.72
-    },
-    {
-      "volatility": 20.42,
-      "return": 43.37,
-      "sharpe": 1.81
-    },
-    {
-      "volatility": 20.86,
-      "return": 45.78,
-      "sharpe": 1.88
-    },
-    {
-      "volatility": 21.33,
-      "return": 48.18,
-      "sharpe": 1.95
-    },
-    {
-      "volatility": 21.82,
-      "return": 50.58,
-      "sharpe": 2.02
-    },
-    {
-      "volatility": 22.34,
-      "return": 52.98,
-      "sharpe": 2.08
-    },
-    {
-      "volatility": 22.88,
-      "return": 55.38,
-      "sharpe": 2.14
+      "volatility": 22.77,
+      "return": 37.16,
+      "sharpe": 1.35
     },
     {
       "volatility": 23.45,
-      "return": 57.78,
-      "sharpe": 2.19
+      "return": 38.28,
+      "sharpe": 1.35
     },
     {
-      "volatility": 24.04,
-      "return": 60.18,
-      "sharpe": 2.23
+      "volatility": 24.18,
+      "return": 39.39,
+      "sharpe": 1.36
     },
     {
-      "volatility": 24.66,
-      "return": 62.59,
-      "sharpe": 2.27
+      "volatility": 24.99,
+      "return": 40.51,
+      "sharpe": 1.36
     },
     {
-      "volatility": 25.31,
-      "return": 64.99,
-      "sharpe": 2.31
+      "volatility": 26.01,
+      "return": 41.62,
+      "sharpe": 1.35
     },
     {
-      "volatility": 26.0,
-      "return": 67.39,
-      "sharpe": 2.34
+      "volatility": 27.47,
+      "return": 42.74,
+      "sharpe": 1.32
     },
     {
-      "volatility": 26.73,
-      "return": 69.79,
-      "sharpe": 2.37
+      "volatility": 29.4,
+      "return": 43.85,
+      "sharpe": 1.27
     },
     {
-      "volatility": 27.48,
-      "return": 72.19,
-      "sharpe": 2.39
+      "volatility": 31.73,
+      "return": 44.97,
+      "sharpe": 1.21
     },
     {
-      "volatility": 28.27,
-      "return": 74.59,
-      "sharpe": 2.41
+      "volatility": 34.39,
+      "return": 46.09,
+      "sharpe": 1.15
     },
     {
-      "volatility": 29.11,
-      "return": 77.0,
-      "sharpe": 2.42
+      "volatility": 37.89,
+      "return": 47.2,
+      "sharpe": 1.07
     },
     {
-      "volatility": 30.08,
-      "return": 79.4,
-      "sharpe": 2.42
+      "volatility": 42.28,
+      "return": 48.32,
+      "sharpe": 0.99
     },
     {
-      "volatility": 31.17,
-      "return": 81.8,
-      "sharpe": 2.42
+      "volatility": 47.31,
+      "return": 49.43,
+      "sharpe": 0.91
     },
     {
-      "volatility": 32.38,
-      "return": 84.2,
-      "sharpe": 2.4
+      "volatility": 52.8,
+      "return": 50.55,
+      "sharpe": 0.83
     },
     {
-      "volatility": 33.69,
-      "return": 86.6,
-      "sharpe": 2.38
+      "volatility": 58.62,
+      "return": 51.66,
+      "sharpe": 0.77
     }
   ],
   "data_version": 3,
@@ -1253,7 +1255,7 @@
       },
       {
         "date": "2026-09-07",
-        "portfolio": 100.3222,
+        "portfolio": 100.3221,
         "benchmark": 100.6614
       },
       {
@@ -5027,10 +5029,10 @@
       "AJANTPHARM",
       "AUROPHARMA",
       "ENGINERSIN",
+      "GLAND",
       "GRWRHITECH",
       "KARURVYSYA",
       "LALPATHLAB",
-      "LAURUSLABS",
       "MARKSANS",
       "PNB",
       "UNIONBANK"
@@ -5040,10 +5042,10 @@
         1.0,
         0.3,
         -0.09,
+        0.19,
         0.13,
         0.07,
         0.19,
-        0.41,
         0.12,
         -0.1,
         0.12
@@ -5052,10 +5054,10 @@
         0.3,
         1.0,
         0.14,
+        0.31,
         0.21,
         0.31,
         0.21,
-        0.46,
         0.11,
         0.01,
         0.14
@@ -5064,22 +5066,34 @@
         -0.09,
         0.14,
         1.0,
+        0.02,
         0.15,
         -0.07,
         0.19,
-        0.0,
         0.22,
         0.01,
         0.05
       ],
       [
+        0.19,
+        0.31,
+        0.02,
+        1.0,
+        0.21,
+        0.13,
+        0.15,
+        0.2,
+        0.01,
+        0.12
+      ],
+      [
         0.13,
         0.21,
         0.15,
+        0.21,
         1.0,
         -0.02,
         0.18,
-        0.09,
         0.03,
         -0.03,
         -0.15
@@ -5088,10 +5102,10 @@
         0.07,
         0.31,
         -0.07,
+        0.13,
         -0.02,
         1.0,
         0.02,
-        0.29,
         0.08,
         0.45,
         0.51
@@ -5100,34 +5114,22 @@
         0.19,
         0.21,
         0.19,
+        0.15,
         0.18,
         0.02,
         1.0,
-        0.35,
         -0.09,
         -0.04,
         0.09
       ],
       [
-        0.41,
-        0.46,
-        0.0,
-        0.09,
-        0.29,
-        0.35,
-        1.0,
-        0.08,
-        0.12,
-        0.24
-      ],
-      [
         0.12,
         0.11,
         0.22,
+        0.2,
         0.03,
         0.08,
         -0.09,
-        0.08,
         1.0,
         0.33,
         0.18
@@ -5136,10 +5138,10 @@
         -0.1,
         0.01,
         0.01,
+        0.01,
         -0.03,
         0.45,
         -0.04,
-        0.12,
         0.33,
         1.0,
         0.73
@@ -5148,10 +5150,10 @@
         0.12,
         0.14,
         0.05,
+        0.12,
         -0.15,
         0.51,
         0.09,
-        0.24,
         0.18,
         0.73,
         1.0
