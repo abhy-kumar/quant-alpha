@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-13 12:09:44",
+  "last_updated": "2026-11-13 15:36:08",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.4092,
@@ -30,10 +30,10 @@
     }
   },
   "factor_exposures": {
-    "Value": 71.0,
-    "Momentum": 79.7,
-    "Quality": 60.8,
-    "Low_Volatility": 60.9
+    "Value": 70.8,
+    "Momentum": 79.8,
+    "Quality": 61.0,
+    "Low_Volatility": 60.8
   },
   "efficient_frontier": [
     {
@@ -1048,7 +1048,7 @@
       },
       {
         "date": "2026-06-22",
-        "portfolio": 141.2215,
+        "portfolio": 141.2216,
         "benchmark": 94.4852
       },
       {
@@ -1143,7 +1143,7 @@
       },
       {
         "date": "2026-07-20",
-        "portfolio": 135.0832,
+        "portfolio": 135.0833,
         "benchmark": 95.0168
       },
       {
@@ -1238,7 +1238,7 @@
       },
       {
         "date": "2026-08-14",
-        "portfolio": 139.3544,
+        "portfolio": 139.3545,
         "benchmark": 95.5166
       },
       {
@@ -1398,7 +1398,7 @@
       },
       {
         "date": "2026-09-30",
-        "portfolio": 139.6981,
+        "portfolio": 139.6982,
         "benchmark": 88.6739
       },
       {
@@ -1543,7 +1543,7 @@
       },
       {
         "date": "2026-11-13",
-        "portfolio": 140.5744,
+        "portfolio": 140.5745,
         "benchmark": 98.5676
       }
     ],
@@ -4099,8 +4099,8 @@
           "EICHERMOT.NS",
           "LAURUSLABS.NS",
           "ANANDRATHI.NS",
-          "ABCAPITAL.NS",
           "RBLBANK.NS",
+          "ABCAPITAL.NS",
           "SHRIPISTON.NS",
           "CANBK.NS"
         ],
@@ -4111,8 +4111,8 @@
           "EICHERMOT.NS": 0.1,
           "LAURUSLABS.NS": 0.1,
           "ANANDRATHI.NS": 0.1,
-          "ABCAPITAL.NS": 0.1,
           "RBLBANK.NS": 0.1,
+          "ABCAPITAL.NS": 0.1,
           "SHRIPISTON.NS": 0.1,
           "CANBK.NS": 0.1
         },
@@ -4125,8 +4125,8 @@
           "SIRCA.NS",
           "EICHERMOT.NS",
           "LAURUSLABS.NS",
-          "ABCAPITAL.NS",
           "RBLBANK.NS",
+          "ABCAPITAL.NS",
           "CANBK.NS",
           "EPACKPEB.NS",
           "MARUTI.NS",
@@ -4137,8 +4137,8 @@
           "SIRCA.NS": 0.1,
           "EICHERMOT.NS": 0.1,
           "LAURUSLABS.NS": 0.1,
-          "ABCAPITAL.NS": 0.1,
           "RBLBANK.NS": 0.1,
+          "ABCAPITAL.NS": 0.1,
           "CANBK.NS": 0.1,
           "EPACKPEB.NS": 0.1,
           "MARUTI.NS": 0.1,
@@ -4153,8 +4153,8 @@
         "tickers": [
           "EICHERMOT.NS",
           "LAURUSLABS.NS",
-          "ABCAPITAL.NS",
           "RBLBANK.NS",
+          "ABCAPITAL.NS",
           "CANBK.NS",
           "MARUTI.NS",
           "SBC.NS",
@@ -4165,8 +4165,8 @@
         "weights": {
           "EICHERMOT.NS": 0.1,
           "LAURUSLABS.NS": 0.1,
-          "ABCAPITAL.NS": 0.1,
           "RBLBANK.NS": 0.1,
+          "ABCAPITAL.NS": 0.1,
           "CANBK.NS": 0.1,
           "MARUTI.NS": 0.1,
           "SBC.NS": 0.1,
@@ -4181,8 +4181,8 @@
         "to": "2026-04-06",
         "tickers": [
           "EICHERMOT.NS",
-          "ABCAPITAL.NS",
           "RBLBANK.NS",
+          "ABCAPITAL.NS",
           "CANBK.NS",
           "SBC.NS",
           "TVSMOTOR.NS",
@@ -4193,8 +4193,8 @@
         ],
         "weights": {
           "EICHERMOT.NS": 0.1,
-          "ABCAPITAL.NS": 0.1,
           "RBLBANK.NS": 0.1,
+          "ABCAPITAL.NS": 0.1,
           "CANBK.NS": 0.1,
           "SBC.NS": 0.1,
           "TVSMOTOR.NS": 0.1,
@@ -4209,8 +4209,8 @@
         "from": "2026-04-06",
         "to": "2026-05-06",
         "tickers": [
-          "ABCAPITAL.NS",
           "RBLBANK.NS",
+          "ABCAPITAL.NS",
           "CANBK.NS",
           "SBC.NS",
           "AUBANK.NS",
@@ -4221,8 +4221,8 @@
           "BHARATFORG.NS"
         ],
         "weights": {
-          "ABCAPITAL.NS": 0.1,
           "RBLBANK.NS": 0.1,
+          "ABCAPITAL.NS": 0.1,
           "CANBK.NS": 0.1,
           "SBC.NS": 0.1,
           "AUBANK.NS": 0.1,
@@ -5128,8 +5128,8 @@
           "NATIONALUM.NS",
           "KIRLOSENG.NS",
           "ANURAS.NS",
-          "MWL.NS",
           "LAURUSLABS.NS",
+          "MWL.NS",
           "POWERINDIA.NS"
         ],
         "weights": {
@@ -5140,8 +5140,8 @@
           "NATIONALUM.NS": 0.1,
           "KIRLOSENG.NS": 0.1,
           "ANURAS.NS": 0.1,
-          "MWL.NS": 0.1,
           "LAURUSLABS.NS": 0.1,
+          "MWL.NS": 0.1,
           "POWERINDIA.NS": 0.1
         },
         "equity_ratio": 1.0
@@ -5151,8 +5151,8 @@
         "to": "2026-08-10",
         "tickers": [
           "MCX.NS",
-          "MWL.NS",
           "LAURUSLABS.NS",
+          "MWL.NS",
           "KOVAI.NS",
           "HINDCOPPER.NS",
           "BHARATFORG.NS",
@@ -5163,8 +5163,8 @@
         ],
         "weights": {
           "MCX.NS": 0.1,
-          "MWL.NS": 0.1,
           "LAURUSLABS.NS": 0.1,
+          "MWL.NS": 0.1,
           "KOVAI.NS": 0.1,
           "HINDCOPPER.NS": 0.1,
           "BHARATFORG.NS": 0.1,
@@ -5179,8 +5179,8 @@
         "from": "2026-08-10",
         "to": "2026-09-07",
         "tickers": [
-          "MWL.NS",
           "LAURUSLABS.NS",
+          "MWL.NS",
           "KOVAI.NS",
           "BHARATFORG.NS",
           "ACUTAAS.NS",
@@ -5191,8 +5191,8 @@
           "SBC.NS"
         ],
         "weights": {
-          "MWL.NS": 0.1,
           "LAURUSLABS.NS": 0.1,
+          "MWL.NS": 0.1,
           "KOVAI.NS": 0.1,
           "BHARATFORG.NS": 0.1,
           "ACUTAAS.NS": 0.1,
@@ -5208,8 +5208,8 @@
         "from": "2026-09-07",
         "to": "2026-10-07",
         "tickers": [
-          "MWL.NS",
           "LAURUSLABS.NS",
+          "MWL.NS",
           "KOVAI.NS",
           "BHARATFORG.NS",
           "ANANDRATHI.NS",
@@ -5220,8 +5220,8 @@
           "HONASA.NS"
         ],
         "weights": {
-          "MWL.NS": 0.1,
           "LAURUSLABS.NS": 0.1,
+          "MWL.NS": 0.1,
           "KOVAI.NS": 0.1,
           "BHARATFORG.NS": 0.1,
           "ANANDRATHI.NS": 0.1,
