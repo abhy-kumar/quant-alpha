@@ -39,6 +39,8 @@ _screener_request_lock = threading.Lock()
 vader = SentimentIntensityAnalyzer()
 
 
+from data_pipeline.price_repair import repair_discontinuities
+
 def _fetch_yfinance_statements(t: yf.Ticker, info: dict):
     """
     Fetch cash flow and financial statements from yfinance to fill gaps
@@ -259,7 +261,8 @@ def fetch_ohlcv_with_retry(ticker: str, period: str = PERIOD) -> pd.DataFrame:
 
             if len(df) < MIN_ROWS and period == PERIOD:
                 raise ValueError(f"Only {len(df)} rows")
-            return df
+            # Demergers and some splits arrive unadjusted; keep the history continuous.
+            return repair_discontinuities(df)
         except Exception as e:
             if attempt < len(retries):
                 time.sleep(wait)

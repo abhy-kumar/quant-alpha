@@ -8,6 +8,7 @@ import sqlite3
 from pathlib import Path
 import numpy as np
 import pandas as pd
+from data_pipeline.price_repair import repair_discontinuities
 
 
 def stored_prices(tickers=None, before=None, latest_only=False):
@@ -30,8 +31,10 @@ def stored_prices(tickers=None, before=None, latest_only=False):
         else:
             query = f'SELECT * FROM daily_ohlcv WHERE {where} AND Date >= date((SELECT MAX(Date) FROM daily_ohlcv), \'-2 years\') ORDER BY Date'
         data = pd.read_sql_query(query, conn, params=params)
-    return {ticker: group.assign(Date=pd.to_datetime(group.Date)).set_index('Date')[['Open','High','Low','Close','Volume']]
-            for ticker, group in data.groupby('Ticker')}
+    frames = {ticker: group.assign(Date=pd.to_datetime(group.Date)).set_index('Date')[['Open','High','Low','Close','Volume']]
+              for ticker, group in data.groupby('Ticker')}
+    # Rows saved before a corporate action keep their old price basis; realign full histories.
+    return frames if latest_only else {ticker: repair_discontinuities(frame) for ticker, frame in frames.items()}
 
 
 def complete_from_bhav(histories, bhav, date):

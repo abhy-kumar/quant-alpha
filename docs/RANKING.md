@@ -90,6 +90,24 @@ rescore can reuse stored histories while still checking the latest exchange file
 & .venv/Scripts/python.exe -m engine.scanner --stored-prices
 ```
 
+Yahoo's adjusted histories still contain demergers, some splits and bonuses, and
+occasional bad bars as raw overnight jumps. `data_pipeline.price_repair`
+back-adjusts any opening gap beyond 22% of the previous close, which NSE's 20%
+pre-open band rules out as an ordinary market move; crashes that open inside
+the band and fall intraday are untouched. Earlier bars are rescaled by the gap
+ratio and volume inversely, so traded value is preserved. The repair runs on
+every fetched history, on stored histories, and on the price tables read by the
+backtests, portfolio risk estimates and forward validation. Without it a
+demerger reads as a crash in momentum, trend and volatility for up to a year.
+This corrects inputs only; factors, weights, eligibility and labels are unchanged.
+
+Return on assets and cash accruals outside +/-100% of assets indicate mismatched
+statement units and are treated as missing rather than ranked best in class.
+
+Tracked stocks that leave the screen are refreshed while they are at most seven
+days behind. Histories further behind (up to 370 days) are caught up in rotating
+batches of 75 per scan, so a narrowed screen or a failed week cannot strand them.
+
 Fundamental caches expire after 24 hours and require the current data schema.
 This is retrieval freshness; financial statements still reflect their reporting periods.
 Growth inputs are always fractions; ROCE and debt/equity use percentage points.

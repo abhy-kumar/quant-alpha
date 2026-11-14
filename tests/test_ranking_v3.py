@@ -195,3 +195,14 @@ def test_forward_validation_enters_after_recording_day_and_keeps_unmatured_pendi
     assert result['horizons']['short']['labels']['Buy']['mean_net_excess']==pytest.approx(122/101*.998/1.002-1)
     assert result['horizons']['long']['pending']==1
     assert result['horizons']['long']['matured']==0
+
+
+def test_unit_mismatched_asset_ratios_are_missing_not_top_ranked():
+    from engine.ranking import raw_factors
+    info = {'returnOnAssets': 349577.0, 'operatingCashflow': 9e9, 'netIncomeToCommon': 1e9,
+            'totalAssets': 100.0, '_statement_assets': True}
+    raw, _, _ = raw_factors({'info': info, 'sector': 'Industrials', 'latest': {'Close': 100.0}})
+    assert np.isnan(raw['roa']) and np.isnan(raw['cash_quality'])
+    info.update(returnOnAssets=0.12, totalAssets=4e10)
+    raw, _, _ = raw_factors({'info': info, 'sector': 'Industrials', 'latest': {'Close': 100.0}})
+    assert raw['roa'] == 0.12 and raw['cash_quality'] == pytest.approx(0.2)

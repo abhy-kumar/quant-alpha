@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from engine.ranking import MODEL_VERSION
+from data_pipeline.price_repair import repair_long
 from engine.ranking_validation import block_interval
 
 
@@ -15,7 +16,7 @@ def evaluate(database, version=MODEL_VERSION):
         if not exists:
             return {'version':version,'status':'No versioned snapshots yet','horizons':{}}
         snapshots=pd.read_sql_query('SELECT * FROM ranking_history WHERE Model_Version=?',conn,params=[version])
-        quotes=pd.read_sql_query('SELECT Ticker,Date,Close FROM daily_ohlcv',conn)
+        quotes=repair_long(pd.read_sql_query('SELECT * FROM daily_ohlcv',conn))
     prices=quotes.pivot_table(index='Date',columns='Ticker',values='Close',aggfunc='last').sort_index()
     prices.index=pd.to_datetime(prices.index)
     if '^NSEI' not in prices:

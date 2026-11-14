@@ -38,14 +38,19 @@ import pandas as pd
 from datetime import datetime
 from config import RISK_FREE_RATE
 from engine.market_calendar import HOLIDAYS
+from data_pipeline.price_repair import repair_long
 
 DB_PATH = "data/market_scans.db"
 REBALANCE_EVERY = 20   # trading days between rebalances
 TOP_N = 10             # stocks in portfolio at each rebalance
 MIN_HISTORY = 60       # minimum trading days of history before we start scoring
+# A held stock may lack a vendor close for a few isolated sessions (e.g. Yahoo
+# returns a null bar for a day NSE traded). Such holes are marked at the last
+# executable close and block trading in that stock; longer gaps still invalidate.
+MAX_QUOTE_GAP_SESSIONS = 3
 RUNS_DIR = os.path.join("frontend", "public", "backtest_runs")
 TRANSACTION_COST_PER_LEG_BPS = 20  # 20 bps per leg buy/sell (40 bps round-trip)
-BACKTEST_VERSION = 3
+BACKTEST_VERSION = 4  # 4: discontinuity-repaired prices, short quote-gap tolerance
 MIN_ADTV_INR = 10_000_000           # ₹1 Crore 30-day ADTV minimum liquidity gate
 
 
@@ -160,6 +165,8 @@ def load_ohlcv() -> tuple[pd.DataFrame, pd.DataFrame, list]:
     conn.close()
 
     df = df[~df["Date"].isin(HOLIDAYS)]
+    # Stored rows can predate a demerger/split adjustment; never trade a phantom crash.
+    df = repair_long(df)
     df["Date"] = pd.to_datetime(df["Date"])
     prices  = df.pivot(index="Date", columns="Ticker", values="Close")
     volumes = df.pivot(index="Date", columns="Ticker", values="Volume")
@@ -672,6 +679,8 @@ def run_walkforward_backtest(
     if bench not in prices or prices[bench].iloc[start:end+1].isna().any():
         return {"chart": [], "holdings": [], "stats": {}, "error": "NIFTY benchmark history is missing; backfill required", "version": BACKTEST_VERSION}
     cash, shares, peaks, last_prices = 100.0, {}, {}, {}
+    quote_gaps = {}           # held ticker -> consecutive sessions without a close
+    rebalance_pending = False
     records, holdings = [], []
     cost = TRANSACTION_COST_PER_LEG_BPS / 10000
     base_bench = float(prices[bench].iloc[start])
@@ -686,9 +695,17 @@ def run_walkforward_backtest(
             cash *= (1 + RISK_FREE_RATE) ** (1 / 252)
         for t in list(shares):
             price = row.get(t)
+            if pd.isna(price):
+                # Vendor data hole: keep the holding at its last executable close and
+                # do not trade it until a real close returns. Never drop the holding.
+                quote_gaps[t] = quote_gaps.get(t, 0) + 1
+                if quote_gaps[t] <= MAX_QUOTE_GAP_SESSIONS and idx < end:
+                    continue
+            elif np.isfinite(price) and price > 0:
+                quote_gaps.pop(t, None)
             if pd.isna(price) or not np.isfinite(price) or price <= 0:
-                # Invalidate this result without blocking unrelated market data.
-                # Never drop the holding, fill its price, or publish a partial NAV.
+                # Corrupt quote, prolonged gap, or no close on the final session:
+                # invalidate this result without blocking unrelated market data.
                 message = f"Missing executable close for held stock {t} on {prices.index[idx].date()}; backtest unavailable until quotes are refreshed"
                 logging.getLogger(__name__).warning(message)
                 return {"chart": [], "holdings": [], "stats": {}, "error": message,
@@ -700,7 +717,11 @@ def run_walkforward_backtest(
                 peaks.pop(t, None)
             else:
                 peaks[t] = max(peaks[t], float(price))
-        if (idx - start) % rebalance_every == 0 and idx < end:
+        if (idx - start) % rebalance_every == 0:
+            rebalance_pending = True
+        # Defer a scheduled rebalance while any holding lacks an executable close.
+        if rebalance_pending and not quote_gaps and idx < end:
+            rebalance_pending = False
             # Form signals at the prior close, trade at today's close. No same-bar execution lookahead.
             signal_idx = idx - 1
             liquid = [t for t in all_tickers if t in row.index and pd.notna(row[t]) and row[t] > 0

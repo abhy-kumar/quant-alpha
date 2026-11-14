@@ -37,13 +37,16 @@ def fetch_price_history(tickers):
     conn = _get_conn()
     placeholders = ",".join("?" * len(tickers))
     query = f"""
-    SELECT Date, Ticker, Close
+    SELECT Date, Ticker, Open, Close
     FROM daily_ohlcv
     WHERE Ticker IN ({placeholders})
     ORDER BY Date
     """
     df = pd.read_sql_query(query, conn, params=tuple(tickers))
     conn.close()
+    # An unadjusted demerger/split would otherwise enter risk estimates as a crash.
+    from data_pipeline.price_repair import repair_long
+    df = repair_long(df)
     
     if df.empty:
         return pd.DataFrame()

@@ -30,6 +30,12 @@ def ratio(a, b):
     return a / b if np.isfinite(a) and np.isfinite(b) and b > 0 else np.nan
 
 
+def plausible(value, low, high):
+    """Reject values that can only come from mismatched statement units."""
+    value = number(value)
+    return value if low <= value <= high else np.nan
+
+
 def midpoint_percentile(value, peers):
     """Equal observations have equal midranks; an all-tied cohort scores 50."""
     peers = np.asarray(peers, dtype=float)
@@ -53,13 +59,15 @@ def raw_factors(item):
         eps = ratio(info.get('netIncomeToCommon'), shares)
     # Never fabricate assets from equity plus debt minus cash.
     assets = info.get('totalAssets') if info.get('_statement_assets') else np.nan
-    cash_quality = ratio(number(info.get('operatingCashflow')) - number(info.get('netIncomeToCommon')), assets)
+    # Income or accruals beyond +/-100% of assets mean the vendor mixed units
+    # (e.g. profit in rupees over assets in crores); treat as missing, not best-in-class.
+    cash_quality = plausible(ratio(number(info.get('operatingCashflow')) - number(info.get('netIncomeToCommon')), assets), -1, 1)
     quality = ({'roe': .50, 'roa': .25, 'margin': .25} if financial else
                {'roe': .30, 'roce': .20, 'roa': .20, 'cash_quality': .15, 'leverage': .15})
     value = {'earnings_yield': .60, 'book_yield': .40} if financial else {'earnings_yield': .50, 'book_yield': .30, 'fcf_yield': .20}
     raw = {
         'roe': number(info.get('returnOnEquity')),
-        'roa': number(info.get('returnOnAssets')),
+        'roa': plausible(info.get('returnOnAssets'), -1, 1),
         'roce': number(info.get('roce')),
         'margin': number(info.get('profitMargins')),
         'cash_quality': cash_quality,

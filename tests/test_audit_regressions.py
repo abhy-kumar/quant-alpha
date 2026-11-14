@@ -40,8 +40,8 @@ def test_future_liquidity_cannot_admit_an_illiquid_stock():
     result=simulate(p,v,as_of_date=str(p.index[64].date()),top_n=2)
     assert all('A.NS' not in h['tickers'] for h in result['holdings'])
 
-@pytest.mark.parametrize('missing', [np.nan, np.inf, 0., -1.])
-def test_missing_held_quote_invalidates_only_affected_backtest(missing):
+@pytest.mark.parametrize('missing', [np.inf, 0., -1.])
+def test_corrupt_held_quote_invalidates_only_affected_backtest(missing):
     p,v=market();p.loc[p.index[62],'A.NS']=missing
     result=simulate(p,v,top_n=1)
     assert result['status']=='unavailable'
@@ -49,6 +49,30 @@ def test_missing_held_quote_invalidates_only_affected_backtest(missing):
     assert result['chart']==[] and result['holdings']==[] and result['stats']=={}
     p['A.NS']=100.
     assert simulate(p,v,top_n=1)['chart']
+
+def test_isolated_vendor_quote_hole_is_marked_at_last_close():
+    # e.g. Yahoo returns a null bar for a session NSE actually traded
+    p,v=market(70);p.loc[p.index[62],'A.NS']=np.nan;p.loc[p.index[63]:,'A.NS']=110.
+    result=backtest.run_walkforward_backtest(score,p,v,p,p,['A.NS','B.NS'],8,top_n=1,
+                                             as_of_date=str(p.index[66].date()))
+    assert 'error' not in result and result['holdings'][0]['tickers']==['A.NS']
+    nav={c['date']:c['portfolio'] for c in result['chart']}
+    assert nav[str(p.index[62].date())] == pytest.approx(nav[str(p.index[61].date())], abs=1e-3)
+    assert nav[str(p.index[63].date())] > nav[str(p.index[62].date())]*1.09
+
+def test_rebalance_waits_for_held_quotes_to_return():
+    p,v=market(70);p.loc[p.index[62],'A.NS']=np.nan
+    result=backtest.run_walkforward_backtest(score,p,v,p,p,['A.NS','B.NS'],8,top_n=1,rebalance_every=2,
+                                             as_of_date=str(p.index[66].date()))
+    froms=[h['from'] for h in result['holdings']]
+    assert str(p.index[62].date()) not in froms and str(p.index[63].date()) in froms
+
+@pytest.mark.parametrize('gap', [(61, 61 + backtest.MAX_QUOTE_GAP_SESSIONS), (68, 68)])
+def test_long_or_terminal_quote_gap_still_invalidates(gap):
+    p,v=market(70);p.loc[p.index[gap[0]]:p.index[gap[1]],'A.NS']=np.nan
+    result=backtest.run_walkforward_backtest(score,p,v,p,p,['A.NS','B.NS'],9,top_n=1,
+                                             as_of_date=str(p.index[68].date()))
+    assert result['status']=='unavailable' and 'A.NS' in result['error']
 
 def test_cv_uses_entire_date_groups_and_only_past_mature_labels():
     groups=np.repeat(np.arange(120),5);X=np.zeros((len(groups),1))

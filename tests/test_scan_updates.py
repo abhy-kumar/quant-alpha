@@ -14,7 +14,7 @@ def bar(date):
 
 def test_refresh_covers_recent_stocks_outside_screen(monkeypatch):
     saved = {'GPPL.NS': bar('2026-09-30'), 'CURRENT.NS': bar('2026-09-30'),
-             'READY.NS': bar('2026-10-01'), 'OLD.NS': bar('2026-01-01'),
+             'READY.NS': bar('2026-10-01'), 'OLD.NS': bar('2025-01-01'),
              '^NSEI': bar('2026-09-30')}
     monkeypatch.setattr(scanner, 'stored_prices', lambda **kwargs: saved)
     requested, stored = [], []
@@ -31,6 +31,22 @@ def test_refresh_covers_recent_stocks_outside_screen(monkeypatch):
     assert list(current) == ['CURRENT.NS']  # historical quotes never enter today's ranking
 
 
+def test_refresh_catches_up_lagging_histories_in_bounded_rotating_batches(monkeypatch):
+    lagging = {f'L{i:03d}.NS': bar('2026-10-01') for i in range(200)}
+    saved = {**lagging, 'RECENT.NS': bar('2026-11-12'), 'RETIRED.NS': bar('2025-06-01'), '^NSEI': bar('2026-11-13')}
+    monkeypatch.setattr(scanner, 'stored_prices', lambda **kwargs: saved)
+    monkeypatch.setattr(scanner, 'store_daily_ohlcv', lambda data, date: None)
+    batches = []
+    monkeypatch.setattr(scanner, '_fetch_ohlcv_batch', lambda tickers: batches.append(list(tickers)) or {})
+    for day in pd.bdate_range('2026-11-13', periods=6).strftime('%Y-%m-%d'):   # symbols that keep failing
+        scanner._refresh_research_prices({}, bar(day), day)
+    assert batches[0][0] == 'RECENT.NS'   # the recent set is always refreshed in full
+    for batch in batches:
+        assert 'RETIRED.NS' not in batch
+        assert len(batch) <= 1 + scanner.RESEARCH_CATCH_UP_PER_SCAN
+    assert len(set().union(*batches) & set(lagging)) == 200   # every lagging history is reached
+
+
 @pytest.mark.parametrize('benchmark', [None, pd.DataFrame(), bar('2026-09-30')])
 def test_refresh_does_not_refetch_when_benchmark_has_not_advanced(monkeypatch, benchmark):
     monkeypatch.setattr(scanner, 'stored_prices', lambda **kwargs: {'GPPL.NS': bar('2026-09-30')})
@@ -41,7 +57,7 @@ def test_refresh_does_not_refetch_when_benchmark_has_not_advanced(monkeypatch, b
 def test_unavailable_backtest_is_not_cached_and_other_models_complete(monkeypatch):
     dates = pd.bdate_range('2025-01-01', periods=65)
     prices = pd.DataFrame({'GPPL.NS': 100., '^NSEI': 100.}, index=dates)
-    prices.loc[dates[62], 'GPPL.NS'] = np.nan
+    prices.loc[dates[62]:, 'GPPL.NS'] = np.nan  # stale quotes through the latest session
     volumes = pd.DataFrame(2_000_000., index=dates, columns=prices.columns)
     monkeypatch.setattr(backtest, 'get_ohlcv_date_range', lambda: (str(dates[0].date()), str(dates[-1].date())))
     monkeypatch.setattr(backtest, 'load_ohlcv', lambda: (prices, volumes, prices, prices, ['GPPL.NS']))

@@ -102,6 +102,10 @@ def _fetch_ohlcv_batch(tickers: list, progress_callback=None) -> tuple[dict, int
     return ohlcv_results
 
 
+RESEARCH_CATCH_UP_PER_SCAN = 75   # extra lagging histories refetched per scan
+RESEARCH_MAX_STALE_DAYS = 370     # older than the longest backtest window: leave retired
+
+
 def _refresh_research_prices(current_prices, benchmark, scan_date):
     """Keep recently traded historical stocks current even after they leave the screen.
 
@@ -112,11 +116,16 @@ def _refresh_research_prices(current_prices, benchmark, scan_date):
         return
     target = pd.Timestamp(benchmark.index[-1]).date()
     prior = stored_prices(latest_only=True)
-    stale = sorted(
-        ticker for ticker, frame in prior.items()
-        if ticker.endswith('.NS') and ticker not in current_prices and not frame.empty
-        and 0 < (target - pd.Timestamp(frame.index[-1]).date()).days <= 7
-    )
+    ages = {ticker: (target - pd.Timestamp(frame.index[-1]).date()).days for ticker, frame in prior.items()
+            if ticker.endswith('.NS') and ticker not in current_prices and not frame.empty}
+    stale = sorted(ticker for ticker, age in ages.items() if 0 < age <= 7)
+    # Histories that fell further behind (a failed week, a narrowed screen) would
+    # otherwise never recover and block every backtest that held them. Catch up
+    # a bounded, rotating batch per scan so one dead symbol cannot starve the rest.
+    lagging = sorted(ticker for ticker, age in ages.items() if 7 < age <= RESEARCH_MAX_STALE_DAYS)
+    if lagging:
+        start = (target.toordinal() * RESEARCH_CATCH_UP_PER_SCAN) % len(lagging)
+        stale += (lagging[start:] + lagging[:start])[:RESEARCH_CATCH_UP_PER_SCAN]
     if not stale:
         return
     log.info(f'Refreshing {len(stale)} historical stocks outside the current screen')
