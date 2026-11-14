@@ -110,7 +110,7 @@ jobs:
 
   weekend_update:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     # Run on Saturday cron only; manual dispatch runs the daily scan.
     if: github.event.schedule == '37 3 * * 6'
 
@@ -144,6 +144,8 @@ jobs:
       - name: Run weekend update (outcome backfill + quant regen)
         run: |
           .venv/bin/python db_split_join.py join
+          # Ten years of prices for the factor evidence; falls back to the database by itself.
+          .venv/bin/python scripts/run_factor_research.py --period 10y
           .venv/bin/python -m notifications.weekend_update
           .venv/bin/python db_split_join.py split
 
@@ -153,7 +155,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git config --local http.postBuffer 524288000
-          git add frontend/public/quant_data.json frontend/public/backtest_runs/ frontend/public/strategy_history.json
+          git add frontend/public/quant_data.json frontend/public/backtest_runs/ frontend/public/strategy_history.json data/factor_research.json
           # Quoted pathspec so deleted/renamed DB parts are staged too
           git add -A -- 'data/market_scans.db.part_*'
           if git diff --staged --quiet; then

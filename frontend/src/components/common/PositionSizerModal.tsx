@@ -102,7 +102,7 @@ const PositionSizerModalContent: React.FC<Omit<PositionSizerModalProps, 'asset'>
           </div>
           <button
             onClick={() => setUseAtrMode(!useAtrMode)}
-            className="px-2.5 py-1 text-[12px] font-semibold rounded-lg transition-all"
+            className="px-2.5 py-1 text-[12px] font-semibold rounded-full transition-all"
             style={{
               background: useAtrMode ? 'var(--brand-soft)' : 'var(--surface-3)',
               color: useAtrMode ? 'var(--brand)' : 'var(--text-3)',

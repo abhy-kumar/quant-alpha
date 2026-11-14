@@ -162,28 +162,30 @@ export function InfoTooltip({ id, children }: { id: string; children?: React.Rea
   const [open, setOpen] = useState(false)
   const entry = tooltips[id]
   if (!entry) return children ? <>{children}</> : null
+  const toggle = (event: React.SyntheticEvent) => { event.stopPropagation(); setOpen(value => !value) }
   return (
-    <Tooltip.Provider delayDuration={200}>
+    <Tooltip.Provider delayDuration={250} skipDelayDuration={400}>
       <Tooltip.Root open={open} onOpenChange={setOpen}>
         <Tooltip.Trigger asChild>
-          <span tabIndex={0} onClick={event => { if (!children) { event.stopPropagation(); setOpen(value => !value) } }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); setOpen(value => !value) } }} className="info-tooltip-trigger" aria-label={children ? undefined : entry.text}>
-            {children || <Question size={16} weight="regular" style={{ color: 'var(--text-3)' }} />}
+          <span
+            tabIndex={0}
+            role={children ? undefined : 'button'}
+            // Hover does not exist on touch screens: a tap opens and closes the explanation.
+            onPointerDown={event => { if (event.pointerType !== 'mouse') toggle(event) }}
+            onClick={event => { if (!children) event.stopPropagation() }}
+            onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(event) } else if (event.key === 'Escape') setOpen(false) }}
+            className="info-tooltip-trigger"
+            aria-label={children ? undefined : `Explain: ${entry.text}`}
+          >
+            {children || <Question size={14} weight="regular" aria-hidden="true" />}
           </span>
         </Tooltip.Trigger>
         <Tooltip.Portal>
-          <Tooltip.Content
-            className="tooltip-content"
-            sideOffset={6}
-            side="top"
-
-          >
-            <p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--text)', margin: 0 }}>
-              {entry.text}
-            </p>
-            <p style={{ fontSize: 12, color: 'var(--text-3)', margin: '4px 0 0', fontStyle: 'italic' }}>
-              Source: {entry.source}
-            </p>
-            <Tooltip.Arrow style={{ fill: 'var(--surface)' }} />
+          <Tooltip.Content className="tooltip-content" sideOffset={6} side="top" collisionPadding={12}
+            onPointerDownOutside={() => setOpen(false)}>
+            <p style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--text)', margin: 0 }}>{entry.text}</p>
+            {entry.source && <p className="tooltip-source">{entry.source}</p>}
+            <Tooltip.Arrow width={12} height={6} style={{ fill: 'var(--surface)' }} />
           </Tooltip.Content>
         </Tooltip.Portal>
       </Tooltip.Root>

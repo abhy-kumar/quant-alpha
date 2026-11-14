@@ -43,8 +43,16 @@ Signals, Screener, Heatmap, Quant Lab, sign-in, sharing, and research dialogs.
   must not widen the page. Bottom navigation and floating comparison controls
   account for the safe area.
 - Respect reduced motion, reduced transparency, and increased contrast settings.
-  The market strip includes every tracked stock and scrolls manually; it does not
-  continually animate.
+  The market strip includes every tracked stock and drifts slowly on its own with no
+  scrollbar; it pauses on hover or focus, and under reduced motion it stops and
+  scrolls manually instead.
+- Shape: controls are capsules (buttons, segmented toggles, chips, badges,
+  single-line fields); containers are rounded rectangles (cards 16px, dialogs
+  20px). Do not give a control its own radius; use the shared classes.
+- Motion: selections slide (tab bar, segmented toggles), content fades up 6px,
+  presses scale to 96%. Use `--dur-*` and `--ease-*`; never animate layout
+  properties on large lists.
+- The tab bar is centred on the page, not between the logo and the actions.
 - Keep missing data visibly unavailable. Guest heatmap scores use N/A and a
   sign-in explanation. Debt/equity displays convert the source percentage into
   a multiple, matching the research filter units.
@@ -63,6 +71,9 @@ Signals, Screener, Heatmap, Quant Lab, sign-in, sharing, and research dialogs.
 | Phone controls and radar labels clipping | Shorter controls, responsive radar geometry, contained scrolling |
 | Guest heatmap scores appearing as zero | Explicit unavailable state |
 | Market strip stopping after 40 stocks | Full screened universe with stable ticker keys |
+| Market strip showing a scrollbar | Self-scrolling strip that pauses on hover and honours reduced motion |
+| Tab bar off-centre, mixed corner radii on controls | Page-centred tab bar and one capsule geometry for every control |
+| Market regime card reading +1 as "1/5, Risk-Off" with breadth 0.3% | True −5 to +5 scale, breadth in percent, missing VIX shown as N/A |
 | Decorative separators, inflated labels, and repeated footer navigation | Plain copy, spacing between metadata, and a compact attribution footer |
 | Debt/equity shown as 161.98x instead of 1.62x | Consistent conversion in charts, signals, screener, factsheet, and thesis |
 

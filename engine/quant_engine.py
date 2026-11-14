@@ -7,6 +7,7 @@ from scipy.optimize import minimize
 from config import RISK_FREE_RATE
 import logging
 import engine.backtest_engine as backtest_engine
+from engine import track_record
 
 logger = logging.getLogger("quant_engine")
 DB_PATH = "data/market_scans.db"
@@ -183,12 +184,31 @@ def fetch_latest_regime():
     if df.empty:
         return {}
     row = df.iloc[0]
+    breadth = float(row['Breadth_Pct']) if pd.notnull(row['Breadth_Pct']) else None
     return {
+        # Sum of five +1/0/-1 readings (trend, VIX, FII flow, put-call ratio, breadth): -5 to +5.
         "score": int(row['Regime_Score']) if pd.notnull(row['Regime_Score']) else 0,
+        "scale": [-5, 5],
         "nifty_trend": "bullish" if pd.notnull(row['Nifty_Close']) and pd.notnull(row['Nifty_SMA_200']) and row['Nifty_Close'] > row['Nifty_SMA_200'] else "bearish",
-        "vix": float(row['VIX']) if pd.notnull(row['VIX']) else 0.0,
-        "breadth": float(row['Breadth_Pct']) if pd.notnull(row['Breadth_Pct']) else 0.0
+        # Missing readings stay missing; a zero VIX or breadth would read as a real value.
+        "vix": float(row['VIX']) if pd.notnull(row['VIX']) and row['VIX'] > 0 else None,
+        # Stored as the advancing fraction of traded stocks; published in percent.
+        "breadth": None if breadth is None else round(breadth * 100 if breadth <= 1 else breadth, 1)
     }
+
+
+def _optional(name, build):
+    """Supplementary research must never block publication of the core quant data."""
+    try:
+        return build()
+    except Exception as error:
+        logger.warning(f"{name} unavailable: {type(error).__name__}: {error}")
+        return None
+
+
+def load_factor_research(path="data/factor_research.json"):
+    with open(path, encoding="utf-8") as stream:
+        return json.load(stream)
 
 def compute_sector_allocation(top_picks_df):
     """Aggregate sector weights for equal-weight top picks."""
@@ -393,6 +413,8 @@ def generate_quant_data():
             "backtest_long_1y":  wf_results.get("backtest_long_1y"),
             "backtest_long_6m":  wf_results.get("backtest_long_6m"),
             "market_regime": regime,
+            "track_record": _optional("Track record", track_record.build),
+            "factor_research": _optional("Factor research", load_factor_research),
             "sector_allocation": sectors,
             "correlation_matrix": correlation
         }

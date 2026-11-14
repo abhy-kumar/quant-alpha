@@ -200,6 +200,64 @@ export interface ScenarioStressTest {
   factor_resilience: string
 }
 
+export interface FactorStats {
+  ic: number | null
+  t: number | null
+  days: number
+  independent_periods: number
+  first_half: number | null
+  second_half: number | null
+}
+
+export interface FactorEvidence {
+  id: string
+  label: string
+  group: string
+  in_model: boolean
+  meaning: string
+  h21: FactorStats | null
+  h63: FactorStats | null
+  verdict: string
+  adds_to_model?: { ic_gain: number | null; t: number | null; both_halves: boolean; passes: boolean }
+}
+
+export interface FactorResearch {
+  generated: string
+  source: string
+  span: { start: string; end: string; sessions: number; years: number }
+  universe: { stocks: number; median_eligible: number }
+  caveats?: string[]
+  factors: FactorEvidence[]
+  model?: Record<string, Partial<FactorStats> & {
+    horizon: number
+    top20?: { periods: number; mean_net_return: number; mean_nifty: number; mean_all_stocks: number; beat_nifty_share: number; positive_share: number; worst_period: number } | null
+  }>
+  regime?: Record<string, { label: string; difference: number | null; t: number | null }>
+}
+
+export interface TrackRecordRow {
+  label: string
+  scan_dates: number
+  stocks_per_date: number
+  mean_return: number
+  nifty: number
+  positive_share: number
+  beat_nifty_share: number
+}
+
+export interface TrackRecordEra {
+  version: string
+  since: string
+  until?: string
+  horizons: Record<string, { scan_dates: number; independent_periods?: number; labels: TrackRecordRow[] }>
+}
+
+export interface TrackRecord {
+  prices_through?: string
+  current?: TrackRecordEra
+  previous?: TrackRecordEra
+}
+
 export interface QuantData {
   efficient_frontier?: { volatility: number; return: number; sharpe: number }[]
   last_updated: string
@@ -218,10 +276,13 @@ export interface QuantData {
   scenario_stress_tests?: ScenarioStressTest[]
   market_regime?: {
     score: number
+    scale?: [number, number]
     nifty_trend: string
-    vix: number
-    breadth: number
+    vix: number | null
+    breadth: number | null
   }
+  track_record?: TrackRecord | null
+  factor_research?: FactorResearch | null
   sector_allocation?: Record<string, number>
   correlation_matrix?: {
     labels: string[]

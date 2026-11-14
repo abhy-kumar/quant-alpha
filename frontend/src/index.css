@@ -351,7 +351,12 @@ body { scrollbar-gutter: stable; }
 .chart-sub { height: 160px; }
 @media(max-width: 640px) { .chart-main { height: 250px; } .chart-sub { height: 120px; } }
 
-.market-tape { background: var(--surface); scrollbar-width: thin; }
+.market-tape { background: var(--surface); border-bottom: 1px solid var(--border); overflow: hidden; -webkit-mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent); }
+@keyframes tapeScroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(var(--tape-distance, -50%), 0, 0); } }
+.tape-track { display: flex; width: max-content; animation: tapeScroll 600s linear infinite; }
+.market-tape:hover .tape-track, .market-tape:focus-within .tape-track { animation-play-state: paused; }
+.tape-group { display: flex; flex-shrink: 0; }
+.tape-item { display: inline-flex; align-items: baseline; gap: 10px; padding: 7px 18px; font-size: 12px; white-space: nowrap; border-radius: var(--radius-pill); }
 
 .heatmap-tile { min-height: 64px; transition: border-color var(--dur-fast); }
 .heatmap-tile:hover { border-color: var(--brand) !important; }
@@ -384,3 +389,62 @@ body { scrollbar-gutter: stable; }
   #factsheet-printable-area span, #factsheet-printable-area p, #factsheet-printable-area td { font-size: 9px !important; }
   #factsheet-printable-area h1 { font-size: 16px !important; }
 }
+
+/* ===============================================================
+   Shape and motion system
+   Controls are capsules, containers are rounded rectangles, and
+   every state change eases instead of snapping.
+   =============================================================== */
+:root { --radius-pill: 999px; --ease-spring: cubic-bezier(.32, 1.28, .54, 1); --dur-move: 320ms; }
+
+/* Tab bar sits on the true centre of the page, whatever the side widths. */
+.app-toolbar { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+.app-toolbar > :first-child { justify-self: start; }
+.toolbar-actions { justify-self: end; }
+.app-navigation { position: relative; isolation: isolate; }
+.app-navigation button { position: relative; z-index: 1; transition: color var(--dur-base) var(--ease-out); }
+.app-navigation button:hover { color: var(--text); }
+.app-navigation:has(.nav-indicator) button[aria-current="page"] { background: transparent; box-shadow: none; }
+.nav-indicator { position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 0; border-radius: var(--radius-pill); background: var(--surface); box-shadow: var(--shadow-sm); transition: transform var(--dur-move) var(--ease-spring), width var(--dur-move) var(--ease-spring); }
+
+/* One capsule geometry for every button, toggle, chip and single-line field. */
+.btn, .btn-glass, .btn-secondary, .btn-primary { border-radius: var(--radius-pill); padding-inline: 16px; }
+.segmented-control, .seg-indicator, .segmented-control button { border-radius: var(--radius-pill); }
+.seg-indicator { transition: left var(--dur-move) var(--ease-spring), width var(--dur-move) var(--ease-spring); }
+.segmented-control button { padding-inline: 14px; transition: color var(--dur-base) var(--ease-out); }
+.badge, .glass-pill { border-radius: var(--radius-pill); padding: 3px 10px; }
+.glass-input:not(textarea), .input:not(textarea) { border-radius: var(--radius-pill); padding-inline: 16px; }
+.mobile-navigation button { border-radius: 16px; transition: color var(--dur-base), background var(--dur-base); }
+.skip-link, .ticker-link { border-radius: var(--radius-pill); }
+.tooltip-content { border-radius: 14px; }
+
+/* Press, hover and entrance feedback. */
+.btn, .btn-glass, .btn-secondary, .btn-primary, .icon-button, .app-navigation button, .mobile-navigation button, .segmented-control button {
+  transition: background var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out), opacity var(--dur-fast), transform var(--dur-fast) var(--ease-out);
+}
+.btn:active, .btn-glass:active, .btn-secondary:active, .btn-primary:active, .icon-button:active, .mobile-navigation button:active { transform: scale(.96); opacity: 1; }
+.card-hover { transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out); }
+.card-hover:hover { transform: translateY(-1px); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.animate-fade-in { animation: fadeIn var(--dur-move) var(--ease-out) both; }
+@keyframes modalScaleIn { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
+.dialog-panel { animation: modalScaleIn var(--dur-move) var(--ease-spring) both; }
+@keyframes tooltipIn { from { opacity: 0; transform: translateY(2px) scale(.97); } to { opacity: 1; transform: none; } }
+.tooltip-content { animation: tooltipIn 140ms var(--ease-out) both; transform-origin: var(--radix-tooltip-content-transform-origin); max-width: min(300px, calc(100vw - 24px)); padding: 10px 12px; }
+.tooltip-content[data-state="closed"] { animation: none; }
+.tooltip-source { margin: 6px 0 0; padding-top: 6px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-3); }
+
+/* Help icons sit tight against their label on a pointer; touch keeps a full target. */
+.info-tooltip-trigger:has(> svg:only-child) { min-width: 20px; min-height: 20px; border-radius: 50%; color: var(--text-3); transition: color var(--dur-fast); }
+.info-tooltip-trigger:has(> svg:only-child):hover { color: var(--text); }
+@media (max-width: 767px) { .info-tooltip-trigger:has(> svg:only-child) { min-width: 44px; min-height: 44px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tape-track { animation: none !important; }
+  .market-tape { overflow-x: auto; scrollbar-width: none; -webkit-mask-image: none; mask-image: none; }
+  .market-tape::-webkit-scrollbar { display: none; }
+  .tape-group[aria-hidden="true"] { display: none; }
+  .card-hover:hover, .btn:active, .btn-glass:active, .btn-primary:active { transform: none; }
+}
+.dark .nav-indicator, .dark .seg-indicator { background: var(--surface-3); }
+.badge { white-space: nowrap; }

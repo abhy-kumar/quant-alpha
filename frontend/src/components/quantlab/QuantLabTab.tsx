@@ -11,6 +11,8 @@ import { ModelPortfoliosCard } from './ModelPortfoliosCard'
 import { EfficientFrontierCard } from './EfficientFrontierCard'
 import { ScenarioStressCard } from './ScenarioStressCard'
 import { FactorICMonitorCard } from './FactorICMonitorCard'
+import { ModelEvidenceCard } from './ModelEvidenceCard'
+import { TrackRecordCard } from './TrackRecordCard'
 import { CorrelationHeatmapCard } from './CorrelationHeatmapCard'
 import { StrategyBuilderDrawer } from './StrategyBuilderDrawer'
 import { StrategyTearSheet } from './StrategyTearSheet'
@@ -303,7 +305,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
             <p className="text-[12px] font-medium mb-1" style={{ color: 'var(--text-3)' }}>Holdings</p>
             <div className="flex flex-wrap gap-1">
               {holding.tickers.map(t => (
-                <span key={t} className="text-[12px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
+                <span key={t} className="text-[12px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
                   {t.replace('.NS', '')}
                 </span>
               ))}
@@ -397,26 +399,26 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
           <GlassCard>
             <GlassCardHeader
               icon={ShieldCheck}
-              iconColor={quantData.market_regime.score >= 4 ? 'var(--green)' : quantData.market_regime.score <= 1 ? 'var(--red)' : 'var(--amber)'}
+              iconColor={quantData.market_regime.score >= 2 ? 'var(--green)' : quantData.market_regime.score <= -2 ? 'var(--red)' : 'var(--amber)'}
               title="Market Regime"
               tooltipId="quant.regime"
             />
             <GlassCardContent className="p-5 flex flex-col items-center text-center gap-2">
               <div className="typo-h2 font-semibold" style={{ color: 'var(--text)' }}>
-                {quantData.market_regime.score >= 4 ? 'Risk-On (Bull)' : quantData.market_regime.score <= 1 ? 'Risk-Off (Bear)' : 'Neutral Regime'}
+                {quantData.market_regime.score >= 2 ? 'Supportive' : quantData.market_regime.score <= -2 ? 'Defensive' : 'Mixed'}
               </div>
               <div className="grid grid-cols-3 gap-3 w-full mt-1">
                 <div>
                   <div className="typo-eyebrow flex items-center justify-center gap-0.5">Score<InfoTooltip id="quant.regime" /></div>
-                  <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.score}/5</div>
+                  <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.score > 0 ? '+' : ''}{quantData.market_regime.score} <span style={{ color: 'var(--text-3)', fontWeight: 400 }}>of ±5</span></div>
                 </div>
                 <div>
                   <div className="typo-eyebrow flex items-center justify-center gap-0.5">Breadth<InfoTooltip id="quant.breadth" /></div>
-                  <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.breadth.toFixed(1)}%</div>
+                  <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.breadth != null ? `${quantData.market_regime.breadth.toFixed(0)}%` : 'N/A'}</div>
                 </div>
                 <div>
                   <div className="typo-eyebrow flex items-center justify-center gap-0.5">VIX<InfoTooltip id="quant.vix" /></div>
-                  <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.vix.toFixed(1)}</div>
+                  <div className="typo-num-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{quantData.market_regime.vix ? quantData.market_regime.vix.toFixed(1) : 'N/A'}</div>
                 </div>
               </div>
             </GlassCardContent>
@@ -547,7 +549,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                                   <button
                                     key={t}
                                     onClick={() => onSelect(t)}
-                                    className="ticker-chip--link text-[12px] px-1.5 py-0.5 rounded font-medium transition-opacity"
+                                    className="ticker-chip--link text-[12px] px-1.5 py-0.5 rounded-full font-medium transition-opacity"
                                     style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)', border: 'none', cursor: 'pointer' }}
                                   >
                                     {t.replace('.NS', '')}
@@ -688,7 +690,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
             <GlassCardHeader
               icon={Lightning}
               title="Monte Carlo Simulation"
-              badge={<span className="text-[12px]  font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>1,000 Paths</span>}
+              badge={<span className="text-[12px]  font-mono px-2 py-0.5 rounded-full" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>1,000 Paths</span>}
             />
             <GlassCardContent className="p-5">
               <MonteCarloChart cagr={backtestStats?.cagr || 15} volatility={backtestStats?.volatility || 18} isDark={isDark} />
@@ -784,6 +786,10 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
 
         
 
+      {/* What the ratings actually did, and the evidence behind each model input */}
+      <TrackRecordCard record={quantData.track_record} />
+      <ModelEvidenceCard research={quantData.factor_research} />
+
       {/* ===============================================================
           BACKTEST ARCHIVE  (auto-updated every Saturday by scheduler)
       =============================================================== */}
@@ -863,7 +869,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                           }}
                         >
                           <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-[12px] px-1.5 py-0.5 rounded font-medium" style={{ background: modelBg, color: modelColor }}>
+                            <span className="text-[12px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: modelBg, color: modelColor }}>
                               {model === 'short' ? 'Short' : 'Long'}
                             </span>
                             <span className="text-[12px] font-mono font-semibold" style={{ color: 'var(--text-3)' }}>
@@ -1087,7 +1093,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-2 h-2 rounded-full" style={{ background: 'var(--brand)' }} />
                   <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Short-term Model Signals</p>
-                  <span className="text-[12px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>50% Tech + 50% Momentum</span>
+                  <span className="text-[12px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>50% Tech + 50% Momentum</span>
                 </div>
                 <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
                   <table className="w-full text-[12px]" style={{ borderCollapse: 'collapse' }}>
@@ -1127,7 +1133,7 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-2 h-2 rounded-full" style={{ background: 'var(--green)' }} />
                   <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Long-term Model Signals</p>
-                  <span className="text-[12px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--green-bg)', color: 'var(--green)' }}>Cross-sectional percentile rank</span>
+                  <span className="text-[12px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: 'var(--green-bg)', color: 'var(--green)' }}>Cross-sectional percentile rank</span>
                 </div>
                 <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
                   <table className="w-full text-[12px]" style={{ borderCollapse: 'collapse' }}>

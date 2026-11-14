@@ -87,7 +87,7 @@ export const InvestmentThesisModal: React.FC<InvestmentThesisModalProps> = ({
               <div className="font-semibold text-[var(--amber)]">Ranking risk flags ({asset.Red_Flags.length})</div>
               <div className="mt-1 text-[12px] text-[var(--amber)] flex flex-wrap gap-2">
                 {asset.Red_Flags.map((flag, idx) => (
-                  <span key={idx} className="px-2 py-0.5 rounded-md bg-[var(--amber-bg)] border border-[var(--border)]">
+                  <span key={idx} className="px-2 py-0.5 rounded-full bg-[var(--amber-bg)] border border-[var(--border)]">
                     {flag}
                   </span>
                 ))}

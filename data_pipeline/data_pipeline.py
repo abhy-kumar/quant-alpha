@@ -443,7 +443,7 @@ def create_outcome_entries(rows_data: list[dict], scan_date: str):
 
 
 def store_regime_history(scan_date: str, regime_score: int, nifty_df=None, breadth_pct: float = None,
-                         coverage_pct: float = 0, stocks_scanned: int = 0):
+                         coverage_pct: float = 0, stocks_scanned: int = 0, vix: float = None):
     """Store market regime snapshot."""
     ensure_schema()
     conn = _get_conn()
@@ -456,9 +456,10 @@ def store_regime_history(scan_date: str, regime_score: int, nifty_df=None, bread
 
     conn.execute("""
         INSERT OR REPLACE INTO regime_history
-        (Scan_Date, Regime_Score, Nifty_Close, Nifty_SMA_200, Breadth_Pct, Coverage_Pct, Stocks_Scanned)
-        VALUES (?,?,?,?,?,?,?)
-    """, (scan_date, regime_score, nifty_close, nifty_sma200, breadth_pct, coverage_pct, stocks_scanned))
+        (Scan_Date, Regime_Score, Nifty_Close, Nifty_SMA_200, Breadth_Pct, Coverage_Pct, Stocks_Scanned, VIX)
+        VALUES (?,?,?,?,?,?,?,?)
+    """, (scan_date, regime_score, nifty_close, nifty_sma200, breadth_pct, coverage_pct, stocks_scanned,
+          vix if vix is not None and vix == vix and vix > 0 else None))
     conn.commit()
     conn.close()
 

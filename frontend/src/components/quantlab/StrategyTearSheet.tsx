@@ -68,7 +68,7 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setChartMode('equity')}
-                className={`px-2 py-0.5 text-xs rounded font-medium transition-colors ${
+                className={`px-2 py-0.5 text-xs rounded-full font-medium transition-colors ${
                   chartMode === 'equity'
                     ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] font-semibold'
                     : 'text-[var(--text-3)] hover:text-[var(--text)]'
@@ -78,7 +78,7 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
               </button>
               <button
                 onClick={() => setChartMode('drawdown')}
-                className={`px-2 py-0.5 text-xs rounded font-medium transition-colors ${
+                className={`px-2 py-0.5 text-xs rounded-full font-medium transition-colors ${
                   chartMode === 'drawdown'
                     ? 'bg-[var(--brand-soft)] text-[var(--brand-light)] font-semibold'
                     : 'text-[var(--text-3)] hover:text-[var(--text)]'
@@ -125,7 +125,7 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
             icon={ClockCounterClockwise}
             iconColor="var(--brand)"
             title="Monthly Returns Matrix"
-            badge={<span className="text-[12px] font-mono px-2 py-0.5 rounded bg-[var(--brand-soft)] text-[var(--brand-light)]">Walk-Forward</span>}
+            badge={<span className="text-[12px] font-mono px-2 py-0.5 rounded-full bg-[var(--brand-soft)] text-[var(--brand-light)]">Walk-Forward</span>}
           />
           <GlassCardContent className="p-4 overflow-x-auto scrollbar-none">
             <table className="w-full text-[12px] border-collapse">
@@ -185,7 +185,7 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
             icon={Lightning}
             iconColor="var(--amber)"
             title="Alpha Decay by Horizon"
-            badge={<span className="text-[12px] font-mono px-2 py-0.5 rounded bg-[var(--brand-soft)] text-[var(--brand-light)]">Excess Return</span>}
+            badge={<span className="text-[12px] font-mono px-2 py-0.5 rounded-full bg-[var(--brand-soft)] text-[var(--brand-light)]">Excess Return</span>}
           />
           <GlassCardContent className="p-4 space-y-4">
             <div style={{ height: 160 }}>
@@ -273,7 +273,7 @@ export const StrategyTearSheet: React.FC<Props> = ({ result, isDark, onSelectTic
                     <td className="py-2.5 pr-4 text-right font-mono text-[12px]" style={{ color: 'var(--text-3)' }}>{t.holdingDays}d</td>
                     <td className="py-2.5 text-right font-medium text-[12px]">
                       <span
-                        className="px-2 py-0.5 rounded font-medium"
+                        className="px-2 py-0.5 rounded-full font-medium"
                         style={{
                           background:
                             t.exitReason === 'Take-Profit'

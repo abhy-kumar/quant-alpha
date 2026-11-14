@@ -350,7 +350,7 @@ def _archive_scan(result_df: pd.DataFrame, scan_time: datetime) -> None:
 
 
 def _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pct,
-                   requested, ohlcv_ok, info_ok, final, regime_score, scan_time, duration=0):
+                   requested, ohlcv_ok, info_ok, final, regime_score, scan_time, duration=0, vix=None):
     """Store all data for ML pipeline."""
     scan_date = scan_time.strftime("%Y-%m-%d")
     try:
@@ -360,7 +360,7 @@ def _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pc
         store_factor_history(final_rows, scan_date)
         create_outcome_entries(final_rows, scan_date)
         update_outcome_tracking(scan_date, ohlcv_results)
-        store_regime_history(scan_date, regime_score, nifty_df, breadth_pct, coverage_pct, final)
+        store_regime_history(scan_date, regime_score, nifty_df, breadth_pct, coverage_pct, final, vix)
 
         top_5 = [r["Ticker"] for r in final_rows[:5]]
         bottom_5 = [r["Ticker"] for r in final_rows[-5:]]
@@ -496,7 +496,7 @@ def run_scanner(progress_callback=None, use_stored_prices=False) -> pd.DataFrame
         generate_score_history()
         _store_ml_data(final_rows, ohlcv_results, nifty_df, breadth_pct, coverage_pct,
                        len(tickers), len(ohlcv_results), len(info_results), len(final_rows),
-                       regime_score, scan_time, time.time() - scan_start)
+                       regime_score, scan_time, time.time() - scan_start, vix_level)
         
         log.info("Running quant engine...")
         quant_engine.generate_quant_data()

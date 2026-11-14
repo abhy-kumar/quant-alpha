@@ -1,6 +1,6 @@
 <div align="center">
   <img src="assets/Alpha_v2_Final-Light.svg" alt="Quant Alpha" width="320" />
-  <p><strong>NSE stock screening, factor research, and portfolio analysis.</strong></p>
+  <p><strong>NSE stock screening, factor research and portfolio analysis.</strong></p>
   <p>Built for the Alpha Research & Investment Club, Faculty of Management Studies (FMS), University of Delhi.</p>
 </div>
 
@@ -10,82 +10,109 @@
 [![React](https://img.shields.io/badge/React-19-blue)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6-blue)](https://www.typescriptlang.org/)
 
-[Open the dashboard](https://quant-alpha-sage.vercel.app) · [Market data API](https://quant-alpha-sage.vercel.app/api/data?resource=market)
+[Open the dashboard](https://quant-alpha-sage.vercel.app) · [Ranking specification](docs/RANKING.md) · [Design rules](frontend/DESIGN.md)
 
 ![Dashboard preview](assets/dashboard-preview.jpg)
 
-## What the platform does
+Quant Alpha scans about 500 of the most traded NSE stocks several times a day,
+ranks them against each other, and publishes the result as a dashboard. It is an
+educational research tool. It is not investment advice, and it does not predict
+prices.
 
-Quant Alpha combines NSE price data, financial statements, technical indicators,
-and recorded factor snapshots. It provides charts, a stock screener, a sector
-heatmap, research signals, and Quant Lab portfolio tools. It is for educational
-research, not investment advice.
+## Contents
 
-- **Scoring and signals:** sector-relative value, quality, momentum, and volatility
-  factors; forensic warnings; ATR trade-plan and position-sizing tools.
-- **Charts:** daily and weekly price history, technical indicators, and live quotes.
-  Quotes refresh every 30 seconds during trading hours and every five minutes when
-  closed, using stable cached requests and the NSE holiday calendar.
-- **Portfolio analysis:** Max Sharpe, minimum volatility, risk parity, measured
-  efficient-frontier estimates, correlations, and factor information coefficients.
-- **Backtest studio:** short/long price-factor proxies across 1Y and 6M windows,
-  with NIFTY benchmark prices, shares held between rebalances, turnover costs,
-  and close-triggered stops that include gap losses.
-- **Strategy builder:** recorded factor-snapshot replay with presets, selected
-  weighting rules, ATR stops, take-profit exits, and trade logs. No matching stocks
-  means cash; unavailable historical periods are not synthesized.
-- **Shared research account:** server-validated sessions for Signals and Quant Lab.
-  Charts and the public screener remain available without signing in.
+- [What you get](#what-you-get)
+- [How a stock is rated](#how-a-stock-is-rated)
+- [How much to trust it](#how-much-to-trust-it)
+- [Run it locally](#run-it-locally)
+- [Everyday commands](#everyday-commands)
+- [The database in Git](#the-database-in-git)
+- [Deploy on Vercel](#deploy-on-vercel)
+- [Automation](#automation)
+- [Code map](#code-map)
 
-The newsletter has been removed.
+## What you get
 
-## Interface and design system
+| Screen | What it shows | Sign-in |
+| --- | --- | --- |
+| Charts | Daily and weekly prices, indicators, company profile, live quotes | No |
+| Screener | Every tracked stock with filters, comparison and watchlist | Scores need sign-in |
+| Heatmap | Research scores by sector | No |
+| Signals | The highest-rated stocks for a short or long horizon | Yes |
+| Quant Lab | Track record, model evidence, backtests, model portfolios, strategy builder | Yes |
 
-Every screen shares native system typography, neutral surfaces, semantic colors,
-consistent controls, and responsive layouts. Light and dark themes use the same
-hierarchy. Navigation uses restrained translucent material; research cards use
-opaque surfaces. Dialogs support keyboard focus, Escape dismissal, and focus
-restoration. The app respects reduced motion and transparency preferences.
+Live quotes refresh every 30 seconds while NSE is open and every five minutes
+when it is closed. The strip at the top of the page scrolls through every tracked
+stock and pauses when you point at it.
 
-See [the design rules and audit](frontend/DESIGN.md) before adding UI components.
-The market strip includes every tracked stock. Interface copy uses plain language
-without decorative separators, and the footer keeps attribution and the research
-disclaimer without repeating the main navigation.
-Unavailable research scores are marked N/A. Debt/equity values are displayed as
-multiples, converting the source percentage consistently across the app.
+## How a stock is rated
 
-## Research methodology and limits
+Each stock gets a score from 0 to 10 for three horizons, built from five groups
+of inputs. Every input is turned into a percentile against other stocks, so a
+score says where a stock stands relative to its peers, not how much it will
+return.
 
-The versioned ranking combines quality, value, momentum, trend and stability.
-Short- and long-term scores have explicit weights, sector comparisons and data
-coverage requirements. Financial companies use suitable accounting measures.
-Signals and Screener use the same horizon-specific score and recommendation.
-The top picks can be empty when no stock qualifies.
+| Group | Inputs | Compared within |
+| --- | --- | --- |
+| Quality | Return on equity, assets and capital; margin; cash quality; leverage | Sector |
+| Value | Earnings, book and free-cash-flow yields | Sector |
+| Momentum | 12-month and 6-month return, each skipping the latest month | All stocks |
+| Trend | Price against its 50-day and 200-day averages | All stocks |
+| Stability | Volatility and downside risk over three months | All stocks |
 
-The universe is selected by traded value, not alphabetically. Every new daily
-recommendation retains its model version, inputs and coverage in an immutable
-history. Old ML probabilities are not reused for the new model.
+| Horizon | Quality | Value | Momentum | Trend | Stability |
+| --- | --- | --- | --- | --- | --- |
+| Short term | 15% | 10% | 35% | 25% | 15% |
+| Balanced | 25% | 20% | 25% | 15% | 15% |
+| Long term | 35% | 30% | 15% | 5% | 15% |
 
-See [the full ranking specification and validation](docs/RANKING.md), including
-the chronological comparison against ridge regression and gradient boosting.
-The weights are a documented starting specification; optimality is not claimed.
-Longer outcomes continue to mature after the 21-session outcome is filled. Missing
-outcomes do not count as losses. Factor IC uses daily cross-sectional Spearman
-correlations over a calendar quarter; insufficient samples display N/A.
+Ratings follow from a stock's rank among eligible stocks:
 
-The archived factor history currently begins in June 2026. Price-factor backtests
-are proxies, not historical replays of today's fundamental model. The recorded
-universe is not a complete historical index-constituent database. Missing benchmark
-coverage or held-stock execution prices cannot produce invented returns. The
-sandbox charges 20 basis points per trade leg and liquidates/re-enters at scheduled
-rebalances. Macro stress cards use explicit illustrative shock assumptions.
-Portfolio estimates and simulations are research tools, not forecasts.
+| Rating | Rule |
+| --- | --- |
+| Strong Buy | Top 10%, score of 6.5 or more, at least 85% of inputs available, no red flags |
+| Buy | Top 30%, score of 5.5 or more |
+| Hold | Everything in between |
+| Caution | Bottom 40% with a score under 5, or any red flag |
+| Avoid | Bottom 20% with a score under 4.5, or negative book equity |
+| Insufficient data | Too few inputs, a stale price, or under a year of history |
 
-## Local setup
+Banks and other financial companies use measures that suit their accounts. The
+weights are deliberately round: with the history available, finer weights cannot
+be told apart from noise. Any change to inputs, weights or rating rules creates a
+new model version, and old ratings are never rewritten. The full specification
+is in [docs/RANKING.md](docs/RANKING.md).
 
-Use Python 3.12 and Node.js 24. Run Python commands through the virtual environment.
-The examples below use Windows PowerShell; on macOS/Linux use `.venv/bin/python`
-instead of `.venv/Scripts/python.exe`.
+## How much to trust it
+
+Quant Lab shows two things so you can judge the model by results:
+
+- **Track record.** What stocks did after each published rating, held for one
+  week, one month or three months, beside NIFTY over the same days.
+- **Model evidence.** How well each input ranked stocks by their next-month
+  return, and whether any of 14 candidate inputs would improve the model. A
+  candidate is only promoted if it helps in both halves of the history.
+
+Things to keep in mind:
+
+- Ratings rank stocks against each other. When the whole market falls, most
+  highly rated stocks fall too.
+- Roughly half of individual picks lose money over a month even when a basket of
+  20 does well. The edge shows up across many stocks, not in two or three.
+- The price history in the database covers about two years, and fundamentals
+  have only been recorded since June 2026. A weekly job extends the price study
+  to ten years, but only for stocks tracked today, which flatters the past.
+- Backtests in Quant Lab use price-only proxies. They are not replays of the live
+  model, and their totals move noticeably with the start date.
+- Prices from Yahoo Finance sometimes miss a demerger or split. The pipeline
+  repairs overnight jumps larger than the exchange allows; see
+  [docs/RANKING.md](docs/RANKING.md).
+
+## Run it locally
+
+You need Python 3.12 and Node.js 22 or newer. Commands are for Windows
+PowerShell; on macOS or Linux use `.venv/bin/python` in place of
+`.venv/Scripts/python.exe`.
 
 ```powershell
 git clone https://github.com/abhy-kumar/quant-alpha.git
@@ -93,74 +120,48 @@ Set-Location quant-alpha
 python -m venv .venv
 & .venv/Scripts/python.exe -m pip install -r requirements.txt pytest
 & .venv/Scripts/python.exe db_split_join.py join
+& .venv/Scripts/python.exe scripts/setup_hooks.py
 ```
 
-Start the frontend from a second terminal:
+Then start the dashboard in a second terminal:
 
 ```powershell
 Set-Location frontend
 npm ci
-Copy-Item .env.example .env.local
-# Fill AUTH_EMAIL and AUTH_PASSWORD in .env.local before signing in.
+Copy-Item .env.example .env.local   # then set AUTH_EMAIL and AUTH_PASSWORD
 npm run dev
 ```
 
-The Vite development server provides the local API endpoints too. Environment
-files and the joined database are ignored by Git.
+The development server also serves the API routes. Environment files and the
+joined database are ignored by Git.
 
-## Validation and data maintenance
+## Everyday commands
 
-From the repository root:
+| Task | Command (from the repository root) |
+| --- | --- |
+| Run Python tests | `& .venv/Scripts/python.exe -m pytest -q` |
+| Run a full scan (calls external data sources) | `& .venv/Scripts/python.exe -m engine.scanner` |
+| Refresh the factor evidence | `& .venv/Scripts/python.exe scripts/run_factor_research.py --period 10y` |
+| Repair quote gaps | `& .venv/Scripts/python.exe scripts/repair_quote_gaps.py` |
+| Rebuild outcomes and backtests | `& .venv/Scripts/python.exe scripts/backfill_research.py` |
+| Frontend tests, lint, build | `npm test`, `npm run lint`, `npm run build` (in `frontend`) |
 
-```powershell
-& .venv/Scripts/python.exe -m pytest -q
-& .venv/Scripts/python.exe -m engine.scanner
-```
+## The database in Git
 
-The scanner makes external data requests and regenerates stored research. To
-repair quote gaps and historical outcomes explicitly:
+`data/market_scans.db` is local only. Git tracks it as 40 MB pieces named
+`data/market_scans.db.part_*`.
 
-```powershell
-& .venv/Scripts/python.exe db_split_join.py join
-& .venv/Scripts/python.exe scripts/repair_quote_gaps.py
-& .venv/Scripts/python.exe scripts/backfill_research.py
-& .venv/Scripts/python.exe db_split_join.py split
-```
+1. After every `git pull`, run `db_split_join.py join` to rebuild your local
+   database from the pulled pieces.
+2. Scripts and scans then change the local database.
+3. The pre-commit hook splits it back into pieces when you commit.
 
-From `frontend`:
+`split` refuses to run when your local database is older than the pieces on
+disk, because that would overwrite newer data with a stale copy. Pass `--force`
+only if replacing them is what you intend. Never commit the joined database or
+its WAL files.
 
-```powershell
-npm test
-npm run lint
-npm run build
-```
-
-The build checks the browser TypeScript projects and the standalone function
-configuration before building with Vite. Frontend tests cover sessions,
-authorization, packaged data paths, pagination, and strategy execution. Type
-migration and React performance rules currently produce lint warnings; hook
-ordering and other correctness checks remain errors.
-
-### Database chunks
-
-`data/market_scans.db` is local-only. Git tracks 40 MiB chunks named
-`data/market_scans.db.part_*`. Join them before running database scripts; checkpoint
-SQLite WAL writes before splitting a database that has been modified. Commit only
-the parts, never the joined database or its WAL files. Corrected backtest caches
-are versioned and invalidated when their source-price fingerprint changes.
-
-An installed local pre-commit hook may split the joined database automatically. Always run
-`db_split_join.py join` after `git pull`: `split` refuses to overwrite parts that are
-newer than your local database (use `--force` only if you mean to replace them).
-Reinstall the hook with `python scripts/setup_hooks.py` after updating so removed
-parts are staged as well.
-Keep that database current after pulling new parts so the hook cannot replace
-fresh parts with an older local copy. Activate the virtual environment before
-committing if the hook invokes `python`.
-
-## Deploying on Vercel
-
-Connect this GitHub repository and use these project settings:
+## Deploy on Vercel
 
 | Setting | Value |
 | --- | --- |
@@ -168,89 +169,69 @@ Connect this GitHub repository and use these project settings:
 | Root directory | `frontend` |
 | Build command | `npm run build` |
 | Output directory | `dist` |
-| Node.js | 24.x |
+| Node.js | 22.x or newer |
 
-Configure the server environment variables for each deployment environment used:
-
-| Variable | Purpose |
+| Environment variable | Purpose |
 | --- | --- |
 | `AUTH_EMAIL` | Shared account email |
-| `AUTH_PASSWORD` | New shared account password |
-| `AUTH_SESSION_SECRET` | Optional random signing secret; otherwise derived from the password |
+| `AUTH_PASSWORD` | Shared account password |
+| `AUTH_SESSION_SECRET` | Optional signing secret; otherwise derived from the password |
 
-**Do not reuse the historical hardcoded password:** it remains in Git history.
-Never prefix credentials with `VITE_`, which exposes values to browser code.
-Redeploy after changing environment settings. Without the required login settings,
-the shared login fails closed while public charts/screener remain available.
+Never prefix credentials with `VITE_`, which would ship them to the browser, and
+do not reuse the old hardcoded password that remains in Git history. Redeploy
+after changing settings. Without the login settings, sign-in is refused while the
+public screens keep working.
 
-Sessions use signed, HttpOnly, SameSite=Strict cookies, expire after eight hours,
-and use Secure cookies in production. Browser local-storage flags do not grant
-access. The login throttle is process-local; use Vercel Firewall rate limiting if
-distributed enforcement is required.
-
-### Private data packaging and API access
-
-Research JSON is tracked under `frontend/public` for the scan pipeline, but Vite
-removes it from the static `dist` output. `vercel.json` includes those datasets in
-the data function bundle. The API resolves files relative to its module rather
-than `process.cwd()`, accommodating both standalone and repository-root function
-mounts. `frontend/api/tsconfig.json` configures Vercel's function compiler, which
-does not follow the browser build's TypeScript project references.
+Sessions are signed, HttpOnly, SameSite=Strict cookies that expire after eight
+hours. The login rate limit is per server instance; add Vercel Firewall rules if
+you need a stricter limit.
 
 | Request | Access |
 | --- | --- |
-| `/api/data?resource=market` | Public market facts; research fields require a session |
-| `/api/data?resource=quant` | Signed-in research account |
-| `/api/data?resource=scores` | Signed-in research account |
-| `/api/data?resource=strategies` and `&page=N` | Signed-in account; bounded history pages |
-| `/api/data?resource=runs` and `resource=run&slug=...` | Signed-in account; versioned backtest archive |
-| `/api/chart` and `/api/live_data` | Public; validated parameters |
+| `/api/data?resource=market` | Public prices and facts; scores need a session |
+| `/api/data?resource=quant`, `scores`, `strategies`, `runs`, `run` | Signed-in account |
+| `/api/chart`, `/api/live_data` | Public, NSE and BSE symbols only |
 
-**A public GitHub repository exposes tracked datasets and historical source.**
-The shared login protects hosted API access and views, not copies on GitHub.
+**The sign-in protects the hosted site, not the data.** The research files are
+tracked in this public repository under `frontend/public`, so anyone can read
+them on GitHub. Make the repository private if the scores must stay private.
 
-If market data returns 503, check the function logs for missing bundled files or
-invalid JSON. If the function compiler reports unsupported language-library
-methods, check `api/tsconfig.json`; a successful browser build alone does not
-validate Vercel's compiler configuration.
+If the data API returns 503, check the function logs for a missing or invalid
+bundled file.
 
 ## Automation
 
-`.github/workflows/daily_scan.yml` runs weekday scans at approximately 4:07 AM,
-9:37 AM, 12:37 PM, 4:11 PM, and 10:07 PM IST, and a Saturday outcome backfill at
-9:07 AM IST. GitHub schedules can be delayed. Manual dispatch runs the daily scan
-only. Application caches preserve acquisition timestamps across runs, and
-concurrency prevents overlapping publications. Scans also refresh recently traded
-historical stocks that have left the current screen, keeping research holdings
-covered while the exchange's daily file is still pending. If a held stock still
-lacks a valid close, that backtest is marked unavailable with the ticker and date;
-no partial performance is published or cached, and market data can still update.
-Other generation errors fail the job. Generated commits rebase before pushing.
-Telegram broadcasting runs after publication using the optional
-`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` GitHub secrets. Manual runs leave
-broadcasts off unless the `send_notifications` option is selected.
+`.github/workflows/daily_scan.yml` runs:
 
-`.github/workflows/checks.yml` runs Python tests in a virtual environment and
-frontend tests, lint, and build checks. It also verifies that research datasets
-are absent from the static output.
+- a market scan on weekdays at about 4:07, 9:37, 12:37, 16:11 and 22:07 IST;
+- a Saturday job at about 9:07 IST that fetches ten years of prices for the
+  factor evidence, fills in matured outcomes and refreshes the backtests.
 
-The 2026 NSE calendar lives in `frontend/server/market_calendar.json` and
-`engine/market_calendar.py`. Refresh it from the linked NSE source for later years.
+Scans never overlap. Data commits retry with a rebase if the push fails. A
+Telegram summary is sent after publication when the `TELEGRAM_BOT_TOKEN` and
+`TELEGRAM_CHAT_ID` secrets are set; manual runs send it only when
+`send_notifications` is ticked. GitHub may start scheduled runs late.
+
+`.github/workflows/checks.yml` runs the Python and frontend tests, lint and build
+on every push, and checks that research data is absent from the static build.
+
+The NSE holiday calendar for 2026 lives in `engine/market_calendar.py` and
+`frontend/server/market_calendar.json`. Update both for later years.
 
 ## Code map
 
 | Path | Responsibility |
 | --- | --- |
-| `data_pipeline/` | Price/fundamental ingestion, SQLite persistence, forward outcomes |
-| `engine/` | Scanning, factors, recommendations, ML, portfolios, backtests |
-| `engine/strategy_history.py` | Exports recorded factor history for the sandbox |
-| `frontend/api/` | Vercel data, chart, quote, and login endpoints |
-| `frontend/server/` | Session signing and market calendar |
-| `frontend/src/` | React dashboard, charts, screener, and Quant Lab |
-| `frontend/tests/` and `tests/` | Frontend and Python regression checks |
-| `notifications/` | Telegram signals and weekend research refresh |
-| `scripts/` | Quote-gap repair and research backfill |
-| `db_split_join.py` | Joins/splits the local SQLite database |
+| `data_pipeline/` | Price and fundamentals ingestion, price repair, SQLite storage, outcomes |
+| `engine/ranking.py` | The rating model |
+| `engine/factor_research.py`, `engine/track_record.py` | Evidence and results shown in Quant Lab |
+| `engine/` (other) | Scanning, indicators, portfolios, backtests |
+| `frontend/api/`, `frontend/server/` | Data, chart, quote and login endpoints; sessions |
+| `frontend/src/` | The React dashboard |
+| `notifications/` | Telegram summary and the weekend refresh |
+| `scripts/` | Research refresh, repairs and hook setup |
+| `tests/`, `frontend/tests/` | Python and frontend tests |
+| `db_split_join.py` | Joins and splits the database pieces |
 
 ## License and attribution
 

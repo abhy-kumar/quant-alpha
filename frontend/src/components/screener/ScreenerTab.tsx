@@ -736,7 +736,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 <label className="text-xs mb-2 block font-medium" style={{ color: 'var(--text-2)' }}>Sectors</label>
                 <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
                   {availableSectors.map(s => (
-                    <button key={s} aria-pressed={selectedSectors.includes(s)} onClick={() => toggleSector(s)} className="px-2.5 py-1 text-[12px] font-medium rounded-lg transition-all" style={selectedSectors.includes(s) ? {
+                    <button key={s} aria-pressed={selectedSectors.includes(s)} onClick={() => toggleSector(s)} className="px-2.5 py-1 text-[12px] font-medium rounded-full transition-all" style={selectedSectors.includes(s) ? {
                       background: 'var(--accent-fill)', color: 'var(--on-accent)', border: '1px solid var(--brand)',
                     } : {
                       background: 'var(--glass-bg-subtle)', color: 'var(--text-2)', border: '1px solid var(--glass-border)',
@@ -752,7 +752,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 <label className="text-xs mb-2 block font-medium" style={{ color: 'var(--text-2)' }}>Conviction</label>
                 <div className="flex flex-wrap gap-1.5">
                   {CONVICTION_OPTIONS.map(c => (
-                    <button key={c} aria-pressed={selectedConvictions.includes(c)} onClick={() => toggleConviction(c)} className="px-2.5 py-1 text-[12px] font-medium rounded-lg transition-all" style={selectedConvictions.includes(c) ? {
+                    <button key={c} aria-pressed={selectedConvictions.includes(c)} onClick={() => toggleConviction(c)} className="px-2.5 py-1 text-[12px] font-medium rounded-full transition-all" style={selectedConvictions.includes(c) ? {
                       background: 'var(--accent-fill)', color: 'var(--on-accent)', border: '1px solid var(--brand)',
                     } : {
                       background: 'var(--glass-bg-subtle)', color: 'var(--text-2)', border: '1px solid var(--glass-border)',
@@ -902,7 +902,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                 <span className="ml-auto">
                   <button
                     onClick={() => setExpandedRow(expandedRow === row.Ticker ? null : row.Ticker)}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors text-[12px] font-medium"
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-full transition-colors text-[12px] font-medium"
                     style={{
                       color: expandedRow === row.Ticker ? 'var(--brand)' : 'var(--text-3)',
                       background: expandedRow === row.Ticker ? 'var(--brand-soft)' : 'transparent',
@@ -960,7 +960,7 @@ export default function ScreenerTab({ data, onSelect, watchlist, toggleWatchlist
                         return (
                           <span
                             key={label as string}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[12px] font-medium"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] font-medium"
                             style={{
                               background: bullish ? 'rgba(74,222,128,0.10)' : bearish ? 'rgba(248,113,113,0.10)' : 'var(--glass-bg-subtle)',
                               color: bullish ? 'var(--green)' : bearish ? 'var(--red)' : 'var(--text-3)',

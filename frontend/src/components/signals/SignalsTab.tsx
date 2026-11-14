@@ -36,7 +36,7 @@ function Metric({ label, value, color }: { label: string; value: string; color?:
 
 function SignalBadge({ label, bullish }: { label: string; bullish: boolean }) {
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[12px] font-medium rounded-lg"
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[12px] font-medium rounded-full"
       style={{
         background: bullish ? 'var(--green-bg)' : 'var(--red-bg)',
         color: bullish ? 'var(--green)' : 'var(--red)',

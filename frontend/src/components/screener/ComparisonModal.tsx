@@ -174,7 +174,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                 {renderMetricRow(
                   'Composite Score',
                   (a) => (
-                    <span className={`px-2 py-0.5 rounded-md font-semibold ${scoreColor(a.Composite_Score)}`}>
+                    <span className={`px-2 py-0.5 rounded-full font-semibold ${scoreColor(a.Composite_Score)}`}>
                       {num(a.Composite_Score)}/10
                     </span>
                   ),

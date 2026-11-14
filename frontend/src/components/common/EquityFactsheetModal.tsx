@@ -205,16 +205,16 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
                   Technical Indicator States
                 </span>
                 <div className="flex flex-wrap gap-1.5 text-[12px]">
-                  <span className={`px-2 py-0.5 rounded ${asset.Sig_Price_vs_SMA50 === 1 ? 'bg-[var(--green-bg)] text-[var(--green)] font-semibold' : 'bg-[var(--red-bg)] text-[var(--red)]'}`}>
+                  <span className={`px-2 py-0.5 rounded-full ${asset.Sig_Price_vs_SMA50 === 1 ? 'bg-[var(--green-bg)] text-[var(--green)] font-semibold' : 'bg-[var(--red-bg)] text-[var(--red)]'}`}>
                     SMA 50: {asset.Sig_Price_vs_SMA50 === 1 ? 'Above' : 'Below'}
                   </span>
-                  <span className={`px-2 py-0.5 rounded ${asset.Sig_Price_vs_SMA200 === 1 ? 'bg-[var(--green-bg)] text-[var(--green)] font-semibold' : 'bg-[var(--red-bg)] text-[var(--red)]'}`}>
+                  <span className={`px-2 py-0.5 rounded-full ${asset.Sig_Price_vs_SMA200 === 1 ? 'bg-[var(--green-bg)] text-[var(--green)] font-semibold' : 'bg-[var(--red-bg)] text-[var(--red)]'}`}>
                     SMA 200: {asset.Sig_Price_vs_SMA200 === 1 ? 'Above' : 'Below'}
                   </span>
-                  <span className={`px-2 py-0.5 rounded ${asset.Sig_Supertrend === 1 ? 'bg-[var(--green-bg)] text-[var(--green)] font-semibold' : 'bg-[var(--red-bg)] text-[var(--red)]'}`}>
+                  <span className={`px-2 py-0.5 rounded-full ${asset.Sig_Supertrend === 1 ? 'bg-[var(--green-bg)] text-[var(--green)] font-semibold' : 'bg-[var(--red-bg)] text-[var(--red)]'}`}>
                     Supertrend: {asset.Sig_Supertrend === 1 ? 'Bullish' : 'Bearish'}
                   </span>
-                  <span className="px-2 py-0.5 rounded bg-[var(--surface-3)] text-[var(--text-2)] font-mono">
+                  <span className="px-2 py-0.5 rounded-full bg-[var(--surface-3)] text-[var(--text-2)] font-mono">
                     RSI: {asset.RSI_Value ? asset.RSI_Value.toFixed(1) : '-'}
                   </span>
                 </div>

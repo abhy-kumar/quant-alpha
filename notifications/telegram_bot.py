@@ -38,14 +38,14 @@ def build_message(market_data: dict) -> str:
              and not s.get("Red_Flags")]
     picks = sorted(picks, key=lambda s: (-_number(s.get("Composite_Score")), str(s.get("Ticker", ""))))[:5]
     lines = [
-        "🚀 *QUANT ALPHA DAILY SIGNALS*",
-        f"📊 *Market Regime Score:* {_escape(market_data.get('market_regime_score', 0))}/5",
+        "*QUANT ALPHA DAILY SIGNALS*",
+        f"*Market regime:* {_number(market_data.get('market_regime_score')):+.0f} on a -5 to +5 scale",
         "───────────────────────────",
     ]
     if not picks:
         lines.append("No stock currently meets the Buy criteria.")
     else:
-        lines.append(f"🔥 *Top {len(picks)} Conviction Picks:*")
+        lines.append(f"*Top {len(picks)} conviction picks*")
     for i, s in enumerate(picks, 1):
         ticker = _escape(str(s.get("Ticker", "")).replace(".NS", ""))
         change = _number(s.get("1d_Chg_%"))
@@ -56,7 +56,7 @@ def build_message(market_data: dict) -> str:
             entry += f"\n   • ML Outperformance Estimate: *{_number(s.get('ML_Alpha_Prob')):.1f}%*"
         lines.append(entry)
     lines.append("───────────────────────────")
-    lines.append("📈 _Powered by Quant Alpha Free & Open Source Platform_")
+    lines.append("_Quant Alpha: free, open-source research. Not investment advice._")
     return "\n".join(lines)
 
 

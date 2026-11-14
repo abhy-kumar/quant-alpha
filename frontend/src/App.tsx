@@ -1,5 +1,5 @@
 import { topRanked } from './utils/ranking'
-import React, { useEffect, useLayoutEffect, useState, useMemo, memo, lazy, Suspense } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState, useMemo, memo, lazy, Suspense } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { TrendUp, ChartBar, StackSimple, Moon, Sun, WarningCircle, Database, Pulse, SignOut, LockSimple } from '@phosphor-icons/react'
 import { Analytics } from '@vercel/analytics/react'
@@ -76,38 +76,45 @@ function TabSkeleton() {
   )
 }
 
+const TAPE_SPEED = 45 // pixels per second
+const TAPE_LEAD = 24  // stocks repeated after the last one so the loop has no seam
+
 function TapeInner({ data, flashTickers }: { data: DashboardData[]; flashTickers?: Record<string, 'up' | 'down'> }) {
-  const items = useMemo(() => {
-    return data.map(d => ({
-      ticker: d.Ticker,
-      t: d.Ticker.replace('.NS', ''),
-      p: Number(d.Price) || 0,
-      c: Number(d['1d_Chg_%']) || 0,
-    }))
-  }, [data])
+  const items = useMemo(() => data.map(d => ({
+    ticker: d.Ticker,
+    t: d.Ticker.replace('.NS', ''),
+    p: Number(d.Price) || 0,
+    c: Number(d['1d_Chg_%']) || 0,
+  })), [data])
+  // The strip travels exactly one full set of stocks, then restarts on the repeated lead.
+  const groupRef = useRef<HTMLDivElement>(null)
+  const [distance, setDistance] = useState(0)
+  useLayoutEffect(() => {
+    const group = groupRef.current
+    if (!group) return
+    const measure = () => setDistance(group.scrollWidth)
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(group)
+    return () => observer.disconnect()
+  }, [items.length])
   if (!items.length) return null
 
-
+  const cell = (x: typeof items[number], key: string) => {
+    const flash = flashTickers?.[x.ticker]
+    return (
+      <span key={key} className={`tape-item ${flash === 'up' ? 'price-flash-up' : flash === 'down' ? 'price-flash-down' : ''}`}>
+        <span className="font-semibold" style={{ color: 'var(--text)' }}>{x.t}</span>
+        <span className="font-mono" style={{ color: 'var(--text-2)' }}>{x.p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <span className="font-mono font-medium" style={{ color: x.c >= 0 ? 'var(--green)' : 'var(--red)' }}>{x.c >= 0 ? '▲' : '▼'} {Math.abs(x.c).toFixed(2)}%</span>
+      </span>
+    )
+  }
   return (
-    <div role="region" aria-label="Market prices" tabIndex={0} className="overflow-x-auto market-tape" style={{ borderBottom: '1px solid var(--glass-border)' }}>
-      <div className="flex w-max whitespace-nowrap">
-        {items.map(x => {
-          const flash = flashTickers?.[x.ticker]
-          return (
-            <span
-              key={x.ticker}
-              className={`inline-flex items-center gap-3 px-4 py-1.5 text-[12px] shrink-0 transition-colors duration-500 rounded ${
-                flash === 'up' ? 'bg-emerald-500/20' : flash === 'down' ? 'bg-rose-500/20' : ''
-              }`}
-            >
-              <span className="font-semibold" style={{ color: 'var(--text)' }}>{x.t}</span>
-              <span className="flex items-center gap-2">
-                <span className="font-mono text-right w-[65px] shrink-0" style={{ color: 'var(--text-2)' }}>{x.p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                <span className="font-mono text-right w-[60px] shrink-0 font-medium" style={{ color: x.c >= 0 ? 'var(--green)' : 'var(--red)' }}>{x.c >= 0 ? '▲' : '▼'} {Math.abs(x.c).toFixed(2)}%</span>
-              </span>
-            </span>
-          )
-        })}
+    <div role="region" aria-label="Market prices" className="market-tape">
+      <div className="tape-track" style={distance ? { '--tape-distance': `-${distance}px`, animationDuration: `${Math.round(distance / TAPE_SPEED)}s` } as React.CSSProperties : { animation: 'none' }}>
+        <div ref={groupRef} className="tape-group">{items.map(x => cell(x, x.ticker))}</div>
+        <div className="tape-group" aria-hidden="true">{items.slice(0, TAPE_LEAD).map(x => cell(x, `lead-${x.ticker}`))}</div>
       </div>
     </div>
   )
@@ -261,8 +268,24 @@ export default function App() {
   }, [data, selectedAsset])
 
   const handleSelect = (t: string) => { setSelectedTicker(t); setActiveTab('charting') }
-  const regimeLabel = marketRegimeScore!==null?(marketRegimeScore>0?'Bullish':marketRegimeScore<0?'Bearish':'Neutral'):''
-  const regimeColor = marketRegimeScore!==null?(marketRegimeScore>0?'var(--green)':marketRegimeScore<0?'var(--red)':'var(--amber)'):'var(--text-3)'
+  // Selection pill that slides between tabs instead of jumping.
+  const navRef = useRef<HTMLElement>(null)
+  const [navPill, setNavPill] = useState<{ left: number; width: number } | null>(null)
+  useLayoutEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    const measure = () => {
+      const active = nav.querySelector<HTMLElement>('button[aria-current="page"]')
+      setNavPill(active && active.offsetWidth ? { left: active.offsetLeft, width: active.offsetWidth } : null)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(nav)
+    return () => observer.disconnect()
+  }, [activeTab, isLoggedIn])
+
+  const regimeLabel = marketRegimeScore!==null?(marketRegimeScore>=2?'Supportive':marketRegimeScore<=-2?'Defensive':'Mixed'):''
+  const regimeColor = marketRegimeScore!==null?(marketRegimeScore>=2?'var(--green)':marketRegimeScore<=-2?'var(--red)':'var(--amber)'):'var(--text-3)'
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background:'var(--bg-gradient)' }}>
@@ -277,7 +300,8 @@ export default function App() {
             <button type="button" onClick={() => setActiveTab('charting')} aria-label="Alpha home" className="shrink-0">
               <img src={isDark ? '/logo-dark.svg' : '/logo-light.svg'} alt="Alpha" className="h-11 w-auto" />
             </button>
-            <nav className="app-navigation" aria-label="Main navigation">
+            <nav className="app-navigation" aria-label="Main navigation" ref={navRef}>
+              {navPill && <span className="nav-indicator" aria-hidden="true" style={{ width: navPill.width, transform: `translateX(${navPill.left}px)` }} />}
               {visibleTabs.map(tab => (
                 <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id)} aria-current={activeTab === tab.id ? 'page' : undefined}>
                   <tab.icon size={18} weight="regular" aria-hidden="true" />{tab.label}
@@ -336,7 +360,8 @@ export default function App() {
           {marketRegimeScore!==null && (
             <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0 }}>
               <span style={{ width:6, height:6, borderRadius:'50%', background: regimeColor, display:'inline-block' }}/>
-              <span className="font-mono" style={{ fontWeight:500, color:'var(--text)' }}>
+              <span style={{ color:'var(--text-3)', fontWeight:500 }}>Market</span>
+              <span className="font-mono" title="Market regime score, from −5 to +5" style={{ fontWeight:500, color:'var(--text)' }}>
                 {regimeLabel} {marketRegimeScore > 0 ? '+' : ''}{marketRegimeScore}
               </span>
             </span>
@@ -369,6 +394,7 @@ export default function App() {
 
           {coveragePct!==null && (
             <span style={{ flexShrink:0, fontWeight:500 }}>
+              <span style={{ color:'var(--text-3)' }}>Data coverage </span>
               <span className="font-mono" style={{ color:'var(--text-2)' }}>{coveragePct}%</span>
             </span>
           )}

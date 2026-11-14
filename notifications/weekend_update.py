@@ -124,7 +124,19 @@ def run():
         log.error(f"Failed to run weekend backtests: {e}")
         raise
 
-    # Step 5: Regenerate quant_data.json and backtest_runs/
+    # Step 5: Refresh factor evidence if the long-history job has not done so this week
+    try:
+        import os
+        from engine import factor_research
+        path = "data/factor_research.json"
+        if not os.path.exists(path) or time.time() - os.path.getmtime(path) > 8 * 86400:
+            factor_research.write(factor_research.study(factor_research.panel_from_database(DB_PATH),
+                                                        source="2-year database"), path)
+            log.info("Factor research refreshed from the database.")
+    except Exception as e:
+        log.warning(f"Factor research refresh skipped: {type(e).__name__}: {e}")
+
+    # Step 6: Regenerate quant_data.json and backtest_runs/
     log.info("Running quant engine to regenerate quant_data.json...")
     quant_engine.generate_quant_data()
 

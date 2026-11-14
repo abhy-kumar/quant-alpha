@@ -24,7 +24,7 @@ export const EfficientFrontierCard: React.FC<EfficientFrontierCardProps> = ({ po
         icon={Target}
         title="Efficient Frontier"
         badge={
-          <span className="text-[12px]  font-mono px-2 py-0.5 rounded" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
+          <span className="text-[12px]  font-mono px-2 py-0.5 rounded-full" style={{ background: 'var(--brand-soft)', color: 'var(--brand-light)' }}>
             Mean-Variance Optimization
           </span>
         }
