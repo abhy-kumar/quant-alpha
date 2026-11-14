@@ -11,7 +11,7 @@ import pandas as pd
 import yfinance as yf
 from data_pipeline.data_pipeline import store_daily_ohlcv, update_outcome_tracking
 from engine.quant_engine import generate_quant_data
-from engine.backtest_engine import run_all_current_backtests, RUNS_DIR
+from engine.backtest_engine import run_all_current_backtests, RUNS_DIR, MIN_SUPPORTED_BACKTEST_VERSION
 from engine.ml_engine import get_ml_model, predict_stock_alpha
 from utils import atomic_json
 import json
@@ -36,7 +36,7 @@ def run():
     # Faulty legacy cached runs are intentionally invalidated, not relabeled.
     for path in Path(RUNS_DIR).glob('*.json'):
         data = json.loads(path.read_text(encoding='utf-8'))
-        if data.get('version') != 3 and path.name != 'index.json':
+        if path.name != 'index.json' and (data.get('version') or 0) < MIN_SUPPORTED_BACKTEST_VERSION:
             path.unlink()
     run_all_current_backtests(as_of_date=end, force=True)
     generate_quant_data()

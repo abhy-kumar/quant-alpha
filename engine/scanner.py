@@ -313,7 +313,7 @@ def _archive_scan(result_df: pd.DataFrame, scan_time: datetime) -> None:
         sql_df = result_df.copy()
         import json
         from engine.ranking_history import clean
-        for column in sql_df.select_dtypes(include='object').columns:
+        for column in [name for name in sql_df.columns if sql_df[name].dtype == object]:
             sql_df[column] = sql_df[column].map(lambda value: json.dumps(clean(value), allow_nan=False)
                                               if isinstance(value, (dict, list, tuple)) else value)
         sql_df["Scan_Date"] = scan_time.strftime("%Y-%m-%d %H:%M:%S")

@@ -227,49 +227,36 @@ export async function fetchChartData(ticker: string, period = '1mo', interval: Y
   return fullData.filter(d => d.time >= startTimeStr)
 }
 
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
-  )
+// Same symbols the live-quote endpoint accepts; anything else would turn this
+// function into an open proxy for arbitrary Yahoo requests.
+const TICKER = /^(?:[A-Z0-9&_-]{1,30}\.(?:NS|BO)|\^NSEI)$/
 
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 200
-    res.end()
-    return
+export default async function handler(req: IncomingMessage, res: ServerResponse) {
+  // Served to this site only: no cross-origin headers are set.
+  res.setHeader('Content-Type', 'application/json')
+  const send = (status: number, body: object, cache = 'no-store') => {
+    res.statusCode = status
+    res.setHeader('Cache-Control', cache)
+    res.end(JSON.stringify(body))
   }
+  if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return send(405, { error: 'Use GET' }) }
 
   try {
-    const url = new URL(req.url ?? '/', `http://${req.headers.host}`)
+    const url = new URL(req.url ?? '/', 'http://localhost')
     const ticker = url.searchParams.get('ticker')
     const period = url.searchParams.get('period') || '1mo'
     const interval = (url.searchParams.get('interval') || '1d') as YahooInterval
 
-    if (!ticker) {
-      res.statusCode = 400
-      res.setHeader('Content-Type', 'application/json')
-      res.end(JSON.stringify({ error: 'Ticker is required' }))
-      return
-    }
-
+    if (!ticker) return send(400, { error: 'Ticker is required' })
+    if (!TICKER.test(ticker)) return send(400, { error: 'Provide a valid NSE/BSE ticker' })
     if (!['1d','1wk'].includes(interval) || !['1w','1mo','3mo','6mo','1y','2y','5y'].includes(period)) {
-      res.statusCode = 400; res.end(JSON.stringify({ error: 'Use daily or weekly candles and a supported range' })); return
+      return send(400, { error: 'Use daily or weekly candles and a supported range' })
     }
     const data = await fetchChartData(ticker, period, interval)
-
-    res.statusCode = 200
-    res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify({
-      status: 'ok',
-      data,
-    }))
+    // Daily candles change slowly; let the edge absorb repeat views of the same chart.
+    return send(200, { status: 'ok', data }, 'public, s-maxage=60, stale-while-revalidate=300')
   } catch (error) {
     console.error('Yahoo Finance Error:', error)
-    res.statusCode = 500
-    res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify({ error: 'Failed to fetch chart data' }))
+    return send(500, { error: 'Failed to fetch chart data' })
   }
 }

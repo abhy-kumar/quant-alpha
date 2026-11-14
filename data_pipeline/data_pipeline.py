@@ -26,6 +26,8 @@ logger = logging.getLogger("data_pipeline")
 DB_PATH = "data/market_scans.db"
 
 
+from data_pipeline.price_repair import repair_discontinuities
+
 def _get_conn() -> sqlite3.Connection:
     os.makedirs("data", exist_ok=True)
     conn = sqlite3.connect(DB_PATH, timeout=10.0)
@@ -208,6 +210,8 @@ def store_daily_ohlcv(ohlcv_results: dict, scan_date: str):
     for ticker, df in ohlcv_results.items():
         if df is None or df.empty:
             continue
+        # Weekend and repair jobs fetch on their own; no writer may store a raw vendor jump.
+        df = repair_discontinuities(df)
         for idx, row in df.iterrows():
             date_str = idx.strftime("%Y-%m-%d") if hasattr(idx, "strftime") else str(idx)[:10]
             if date_str in HOLIDAYS:

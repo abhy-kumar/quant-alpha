@@ -149,7 +149,11 @@ SQLite WAL writes before splitting a database that has been modified. Commit onl
 the parts, never the joined database or its WAL files. Corrected backtest caches
 are versioned and invalidated when their source-price fingerprint changes.
 
-An installed local pre-commit hook may split the joined database automatically.
+An installed local pre-commit hook may split the joined database automatically. Always run
+`db_split_join.py join` after `git pull`: `split` refuses to overwrite parts that are
+newer than your local database (use `--force` only if you mean to replace them).
+Reinstall the hook with `python scripts/setup_hooks.py` after updating so removed
+parts are staged as well.
 Keep that database current after pulling new parts so the hook cannot replace
 fresh parts with an older local copy. Activate the virtual environment before
 committing if the hook invokes `python`.

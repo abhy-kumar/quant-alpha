@@ -11,8 +11,10 @@ HOOK_CONTENT = """#!/bin/sh
 # Git pre-commit hook to auto-split SQLite database before commit
 if [ -f "data/market_scans.db" ]; then
     echo "[Pre-Commit Hook] Auto-splitting data/market_scans.db into git-tracked chunks..."
+    # Skips by itself when the local database is older than the pulled parts.
     python db_split_join.py split
-    git add data/market_scans.db.part_*
+    # Quoted so git also stages parts that were removed.
+    git add -A -- 'data/market_scans.db.part_*'
 fi
 """
 

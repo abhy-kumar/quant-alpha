@@ -51,6 +51,9 @@ MAX_QUOTE_GAP_SESSIONS = 3
 RUNS_DIR = os.path.join("frontend", "public", "backtest_runs")
 TRANSACTION_COST_PER_LEG_BPS = 20  # 20 bps per leg buy/sell (40 bps round-trip)
 BACKTEST_VERSION = 4  # 4: discontinuity-repaired prices, short quote-gap tolerance
+# Oldest published result format the site still serves (frontend/api/data.ts mirrors it).
+# Raise it only to withdraw earlier results; raising BACKTEST_VERSION alone just recomputes.
+MIN_SUPPORTED_BACKTEST_VERSION = 3
 MIN_ADTV_INR = 10_000_000           # ₹1 Crore 30-day ADTV minimum liquidity gate
 
 

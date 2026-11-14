@@ -24,6 +24,7 @@ import yfinance as yf
 import engine.quant_engine as quant_engine
 from data_pipeline.data_pipeline import update_outcome_tracking, store_daily_ohlcv, DB_PATH
 from config import PERIOD, INTERVAL, MIN_ROWS
+from data_pipeline.price_repair import repair_discontinuities
 
 logging.basicConfig(
     level=logging.INFO,
@@ -68,7 +69,8 @@ def _fetch_ohlcv(ticker: str) -> tuple[str, pd.DataFrame | None]:
         df.dropna(subset=["Close"], inplace=True)
         if len(df) < MIN_ROWS:
             return ticker, None
-        return ticker, df
+        # Forward returns must not count an unadjusted demerger or split as a loss.
+        return ticker, repair_discontinuities(df)
     except Exception as e:
         log.warning(f"OHLCV fetch failed for {ticker}: {e}")
         return ticker, None

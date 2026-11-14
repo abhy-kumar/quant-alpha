@@ -29,6 +29,7 @@ documentation.md
 *.sqlite
 *.sqlite3
 data/market_scans.db
+data/market_scans.db.joining
 
 .env.*
 !.env.example

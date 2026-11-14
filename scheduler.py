@@ -89,7 +89,7 @@ def _post_market_scan() -> None:
     """Callback executed by the scheduler after market close."""
     logger.info("Scheduled post-market scan triggered.")
     try:
-        from scanner import run_scanner
+        from engine.scanner import run_scanner
         df = run_scanner()
         logger.info(f"Scan complete - {len(df)} stocks processed.")
     except Exception as exc:
@@ -100,7 +100,7 @@ def _live_price_update() -> None:
     """Callback executed to update live prices."""
     logger.info("Live price update triggered.")
     try:
-        from live_updater import update_live_prices
+        from data_pipeline.live_updater import update_live_prices
         update_live_prices()
     except Exception as exc:
         logger.error(f"Live update failed: {exc}")

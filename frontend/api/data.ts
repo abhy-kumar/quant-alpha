@@ -5,6 +5,11 @@ import { fileURLToPath } from 'node:url'
 import { authenticated } from '../server/auth.js'
 // Function bundles preserve the frontend directory when deployed from this repo.
 const dataDirectory = fileURLToPath(new URL('../public/', import.meta.url))
+// Oldest backtest result format still valid; keep equal to MIN_SUPPORTED_BACKTEST_VERSION
+// in engine/backtest_engine.py (a Python test enforces this).
+const MIN_DATA_VERSION = 3
+const supported = (version: unknown) => typeof version === 'number' && version >= MIN_DATA_VERSION
+let guestMarket: { etag: string; body: string } | null = null
 let strategyCache: { mtime: number; data: { dates: string[]; benchmark: number[]; prices: Record<string, unknown>; factors: Record<string, unknown>; methodology?: string } } | null = null
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   res.setHeader('Content-Type', 'application/json')
@@ -44,18 +49,33 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       return send(200, { dates, benchmark: history.benchmark.slice(page*10,(page+1)*10),
         prices: Object.fromEntries(dates.map(date => [date,history.prices[date]])), factors })
     }
-    const data = JSON.parse(await readFile(resolve(dataDirectory, file), 'utf8'))
     if (resource === 'market' && !loggedIn) {
-      for (const stock of data.data || []) for (const field of Object.keys(stock)) {
-        if (/Score|Conviction|ML_|Ranking_|Red_Flag|ATR_(Stop|Target|Chandelier)/i.test(field)) stock[field] = null
+      // The public snapshot is ~1 MB and every visitor refetches it on focus. Let the
+      // browser revalidate with an ETag and reuse the redacted body between scans.
+      const fullPath = resolve(dataDirectory, file)
+      const info = await stat(fullPath)
+      const etag = `W/"guest-${Math.round(info.mtimeMs)}-${info.size}"`
+      res.setHeader('Cache-Control', 'private, no-cache')
+      res.setHeader('ETag', etag)
+      if (req.headers['if-none-match'] === etag) { res.statusCode = 304; res.end(); return }
+      if (!guestMarket || guestMarket.etag !== etag) {
+        const data = JSON.parse(await readFile(fullPath, 'utf8'))
+        for (const stock of data.data || []) for (const field of Object.keys(stock)) {
+          if (/Score|Conviction|ML_|Ranking_|Red_Flag|ATR_(Stop|Target|Chandelier)/i.test(field)) stock[field] = null
+        }
+        delete data.sector_summary
+        delete data.outcome_accuracy
+        delete data.legacy_outcome_accuracy
+        guestMarket = { etag, body: JSON.stringify(data) }
       }
-      delete data.sector_summary
-      delete data.outcome_accuracy
-      delete data.legacy_outcome_accuracy
+      res.statusCode = 200
+      res.end(guestMarket.body)
+      return
     }
-    if (resource === 'quant' && data.data_version !== 3) return send(503, { error: 'Research data is being regenerated' })
-    if (resource === 'run' && data.version !== 3) return send(410, { error: 'Legacy run invalidated; regenerate this run' })
-    if (resource === 'runs') data.runs = (data.runs || []).filter((r: { version?: number }) => r.version === 3)
+    const data = JSON.parse(await readFile(resolve(dataDirectory, file), 'utf8'))
+    if (resource === 'quant' && !supported(data.data_version)) return send(503, { error: 'Research data is being regenerated' })
+    if (resource === 'run' && !supported(data.version)) return send(410, { error: 'Legacy run invalidated; regenerate this run' })
+    if (resource === 'runs') data.runs = (data.runs || []).filter((r: { version?: number }) => supported(r.version))
     return send(200, data)
   } catch (error) {
     console.error('Unable to read bundled research data', { resource, file, error })

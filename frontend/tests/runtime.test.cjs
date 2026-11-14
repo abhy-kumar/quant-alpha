@@ -175,3 +175,39 @@ test('score history never mixes model versions or substitutes another horizon', 
   assert.deepEqual(horizonHistory(history,'ranking-v3.0','short').map(r=>r.composite),[0])
   assert.deepEqual(horizonHistory(history,'ranking-v3.0','long').map(r=>r.composite),[5,6])
 })
+const chart = load('api/chart.ts').default
+test('chart API accepts only listed-symbol GET requests and sends no cross-origin headers', async () => {
+  for (const ticker of ['', 'AAPL', '../x', 'A.NS,B.NS', 'A'.repeat(40) + '.NS', 'a.ns'])
+    assert.equal((await call(chart,'GET','/api/chart?ticker=' + encodeURIComponent(ticker))).statusCode,400)
+  const rejected = await call(chart,'GET','/api/chart?ticker=A.NS&period=10y')
+  assert.equal(rejected.statusCode,400)
+  assert.equal(rejected.headers['Cache-Control'],'no-store')
+  assert.equal(Object.keys(rejected.headers).some(name => /^access-control/i.test(name)),false)
+  assert.equal((await call(chart,'POST','/api/chart?ticker=A.NS')).statusCode,405)
+})
+test('login rejects unparsable origins and rate-limits each visitor separately on the host', async () => {
+  process.env.AUTH_EMAIL='test@example.invalid';process.env.AUTH_PASSWORD='test-only-secret'
+  for (const origin of ['null','not a url','https://evil.example'])
+    assert.equal((await call(login,'POST','/api/login',{email:'a',password:'b'},{origin})).statusCode,403)
+  process.env.VERCEL='1'
+  try {
+    let last
+    for (let i=0;i<12;i++) last = await call(login,'POST','/api/login',{email:'a',password:'b'},{'x-real-ip':'203.0.113.7'})
+    assert.equal(last.statusCode,429)
+    assert.equal((await call(login,'POST','/api/login',{email:'a',password:'b'},{'x-real-ip':'203.0.113.8'})).statusCode,401)
+  } finally { delete process.env.VERCEL }
+})
+test('guest market data revalidates with an ETag and never leaks scores into the cached body', async () => {
+  const first = await call(data,'GET','/api/data?resource=market')
+  assert.equal(first.statusCode,200)
+  assert.match(first.headers['Cache-Control'],/no-cache/)
+  assert.equal(first.body.data.some(s => s.Composite_Score != null || s.Conviction != null),false)
+  const again = await call(data,'GET','/api/data?resource=market',null,{'if-none-match':first.headers.ETag})
+  assert.equal(again.statusCode,304)
+  assert.equal(again.body,null)
+  const cookie = 'qa_session=' + auth.newSession()
+  const member = await call(data,'GET','/api/data?resource=market',null,{cookie,'if-none-match':first.headers.ETag})
+  assert.equal(member.statusCode,200)
+  assert.match(member.headers['Cache-Control'],/no-store/)
+  assert.equal(member.body.data.some(s => s.Composite_Score != null),true)
+})
