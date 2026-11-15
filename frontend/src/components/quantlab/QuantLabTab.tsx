@@ -13,6 +13,8 @@ import { ScenarioStressCard } from './ScenarioStressCard'
 import { FactorICMonitorCard } from './FactorICMonitorCard'
 import { ModelEvidenceCard } from './ModelEvidenceCard'
 import { TrackRecordCard } from './TrackRecordCard'
+import { PaperPortfolioCard } from './PaperPortfolioCard'
+import { RatingChangesCard } from './RatingChangesCard'
 import { CorrelationHeatmapCard } from './CorrelationHeatmapCard'
 import { StrategyBuilderDrawer } from './StrategyBuilderDrawer'
 import { StrategyTearSheet } from './StrategyTearSheet'
@@ -454,7 +456,8 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
           <GlassCard>
             <GlassCardHeader
               icon={TrendUp}
-              title="Strategy Backtest | Top 10 Equal Weight"
+              title="Price-Only Strategy Backtest"
+              subtitle="A separate top-10 price strategy, not a replay of the live ratings"
               tooltipId="quant.backtest"
               action={
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
@@ -787,8 +790,10 @@ function QuantLabTabInner({ isDark, scanUpdated, onSelect }: Props) {
         
 
       {/* What the ratings actually did, and the evidence behind each model input */}
+      <PaperPortfolioCard portfolio={quantData.portfolio} isDark={isDark} onSelect={onSelect} />
+      <RatingChangesCard changes={quantData.rating_changes} onSelect={onSelect} />
       <TrackRecordCard record={quantData.track_record} />
-      <ModelEvidenceCard research={quantData.factor_research} />
+      <ModelEvidenceCard research={quantData.factor_research} fundamentals={quantData.fundamental_evidence} />
 
       {/* ===============================================================
           BACKTEST ARCHIVE  (auto-updated every Saturday by scheduler)

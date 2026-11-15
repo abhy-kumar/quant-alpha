@@ -2,6 +2,7 @@ import { horizonScore, horizonConviction } from '../../utils/ranking'
 import { debtEquityRatio } from '../../utils/formatters'
 import { useMemo } from 'react'
 import type { DashboardData } from '../../types'
+import { HoldingsCard } from './HoldingsCard'
 import { scoreBar, SegmentedControl, GlassCard, GlassCardHeader, GlassCardContent } from '../common/shared'
 
 function ConvictionDots({ conviction }: { conviction: string }) {
@@ -20,6 +21,7 @@ function ConvictionDots({ conviction }: { conviction: string }) {
 
 interface Props {
   topPicks: DashboardData[]
+  allStocks: DashboardData[]
   horizon: 'short'|'long'
   setHorizon: (h: 'short'|'long') => void
   onSelect: (t: string) => void
@@ -99,7 +101,7 @@ function ScoreRadar({ s }: { s: DashboardData }) {
   )
 }
 
-function SignalsTabInner({ topPicks, horizon, setHorizon, onSelect }: Props) {
+function SignalsTabInner({ topPicks, allStocks, horizon, setHorizon, onSelect }: Props) {
   const avgScore = useMemo(() => {
     if (!topPicks.length) return 0
     return topPicks.reduce((sum, row) => sum + horizonScore(row, horizon), 0) / topPicks.length
@@ -261,6 +263,7 @@ function SignalsTabInner({ topPicks, horizon, setHorizon, onSelect }: Props) {
           )
         })}
       </div>
+      <HoldingsCard data={allStocks} onSelect={onSelect} />
     </div>
   )
 }

@@ -391,6 +391,13 @@ def run_scanner(progress_callback=None, use_stored_prices=False) -> pd.DataFrame
     else:
         ohlcv_results = _fetch_ohlcv_batch(tickers, progress_callback)
     bhav, bhav_date = download_bhav_copy()
+    # Compare the vendor's closes with the exchange's own file before any are filled from it.
+    try:
+        from engine.data_health import cross_check_closes
+        price_check = cross_check_closes(ohlcv_results, bhav, bhav_date)
+    except Exception as error:
+        log.warning(f"Price cross-check skipped: {type(error).__name__}: {error}")
+        price_check = None
     ohlcv_results, supplements = complete_from_bhav(ohlcv_results, bhav, bhav_date)
     # Also repair today's gaps for historical holdings outside the current screen.
     if bhav_date is not None:
@@ -487,6 +494,21 @@ def run_scanner(progress_callback=None, use_stored_prices=False) -> pd.DataFrame
             "validation_status": "Forward validation pending for ranking-v3.0",
             "data": result_df.to_dict(orient="records")
         }
+
+        # Data health: what this scan had to work with, and what changed since the last one.
+        try:
+            from engine import data_health
+            previous_health = None
+            if os.path.exists("frontend/public/market_data.json"):
+                with open("frontend/public/market_data.json", encoding="utf-8") as stream:
+                    previous_health = json.load(stream).get("data_health")
+            output_data["data_health"] = data_health.build(
+                output_data["data"], regime, requested=total, price_check=price_check,
+                previous=previous_health, scan_time=output_data["last_updated"])
+            for issue in output_data["data_health"]["issues"]:
+                log.warning(f"[Data health] {issue}")
+        except Exception as error:
+            log.warning(f"Data health report skipped: {type(error).__name__}: {error}")
 
         os.makedirs("frontend/public", exist_ok=True)
         from utils import atomic_json

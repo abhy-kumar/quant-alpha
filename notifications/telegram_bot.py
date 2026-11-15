@@ -42,6 +42,11 @@ def build_message(market_data: dict) -> str:
         f"*Market regime:* {_number(market_data.get('market_regime_score')):+.0f} on a -5 to +5 scale",
         "───────────────────────────",
     ]
+    health = market_data.get("data_health") or {}
+    if health.get("status") == "degraded":
+        lines.append("*Data warning*: this scan ran with gaps.")
+        lines.extend(f"- {_escape(issue)}" for issue in health.get("issues", [])[:5])
+        lines.append("───────────────────────────")
     if not picks:
         lines.append("No stock currently meets the Buy criteria.")
     else:

@@ -49,6 +49,7 @@ class ErrorBoundary extends React.Component<
   }
 }
 
+const DataHealthModal = lazy(() => import('./components/common/DataHealthModal').then(module => ({ default: module.DataHealthModal })))
 const loadSignalsTab   = () => import('./components/signals/SignalsTab')
 const loadScreenerTab  = () => import('./components/screener/ScreenerTab')
 const loadChartingTab  = () => import('./components/charting/ChartingTab')
@@ -171,6 +172,7 @@ export default function App() {
     niftyData,
     coveragePct,
     regimeReadings,
+    dataHealth,
     loadError,
     marketRegimeScore,
     isDynamic,
@@ -270,6 +272,7 @@ export default function App() {
 
   const handleSelect = (t: string) => { setSelectedTicker(t); setActiveTab('charting') }
   // Selection pill that slides between tabs instead of jumping.
+  const [showHealth, setShowHealth] = useState(false)
   const navRef = useRef<HTMLElement>(null)
   const [navPill, setNavPill] = useState<{ left: number; width: number } | null>(null)
   useLayoutEffect(() => {
@@ -398,7 +401,13 @@ export default function App() {
             </span>
           )}
 
-          {coveragePct!==null && (
+          {dataHealth ? (
+            <button type="button" className="glass-pill" style={{ flexShrink:0, fontWeight:500, cursor:'pointer', border:'1px solid var(--border)', background:'transparent' }}
+              onClick={() => setShowHealth(true)} aria-haspopup="dialog">
+              <span aria-hidden="true" style={{ width:6, height:6, borderRadius:'50%', display:'inline-block', marginRight:6, background: dataHealth.status === 'ok' ? 'var(--green)' : 'var(--amber)' }}/>
+              <span style={{ color:'var(--text-2)' }}>{dataHealth.status === 'ok' ? 'Data healthy' : `Data: ${dataHealth.issues.length} ${dataHealth.issues.length === 1 ? 'issue' : 'issues'}`}</span>
+            </button>
+          ) : coveragePct!==null && (
             <span style={{ flexShrink:0, fontWeight:500 }}>
               <span style={{ color:'var(--text-3)' }}>Data coverage </span>
               <span className="font-mono" style={{ color:'var(--text-2)' }}>{coveragePct}%</span>
@@ -438,7 +447,7 @@ export default function App() {
                 <ChartingTab data={data} selectedTicker={selectedTicker} setSelectedTicker={setSelectedTicker} chartData={chartData} chartLoading={chartLoading} chartPeriod={chartPeriod} setChartPeriod={setChartPeriod} chartInterval={chartInterval} setChartInterval={setChartInterval} isDark={isDark} peerGroup={peerGroup} selectedAsset={selectedAsset} scoreHistory={scoreHistory} horizon={horizon} isLoggedIn={isLoggedIn} onRequestSignIn={() => setShowLogin(true)}/>
               </div>
               <div className={activeTab === 'picks' ? 'block animate-fade-in' : 'hidden'}>
-                {isLoggedIn && <SignalsTab topPicks={topPicks} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
+                {isLoggedIn && <SignalsTab topPicks={topPicks} allStocks={data} horizon={horizon} setHorizon={setHorizon} onSelect={handleSelect}/>}
               </div>
               <div className={activeTab === 'fundamentals' ? 'block animate-fade-in' : 'hidden'}>
                 <ScreenerTab data={data} onSelect={handleSelect} watchlist={watchlist} toggleWatchlist={toggleWatchlist} scoreHistory={scoreHistory} flashTickers={flashTickers} isLoggedIn={isLoggedIn} onRequestSignIn={() => setShowLogin(true)}/>
@@ -501,6 +510,9 @@ export default function App() {
             <button type="submit" disabled={loginLoading} className="btn-primary w-full">{loginLoading ? 'Signing in…' : 'Sign in'}</button>
           </form>
         </ModalShell>
+      )}
+      {showHealth && dataHealth && (
+        <Suspense fallback={null}><DataHealthModal health={dataHealth} onClose={() => setShowHealth(false)} /></Suspense>
       )}
       <SocialShareModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} asset={selectedAsset} />
       <Analytics />

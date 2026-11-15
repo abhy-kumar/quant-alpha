@@ -211,3 +211,20 @@ test('guest market data revalidates with an ETag and never leaks scores into the
   assert.match(member.headers['Cache-Control'],/no-store/)
   assert.equal(member.body.data.some(s => s.Composite_Score != null),true)
 })
+test('rating explanations state rank, drivers, red flags and missing data in plain words', () => {
+  const { explainRating } = load('src/utils/explain.ts')
+  const base = { Ticker:'A.NS', Sector:'Industrials', Conviction:'Buy', Composite_Score:6.1,
+    Ranking_Factors:{quality:8.4,value:2.1,momentum:7.0,trend:5.0,stability:5.2},
+    Ranking_Percentiles:{balanced:82}, Ranking_Coverage:{balanced:1}, Ranking_Eligible:{balanced:true}, Red_Flags:[] }
+  const buy = explainRating(base)
+  assert.match(buy.headline,/Rated Buy: it ranks in the top 18%/)
+  assert.ok(buy.points.some(p => /Helped by very strong quality \(8\.4\) and strong momentum \(7\.0\)/.test(p)))
+  assert.ok(buy.points.some(p => /Held back by very weak value \(2\.1\)/.test(p)))
+  assert.ok(buy.points.some(p => /Strong Buy needs the top 10%/.test(p)))
+  const low = explainRating({ ...base, Conviction:'Caution', Ranking_Percentiles:{balanced:39}, Red_Flags:['Negative trailing earnings'] })
+  assert.match(low.headline,/bottom 39%/)
+  assert.ok(low.points.some(p => /red flag: negative trailing earnings/.test(p)))
+  const thin = explainRating({ ...base, Conviction:'Insufficient data', Ranking_Eligible:{balanced:false}, Ranking_Coverage:{balanced:.55} })
+  assert.match(thin.headline,/Not rated: only 55% of the inputs/)
+  assert.equal(explainRating({ ...base, Sector:'ETF' }),null)
+})

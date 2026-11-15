@@ -122,6 +122,23 @@ recovered from the implied count, market value divided by price, the exchange
 quote or the balance sheet, and free cash flow from the annual cash-flow
 statement (operating cash flow less capital expenditure).
 
+Each scan publishes a data health report: the share of stocks with each ranking
+input (inputs that do not apply to financial companies are measured on the rest),
+how many market readings were fetched, how many closing prices agree with the NSE
+daily file within 1%, and what changed since the previous scan. A scan is marked
+degraded when an input falls below 75% or drops 10 points, a market reading is
+missing, more than 2% of cross-checked closes disagree, or a fifth of the stocks
+are missing. The Telegram summary leads with the problems when that happens.
+
+The model basket (`engine.paper_portfolio`) is recomputed from the saved rating
+snapshots on every scan: the 20 highest-scoring stocks rated Buy or Strong Buy on
+the balanced horizon, eligible and without red flags, at most four per sector,
+equal weight, bought at the close after the rating was published, reviewed every
+21 sessions with 0.2% cost on each trade. A review waits for a rating snapshot no
+more than five sessions old. Quality and value inputs are tested on the
+fundamentals saved in those snapshots, and no verdict is published until 252
+scan dates have matured.
+
 Fundamental caches expire after 24 hours and require the current data schema.
 This is retrieval freshness; financial statements still reflect their reporting periods.
 Growth inputs are always fractions; ROCE and debt/equity use percentage points.

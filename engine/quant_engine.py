@@ -7,7 +7,7 @@ from scipy.optimize import minimize
 from config import RISK_FREE_RATE
 import logging
 import engine.backtest_engine as backtest_engine
-from engine import track_record
+from engine import track_record, paper_portfolio, factor_research
 
 logger = logging.getLogger("quant_engine")
 DB_PATH = "data/market_scans.db"
@@ -414,6 +414,8 @@ def generate_quant_data():
             "backtest_long_6m":  wf_results.get("backtest_long_6m"),
             "market_regime": regime,
             "track_record": _optional("Track record", track_record.build),
+            **(_optional("Paper portfolio", paper_portfolio.build) or {"portfolio": None, "rating_changes": None}),
+            "fundamental_evidence": _optional("Fundamental evidence", factor_research.fundamental_study),
             "factor_research": _optional("Factor research", load_factor_research),
             "sector_allocation": sectors,
             "correlation_matrix": correlation

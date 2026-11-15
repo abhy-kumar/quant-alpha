@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { Scales } from '@phosphor-icons/react'
-import type { FactorResearch, FactorEvidence } from '../../types'
+import type { FactorResearch, FactorEvidence, FundamentalEvidence } from '../../types'
 import { GlassCard, GlassCardHeader, GlassCardContent, GlassCardFooter } from '../common/shared'
 
 const percent = (value?: number | null, digits = 1) =>
@@ -40,7 +40,7 @@ function Row({ factor, scale }: { factor: FactorEvidence; scale: number }) {
   )
 }
 
-export const ModelEvidenceCard: React.FC<{ research?: FactorResearch | null }> = ({ research }) => {
+export const ModelEvidenceCard: React.FC<{ research?: FactorResearch | null; fundamentals?: FundamentalEvidence | null }> = ({ research, fundamentals }) => {
   const [showCandidates, setShowCandidates] = useState(false)
   const { inModel, candidates, scale } = useMemo(() => {
     const factors = research?.factors ?? []
@@ -116,6 +116,31 @@ export const ModelEvidenceCard: React.FC<{ research?: FactorResearch | null }> =
             {showCandidates ? 'Show model factors' : `Show ${candidates.length} candidates`}
           </button>
         </div>
+        {fundamentals && (
+          <div className="rounded-[var(--radius)] p-4" style={{ background: 'var(--surface-2)' }}>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h4 className="typo-h3">Quality and value inputs</h4>
+              <span className="typo-caption">
+                {fundamentals.enough_history ? `${fundamentals.matured_dates} scan dates tested` : `${fundamentals.matured_dates} of ${fundamentals.dates_required} scan dates collected`}
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: 'var(--border)' }} role="progressbar"
+              aria-valuemin={0} aria-valuemax={fundamentals.dates_required} aria-valuenow={Math.min(fundamentals.matured_dates, fundamentals.dates_required)} aria-label="History collected for testing fundamentals">
+              <div className="h-full rounded-full" style={{ width: `${Math.min(100, (fundamentals.matured_dates / fundamentals.dates_required) * 100)}%`, background: 'var(--brand)' }} />
+            </div>
+            {fundamentals.enough_history ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {fundamentals.inputs.map(input => (
+                  <span key={input.id} className="badge" style={VERDICT_STYLE[input.verdict] ?? { background: 'var(--surface)', color: 'var(--text-2)' }}>{input.label}: {input.verdict}</span>
+                ))}
+              </div>
+            ) : (
+              <p className="typo-caption mt-2 max-w-[70ch]">
+                These make up 25% to 65% of a rating but cannot be judged yet. The app saves each scan's fundamentals as they were known that day, and a verdict needs about a year of them. No numbers are shown until then because a few dates would only be noise.
+              </p>
+            )}
+          </div>
+        )}
       </GlassCardContent>
       <GlassCardFooter>
         Rank correlation with the next 21 sessions' return over NIFTY, entering at the next close. Supported needs t of 3 or more,

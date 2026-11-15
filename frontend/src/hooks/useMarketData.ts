@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import axios from 'axios'
-import type { DashboardData, ScoreHistoryItem } from '../types'
+import type { DashboardData, DataHealth, ScoreHistoryItem } from '../types'
 
 
 export function useMarketData(selectedTicker: string, setSelectedTicker: (t: string) => void, isLoggedIn = false) {
@@ -11,6 +11,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
   const [niftyData, setNiftyData] = useState<{ price: number; change_pct: number; is_up: boolean } | null>(null)
   const [coveragePct, setCoveragePct] = useState<number | null>(null)
   const [regimeReadings, setRegimeReadings] = useState<number | null>(null)
+  const [dataHealth, setDataHealth] = useState<DataHealth | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [marketRegimeScore, setMarketRegimeScore] = useState<number | null>(null)
   const [isDynamic, setIsDynamic] = useState(false)
@@ -124,6 +125,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
         setCoveragePct(res.data.coverage_pct ?? null)
         setRegimeReadings(res.data.market_regime_readings ?? null)
+        setDataHealth(res.data.data_health ?? null)
         setMarketRegimeScore(res.data.market_regime_score ?? null)
         setFiiNet(res.data.fii_net ?? null)
         setDiiNet(res.data.dii_net ?? null)
@@ -187,6 +189,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
     niftyData,
     coveragePct,
     regimeReadings,
+    dataHealth,
     loadError,
     marketRegimeScore,
     isDynamic,

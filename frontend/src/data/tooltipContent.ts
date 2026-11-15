@@ -150,6 +150,9 @@ export const tooltips: Record<string, TooltipEntry> = {
   // quant.*: Quant Lab Tab
   'quant.regime': { text: 'Five market readings, each scored +1, 0 or −1 and added up: NIFTY versus its 200-day average, India VIX, foreign investor flows, the put-call ratio and market breadth. The total runs from −5 to +5. It describes conditions; it has not been shown to predict the picks.', source: 'Market Regime Model' },
   'quant.evidence': { text: 'How well each input ranked stocks by their return over the following month, measured on past prices. A positive rank correlation means higher-ranked stocks went on to do better. Evidence is weaker than it looks when history is short.', source: 'Factor research, refreshed weekly' },
+  'quant.basket': { text: 'The 20 highest-rated stocks, at most four per sector, held in equal amounts on paper and reviewed about once a month. It follows the ratings exactly as they were published.', source: 'Published ratings and later prices' },
+  'quant.changes': { text: 'Stocks whose rating moved between the two most recent scans.', source: 'Published ratings' },
+  'signals.holdings': { text: 'Enter what you own to see its return since you bought it, how NIFTY did over the same time, and how the app rates it today. Stored only in this browser.', source: 'Your entries and current ratings' },
   'quant.track': { text: 'What stocks went on to do after the app published each rating. Use it to judge the ratings by results, not by backtests.', source: 'Published ratings and later prices' },
   'quant.breadth': { text: 'Share of traded NSE stocks that rose in the latest session. Above 55% counts as broad strength, below 45% as broad weakness.', source: 'Market Breadth' },
   'quant.vix': { text: 'India VIX: the market\'s expected volatility over the next 30 days, from option prices. Below 15 is calm, above 25 is stressed.', source: 'NSE' },

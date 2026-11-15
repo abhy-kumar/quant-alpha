@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { ModalShell } from './ModalShell'
 import type { DashboardData } from '../../types'
 import { FactorRadarChart } from './FactorRadarChart'
+import { explainRating } from '../../utils/explain'
 import { formatNum as num, colorCode, scoreColor, getBadgeClass } from '../../utils/formatters'
 import { X, Printer, Copy, Check, FileText } from '@phosphor-icons/react'
 
@@ -112,6 +113,21 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
               </div>
             </div>
           </div>
+
+                    {(() => {
+            const why = explainRating(asset)
+            return why && (
+              <div className="p-3 card rounded-xl mb-3">
+                <span className="text-[12px] font-semibold tracking-normal text-[var(--brand)]">Why this rating</span>
+                <p className="text-[13px] font-medium mt-1" style={{ color: 'var(--text)' }}>{why.headline}</p>
+                {why.points.length > 0 && (
+                  <ul className="mt-1.5 space-y-1 text-[12.5px] list-disc pl-5" style={{ color: 'var(--text-2)' }}>
+                    {why.points.map(point => <li key={point}>{point}</li>)}
+                  </ul>
+                )}
+              </div>
+            )
+          })()}
 
           {/* Hero Conviction & Scoring Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

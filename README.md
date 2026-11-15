@@ -38,8 +38,9 @@ prices.
 | Charts | Daily and weekly prices, indicators, company profile, live quotes | No |
 | Screener | Every tracked stock with filters, comparison and watchlist | Scores need sign-in |
 | Heatmap | Research scores by sector | No |
-| Signals | The highest-rated stocks for a short or long horizon | Yes |
-| Quant Lab | Track record, model evidence, backtests, model portfolios, strategy builder | Yes |
+| Signals | The highest-rated stocks for a short or long horizon, and your own holdings against today's ratings | Yes |
+| Quant Lab | Model basket and paper portfolio, rating changes, track record, model evidence, backtests, strategy builder | Yes |
+| Data health | Which sources answered and how complete each input is, from the status button in the header | No |
 
 Live quotes refresh every 30 seconds while NSE is open and every five minutes
 when it is closed. The strip at the top of the page scrolls through every tracked
@@ -87,11 +88,18 @@ is in [docs/RANKING.md](docs/RANKING.md).
 
 Quant Lab shows two things so you can judge the model by results:
 
+- **Model basket.** The 20 highest-rated stocks, at most four per sector, held on
+  paper in equal amounts and reviewed about monthly, with its value beside NIFTY.
+  It follows the ratings exactly as published, so it is a record, not a backtest.
 - **Track record.** What stocks did after each published rating, held for one
   week, one month or three months, beside NIFTY over the same days.
 - **Model evidence.** How well each input ranked stocks by their next-month
   return, and whether any of 14 candidate inputs would improve the model. A
   candidate is only promoted if it helps in both halves of the history.
+
+Every stock's factsheet says why it has its rating: where it ranks, which inputs
+helped or held it back, any red flag, and what the next rating up requires.
+Holdings you enter are kept in your browser only.
 
 Things to keep in mind:
 

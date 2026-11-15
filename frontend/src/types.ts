@@ -113,6 +113,7 @@ export interface MarketData {
   nifty_change_pct?: number
   vix_level?: number
   breadth_pct?: number
+  data_health?: DataHealth | null
   market_regime_readings?: number
   market_regime_missing?: string[]
   fii_net?: number | null
@@ -239,6 +240,47 @@ export interface FactorResearch {
   regime?: Record<string, { label: string; difference: number | null; t: number | null }>
 }
 
+export interface PaperPortfolio {
+  rules: string
+  inception: string
+  through: string
+  sessions: number
+  return: number
+  nifty_return: number
+  max_drawdown: number
+  last_review: string
+  sessions_to_next_review: number
+  cash_share: number
+  holdings: { ticker: string; sector: string | null; rating_now: string | null; score_now: number | null; entry_date: string; entry_price: number; price: number; return: number }[]
+  next_basket: { ratings_from: string; would_add: string[]; would_drop: string[]; tickers: string[] }
+  chart: { date: string; portfolio: number; nifty: number }[]
+}
+
+export interface RatingChange { ticker: string; sector: string; from: string; to: string; steps: number; score: number | null; score_change: number | null }
+export interface RatingChanges { date: string; compared_with: string; upgrades: RatingChange[]; downgrades: RatingChange[]; upgrade_count: number; downgrade_count: number }
+
+export interface FundamentalEvidence {
+  snapshot_dates: number
+  matured_dates: number
+  dates_required: number
+  enough_history: boolean
+  note: string
+  inputs: { id: string; label: string; group: string; ic: number | null; dates: number; t: number | null; verdict: string }[]
+}
+
+export interface DataHealth {
+  status: 'ok' | 'degraded'
+  issues: string[]
+  scan_time: string | null
+  stocks: number
+  requested: number | null
+  eligible_pct: number | null
+  inputs: { id: string; label: string; coverage: number; stocks: number; of: number; change: number | null }[]
+  fields: { label: string; coverage: number | null }[]
+  market_readings: { available: number | null; of: number; missing: string[] }
+  price_check: { date: string; compared: number; mismatched: number; worst: { ticker: string; vendor: number; exchange: number; gap: number }[] } | null
+}
+
 export interface TrackRecordRow {
   label: string
   scan_dates: number
@@ -286,6 +328,9 @@ export interface QuantData {
     breadth: number | null
   }
   track_record?: TrackRecord | null
+  portfolio?: PaperPortfolio | null
+  rating_changes?: RatingChanges | null
+  fundamental_evidence?: FundamentalEvidence | null
   factor_research?: FactorResearch | null
   sector_allocation?: Record<string, number>
   correlation_matrix?: {

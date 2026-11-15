@@ -352,3 +352,76 @@ def write(report, path='data/factor_research.json'):
     from utils import atomic_json
     atomic_json(path, json.loads(json.dumps(report, allow_nan=False)))
     return path
+
+
+# ---------------------------------------------------------------- fundamentals
+FUNDAMENTAL_INPUTS = {
+    'roe': ('Return on equity', 'Quality'), 'roa': ('Return on assets', 'Quality'),
+    'roce': ('Return on capital employed', 'Quality'), 'margin': ('Profit margin', 'Quality'),
+    'cash_quality': ('Cash quality', 'Quality'), 'leverage': ('Low leverage', 'Quality'),
+    'earnings_yield': ('Earnings yield', 'Value'), 'book_yield': ('Book yield', 'Value'),
+    'fcf_yield': ('Free-cash-flow yield', 'Value'), 'sales_yield': ('Sales yield', 'Value'),
+}
+FUNDAMENTAL_HORIZON = 21
+# A verdict on a fundamental input needs a year of daily snapshots (about 12 separate months).
+FUNDAMENTAL_DATES_REQUIRED = 252
+
+
+def fundamental_study(database='data/market_scans.db', version=None):
+    """Test quality and value inputs on the fundamentals the app itself recorded.
+
+    Each saved rating snapshot holds the fundamentals exactly as they were known
+    that day, so this is free of look-ahead. It only becomes meaningful as
+    snapshots accumulate; until then it reports how much history is still needed.
+    """
+    from engine.ranking import MODEL_VERSION
+    version = version or MODEL_VERSION
+    with sqlite3.connect(Path(database).resolve().as_uri() + '?mode=ro', uri=True) as conn:
+        tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        if 'ranking_history' not in tables:
+            return None
+        rows = conn.execute('SELECT Scan_Date, Ticker, Payload FROM ranking_history WHERE Model_Version=?', (version,)).fetchall()
+        quotes = repair_long(pd.read_sql_query('SELECT Ticker,Date,Open,Close FROM daily_ohlcv', conn))
+    prices = quotes.pivot_table(index='Date', columns='Ticker', values='Close', aggfunc='last').sort_index()
+    prices.index = pd.to_datetime(prices.index)
+    if '^NSEI' not in prices or not rows:
+        return None
+    prices = prices.loc[prices['^NSEI'].notna()]
+    records = []
+    for scan_date, ticker, payload in rows:
+        row = (json.loads(payload) or {}).get('row') or {}
+        inputs = row.get('Ranking_Inputs') or {}
+        records.append({'day': scan_date[:10], 'Ticker': ticker, 'Sector': row.get('Sector'),
+                        **{name: inputs.get(name) for name in FUNDAMENTAL_INPUTS}})
+    frame = pd.DataFrame(records).drop_duplicates(['day', 'Ticker'], keep='last')
+    frame = frame[frame.Sector != 'ETF']
+    series = {name: [] for name in FUNDAMENTAL_INPUTS}
+    matured = 0
+    for day, group in frame.groupby('day'):
+        entry = prices.index.searchsorted(pd.Timestamp(day), side='right')
+        exit_ = entry + FUNDAMENTAL_HORIZON
+        if exit_ >= len(prices):
+            continue
+        change = prices.iloc[exit_] / prices.iloc[entry] - 1
+        target = (change - change['^NSEI']).reindex(group.Ticker).to_numpy()
+        matured += 1
+        for name in FUNDAMENTAL_INPUTS:
+            values = pd.to_numeric(group[name], errors='coerce').to_numpy()
+            keep = np.isfinite(values) & np.isfinite(target)
+            if keep.sum() >= MIN_STOCKS and len(np.unique(values[keep])) > 3:
+                series[name].append(pd.Series(values[keep]).corr(pd.Series(target[keep]), method='spearman'))
+    enough = matured >= FUNDAMENTAL_DATES_REQUIRED
+    inputs = []
+    for name, (label, group) in FUNDAMENTAL_INPUTS.items():
+        values = pd.Series(series[name], dtype=float).dropna()
+        stats = None
+        if len(values):
+            stats = {'ic': _round(values.mean()), 'dates': int(len(values)),
+                     't': _round(newey_west_t(values, FUNDAMENTAL_HORIZON), 2) if enough else None}
+        inputs.append({'id': name, 'label': label, 'group': group, **(stats or {'ic': None, 'dates': 0, 't': None}),
+                       'verdict': 'Not enough history' if not enough or not stats or stats['t'] is None
+                       else 'Supported' if stats['t'] >= 3 else 'Promising' if stats['t'] >= 2 else 'Not supported'})
+    return {'version': version, 'snapshot_dates': int(frame.day.nunique()), 'matured_dates': matured,
+            'dates_required': FUNDAMENTAL_DATES_REQUIRED, 'enough_history': enough, 'inputs': inputs,
+            'note': ('Fundamentals as recorded on each scan date, tested against the following 21 sessions. '
+                     'Readings from a handful of dates are noise; verdicts appear after a year of snapshots.')}
