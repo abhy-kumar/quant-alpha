@@ -170,6 +170,7 @@ export default function App() {
     loading,
     niftyData,
     coveragePct,
+    regimeReadings,
     loadError,
     marketRegimeScore,
     isDynamic,
@@ -364,6 +365,11 @@ export default function App() {
               <span className="font-mono" title="Market regime score, from −5 to +5" style={{ fontWeight:500, color:'var(--text)' }}>
                 {regimeLabel} {marketRegimeScore > 0 ? '+' : ''}{marketRegimeScore}
               </span>
+              {regimeReadings !== null && regimeReadings < 5 && (
+                <span style={{ color:'var(--amber)' }} title="Some market readings could not be fetched in the latest scan; the score uses only those available">
+                  {regimeReadings} of 5 readings
+                </span>
+              )}
             </span>
           )}
 

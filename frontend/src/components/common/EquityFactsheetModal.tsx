@@ -187,7 +187,7 @@ Platform: https://quant-alpha-sage.vercel.app/?ticker=${ticker}`
                 </div>
                 <div className="flex justify-between py-1 border-b border-[var(--glass-border)]">
                   <span className="text-[var(--text-3)]">Promoter Pledge</span>
-                  <span className="font-mono font-medium">{asset['Promoter_Pledging_%'] != null ? `${asset['Promoter_Pledging_%'].toFixed(1)}%` : '0.0%'}</span>
+                  <span className="font-mono font-medium">{asset['Promoter_Pledging_%'] != null ? `${asset['Promoter_Pledging_%'].toFixed(1)}%` : asset.Promoter_Pledge_Checked ? 'None flagged' : 'N/A'}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-[var(--glass-border)]">
                   <span className="text-[var(--text-3)]">Market Beta</span>

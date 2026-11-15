@@ -19,12 +19,13 @@ from utils import log, _safe_float
 from config import MAX_WORKERS_OHLCV, MAX_WORKERS_FUNDAMENTALS, CACHE_TTL_FUNDAMENTALS, MIN_ROWS
 from engine.indicators import add_indicators, compute_metrics
 from data_pipeline.nse_fetcher import get_liquid_universe, download_bhav_copy, get_market_breadth, get_fii_dii_activity, get_put_call_ratio
+from data_pipeline.data_fetcher import FUNDAMENTALS_SCHEMA
 from data_pipeline.data_fetcher import (
     fetch_ohlcv_with_retry, fetch_fundamentals, get_ath, get_atl, cache_manager
 )
 from engine.scoring import compute_rs_score, compute_sector_medians, compute_all_scores, build_output_row
 from engine.recommendation import compute_tech_score
-from engine.regime_engine import compute_regime_score as _compute_regime_score
+from engine.regime_engine import compute_regime as _compute_regime
 from data_pipeline.data_pipeline import (
     store_daily_ohlcv, store_factor_history, create_outcome_entries,
     update_outcome_tracking, store_regime_history, store_scan_summary,
@@ -41,8 +42,8 @@ def _fetch_market_indicators():
     """Fetch market-wide indicators (NIFTY, VIX, FII/DII, PCR, breadth)."""
     nifty_df = None
     vix_df = None
-    fii_dii = {"fii_net": 0, "dii_net": 0}
-    pcr_data = {"pcr": 1.0}
+    fii_dii = {"fii_net": None, "dii_net": None}
+    pcr_data = {"pcr": None}
     breadth_pct = None
 
     try:
@@ -68,7 +69,7 @@ def _fetch_market_indicators():
     bhav_df, _ = download_bhav_copy()
     if not bhav_df.empty:
         breadth = get_market_breadth(bhav_df)
-        breadth_pct = breadth.get("breadth_pct", 0.5)
+        breadth_pct = breadth.get("breadth_pct")
 
     nifty_df = retain_newer_benchmark('^NSEI', nifty_df)
     return nifty_df, vix_df, fii_dii, pcr_data, breadth_pct
@@ -149,7 +150,7 @@ def _fetch_info_batch(ohlcv_results: dict, progress_callback=None) -> tuple[dict
             if not info or not isinstance(info, dict):
                 info = cache_manager.get("fundamentals", sym, ttl=CACHE_TTL_FUNDAMENTALS) or {}
             info = dict(info)
-            info['_ranking_fundamentals_valid'] = info.get('_schema_version') == 3
+            info['_ranking_fundamentals_valid'] = info.get('_schema_version') == FUNDAMENTALS_SCHEMA
             fifty_two_high = _safe_float(info.get("fiftyTwoWeekHigh"))
             fifty_two_low = _safe_float(info.get("fiftyTwoWeekLow"))
             base_high = np.nanmax([df_high, fifty_two_high]) if not np.isnan(np.nanmax([df_high, fifty_two_high])) else df_high
@@ -171,7 +172,7 @@ def _fetch_info_batch(ohlcv_results: dict, progress_callback=None) -> tuple[dict
                 "fiftyTwoWeekHigh": base_high,
                 "fiftyTwoWeekLow": base_low,
                 **cached_info,
-                '_ranking_fundamentals_valid': cached_info.get('_schema_version') == 3,
+                '_ranking_fundamentals_valid': cached_info.get('_schema_version') == FUNDAMENTALS_SCHEMA,
             }
             return ticker, fallback_info, ath, ath_source, atl, atl_source, e
 
@@ -416,7 +417,8 @@ def run_scanner(progress_callback=None, use_stored_prices=False) -> pd.DataFrame
 
     coverage_pct = round((len(raw_data) / total) * 100, 1) if total else 0
 
-    regime_score = _compute_regime_score(nifty_df, vix_df, fii_dii, pcr_data, breadth_pct)
+    regime = _compute_regime(nifty_df, vix_df, fii_dii, pcr_data, breadth_pct)
+    regime_score = regime["score"]
 
     log.info("Building intermediate rows and computing scores...")
     etf_list = cache_manager.get_etf_list()
@@ -472,9 +474,11 @@ def run_scanner(progress_callback=None, use_stored_prices=False) -> pd.DataFrame
             "nifty_change_pct": nifty_change,
             "vix_level": vix_level,
             "breadth_pct": breadth_pct,
-            "fii_net": fii_dii.get("fii_net", 0),
-            "dii_net": fii_dii.get("dii_net", 0),
-            "pcr": pcr_data.get("pcr", 1.0),
+            "market_regime_readings": regime["readings"],
+            "market_regime_missing": regime["missing"],
+            "fii_net": fii_dii.get("fii_net"),
+            "dii_net": fii_dii.get("dii_net"),
+            "pcr": pcr_data.get("pcr"),
             "scan_version": "ranking-v3.0",
             "factors": ["quality", "value", "momentum", "trend", "stability"],
             "sector_summary": sector_summary,

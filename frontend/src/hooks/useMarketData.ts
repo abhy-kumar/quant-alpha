@@ -10,6 +10,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
   const [loading, setLoading] = useState(true)
   const [niftyData, setNiftyData] = useState<{ price: number; change_pct: number; is_up: boolean } | null>(null)
   const [coveragePct, setCoveragePct] = useState<number | null>(null)
+  const [regimeReadings, setRegimeReadings] = useState<number | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [marketRegimeScore, setMarketRegimeScore] = useState<number | null>(null)
   const [isDynamic, setIsDynamic] = useState(false)
@@ -122,6 +123,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
 
         if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
         setCoveragePct(res.data.coverage_pct ?? null)
+        setRegimeReadings(res.data.market_regime_readings ?? null)
         setMarketRegimeScore(res.data.market_regime_score ?? null)
         setFiiNet(res.data.fii_net ?? null)
         setDiiNet(res.data.dii_net ?? null)
@@ -184,6 +186,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
     loading,
     niftyData,
     coveragePct,
+    regimeReadings,
     loadError,
     marketRegimeScore,
     isDynamic,

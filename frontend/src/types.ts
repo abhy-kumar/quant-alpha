@@ -91,7 +91,9 @@ export interface DashboardData {
   Beta_Score?: number
   Alpha_60D?: number
   "Promoter_Holding_%"?: number
-  "Promoter_Pledging_%"?: number
+  "Promoter_Pledging_%"?: number | null
+  /** True when the source page was read; an empty pledging value then means none was flagged. */
+  Promoter_Pledge_Checked?: boolean
   Bull_Count?: number
   Bear_Count?: number
   "Total_Return_%"?: number
@@ -111,9 +113,11 @@ export interface MarketData {
   nifty_change_pct?: number
   vix_level?: number
   breadth_pct?: number
-  fii_net?: number
-  dii_net?: number
-  pcr?: number
+  market_regime_readings?: number
+  market_regime_missing?: string[]
+  fii_net?: number | null
+  dii_net?: number | null
+  pcr?: number | null
   scan_version: string
   factors: string[]
   sector_summary?: Record<string, SectorSummary>

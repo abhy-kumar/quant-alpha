@@ -36,6 +36,18 @@ def plausible(value, low, high):
     return value if low <= value <= high else np.nan
 
 
+def red_flags(info):
+    """Conditions that cap a rating at Caution (or Avoid for negative book equity)."""
+    flags = []
+    if number(info.get('bookValue')) <= 0:
+        flags.append('Nonpositive book equity')
+    if number(info.get('promoter_pledging')) > 20:
+        flags.append('Promoter pledging exceeds 20%')
+    if number(info.get('trailingEps')) < 0 or number(info.get('netIncomeToCommon')) < 0:
+        flags.append('Negative trailing earnings')
+    return flags
+
+
 def midpoint_percentile(value, peers):
     """Equal observations have equal midranks; an all-tied cohort scores 50."""
     peers = np.asarray(peers, dtype=float)
@@ -54,6 +66,10 @@ def raw_factors(item):
     price = number(item.get('latest', {}).get('Close'))
     shares = number(info.get('sharesOutstanding'))
     cap = price * shares if price > 0 and shares > 0 else np.nan
+    if not np.isfinite(cap):
+        # No share count: a vendor market value at most a day old beats losing every size-based yield.
+        vendor_cap = number(info.get('marketCap'))
+        cap = vendor_cap if vendor_cap > 0 else np.nan
     eps = number(info.get('trailingEps'))
     if not np.isfinite(eps):
         eps = ratio(info.get('netIncomeToCommon'), shares)
@@ -146,14 +162,7 @@ def apply_ranking(items, reference_date=None, trading_dates=None):
         item['ranking_eligible'] = {}
         item['ranking_scores'] = {}
         item['ranking_horizon_coverage'] = {}
-        info = item['info']
-        flags = []
-        if number(info.get('bookValue')) <= 0:
-            flags.append('Nonpositive book equity')
-        if number(info.get('promoter_pledging')) > 20:
-            flags.append('Promoter pledging exceeds 20%')
-        if number(info.get('trailingEps')) < 0 or number(info.get('netIncomeToCommon')) < 0:
-            flags.append('Negative trailing earnings')
+        flags = red_flags(item['info'])
         item['red_flags'] = flags
         item['quality_gated'] = bool(flags)
         item['quality_penalty'] = 1.0

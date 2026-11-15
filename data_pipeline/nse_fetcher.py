@@ -198,18 +198,18 @@ def get_market_breadth(bhav_df: pd.DataFrame) -> dict:
     from the full NSE Bhav Copy (approx 2000+ stocks).
     """
     if bhav_df.empty or "CLOSE_PRICE" not in bhav_df.columns:
-        return {"advances": 0, "declines": 0, "unchanged": 0, "breadth_pct": 0.5}
+        return {"advances": 0, "declines": 0, "unchanged": 0, "breadth_pct": None}
         
     prev_col = "PREVCLOSE" if "PREVCLOSE" in bhav_df.columns else "PREV_CLOSE" if "PREV_CLOSE" in bhav_df.columns else None
     if not prev_col:
-        return {"advances": 0, "declines": 0, "unchanged": 0, "breadth_pct": 0.5}
+        return {"advances": 0, "declines": 0, "unchanged": 0, "breadth_pct": None}
 
     advances = len(bhav_df[bhav_df["CLOSE_PRICE"] > bhav_df[prev_col]])
     declines = len(bhav_df[bhav_df["CLOSE_PRICE"] < bhav_df[prev_col]])
     unchanged = len(bhav_df[bhav_df["CLOSE_PRICE"] == bhav_df[prev_col]])
     
     total = advances + declines
-    breadth_pct = advances / total if total > 0 else 0.5
+    breadth_pct = advances / total if total > 0 else None
     
     return {
         "advances": advances,
@@ -395,8 +395,10 @@ def get_fii_dii_activity() -> dict:
     Returns net buy/sell figures in Rs. Crores.
     Falls back to moneycontrol.com if NSE is blocked.
     """
-    _default = {"fii_buy": 0, "fii_sell": 0, "fii_net": 0,
-                "dii_buy": 0, "dii_sell": 0, "dii_net": 0}
+    # A failed fetch is reported as unavailable. Zero would read as "no net flow",
+    # a real and neutral value, and would be published and scored as such.
+    _default = {"fii_buy": None, "fii_sell": None, "fii_net": None,
+                "dii_buy": None, "dii_sell": None, "dii_net": None}
 
     session = _create_nse_session()
     for attempt in range(3):
@@ -423,8 +425,10 @@ def get_fii_dii_activity() -> dict:
             result = dict(_default)
             for item in data:
                 category = item.get("category", "").upper()
-                buy = float(item.get("buyValue", 0) or 0)
-                sell = float(item.get("sellValue", 0) or 0)
+                if item.get("buyValue") in (None, "") or item.get("sellValue") in (None, ""):
+                    continue
+                buy = float(item["buyValue"])
+                sell = float(item["sellValue"])
                 if "FII" in category or "FPI" in category:
                     result["fii_buy"] = buy
                     result["fii_sell"] = sell
@@ -433,7 +437,10 @@ def get_fii_dii_activity() -> dict:
                     result["dii_buy"] = buy
                     result["dii_sell"] = sell
                     result["dii_net"] = buy - sell
-            logger.info(f"FII/DII data: FII net={result['fii_net']:.0f} Cr, DII net={result['dii_net']:.0f} Cr")
+            if result["fii_net"] is None and result["dii_net"] is None:
+                logger.warning(f"FII/DII: no FII or DII rows in response (attempt {attempt+1}/3)")
+                continue
+            logger.info(f"FII/DII data: FII net={result['fii_net']}, DII net={result['dii_net']} Cr")
             return result
         except Exception as e:
             logger.warning(f"FII/DII fetch attempt {attempt+1} failed: {type(e).__name__}: {e}")
@@ -445,6 +452,9 @@ def get_fii_dii_activity() -> dict:
     if fallback:
         return fallback
     return _default
+
+
+_PLAUSIBLE_FLOW = (500.0, 200_000.0)   # Rs crore bought or sold by FIIs/DIIs in one session
 
 
 def _fii_dii_from_moneycontrol() -> dict | None:
@@ -459,24 +469,23 @@ def _fii_dii_from_moneycontrol() -> dict | None:
             logger.debug(f"Moneycontrol FII page: status={resp.status_code}")
             return None
         text = resp.text
-        result = {"fii_buy": 0, "fii_sell": 0, "fii_net": 0,
-                  "dii_buy": 0, "dii_sell": 0, "dii_net": 0}
+        result = {"fii_buy": None, "fii_sell": None, "fii_net": None,
+                  "dii_buy": None, "dii_sell": None, "dii_net": None}
         fii_match = re.search(r'FII.*?(\d[\d,.]+).*?(\d[\d,.]+)', text)
         dii_match = re.search(r'DII.*?(\d[\d,.]+).*?(\d[\d,.]+)', text)
-        if fii_match:
-            buy = float(fii_match.group(1).replace(",", ""))
-            sell = float(fii_match.group(2).replace(",", ""))
-            result["fii_buy"] = buy
-            result["fii_sell"] = sell
-            result["fii_net"] = buy - sell
-        if dii_match:
-            buy = float(dii_match.group(1).replace(",", ""))
-            sell = float(dii_match.group(2).replace(",", ""))
-            result["dii_buy"] = buy
-            result["dii_sell"] = sell
-            result["dii_net"] = buy - sell
-        if result["fii_net"] != 0 or result["dii_net"] != 0:
-            logger.info(f"FII/DII from moneycontrol: FII net={result['fii_net']:.0f} Cr, DII net={result['dii_net']:.0f} Cr")
+        for key, match in (("fii", fii_match), ("dii", dii_match)):
+            if not match:
+                continue
+            buy = float(match.group(1).replace(",", ""))
+            sell = float(match.group(2).replace(",", ""))
+            # The page is matched loosely, so accept only figures that can be a day's
+            # institutional turnover in Rs crore; a date or row number must not pass.
+            if not (_PLAUSIBLE_FLOW[0] <= buy <= _PLAUSIBLE_FLOW[1] and _PLAUSIBLE_FLOW[0] <= sell <= _PLAUSIBLE_FLOW[1]):
+                logger.warning(f"Moneycontrol {key.upper()} figures implausible (buy={buy}, sell={sell}); ignored")
+                continue
+            result[f"{key}_buy"], result[f"{key}_sell"], result[f"{key}_net"] = buy, sell, buy - sell
+        if result["fii_net"] is not None or result["dii_net"] is not None:
+            logger.info(f"FII/DII from moneycontrol: FII net={result['fii_net']}, DII net={result['dii_net']} Cr")
             return result
     except Exception as e:
         logger.debug(f"Moneycontrol FII/DII fallback failed: {e}")
@@ -505,7 +514,8 @@ def get_put_call_ratio() -> dict:
     based on total put vs call OI (Open Interest).
     PCR > 1.2 → bullish (contrarian), PCR < 0.7 → bearish.
     """
-    _default = {"pcr": 1.0, "puts_oi": 0, "calls_oi": 0}
+    # 1.0 is a real, neutral reading; a failed fetch must not publish it.
+    _default = {"pcr": None, "puts_oi": 0, "calls_oi": 0}
 
     _invalidate_nse_session()
     session = _create_nse_session()
@@ -554,7 +564,10 @@ def get_put_call_ratio() -> dict:
                 if pe and isinstance(pe, dict):
                     puts_oi += pe.get("openInterest", 0) or 0
 
-            pcr = round(puts_oi / calls_oi, 3) if calls_oi > 0 else 1.0
+            if calls_oi <= 0 or puts_oi <= 0:
+                logger.warning(f"PCR: option chain has no open interest (attempt {attempt+1}/3)")
+                continue
+            pcr = round(puts_oi / calls_oi, 3)
             logger.info(f"NIFTY PCR: {pcr} (puts_oi={puts_oi}, calls_oi={calls_oi}, expiry={expiry})")
             return {"pcr": pcr, "puts_oi": puts_oi, "calls_oi": calls_oi}
 

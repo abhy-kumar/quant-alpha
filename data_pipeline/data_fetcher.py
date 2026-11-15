@@ -5,6 +5,7 @@ Data acquisition layer for the stock scanner.
 Handles OHLCV fetching, fundamental data, and Screener.in scraping.
 """
 
+import re
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -40,6 +41,90 @@ vader = SentimentIntensityAnalyzer()
 
 
 from data_pipeline.price_repair import repair_discontinuities
+
+# Bump when cached fundamentals gain or change a field, so every stock is refetched once.
+# 4: promoter pledging from Screener, free cash flow from statements.
+FUNDAMENTALS_SCHEMA = 4
+_PLEDGE_SENTENCE = re.compile(r'promoters?\s+have\s+pledged\s+(?:or\s+encumbered\s+)?([\d.]+)\s*%\s+of\s+their\s+holding', re.I)
+
+
+def _statement_value(frame, *names):
+    """Latest value of the first statement row whose label matches one of names."""
+    if frame is None or frame.empty:
+        return np.nan
+    for name in names:
+        row = next((index for index in frame.index if str(index).strip().lower() == name), None)
+        if row is not None:
+            return _safe_float(frame.loc[row].iloc[0])
+    return np.nan
+
+
+def _fill_free_cash_flow(t: yf.Ticker, info: dict):
+    """Yahoo omits freeCashflow for about a fifth of non-financial companies.
+
+    Take it from the latest annual cash-flow statement instead: the reported free
+    cash flow line, or operating cash flow less capital expenditure.
+    """
+    if not pd.isna(_safe_float(info.get('freeCashflow'))):
+        return
+    try:
+        cash_flow = t.cashflow
+        free = _statement_value(cash_flow, 'free cash flow')
+        if pd.isna(free):
+            operating = _statement_value(cash_flow, 'operating cash flow', 'cash flow from continuing operating activities')
+            capex = _statement_value(cash_flow, 'capital expenditure')
+            # Capital expenditure is reported as a negative outflow.
+            free = operating - abs(capex) if not pd.isna(operating) and not pd.isna(capex) else np.nan
+        if not pd.isna(free):
+            info['freeCashflow'] = free
+            info['freeCashflow_source'] = 'annual statement'
+    except Exception as e:
+        log.debug(f"Free cash flow statement fallback failed: {type(e).__name__}: {e}")
+
+
+def _fill_share_count(t: yf.Ticker, info: dict):
+    """Yahoo sometimes omits sharesOutstanding, even for the largest companies.
+
+    Without it there is no market value, so cash-flow and sales yields vanish and
+    the site shows a market cap of nothing. Recover it from the next best source.
+    """
+    if _safe_float(info.get('sharesOutstanding'), 0) > 0:
+        return
+    candidates = [('implied share count', lambda: _safe_float(info.get('impliedSharesOutstanding')))]
+    price = next((value for value in (_safe_float(info.get(key)) for key in ('currentPrice', 'regularMarketPrice', 'previousClose'))
+                  if value == value and value > 0), np.nan)
+    candidates.append(('market value / price', lambda: _safe_float(info.get('marketCap')) / price))
+    candidates.append(('exchange quote', lambda: _safe_float(getattr(t.fast_info, 'shares', np.nan))))
+    candidates.append(('balance sheet', lambda: _statement_value(t.balance_sheet, 'ordinary shares number', 'share issued')))
+    for source, read in candidates:
+        try:
+            shares = read()
+        except Exception:
+            continue
+        if shares == shares and shares > 0 and np.isfinite(shares):
+            info['sharesOutstanding'] = float(shares)
+            info['sharesOutstanding_source'] = source
+            return
+
+
+def _parse_screener_pledge(soup, info: dict):
+    """Promoter pledging, as Screener states it in the analysis section.
+
+    Screener prints "Promoters have pledged X% of their holding" only when the
+    pledge is material, so an absent sentence means "none flagged", not zero.
+    """
+    # Prefer the analysis block; fall back to the page so a renamed id cannot hide the sentence.
+    section = soup.select_one('#analysis') or soup
+    match = _PLEDGE_SENTENCE.search(section.get_text(' ', strip=True))
+    if match:
+        try:
+            value = float(match.group(1))
+        except ValueError:
+            return
+        if 0 <= value <= 100:
+            info['promoter_pledging'] = value
+    info['promoter_pledging_checked'] = True
+
 
 def _fetch_yfinance_statements(t: yf.Ticker, info: dict):
     """
@@ -316,11 +401,11 @@ def fetch_fundamentals(ticker: str) -> dict:
     cached_info = cache_manager.get("fundamentals", sym, ttl=CACHE_TTL_FUNDAMENTALS)
     cached_sector = cache_manager.get("sector", sym, ttl=CACHE_TTL_SECTOR)
 
-    if cached_info and cached_sector and cached_info.get('_schema_version') == 3:
+    if cached_info and cached_sector and cached_info.get('_schema_version') == FUNDAMENTALS_SCHEMA:
         info = dict(cached_info)
         info["news_sentiment"] = _fetch_news_sentiment(sym)
         return info
-    cached_info = cached_info if cached_info and cached_info.get('_schema_version') == 3 else None
+    cached_info = cached_info if cached_info and cached_info.get('_schema_version') == FUNDAMENTALS_SCHEMA else None
     info = dict(cached_info) if cached_info else {}
     fetched_new = False
 
@@ -343,6 +428,10 @@ def fetch_fundamentals(ticker: str) -> dict:
             )
             if missing_critical:
                 _fetch_yfinance_statements(t, info)
+            if fetched_new:
+                _fill_share_count(t, info)
+                if info.get('sector') != 'Financial Services':
+                    _fill_free_cash_flow(t, info)
         except (ValueError, KeyError, requests.RequestException) as e:
             log.debug(f"yfinance info fetch failed for {ticker}: {e}")
 
@@ -367,7 +456,9 @@ def fetch_fundamentals(ticker: str) -> dict:
 
     _fetch_bse_fallback(sym, info, needs_sector)
 
-    if pd.isna(_safe_float(info.get('promoter_holding'))):
+    # Promoter holding and pledging only come from Screener; fetch the page once
+    # per cache refresh if neither path above has read it.
+    if (pd.isna(_safe_float(info.get('promoter_holding'))) or not info.get('promoter_pledging_checked')) and _screener_available():
         _fetch_promoter_from_screener(sym, info)
 
     if pd.isna(_safe_float(info.get('yoy_asset_growth'), default=np.nan)):
@@ -379,7 +470,7 @@ def fetch_fundamentals(ticker: str) -> dict:
 
     if fetched_new or not cached_info:
         if info:
-            info['_schema_version'] = 3
+            info['_schema_version'] = FUNDAMENTALS_SCHEMA
             cache_manager.set("fundamentals", sym, info)
 
     info['news_sentiment'] = _fetch_news_sentiment(sym)
@@ -441,6 +532,7 @@ def _fetch_from_screener(sym: str, info: dict, cached_sector, needs_fundamentals
             _parse_screener_ratios(soup, info)
             _parse_screener_financials(soup, info)
             _parse_screener_shareholding(soup, info)
+            _parse_screener_pledge(soup, info)
 
             peers_table = soup.find('table', class_='data-table')
             if peers_table:
@@ -617,6 +709,12 @@ def _parse_screener_financials(soup, info: dict):
                         pass
 
 
+def _screener_available() -> bool:
+    """False while Screener is failing, so a blocked source cannot stall the whole scan."""
+    with _screener_lock:
+        return time.time() > _screener_state.get("disabled_until", 0) and _screener_state["failures"] < SCREENER_MAX_FAILURES
+
+
 def _fetch_promoter_from_screener(sym: str, info: dict):
     """Fetch promoter holding and missing ratios from Screener.in."""
     with _screener_request_lock:
@@ -633,6 +731,12 @@ def _fetch_promoter_from_screener(sym: str, info: dict):
             soup = BeautifulSoup(resp.text, 'html.parser')
             _parse_screener_ratios(soup, info)
             _parse_screener_shareholding(soup, info)
+            _parse_screener_pledge(soup, info)
+        else:
+            with _screener_lock:
+                _screener_state["failures"] += 1
+                if _screener_state["failures"] >= SCREENER_MAX_FAILURES:
+                    _screener_state["disabled_until"] = time.time() + SCREENER_COOLDOWN
 
         if pd.isna(_safe_float(info.get('roce'))):
             url2 = f"https://www.screener.in/company/{encoded}/"

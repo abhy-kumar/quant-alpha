@@ -108,6 +108,20 @@ Tracked stocks that leave the screen are refreshed while they are at most seven
 days behind. Histories further behind (up to 370 days) are caught up in rotating
 batches of 75 per scan, so a narrowed screen or a failed week cannot strand them.
 
+A value that could not be fetched is published as unavailable, never as a
+neutral-looking number. FII/DII flows, the put-call ratio and breadth are left out
+of the market regime score when their fetch fails, and the scan reports how many
+of the five readings it used. Missing revenue, EBITDA, market value and forward
+P/E are blank rather than zero or a copy of another figure.
+
+Promoter pledging comes from Screener's analysis section, which states it only
+when the pledge is material; an absent statement is shown as "None flagged" and
+is not treated as zero. The `Promoter pledging exceeds 20%` red flag depends on
+this source. When Yahoo omits a share count or free cash flow, the share count is
+recovered from the implied count, market value divided by price, the exchange
+quote or the balance sheet, and free cash flow from the annual cash-flow
+statement (operating cash flow less capital expenditure).
+
 Fundamental caches expire after 24 hours and require the current data schema.
 This is retrieval freshness; financial statements still reflect their reporting periods.
 Growth inputs are always fractions; ROCE and debt/equity use percentage points.

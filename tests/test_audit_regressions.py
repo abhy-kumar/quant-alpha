@@ -146,7 +146,7 @@ def test_screener_period_columns_and_gross_block_not_profit():
 
 def test_cached_fundamentals_do_not_slide_expiry(monkeypatch):
     from data_pipeline import data_fetcher as fetcher
-    original={'trailingPE':10,'returnOnEquity':.15,'_schema_version':3}
+    original={'trailingPE':10,'returnOnEquity':.15,'_schema_version':fetcher.FUNDAMENTALS_SCHEMA}
     monkeypatch.setattr(fetcher.cache_manager,'get',lambda name,*args,**kwargs:original if name=='fundamentals' else {'sector':'Test'})
     monkeypatch.setattr(fetcher.cache_manager,'set',lambda *args:pytest.fail('Cache timestamp must not reset'))
     monkeypatch.setattr(fetcher,'_fetch_news_sentiment',lambda _:0)
