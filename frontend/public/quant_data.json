@@ -1,192 +1,191 @@
 {
-  "last_updated": "2026-11-14 10:57:25",
+  "last_updated": "2026-11-16 02:41:13",
   "model_portfolios": {
     "max_sharpe": {
-      "SHREEJISPG.NS": 0.35150000000000003,
-      "GLAND.NS": 0.19380000000000003,
-      "KTKBANK.NS": 0.16930000000000003,
-      "ALIVUS.NS": 0.11670000000000001,
-      "KARURVYSYA.NS": 0.09670000000000001,
-      "SOUTHBANK.NS": 0.07200000000000001
+      "SHREEJISPG.NS": 0.39920000000000005,
+      "GLAND.NS": 0.19490000000000002,
+      "ALIVUS.NS": 0.14150000000000001,
+      "KARURVYSYA.NS": 0.14120000000000002,
+      "SOUTHBANK.NS": 0.12320000000000002
     },
     "min_volatility": {
-      "PNB.NS": 0.2386,
-      "ALIVUS.NS": 0.2001,
-      "LALPATHLAB.NS": 0.1854,
-      "GLAND.NS": 0.1569,
-      "KARURVYSYA.NS": 0.0817,
-      "KTKBANK.NS": 0.0683,
-      "SHREEJISPG.NS": 0.0622
+      "PNB.NS": 0.26680000000000004,
+      "ALIVUS.NS": 0.20070000000000002,
+      "LALPATHLAB.NS": 0.19410000000000002,
+      "GLAND.NS": 0.16160000000000002,
+      "KARURVYSYA.NS": 0.09570000000000001,
+      "SHREEJISPG.NS": 0.06880000000000001,
+      "ENGINERSIN.NS": 0.010100000000000001
     },
     "risk_parity": {
-      "ALIVUS.NS": 0.13,
-      "GLAND.NS": 0.13,
-      "LALPATHLAB.NS": 0.1241,
-      "PNB.NS": 0.1019,
-      "KARURVYSYA.NS": 0.0952,
-      "SHREEJISPG.NS": 0.0896,
-      "KTKBANK.NS": 0.0895,
-      "UNIONBANK.NS": 0.0869,
-      "ENGINERSIN.NS": 0.077,
-      "SOUTHBANK.NS": 0.0758
+      "GLAND.NS": 0.1316868313168683,
+      "ALIVUS.NS": 0.1302869713028697,
+      "LALPATHLAB.NS": 0.127987201279872,
+      "PNB.NS": 0.10388961103889612,
+      "KARURVYSYA.NS": 0.09739026097390262,
+      "SHREEJISPG.NS": 0.09099090090990901,
+      "UNIONBANK.NS": 0.08999100089991001,
+      "SOUTHBANK.NS": 0.07869213078692132,
+      "ENGINERSIN.NS": 0.07789221077892211,
+      "SHRINGARMS.NS": 0.07119288071192881
     }
   },
   "factor_exposures": {
-    "Value": 65.3,
-    "Momentum": 82.3,
-    "Quality": 60.0,
-    "Low_Volatility": 65.6
+    "Value": 63.4,
+    "Momentum": 82.5,
+    "Quality": 63.6,
+    "Low_Volatility": 61.0
   },
   "efficient_frontier": [
     {
-      "volatility": 17.91,
-      "return": 45.51,
-      "sharpe": 2.18
-    },
-    {
-      "volatility": 17.94,
-      "return": 47.95,
-      "sharpe": 2.31
-    },
-    {
-      "volatility": 18.02,
-      "return": 50.39,
-      "sharpe": 2.44
-    },
-    {
-      "volatility": 18.15,
-      "return": 52.83,
-      "sharpe": 2.55
-    },
-    {
       "volatility": 18.34,
-      "return": 55.28,
-      "sharpe": 2.66
+      "return": 43.96,
+      "sharpe": 2.04
     },
     {
-      "volatility": 18.58,
-      "return": 57.72,
-      "sharpe": 2.76
+      "volatility": 18.37,
+      "return": 46.69,
+      "sharpe": 2.19
     },
     {
-      "volatility": 18.86,
-      "return": 60.16,
-      "sharpe": 2.85
+      "volatility": 18.45,
+      "return": 49.42,
+      "sharpe": 2.33
     },
     {
-      "volatility": 19.18,
-      "return": 62.6,
-      "sharpe": 2.92
+      "volatility": 18.6,
+      "return": 52.15,
+      "sharpe": 2.45
     },
     {
-      "volatility": 19.55,
-      "return": 65.04,
-      "sharpe": 2.99
+      "volatility": 18.79,
+      "return": 54.88,
+      "sharpe": 2.57
     },
     {
-      "volatility": 19.96,
-      "return": 67.48,
-      "sharpe": 3.06
-    },
-    {
-      "volatility": 20.4,
-      "return": 69.92,
-      "sharpe": 3.11
-    },
-    {
-      "volatility": 20.91,
-      "return": 72.36,
-      "sharpe": 3.15
-    },
-    {
-      "volatility": 21.49,
-      "return": 74.8,
-      "sharpe": 3.18
-    },
-    {
-      "volatility": 22.16,
-      "return": 77.25,
-      "sharpe": 3.19
-    },
-    {
-      "volatility": 22.92,
-      "return": 79.69,
-      "sharpe": 3.19
-    },
-    {
-      "volatility": 23.75,
-      "return": 82.13,
-      "sharpe": 3.18
-    },
-    {
-      "volatility": 24.66,
-      "return": 84.57,
-      "sharpe": 3.17
-    },
-    {
-      "volatility": 25.62,
-      "return": 87.01,
-      "sharpe": 3.14
-    },
-    {
-      "volatility": 26.64,
-      "return": 89.45,
-      "sharpe": 3.11
-    },
-    {
-      "volatility": 27.71,
-      "return": 91.89,
-      "sharpe": 3.08
-    },
-    {
-      "volatility": 28.85,
-      "return": 94.33,
-      "sharpe": 3.04
-    },
-    {
-      "volatility": 30.05,
-      "return": 96.77,
-      "sharpe": 3.0
-    },
-    {
-      "volatility": 31.31,
-      "return": 99.21,
-      "sharpe": 2.96
-    },
-    {
-      "volatility": 32.62,
-      "return": 101.66,
-      "sharpe": 2.92
-    },
-    {
-      "volatility": 33.97,
-      "return": 104.1,
-      "sharpe": 2.87
-    },
-    {
-      "volatility": 35.38,
-      "return": 106.54,
-      "sharpe": 2.83
-    },
-    {
-      "volatility": 36.86,
-      "return": 108.98,
-      "sharpe": 2.78
-    },
-    {
-      "volatility": 38.44,
-      "return": 111.42,
-      "sharpe": 2.73
-    },
-    {
-      "volatility": 40.11,
-      "return": 113.86,
+      "volatility": 19.04,
+      "return": 57.61,
       "sharpe": 2.68
     },
     {
-      "volatility": 41.87,
-      "return": 116.3,
-      "sharpe": 2.62
+      "volatility": 19.34,
+      "return": 60.34,
+      "sharpe": 2.78
+    },
+    {
+      "volatility": 19.68,
+      "return": 63.07,
+      "sharpe": 2.87
+    },
+    {
+      "volatility": 20.07,
+      "return": 65.8,
+      "sharpe": 2.95
+    },
+    {
+      "volatility": 20.5,
+      "return": 68.53,
+      "sharpe": 3.03
+    },
+    {
+      "volatility": 20.96,
+      "return": 71.26,
+      "sharpe": 3.09
+    },
+    {
+      "volatility": 21.48,
+      "return": 73.99,
+      "sharpe": 3.14
+    },
+    {
+      "volatility": 22.07,
+      "return": 76.72,
+      "sharpe": 3.18
+    },
+    {
+      "volatility": 22.75,
+      "return": 79.45,
+      "sharpe": 3.21
+    },
+    {
+      "volatility": 23.53,
+      "return": 82.18,
+      "sharpe": 3.22
+    },
+    {
+      "volatility": 24.39,
+      "return": 84.91,
+      "sharpe": 3.22
+    },
+    {
+      "volatility": 25.33,
+      "return": 87.64,
+      "sharpe": 3.2
+    },
+    {
+      "volatility": 26.35,
+      "return": 90.37,
+      "sharpe": 3.18
+    },
+    {
+      "volatility": 27.43,
+      "return": 93.1,
+      "sharpe": 3.16
+    },
+    {
+      "volatility": 28.56,
+      "return": 95.84,
+      "sharpe": 3.13
+    },
+    {
+      "volatility": 29.75,
+      "return": 98.57,
+      "sharpe": 3.09
+    },
+    {
+      "volatility": 30.98,
+      "return": 101.3,
+      "sharpe": 3.06
+    },
+    {
+      "volatility": 32.27,
+      "return": 104.03,
+      "sharpe": 3.02
+    },
+    {
+      "volatility": 33.61,
+      "return": 106.76,
+      "sharpe": 2.98
+    },
+    {
+      "volatility": 35.0,
+      "return": 109.49,
+      "sharpe": 2.94
+    },
+    {
+      "volatility": 36.43,
+      "return": 112.22,
+      "sharpe": 2.9
+    },
+    {
+      "volatility": 37.9,
+      "return": 114.95,
+      "sharpe": 2.86
+    },
+    {
+      "volatility": 39.42,
+      "return": 117.68,
+      "sharpe": 2.82
+    },
+    {
+      "volatility": 41.07,
+      "return": 120.41,
+      "sharpe": 2.77
+    },
+    {
+      "volatility": 42.87,
+      "return": 123.14,
+      "sharpe": 2.72
     }
   ],
   "data_version": 4,
@@ -1273,7 +1272,7 @@
       },
       {
         "date": "2026-09-07",
-        "portfolio": 100.3222,
+        "portfolio": 100.3221,
         "benchmark": 100.6614
       },
       {
@@ -2567,7 +2566,7 @@
       },
       {
         "date": "2026-07-30",
-        "portfolio": 131.6375,
+        "portfolio": 131.6376,
         "benchmark": 95.3251
       },
       {
@@ -2667,7 +2666,7 @@
       },
       {
         "date": "2026-08-27",
-        "portfolio": 144.3326,
+        "portfolio": 144.3327,
         "benchmark": 94.438
       },
       {
@@ -2722,7 +2721,7 @@
       },
       {
         "date": "2026-09-11",
-        "portfolio": 146.2024,
+        "portfolio": 146.2025,
         "benchmark": 91.7224
       },
       {
@@ -3935,27 +3934,27 @@
       },
       {
         "date": "2026-11-06",
-        "portfolio": 108.3245,
+        "portfolio": 108.9708,
         "benchmark": 105.6597
       },
       {
         "date": "2026-11-09",
-        "portfolio": 110.1628,
+        "portfolio": 111.2456,
         "benchmark": 105.72
       },
       {
         "date": "2026-11-11",
-        "portfolio": 109.991,
+        "portfolio": 110.9181,
         "benchmark": 106.6082
       },
       {
         "date": "2026-11-12",
-        "portfolio": 112.4364,
+        "portfolio": 112.9447,
         "benchmark": 106.7952
       },
       {
         "date": "2026-11-13",
-        "portfolio": 112.4356,
+        "portfolio": 112.9637,
         "benchmark": 106.1407
       }
     ],
@@ -4146,8 +4145,8 @@
           "SSWL.NS",
           "ATHERENERG.NS",
           "DIACABS.NS",
-          "SBC.NS",
-          "AEROFLEX.NS"
+          "WELSPUNLIV.NS",
+          "SBC.NS"
         ],
         "weights": {
           "SHREEJISPG.NS": 0.1,
@@ -4158,20 +4157,20 @@
           "SSWL.NS": 0.1,
           "ATHERENERG.NS": 0.1,
           "DIACABS.NS": 0.1,
-          "SBC.NS": 0.1,
-          "AEROFLEX.NS": 0.1
+          "WELSPUNLIV.NS": 0.1,
+          "SBC.NS": 0.1
         },
         "equity_ratio": 1.0
       }
     ],
     "stats": {
-      "total_return": 12.44,
-      "cagr": 26.36,
-      "volatility": 26.21,
-      "sharpe": 0.78,
+      "total_return": 12.96,
+      "cagr": 27.54,
+      "volatility": 26.18,
+      "sharpe": 0.82,
       "max_drawdown": -14.46,
-      "info_ratio": 0.52,
-      "win_rate": 52.8
+      "info_ratio": 0.56,
+      "win_rate": 53.6
     },
     "version": 4,
     "methodology": "Prior-close price signals; close execution; shares held between rebalances; 20bps per leg; historical liquidity; close-triggered trailing stops",
@@ -4324,7 +4323,7 @@
       },
       {
         "date": "2025-12-16",
-        "portfolio": 104.7739,
+        "portfolio": 104.7738,
         "benchmark": 101.3736
       },
       {
@@ -4919,7 +4918,7 @@
       },
       {
         "date": "2026-06-15",
-        "portfolio": 114.8269,
+        "portfolio": 114.8268,
         "benchmark": 93.5091
       },
       {
@@ -5109,7 +5108,7 @@
       },
       {
         "date": "2026-08-07",
-        "portfolio": 121.9052,
+        "portfolio": 121.9051,
         "benchmark": 96.3189
       },
       {
@@ -5134,7 +5133,7 @@
       },
       {
         "date": "2026-08-14",
-        "portfolio": 120.7699,
+        "portfolio": 120.7698,
         "benchmark": 95.5166
       },
       {
@@ -5274,7 +5273,7 @@
       },
       {
         "date": "2026-09-24",
-        "portfolio": 120.1503,
+        "portfolio": 120.1502,
         "benchmark": 90.4091
       },
       {
@@ -5364,7 +5363,7 @@
       },
       {
         "date": "2026-10-22",
-        "portfolio": 116.7932,
+        "portfolio": 116.7931,
         "benchmark": 88.9373
       },
       {
@@ -6347,7 +6346,7 @@
       },
       {
         "date": "2026-10-08",
-        "portfolio": 113.5455,
+        "portfolio": 113.5456,
         "benchmark": 93.8462
       },
       {
@@ -6694,15 +6693,2219 @@
   },
   "market_regime": {
     "score": 1,
+    "scale": [
+      -5,
+      5
+    ],
     "nifty_trend": "bullish",
-    "vix": 0.0,
-    "breadth": 0.34572901325478644
+    "vix": 15.5,
+    "breadth": 34.6
+  },
+  "track_record": {
+    "method": "Bought at the next session's close after each scan and held for the stated number of sessions. Price returns before costs. Neighbouring scans overlap, so treat the number of independent periods, not scan dates, as the sample size.",
+    "prices_through": "2026-11-13",
+    "current": {
+      "version": "ranking-v3.0",
+      "since": "2026-10-01",
+      "horizons": {
+        "5": {
+          "scan_dates": 1,
+          "first": "2026-10-05",
+          "last": "2026-10-05",
+          "independent_periods": 1,
+          "labels": [
+            {
+              "label": "Strong Buy",
+              "scan_dates": 1,
+              "stocks_per_date": 28.0,
+              "mean_return": 0.0227,
+              "nifty": -0.0085,
+              "positive_share": 0.64,
+              "beat_nifty_share": 0.82
+            },
+            {
+              "label": "Buy",
+              "scan_dates": 1,
+              "stocks_per_date": 118.0,
+              "mean_return": -0.003,
+              "nifty": -0.0085,
+              "positive_share": 0.42,
+              "beat_nifty_share": 0.51
+            },
+            {
+              "label": "Hold",
+              "scan_dates": 1,
+              "stocks_per_date": 138.0,
+              "mean_return": -0.002,
+              "nifty": -0.0085,
+              "positive_share": 0.43,
+              "beat_nifty_share": 0.51
+            },
+            {
+              "label": "Caution",
+              "scan_dates": 1,
+              "stocks_per_date": 115.0,
+              "mean_return": -0.0061,
+              "nifty": -0.0085,
+              "positive_share": 0.41,
+              "beat_nifty_share": 0.54
+            },
+            {
+              "label": "Avoid",
+              "scan_dates": 1,
+              "stocks_per_date": 79.0,
+              "mean_return": -0.0073,
+              "nifty": -0.0085,
+              "positive_share": 0.33,
+              "beat_nifty_share": 0.44
+            },
+            {
+              "label": "All rated stocks",
+              "scan_dates": 1,
+              "stocks_per_date": 509.0,
+              "mean_return": -0.0032,
+              "nifty": -0.0085,
+              "positive_share": 0.41,
+              "beat_nifty_share": 0.52
+            }
+          ]
+        },
+        "21": {
+          "scan_dates": 1,
+          "first": "2026-10-05",
+          "last": "2026-10-05",
+          "independent_periods": 1,
+          "labels": [
+            {
+              "label": "Strong Buy",
+              "scan_dates": 1,
+              "stocks_per_date": 28.0,
+              "mean_return": 0.0259,
+              "nifty": 0.0623,
+              "positive_share": 0.57,
+              "beat_nifty_share": 0.39
+            },
+            {
+              "label": "Buy",
+              "scan_dates": 1,
+              "stocks_per_date": 118.0,
+              "mean_return": -0.0127,
+              "nifty": 0.0623,
+              "positive_share": 0.43,
+              "beat_nifty_share": 0.18
+            },
+            {
+              "label": "Hold",
+              "scan_dates": 1,
+              "stocks_per_date": 138.0,
+              "mean_return": -0.0182,
+              "nifty": 0.0623,
+              "positive_share": 0.46,
+              "beat_nifty_share": 0.16
+            },
+            {
+              "label": "Caution",
+              "scan_dates": 1,
+              "stocks_per_date": 115.0,
+              "mean_return": -0.0037,
+              "nifty": 0.0623,
+              "positive_share": 0.52,
+              "beat_nifty_share": 0.24
+            },
+            {
+              "label": "Avoid",
+              "scan_dates": 1,
+              "stocks_per_date": 79.0,
+              "mean_return": -0.0166,
+              "nifty": 0.0623,
+              "positive_share": 0.43,
+              "beat_nifty_share": 0.15
+            },
+            {
+              "label": "All rated stocks",
+              "scan_dates": 1,
+              "stocks_per_date": 509.0,
+              "mean_return": -0.0118,
+              "nifty": 0.0623,
+              "positive_share": 0.47,
+              "beat_nifty_share": 0.19
+            }
+          ]
+        },
+        "63": {
+          "scan_dates": 0,
+          "labels": []
+        }
+      }
+    },
+    "previous": {
+      "version": "Earlier scoring model",
+      "since": "2026-06-12",
+      "until": "2026-09-30",
+      "horizons": {
+        "5": {
+          "scan_dates": 57,
+          "first": "2026-06-15",
+          "last": "2026-10-01",
+          "independent_periods": 11,
+          "labels": [
+            {
+              "label": "Strong Buy",
+              "scan_dates": 34,
+              "stocks_per_date": 23.5,
+              "mean_return": -0.0009,
+              "nifty": -0.0038,
+              "positive_share": 0.48,
+              "beat_nifty_share": 0.5
+            },
+            {
+              "label": "Buy",
+              "scan_dates": 57,
+              "stocks_per_date": 66.4,
+              "mean_return": -0.0018,
+              "nifty": -0.0048,
+              "positive_share": 0.45,
+              "beat_nifty_share": 0.5
+            },
+            {
+              "label": "Hold",
+              "scan_dates": 57,
+              "stocks_per_date": 94.6,
+              "mean_return": -0.0012,
+              "nifty": -0.0048,
+              "positive_share": 0.44,
+              "beat_nifty_share": 0.49
+            },
+            {
+              "label": "Caution",
+              "scan_dates": 57,
+              "stocks_per_date": 76.4,
+              "mean_return": -0.0025,
+              "nifty": -0.0048,
+              "positive_share": 0.43,
+              "beat_nifty_share": 0.5
+            },
+            {
+              "label": "Avoid",
+              "scan_dates": 57,
+              "stocks_per_date": 84.4,
+              "mean_return": -0.0042,
+              "nifty": -0.0048,
+              "positive_share": 0.41,
+              "beat_nifty_share": 0.46
+            },
+            {
+              "label": "All rated stocks",
+              "scan_dates": 57,
+              "stocks_per_date": 335.5,
+              "mean_return": -0.0023,
+              "nifty": -0.0048,
+              "positive_share": 0.44,
+              "beat_nifty_share": 0.49
+            }
+          ]
+        },
+        "21": {
+          "scan_dates": 57,
+          "first": "2026-06-15",
+          "last": "2026-10-01",
+          "independent_periods": 2,
+          "labels": [
+            {
+              "label": "Strong Buy",
+              "scan_dates": 34,
+              "stocks_per_date": 23.5,
+              "mean_return": -0.0092,
+              "nifty": -0.0066,
+              "positive_share": 0.41,
+              "beat_nifty_share": 0.46
+            },
+            {
+              "label": "Buy",
+              "scan_dates": 57,
+              "stocks_per_date": 66.4,
+              "mean_return": -0.0136,
+              "nifty": -0.0137,
+              "positive_share": 0.4,
+              "beat_nifty_share": 0.47
+            },
+            {
+              "label": "Hold",
+              "scan_dates": 57,
+              "stocks_per_date": 94.6,
+              "mean_return": -0.0107,
+              "nifty": -0.0137,
+              "positive_share": 0.41,
+              "beat_nifty_share": 0.47
+            },
+            {
+              "label": "Caution",
+              "scan_dates": 57,
+              "stocks_per_date": 76.3,
+              "mean_return": -0.0129,
+              "nifty": -0.0137,
+              "positive_share": 0.39,
+              "beat_nifty_share": 0.46
+            },
+            {
+              "label": "Avoid",
+              "scan_dates": 57,
+              "stocks_per_date": 84.4,
+              "mean_return": -0.0177,
+              "nifty": -0.0137,
+              "positive_share": 0.38,
+              "beat_nifty_share": 0.43
+            },
+            {
+              "label": "All rated stocks",
+              "scan_dates": 57,
+              "stocks_per_date": 335.4,
+              "mean_return": -0.0138,
+              "nifty": -0.0137,
+              "positive_share": 0.39,
+              "beat_nifty_share": 0.46
+            }
+          ]
+        },
+        "63": {
+          "scan_dates": 29,
+          "first": "2026-06-15",
+          "last": "2026-07-31",
+          "independent_periods": 1,
+          "labels": [
+            {
+              "label": "Strong Buy",
+              "scan_dates": 25,
+              "stocks_per_date": 15.1,
+              "mean_return": -0.0,
+              "nifty": -0.048,
+              "positive_share": 0.35,
+              "beat_nifty_share": 0.5
+            },
+            {
+              "label": "Buy",
+              "scan_dates": 29,
+              "stocks_per_date": 37.1,
+              "mean_return": -0.0089,
+              "nifty": -0.0492,
+              "positive_share": 0.36,
+              "beat_nifty_share": 0.54
+            },
+            {
+              "label": "Hold",
+              "scan_dates": 29,
+              "stocks_per_date": 58.1,
+              "mean_return": -0.0144,
+              "nifty": -0.0492,
+              "positive_share": 0.36,
+              "beat_nifty_share": 0.54
+            },
+            {
+              "label": "Caution",
+              "scan_dates": 29,
+              "stocks_per_date": 39.9,
+              "mean_return": -0.0251,
+              "nifty": -0.0492,
+              "positive_share": 0.34,
+              "beat_nifty_share": 0.53
+            },
+            {
+              "label": "Avoid",
+              "scan_dates": 29,
+              "stocks_per_date": 41.5,
+              "mean_return": -0.0285,
+              "nifty": -0.0492,
+              "positive_share": 0.34,
+              "beat_nifty_share": 0.45
+            },
+            {
+              "label": "All rated stocks",
+              "scan_dates": 29,
+              "stocks_per_date": 189.2,
+              "mean_return": -0.0183,
+              "nifty": -0.0492,
+              "positive_share": 0.35,
+              "beat_nifty_share": 0.51
+            }
+          ]
+        }
+      }
+    }
+  },
+  "portfolio": {
+    "rules": "Top 20 stocks rated Buy or Strong Buy with no red flags, at most 4 per sector, equal weight, reviewed every 21 sessions, bought at the close after the rating was published, 0.2% cost on each trade.",
+    "inception": "2026-10-05",
+    "through": "2026-11-13",
+    "sessions": 28,
+    "return": 0.0605,
+    "nifty_return": 0.1148,
+    "max_drawdown": -0.0519,
+    "reviews": [
+      {
+        "date": "2026-10-05",
+        "ratings_from": "2026-10-01",
+        "holdings": 20,
+        "turnover": 0.501
+      },
+      {
+        "date": "2026-11-12",
+        "ratings_from": "2026-11-11",
+        "holdings": 20,
+        "turnover": 0.611
+      }
+    ],
+    "last_review": "2026-11-12",
+    "sessions_to_next_review": 20,
+    "cash_share": -0.0,
+    "holdings": [
+      {
+        "ticker": "SHREEJISPG.NS",
+        "sector": "Services",
+        "rating_now": "Strong Buy",
+        "score_now": 6.98,
+        "entry_date": "2026-10-05",
+        "entry_price": 779.85,
+        "price": 910.8,
+        "return": 0.1679
+      },
+      {
+        "ticker": "EMCURE.NS",
+        "sector": "Healthcare",
+        "rating_now": "Strong Buy",
+        "score_now": 6.9,
+        "entry_date": "2026-11-12",
+        "entry_price": 2314.4,
+        "price": 2361.7,
+        "return": 0.0204
+      },
+      {
+        "ticker": "ENGINERSIN.NS",
+        "sector": "Industrials",
+        "rating_now": "Strong Buy",
+        "score_now": 7.19,
+        "entry_date": "2026-10-05",
+        "entry_price": 306.32,
+        "price": 312.45,
+        "return": 0.02
+      },
+      {
+        "ticker": "ALIVUS.NS",
+        "sector": "Healthcare",
+        "rating_now": "Strong Buy",
+        "score_now": 7.66,
+        "entry_date": "2026-11-12",
+        "entry_price": 1443.7,
+        "price": 1460.6,
+        "return": 0.0117
+      },
+      {
+        "ticker": "AUROPHARMA.NS",
+        "sector": "Healthcare",
+        "rating_now": "Strong Buy",
+        "score_now": 6.92,
+        "entry_date": "2026-11-12",
+        "entry_price": 1807.2,
+        "price": 1823.2,
+        "return": 0.0089
+      },
+      {
+        "ticker": "HEROMOTOCO.NS",
+        "sector": "Consumer Discretionary",
+        "rating_now": "Strong Buy",
+        "score_now": 6.74,
+        "entry_date": "2026-11-12",
+        "entry_price": 5342.0,
+        "price": 5385.0,
+        "return": 0.008
+      },
+      {
+        "ticker": "PNB.NS",
+        "sector": "Financial Services",
+        "rating_now": "Strong Buy",
+        "score_now": 7.09,
+        "entry_date": "2026-11-12",
+        "entry_price": 141.79,
+        "price": 142.81,
+        "return": 0.0072
+      },
+      {
+        "ticker": "KAJARIACER.NS",
+        "sector": "Consumer Discretionary",
+        "rating_now": "Strong Buy",
+        "score_now": 6.81,
+        "entry_date": "2026-10-05",
+        "entry_price": 1201.34,
+        "price": 1201.9,
+        "return": 0.0005
+      },
+      {
+        "ticker": "NAVINFLUOR.NS",
+        "sector": "Commodities",
+        "rating_now": "Strong Buy",
+        "score_now": 6.52,
+        "entry_date": "2026-11-12",
+        "entry_price": 9969.0,
+        "price": 10002.0,
+        "return": 0.0033
+      },
+      {
+        "ticker": "KARURVYSYA.NS",
+        "sector": "Financial Services",
+        "rating_now": "Strong Buy",
+        "score_now": 7.14,
+        "entry_date": "2026-11-12",
+        "entry_price": 380.6,
+        "price": 381.55,
+        "return": 0.0025
+      },
+      {
+        "ticker": "CHENNPETRO.NS",
+        "sector": "Energy",
+        "rating_now": "Buy",
+        "score_now": 6.26,
+        "entry_date": "2026-10-05",
+        "entry_price": 1377.83,
+        "price": 1428.2,
+        "return": 0.0366
+      },
+      {
+        "ticker": "SHYAMMETL.NS",
+        "sector": "Industrials",
+        "rating_now": "Strong Buy",
+        "score_now": 6.87,
+        "entry_date": "2026-11-12",
+        "entry_price": 1313.9,
+        "price": 1315.9,
+        "return": 0.0015
+      },
+      {
+        "ticker": "MAHABANK.NS",
+        "sector": "Financial Services",
+        "rating_now": "Strong Buy",
+        "score_now": 6.94,
+        "entry_date": "2026-10-05",
+        "entry_price": 80.9,
+        "price": 91.7,
+        "return": 0.1335
+      },
+      {
+        "ticker": "UNIONBANK.NS",
+        "sector": "Financial Services",
+        "rating_now": "Strong Buy",
+        "score_now": 7.11,
+        "entry_date": "2026-11-12",
+        "entry_price": 204.4,
+        "price": 203.0,
+        "return": -0.0068
+      },
+      {
+        "ticker": "LALPATHLAB.NS",
+        "sector": "Healthcare",
+        "rating_now": "Strong Buy",
+        "score_now": 7.02,
+        "entry_date": "2026-10-05",
+        "entry_price": 1966.41,
+        "price": 1993.0,
+        "return": 0.0135
+      },
+      {
+        "ticker": "SSWL.NS",
+        "sector": "Consumer Discretionary",
+        "rating_now": "Strong Buy",
+        "score_now": 6.68,
+        "entry_date": "2026-11-12",
+        "entry_price": 572.8,
+        "price": 567.4,
+        "return": -0.0094
+      },
+      {
+        "ticker": "DPABHUSHAN.NS",
+        "sector": null,
+        "rating_now": null,
+        "score_now": null,
+        "entry_date": "2026-11-12",
+        "entry_price": 2002.6,
+        "price": 1965.1,
+        "return": -0.0187
+      },
+      {
+        "ticker": "BOSCHLTD.NS",
+        "sector": "Consumer Discretionary",
+        "rating_now": "Buy",
+        "score_now": 6.45,
+        "entry_date": "2026-10-05",
+        "entry_price": 44960.0,
+        "price": 49390.0,
+        "return": 0.0985
+      },
+      {
+        "ticker": "GRWRHITECH.NS",
+        "sector": "Industrials",
+        "rating_now": "Strong Buy",
+        "score_now": 6.74,
+        "entry_date": "2026-10-05",
+        "entry_price": 6725.5,
+        "price": 7522.5,
+        "return": 0.1185
+      },
+      {
+        "ticker": "PETRONET.NS",
+        "sector": "Energy",
+        "rating_now": "Buy",
+        "score_now": 6.41,
+        "entry_date": "2026-11-12",
+        "entry_price": 335.0,
+        "price": 324.05,
+        "return": -0.0327
+      }
+    ],
+    "next_basket": {
+      "ratings_from": "2026-11-16",
+      "would_add": [
+        "APLAPOLLO.NS",
+        "GESHIP.NS",
+        "GLAND.NS",
+        "MARKSANS.NS",
+        "SHRINGARMS.NS",
+        "SOUTHBANK.NS",
+        "TANLA.NS",
+        "TIPSMUSIC.NS"
+      ],
+      "would_drop": [
+        "AUROPHARMA.NS",
+        "BOSCHLTD.NS",
+        "CHENNPETRO.NS",
+        "DPABHUSHAN.NS",
+        "EMCURE.NS",
+        "MAHABANK.NS",
+        "PETRONET.NS",
+        "SSWL.NS"
+      ],
+      "tickers": [
+        "ALIVUS.NS",
+        "ENGINERSIN.NS",
+        "KARURVYSYA.NS",
+        "UNIONBANK.NS",
+        "GLAND.NS",
+        "PNB.NS",
+        "LALPATHLAB.NS",
+        "SHREEJISPG.NS",
+        "MARKSANS.NS",
+        "SHRINGARMS.NS",
+        "SOUTHBANK.NS",
+        "TIPSMUSIC.NS",
+        "SHYAMMETL.NS",
+        "KAJARIACER.NS",
+        "GRWRHITECH.NS",
+        "HEROMOTOCO.NS",
+        "APLAPOLLO.NS",
+        "TANLA.NS",
+        "GESHIP.NS",
+        "NAVINFLUOR.NS"
+      ]
+    },
+    "chart": [
+      {
+        "date": "2026-10-05",
+        "portfolio": 100.0,
+        "nifty": 100.0
+      },
+      {
+        "date": "2026-10-06",
+        "portfolio": 101.42,
+        "nifty": 100.98
+      },
+      {
+        "date": "2026-10-07",
+        "portfolio": 102.27,
+        "nifty": 100.21
+      },
+      {
+        "date": "2026-10-08",
+        "portfolio": 100.07,
+        "nifty": 98.56
+      },
+      {
+        "date": "2026-10-09",
+        "portfolio": 100.88,
+        "nifty": 99.84
+      },
+      {
+        "date": "2026-10-12",
+        "portfolio": 102.88,
+        "nifty": 99.15
+      },
+      {
+        "date": "2026-10-13",
+        "portfolio": 102.87,
+        "nifty": 100.74
+      },
+      {
+        "date": "2026-10-14",
+        "portfolio": 102.93,
+        "nifty": 100.3
+      },
+      {
+        "date": "2026-10-15",
+        "portfolio": 101.69,
+        "nifty": 101.96
+      },
+      {
+        "date": "2026-10-16",
+        "portfolio": 102.33,
+        "nifty": 102.62
+      },
+      {
+        "date": "2026-10-19",
+        "portfolio": 101.72,
+        "nifty": 101.48
+      },
+      {
+        "date": "2026-10-21",
+        "portfolio": 100.09,
+        "nifty": 101.13
+      },
+      {
+        "date": "2026-10-22",
+        "portfolio": 99.19,
+        "nifty": 100.58
+      },
+      {
+        "date": "2026-10-23",
+        "portfolio": 97.59,
+        "nifty": 100.2
+      },
+      {
+        "date": "2026-10-26",
+        "portfolio": 97.63,
+        "nifty": 100.88
+      },
+      {
+        "date": "2026-10-27",
+        "portfolio": 100.01,
+        "nifty": 100.86
+      },
+      {
+        "date": "2026-10-28",
+        "portfolio": 100.14,
+        "nifty": 100.63
+      },
+      {
+        "date": "2026-10-29",
+        "portfolio": 100.48,
+        "nifty": 101.69
+      },
+      {
+        "date": "2026-10-30",
+        "portfolio": 99.68,
+        "nifty": 102.2
+      },
+      {
+        "date": "2026-11-02",
+        "portfolio": 100.67,
+        "nifty": 103.92
+      },
+      {
+        "date": "2026-11-03",
+        "portfolio": 100.72,
+        "nifty": 105.56
+      },
+      {
+        "date": "2026-11-04",
+        "portfolio": 102.62,
+        "nifty": 106.23
+      },
+      {
+        "date": "2026-11-05",
+        "portfolio": 103.4,
+        "nifty": 108.78
+      },
+      {
+        "date": "2026-11-06",
+        "portfolio": 102.46,
+        "nifty": 110.97
+      },
+      {
+        "date": "2026-11-09",
+        "portfolio": 104.61,
+        "nifty": 111.03
+      },
+      {
+        "date": "2026-11-11",
+        "portfolio": 105.68,
+        "nifty": 111.97
+      },
+      {
+        "date": "2026-11-12",
+        "portfolio": 106.12,
+        "nifty": 112.16
+      },
+      {
+        "date": "2026-11-13",
+        "portfolio": 106.05,
+        "nifty": 111.48
+      }
+    ]
+  },
+  "rating_changes": {
+    "date": "2026-11-16",
+    "compared_with": "2026-11-14",
+    "upgrades": [
+      {
+        "ticker": "HEGAM.NS",
+        "sector": "Industrials",
+        "from": "Avoid",
+        "to": "Hold",
+        "steps": 2,
+        "score": 5.32,
+        "score_change": 2.58
+      },
+      {
+        "ticker": "EICHERMOT.NS",
+        "sector": "Consumer Discretionary",
+        "from": "Buy",
+        "to": "Strong Buy",
+        "steps": 1,
+        "score": 6.55,
+        "score_change": 0.08
+      },
+      {
+        "ticker": "NAVINFLUOR.NS",
+        "sector": "Commodities",
+        "from": "Buy",
+        "to": "Strong Buy",
+        "steps": 1,
+        "score": 6.52,
+        "score_change": 0.02
+      },
+      {
+        "ticker": "TRENT.NS",
+        "sector": "Consumer Discretionary",
+        "from": "Hold",
+        "to": "Buy",
+        "steps": 1,
+        "score": 5.9,
+        "score_change": 0.41
+      },
+      {
+        "ticker": "IOC.NS",
+        "sector": "Energy",
+        "from": "Hold",
+        "to": "Buy",
+        "steps": 1,
+        "score": 5.8,
+        "score_change": 0.1
+      },
+      {
+        "ticker": "VEDL.NS",
+        "sector": "Commodities",
+        "from": "Caution",
+        "to": "Hold",
+        "steps": 1,
+        "score": 5.68,
+        "score_change": 1.14
+      },
+      {
+        "ticker": "SRF.NS",
+        "sector": "Commodities",
+        "from": "Caution",
+        "to": "Hold",
+        "steps": 1,
+        "score": 4.84,
+        "score_change": 0.0
+      },
+      {
+        "ticker": "TATACONSUM.NS",
+        "sector": "Fast Moving Consumer Goods",
+        "from": "Avoid",
+        "to": "Caution",
+        "steps": 1,
+        "score": 4.04,
+        "score_change": -0.01
+      },
+      {
+        "ticker": "ANURAS.NS",
+        "sector": "Commodities",
+        "from": "Avoid",
+        "to": "Caution",
+        "steps": 1,
+        "score": 3.88,
+        "score_change": -0.09
+      },
+      {
+        "ticker": "ASTERDM.NS",
+        "sector": "Healthcare",
+        "from": "Avoid",
+        "to": "Caution",
+        "steps": 1,
+        "score": 3.86,
+        "score_change": 0.05
+      },
+      {
+        "ticker": "JPPOWER.NS",
+        "sector": "Utilities",
+        "from": "Avoid",
+        "to": "Caution",
+        "steps": 1,
+        "score": 3.77,
+        "score_change": -0.13
+      },
+      {
+        "ticker": "BLUESTONE.NS",
+        "sector": "Consumer Discretionary",
+        "from": "Avoid",
+        "to": "Caution",
+        "steps": 1,
+        "score": 3.55,
+        "score_change": -0.02
+      },
+      {
+        "ticker": "KPIGREEN.NS",
+        "sector": "Utilities",
+        "from": "Avoid",
+        "to": "Caution",
+        "steps": 1,
+        "score": 3.41,
+        "score_change": -0.3
+      },
+      {
+        "ticker": "MFSL.NS",
+        "sector": "Financial Services",
+        "from": "Avoid",
+        "to": "Caution",
+        "steps": 1,
+        "score": 1.63,
+        "score_change": -0.05
+      }
+    ],
+    "downgrades": [
+      {
+        "ticker": "SBC.NS",
+        "sector": "Consumer Discretionary",
+        "from": "Strong Buy",
+        "to": "Caution",
+        "steps": -3,
+        "score": 6.54,
+        "score_change": -0.04
+      },
+      {
+        "ticker": "NAZARA.NS",
+        "sector": "Consumer Discretionary",
+        "from": "Strong Buy",
+        "to": "Caution",
+        "steps": -3,
+        "score": 6.49,
+        "score_change": -0.04
+      },
+      {
+        "ticker": "NUVAMA.NS",
+        "sector": "Financial Services",
+        "from": "Buy",
+        "to": "Caution",
+        "steps": -2,
+        "score": 5.82,
+        "score_change": -0.05
+      },
+      {
+        "ticker": "INDHOTEL.NS",
+        "sector": "Consumer Discretionary",
+        "from": "Strong Buy",
+        "to": "Buy",
+        "steps": -1,
+        "score": 6.5,
+        "score_change": -0.08
+      },
+      {
+        "ticker": "INDIANB.NS",
+        "sector": "Financial Services",
+        "from": "Strong Buy",
+        "to": "Buy",
+        "steps": -1,
+        "score": 6.49,
+        "score_change": -0.02
+      },
+      {
+        "ticker": "SUNTV.NS",
+        "sector": "Consumer Discretionary",
+        "from": "Strong Buy",
+        "to": "Buy",
+        "steps": -1,
+        "score": 6.49,
+        "score_change": -0.05
+      },
+      {
+        "ticker": "INFY.NS",
+        "sector": "Information Technology",
+        "from": "Buy",
+        "to": "Hold",
+        "steps": -1,
+        "score": 5.7,
+        "score_change": -0.02
+      },
+      {
+        "ticker": "LT.NS",
+        "sector": "Industrials",
+        "from": "Buy",
+        "to": "Hold",
+        "steps": -1,
+        "score": 5.7,
+        "score_change": -0.01
+      },
+      {
+        "ticker": "CUB.NS",
+        "sector": "Financial Services",
+        "from": "Buy",
+        "to": "Hold",
+        "steps": -1,
+        "score": 5.68,
+        "score_change": -0.04
+      },
+      {
+        "ticker": "COFORGE.NS",
+        "sector": "Information Technology",
+        "from": "Buy",
+        "to": "Hold",
+        "steps": -1,
+        "score": 5.66,
+        "score_change": -0.12
+      },
+      {
+        "ticker": "MRF.NS",
+        "sector": "Consumer Discretionary",
+        "from": "Buy",
+        "to": "Hold",
+        "steps": -1,
+        "score": 5.65,
+        "score_change": -0.05
+      },
+      {
+        "ticker": "TATACOMM.NS",
+        "sector": "Telecommunication",
+        "from": "Buy",
+        "to": "Hold",
+        "steps": -1,
+        "score": 5.54,
+        "score_change": -0.16
+      },
+      {
+        "ticker": "ASHOKLEY.NS",
+        "sector": "Industrials",
+        "from": "Hold",
+        "to": "Caution",
+        "steps": -1,
+        "score": 5.4,
+        "score_change": 0.24
+      },
+      {
+        "ticker": "MPHASIS.NS",
+        "sector": "Information Technology",
+        "from": "Hold",
+        "to": "Caution",
+        "steps": -1,
+        "score": 4.88,
+        "score_change": -0.21
+      },
+      {
+        "ticker": "SCI.NS",
+        "sector": "Services",
+        "from": "Hold",
+        "to": "Caution",
+        "steps": -1,
+        "score": 4.81,
+        "score_change": -0.12
+      },
+      {
+        "ticker": "DIXON.NS",
+        "sector": "Consumer Discretionary",
+        "from": "Hold",
+        "to": "Caution",
+        "steps": -1,
+        "score": 4.78,
+        "score_change": -0.06
+      },
+      {
+        "ticker": "SHADOWFAX.NS",
+        "sector": "Services",
+        "from": "Hold",
+        "to": "Caution",
+        "steps": -1,
+        "score": 4.78,
+        "score_change": -0.11
+      },
+      {
+        "ticker": "HAVELLS.NS",
+        "sector": "Consumer Discretionary",
+        "from": "Hold",
+        "to": "Caution",
+        "steps": -1,
+        "score": 4.73,
+        "score_change": -0.12
+      },
+      {
+        "ticker": "ADANIENSOL.NS",
+        "sector": "Utilities",
+        "from": "Hold",
+        "to": "Caution",
+        "steps": -1,
+        "score": 4.68,
+        "score_change": -0.18
+      },
+      {
+        "ticker": "VBL.NS",
+        "sector": "Fast Moving Consumer Goods",
+        "from": "Caution",
+        "to": "Avoid",
+        "steps": -1,
+        "score": 4.02,
+        "score_change": -0.12
+      },
+      {
+        "ticker": "LTF.NS",
+        "sector": "Financial Services",
+        "from": "Caution",
+        "to": "Avoid",
+        "steps": -1,
+        "score": 4.01,
+        "score_change": -0.07
+      },
+      {
+        "ticker": "AZAD.NS",
+        "sector": "Industrials",
+        "from": "Caution",
+        "to": "Avoid",
+        "steps": -1,
+        "score": 4.0,
+        "score_change": -0.19
+      },
+      {
+        "ticker": "BANDHANBNK.NS",
+        "sector": "Financial Services",
+        "from": "Caution",
+        "to": "Avoid",
+        "steps": -1,
+        "score": 3.99,
+        "score_change": -0.09
+      }
+    ],
+    "upgrade_count": 14,
+    "downgrade_count": 23
+  },
+  "fundamental_evidence": {
+    "version": "ranking-v3.0",
+    "snapshot_dates": 6,
+    "matured_dates": 1,
+    "dates_required": 252,
+    "enough_history": false,
+    "inputs": [
+      {
+        "id": "roe",
+        "label": "Return on equity",
+        "group": "Quality",
+        "ic": 0.183,
+        "dates": 1,
+        "t": null,
+        "verdict": "Not enough history"
+      },
+      {
+        "id": "roa",
+        "label": "Return on assets",
+        "group": "Quality",
+        "ic": 0.094,
+        "dates": 1,
+        "t": null,
+        "verdict": "Not enough history"
+      },
+      {
+        "id": "roce",
+        "label": "Return on capital employed",
+        "group": "Quality",
+        "ic": 0.068,
+        "dates": 1,
+        "t": null,
+        "verdict": "Not enough history"
+      },
+      {
+        "id": "margin",
+        "label": "Profit margin",
+        "group": "Quality",
+        "ic": 0.096,
+        "dates": 1,
+        "t": null,
+        "verdict": "Not enough history"
+      },
+      {
+        "id": "cash_quality",
+        "label": "Cash quality",
+        "group": "Quality",
+        "ic": 0.129,
+        "dates": 1,
+        "t": null,
+        "verdict": "Not enough history"
+      },
+      {
+        "id": "leverage",
+        "label": "Low leverage",
+        "group": "Quality",
+        "ic": -0.034,
+        "dates": 1,
+        "t": null,
+        "verdict": "Not enough history"
+      },
+      {
+        "id": "earnings_yield",
+        "label": "Earnings yield",
+        "group": "Value",
+        "ic": 0.07,
+        "dates": 1,
+        "t": null,
+        "verdict": "Not enough history"
+      },
+      {
+        "id": "book_yield",
+        "label": "Book yield",
+        "group": "Value",
+        "ic": -0.045,
+        "dates": 1,
+        "t": null,
+        "verdict": "Not enough history"
+      },
+      {
+        "id": "fcf_yield",
+        "label": "Free-cash-flow yield",
+        "group": "Value",
+        "ic": null,
+        "dates": 0,
+        "t": null,
+        "verdict": "Not enough history"
+      },
+      {
+        "id": "sales_yield",
+        "label": "Sales yield",
+        "group": "Value",
+        "ic": null,
+        "dates": 0,
+        "t": null,
+        "verdict": "Not enough history"
+      }
+    ],
+    "note": "Fundamentals as recorded on each scan date, tested against the following 21 sessions. Readings from a handful of dates are noise; verdicts appear after a year of snapshots."
+  },
+  "factor_research": {
+    "generated": "2026-11-15 04:25 IST",
+    "source": "2-year database",
+    "span": {
+      "start": "2025-06-18",
+      "end": "2026-11-13",
+      "sessions": 348,
+      "years": 1.4
+    },
+    "universe": {
+      "stocks": 882,
+      "median_eligible": 773
+    },
+    "method": "Rank correlation between each factor and the next 21- or 63-session return in excess of NIFTY, entering at the next close. t-statistics allow for overlapping windows. Supported means |t| of 3 or more, with the same sign in both halves and at both horizons.",
+    "caveats": [
+      "Only stocks tracked today are included, which flatters past results (survivorship bias).",
+      "Fundamental factors are not tested: no point-in-time statement history exists yet.",
+      "This is evidence about ranking, not a forecast of returns."
+    ],
+    "factors": [
+      {
+        "id": "mom12_1",
+        "label": "12-month momentum",
+        "group": "Momentum",
+        "in_model": true,
+        "meaning": "Return over the past year, skipping the latest month",
+        "h21": {
+          "ic": 0.08,
+          "t": 4.3,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.088,
+          "second_half": 0.073,
+          "positive_days": 0.77,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.073,
+            "2026": 0.086
+          }
+        },
+        "h63": {
+          "ic": 0.093,
+          "t": 4.07,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.108,
+          "second_half": 0.078,
+          "positive_days": 0.88,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.106,
+            "2026": 0.082
+          }
+        },
+        "verdict": "Supported"
+      },
+      {
+        "id": "mom6_1",
+        "label": "6-month momentum",
+        "group": "Momentum",
+        "in_model": true,
+        "meaning": "Return over the past six months, skipping the latest month",
+        "h21": {
+          "ic": 0.036,
+          "t": 1.49,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.059,
+          "second_half": 0.013,
+          "positive_days": 0.61,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.05,
+            "2026": 0.025
+          }
+        },
+        "h63": {
+          "ic": 0.057,
+          "t": 2.02,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.101,
+          "second_half": 0.012,
+          "positive_days": 0.68,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.102,
+            "2026": 0.016
+          }
+        },
+        "verdict": "Not supported"
+      },
+      {
+        "id": "trend50",
+        "label": "Above 50-day average",
+        "group": "Trend",
+        "in_model": true,
+        "meaning": "Distance of price above its 50-day average",
+        "h21": {
+          "ic": 0.02,
+          "t": 1.16,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.026,
+          "second_half": 0.015,
+          "positive_days": 0.6,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.028,
+            "2026": 0.014
+          }
+        },
+        "h63": {
+          "ic": 0.041,
+          "t": 1.67,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.051,
+          "second_half": 0.031,
+          "positive_days": 0.69,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.054,
+            "2026": 0.03
+          }
+        },
+        "verdict": "Not supported"
+      },
+      {
+        "id": "trend200",
+        "label": "Above 200-day average",
+        "group": "Trend",
+        "in_model": true,
+        "meaning": "Distance of price above its 200-day average",
+        "h21": {
+          "ic": 0.048,
+          "t": 2.03,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.065,
+          "second_half": 0.032,
+          "positive_days": 0.69,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.059,
+            "2026": 0.041
+          }
+        },
+        "h63": {
+          "ic": 0.084,
+          "t": 2.62,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.126,
+          "second_half": 0.041,
+          "positive_days": 0.82,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.13,
+            "2026": 0.042
+          }
+        },
+        "verdict": "Promising"
+      },
+      {
+        "id": "low_vol",
+        "label": "Low volatility",
+        "group": "Stability",
+        "in_model": true,
+        "meaning": "Calmer daily moves over three months",
+        "h21": {
+          "ic": 0.035,
+          "t": 1.01,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.122,
+          "second_half": -0.053,
+          "positive_days": 0.63,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.131,
+            "2026": -0.034
+          }
+        },
+        "h63": {
+          "ic": 0.016,
+          "t": 0.22,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.165,
+          "second_half": -0.134,
+          "positive_days": 0.53,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.176,
+            "2026": -0.128
+          }
+        },
+        "verdict": "Unstable"
+      },
+      {
+        "id": "low_downside",
+        "label": "Low downside risk",
+        "group": "Stability",
+        "in_model": true,
+        "meaning": "Smaller losing days over three months",
+        "h21": {
+          "ic": 0.043,
+          "t": 1.34,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.12,
+          "second_half": -0.033,
+          "positive_days": 0.64,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.128,
+            "2026": -0.017
+          }
+        },
+        "h63": {
+          "ic": 0.031,
+          "t": 0.45,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.169,
+          "second_half": -0.108,
+          "positive_days": 0.58,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.181,
+            "2026": -0.104
+          }
+        },
+        "verdict": "Unstable"
+      },
+      {
+        "id": "mom3_1",
+        "label": "3-month momentum",
+        "group": "Momentum",
+        "in_model": false,
+        "meaning": "Return over the past three months, skipping the latest month",
+        "h21": {
+          "ic": 0.021,
+          "t": 1.09,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.005,
+          "second_half": 0.039,
+          "positive_days": 0.57,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": -0.014,
+            "2026": 0.046
+          }
+        },
+        "h63": {
+          "ic": 0.016,
+          "t": 0.64,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.047,
+          "second_half": -0.015,
+          "positive_days": 0.52,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.048,
+            "2026": -0.013
+          }
+        },
+        "verdict": "Not supported",
+        "adds_to_model": {
+          "ic_gain": -0.009,
+          "t": -1.79,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "reversal_1m",
+        "label": "1-month reversal",
+        "group": "Reversal",
+        "in_model": false,
+        "meaning": "Stocks that fell most in the latest month",
+        "h21": {
+          "ic": -0.011,
+          "t": -0.65,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": -0.034,
+          "second_half": 0.012,
+          "positive_days": 0.41,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": -0.039,
+            "2026": 0.009
+          }
+        },
+        "h63": {
+          "ic": -0.036,
+          "t": -1.67,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": -0.049,
+          "second_half": -0.023,
+          "positive_days": 0.36,
+          "years_positive": 0,
+          "years": 2,
+          "by_year": {
+            "2025": -0.051,
+            "2026": -0.023
+          }
+        },
+        "verdict": "Unstable",
+        "adds_to_model": {
+          "ic_gain": 0.0,
+          "t": 0.01,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "high52",
+        "label": "Near 52-week high",
+        "group": "Momentum",
+        "in_model": false,
+        "meaning": "Closeness of price to its one-year high",
+        "h21": {
+          "ic": 0.081,
+          "t": 2.9,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.138,
+          "second_half": 0.024,
+          "positive_days": 0.73,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.141,
+            "2026": 0.038
+          }
+        },
+        "h63": {
+          "ic": 0.111,
+          "t": 1.89,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.213,
+          "second_half": 0.007,
+          "positive_days": 0.74,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.221,
+            "2026": 0.011
+          }
+        },
+        "verdict": "Promising",
+        "adds_to_model": {
+          "ic_gain": 0.0042,
+          "t": 1.73,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "golden_cross",
+        "label": "50-day vs 200-day average",
+        "group": "Trend",
+        "in_model": false,
+        "meaning": "How far the 50-day average sits above the 200-day",
+        "h21": {
+          "ic": 0.051,
+          "t": 2.04,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.075,
+          "second_half": 0.028,
+          "positive_days": 0.67,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.066,
+            "2026": 0.041
+          }
+        },
+        "h63": {
+          "ic": 0.083,
+          "t": 2.39,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.138,
+          "second_half": 0.027,
+          "positive_days": 0.78,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.141,
+            "2026": 0.03
+          }
+        },
+        "verdict": "Promising",
+        "adds_to_model": {
+          "ic_gain": -0.0033,
+          "t": -1.1,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "residual_mom",
+        "label": "Stock-specific momentum",
+        "group": "Momentum",
+        "in_model": false,
+        "meaning": "Momentum after removing the market's contribution",
+        "h21": {
+          "ic": 0.115,
+          "t": 2.71,
+          "days": 75,
+          "independent_periods": 3,
+          "first_half": 0.128,
+          "second_half": 0.104,
+          "positive_days": 0.83,
+          "years_positive": 1,
+          "years": 1,
+          "by_year": {
+            "2026": 0.115
+          }
+        },
+        "h63": null,
+        "verdict": "Promising",
+        "adds_to_model": {
+          "ic_gain": -0.0002,
+          "t": -0.03,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "risk_adj_mom",
+        "label": "Risk-adjusted momentum",
+        "group": "Momentum",
+        "in_model": false,
+        "meaning": "12-month momentum per unit of volatility",
+        "h21": {
+          "ic": 0.075,
+          "t": 4.01,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.084,
+          "second_half": 0.066,
+          "positive_days": 0.77,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.067,
+            "2026": 0.08
+          }
+        },
+        "h63": {
+          "ic": 0.086,
+          "t": 3.67,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.101,
+          "second_half": 0.07,
+          "positive_days": 0.84,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.099,
+            "2026": 0.074
+          }
+        },
+        "verdict": "Supported",
+        "adds_to_model": {
+          "ic_gain": 0.0035,
+          "t": 1.33,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "steady_mom",
+        "label": "Steady momentum",
+        "group": "Momentum",
+        "in_model": false,
+        "meaning": "Gains built from many small up days rather than a few jumps",
+        "h21": {
+          "ic": 0.058,
+          "t": 2.26,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.1,
+          "second_half": 0.017,
+          "positive_days": 0.74,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.082,
+            "2026": 0.042
+          }
+        },
+        "h63": {
+          "ic": 0.058,
+          "t": 1.26,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.132,
+          "second_half": -0.017,
+          "positive_days": 0.7,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.134,
+            "2026": -0.012
+          }
+        },
+        "verdict": "Promising",
+        "adds_to_model": {
+          "ic_gain": 0.0032,
+          "t": 0.71,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "sector_rel_mom",
+        "label": "Sector-relative momentum",
+        "group": "Momentum",
+        "in_model": false,
+        "meaning": "12-month momentum versus the stock's own sector",
+        "h21": {
+          "ic": 0.068,
+          "t": 4.31,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.066,
+          "second_half": 0.07,
+          "positive_days": 0.77,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.053,
+            "2026": 0.078
+          }
+        },
+        "h63": {
+          "ic": 0.073,
+          "t": 3.61,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.073,
+          "second_half": 0.073,
+          "positive_days": 0.85,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.071,
+            "2026": 0.075
+          }
+        },
+        "verdict": "Supported",
+        "adds_to_model": {
+          "ic_gain": 0.0023,
+          "t": 0.7,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "low_beta",
+        "label": "Low market sensitivity",
+        "group": "Stability",
+        "in_model": false,
+        "meaning": "Moves less than the market",
+        "h21": {
+          "ic": 0.019,
+          "t": 0.73,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.054,
+          "second_half": -0.016,
+          "positive_days": 0.67,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.053,
+            "2026": -0.005
+          }
+        },
+        "h63": {
+          "ic": 0.001,
+          "t": 0.01,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.06,
+          "second_half": -0.06,
+          "positive_days": 0.56,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.066,
+            "2026": -0.059
+          }
+        },
+        "verdict": "Unstable",
+        "adds_to_model": {
+          "ic_gain": -0.0013,
+          "t": -0.2,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "no_lottery",
+        "label": "No lottery spikes",
+        "group": "Stability",
+        "in_model": false,
+        "meaning": "No extreme single-day jump in the latest month",
+        "h21": {
+          "ic": 0.028,
+          "t": 1.33,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.07,
+          "second_half": -0.014,
+          "positive_days": 0.65,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.07,
+            "2026": -0.003
+          }
+        },
+        "h63": {
+          "ic": -0.001,
+          "t": -0.03,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.093,
+          "second_half": -0.097,
+          "positive_days": 0.47,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.099,
+            "2026": -0.093
+          }
+        },
+        "verdict": "Unstable",
+        "adds_to_model": {
+          "ic_gain": 0.0083,
+          "t": 1.22,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "low_vol_1y",
+        "label": "Low volatility (1 year)",
+        "group": "Stability",
+        "in_model": false,
+        "meaning": "Calmer daily moves over a year",
+        "h21": {
+          "ic": 0.039,
+          "t": 0.93,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.14,
+          "second_half": -0.063,
+          "positive_days": 0.6,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.153,
+            "2026": -0.042
+          }
+        },
+        "h63": {
+          "ic": 0.013,
+          "t": 0.13,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.197,
+          "second_half": -0.174,
+          "positive_days": 0.54,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.213,
+            "2026": -0.169
+          }
+        },
+        "verdict": "Unstable",
+        "adds_to_model": {
+          "ic_gain": 0.0059,
+          "t": 0.5,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "volume_trend",
+        "label": "Rising trading volume",
+        "group": "Liquidity",
+        "in_model": false,
+        "meaning": "Recent volume versus its six-month average",
+        "h21": {
+          "ic": 0.004,
+          "t": 0.29,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.015,
+          "second_half": -0.006,
+          "positive_days": 0.51,
+          "years_positive": 2,
+          "years": 2,
+          "by_year": {
+            "2025": 0.007,
+            "2026": 0.003
+          }
+        },
+        "h63": {
+          "ic": 0.013,
+          "t": 0.47,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.04,
+          "second_half": -0.014,
+          "positive_days": 0.54,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.039,
+            "2026": -0.011
+          }
+        },
+        "verdict": "Unstable",
+        "adds_to_model": {
+          "ic_gain": -0.0087,
+          "t": -2.19,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "liquid",
+        "label": "High liquidity",
+        "group": "Liquidity",
+        "in_model": false,
+        "meaning": "Higher average traded value",
+        "h21": {
+          "ic": 0.016,
+          "t": 0.51,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": 0.098,
+          "second_half": -0.065,
+          "positive_days": 0.57,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.101,
+            "2026": -0.044
+          }
+        },
+        "h63": {
+          "ic": 0.002,
+          "t": 0.03,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": 0.167,
+          "second_half": -0.164,
+          "positive_days": 0.49,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": 0.176,
+            "2026": -0.155
+          }
+        },
+        "verdict": "Unstable",
+        "adds_to_model": {
+          "ic_gain": -0.0053,
+          "t": -0.65,
+          "both_halves": false,
+          "passes": false
+        }
+      },
+      {
+        "id": "illiquid",
+        "label": "Illiquidity premium",
+        "group": "Liquidity",
+        "in_model": false,
+        "meaning": "Price moves more per rupee traded",
+        "h21": {
+          "ic": -0.03,
+          "t": -0.83,
+          "days": 326,
+          "independent_periods": 15,
+          "first_half": -0.121,
+          "second_half": 0.061,
+          "positive_days": 0.41,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": -0.124,
+            "2026": 0.037
+          }
+        },
+        "h63": {
+          "ic": -0.012,
+          "t": -0.13,
+          "days": 284,
+          "independent_periods": 4,
+          "first_half": -0.193,
+          "second_half": 0.171,
+          "positive_days": 0.48,
+          "years_positive": 1,
+          "years": 2,
+          "by_year": {
+            "2025": -0.203,
+            "2026": 0.161
+          }
+        },
+        "verdict": "Unstable",
+        "adds_to_model": {
+          "ic_gain": -0.0135,
+          "t": -1.09,
+          "both_halves": false,
+          "passes": false
+        }
+      }
+    ],
+    "model": {
+      "short": {
+        "horizon": 21,
+        "ic": 0.073,
+        "t": 2.77,
+        "days": 326,
+        "independent_periods": 15,
+        "first_half": 0.112,
+        "second_half": 0.035,
+        "positive_days": 0.72,
+        "years_positive": 2,
+        "years": 2,
+        "by_year": {
+          "2025": 0.106,
+          "2026": 0.049
+        },
+        "top20": {
+          "periods": 16,
+          "mean_net_return": 0.0245,
+          "mean_nifty": -0.0042,
+          "mean_all_stocks": 0.0032,
+          "beat_nifty_share": 0.69,
+          "positive_share": 0.81,
+          "worst_period": -0.0996
+        }
+      },
+      "balanced": {
+        "horizon": 21,
+        "ic": 0.077,
+        "t": 2.76,
+        "days": 326,
+        "independent_periods": 15,
+        "first_half": 0.126,
+        "second_half": 0.03,
+        "positive_days": 0.74,
+        "years_positive": 2,
+        "years": 2,
+        "by_year": {
+          "2025": 0.122,
+          "2026": 0.046
+        },
+        "top20": {
+          "periods": 16,
+          "mean_net_return": 0.0204,
+          "mean_nifty": -0.0042,
+          "mean_all_stocks": 0.0032,
+          "beat_nifty_share": 0.88,
+          "positive_share": 0.81,
+          "worst_period": -0.0941
+        }
+      },
+      "long": {
+        "horizon": 63,
+        "ic": 0.092,
+        "t": 1.37,
+        "days": 284,
+        "independent_periods": 4,
+        "first_half": 0.219,
+        "second_half": -0.036,
+        "positive_days": 0.68,
+        "years_positive": 1,
+        "years": 2,
+        "by_year": {
+          "2025": 0.228,
+          "2026": -0.031
+        },
+        "top20": {
+          "periods": 5,
+          "mean_net_return": 0.042,
+          "mean_nifty": -0.0149,
+          "mean_all_stocks": 0.0356,
+          "beat_nifty_share": 1.0,
+          "positive_share": 0.8,
+          "worst_period": -0.061
+        }
+      }
+    },
+    "regime": {
+      "nifty_above_200d": {
+        "label": "NIFTY above its 200-day average",
+        "favourable": {
+          "days": 172,
+          "independent_periods": 8,
+          "picks_mean_return": 0.0056,
+          "picks_positive_share": 0.72,
+          "all_stocks_mean_return": -0.0147
+        },
+        "unfavourable": {
+          "days": 154,
+          "independent_periods": 7,
+          "picks_mean_return": 0.0447,
+          "picks_positive_share": 0.84,
+          "all_stocks_mean_return": 0.028
+        },
+        "difference": -0.0391,
+        "t": -2.22,
+        "reliable": true
+      },
+      "nifty_above_50d": {
+        "label": "NIFTY above its 50-day average",
+        "favourable": {
+          "days": 169,
+          "independent_periods": 8,
+          "picks_mean_return": 0.0193,
+          "picks_positive_share": 0.78,
+          "all_stocks_mean_return": -0.0074
+        },
+        "unfavourable": {
+          "days": 157,
+          "independent_periods": 7,
+          "picks_mean_return": 0.0293,
+          "picks_positive_share": 0.78,
+          "all_stocks_mean_return": 0.0194
+        },
+        "difference": -0.01,
+        "t": -0.56,
+        "reliable": false
+      },
+      "breadth_above_half": {
+        "label": "More than half of stocks above their 50-day average",
+        "favourable": {
+          "days": 152,
+          "independent_periods": 7,
+          "picks_mean_return": 0.0301,
+          "picks_positive_share": 0.8,
+          "all_stocks_mean_return": 0.008
+        },
+        "unfavourable": {
+          "days": 174,
+          "independent_periods": 8,
+          "picks_mean_return": 0.0188,
+          "picks_positive_share": 0.76,
+          "all_stocks_mean_return": 0.0033
+        },
+        "difference": 0.0113,
+        "t": 0.64,
+        "reliable": false
+      },
+      "nifty_up_3_months": {
+        "label": "NIFTY up over the past 3 months",
+        "favourable": {
+          "days": 180,
+          "independent_periods": 8,
+          "picks_mean_return": 0.015,
+          "picks_positive_share": 0.76,
+          "all_stocks_mean_return": -0.0111
+        },
+        "unfavourable": {
+          "days": 146,
+          "independent_periods": 6,
+          "picks_mean_return": 0.0354,
+          "picks_positive_share": 0.81,
+          "all_stocks_mean_return": 0.026
+        },
+        "difference": -0.0204,
+        "t": -0.99,
+        "reliable": false
+      }
+    }
   },
   "sector_allocation": {
-    "Financial Services": 50.0,
+    "Financial Services": 40.0,
     "Healthcare": 30.0,
     "Industrials": 10.0,
-    "Services": 10.0
+    "Services": 10.0,
+    "Consumer Discretionary": 10.0
   },
   "correlation_matrix": {
     "labels": [
@@ -6710,10 +8913,10 @@
       "ENGINERSIN",
       "GLAND",
       "KARURVYSYA",
-      "KTKBANK",
       "LALPATHLAB",
       "PNB",
       "SHREEJISPG",
+      "SHRINGARMS",
       "SOUTHBANK",
       "UNIONBANK"
     ],
@@ -6723,10 +8926,10 @@
         0.32,
         0.33,
         0.08,
-        0.07,
         0.33,
         -0.16,
         0.15,
+        0.05,
         0.1,
         -0.01
       ],
@@ -6735,10 +8938,10 @@
         1.0,
         0.07,
         -0.02,
-        0.27,
         0.2,
         0.07,
         0.26,
+        0.14,
         0.03,
         0.08
       ],
@@ -6747,10 +8950,10 @@
         0.07,
         1.0,
         0.11,
-        0.18,
         0.17,
         0.04,
         0.24,
+        0.03,
         0.14,
         0.13
       ],
@@ -6759,34 +8962,22 @@
         -0.02,
         0.11,
         1.0,
-        0.35,
         0.04,
         0.47,
         0.07,
+        0.28,
         0.59,
         0.52
-      ],
-      [
-        0.07,
-        0.27,
-        0.18,
-        0.35,
-        1.0,
-        0.15,
-        0.43,
-        0.1,
-        0.35,
-        0.39
       ],
       [
         0.33,
         0.2,
         0.17,
         0.04,
-        0.15,
         1.0,
         -0.03,
         0.19,
+        0.06,
         0.23,
         0.1
       ],
@@ -6795,10 +8986,10 @@
         0.07,
         0.04,
         0.47,
-        0.43,
         -0.03,
         1.0,
         -0.09,
+        0.13,
         0.44,
         0.73
       ],
@@ -6807,22 +8998,34 @@
         0.26,
         0.24,
         0.07,
-        0.1,
         0.19,
         -0.09,
         1.0,
+        0.04,
         0.03,
         -0.03
+      ],
+      [
+        0.05,
+        0.14,
+        0.03,
+        0.28,
+        0.06,
+        0.13,
+        0.04,
+        1.0,
+        0.12,
+        0.12
       ],
       [
         0.1,
         0.03,
         0.14,
         0.59,
-        0.35,
         0.23,
         0.44,
         0.03,
+        0.12,
         1.0,
         0.45
       ],
@@ -6831,10 +9034,10 @@
         0.08,
         0.13,
         0.52,
-        0.39,
         0.1,
         0.73,
         -0.03,
+        0.12,
         0.45,
         1.0
       ]
