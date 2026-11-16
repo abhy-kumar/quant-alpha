@@ -11,6 +11,16 @@ interface QuoteResult {
   regularMarketChangePercent?: number
 }
 
+/**
+ * How long a "market closed" answer may be cached. Before the open on a trading
+ * day it must expire by 09:15, or the header keeps saying Closed into the session.
+ */
+export function closedCacheSeconds(hour: number, minute: number, second: number, nonTradingDay: boolean) {
+  const untilOpen = (9 * 60 + 15) * 60 - (hour * 3600 + minute * 60 + second)
+  if (nonTradingDay || untilOpen <= 0) return { browser: 60, edge: 300 }
+  return { browser: Math.max(1, Math.min(60, untilOpen)), edge: Math.max(1, Math.min(300, untilOpen)) }
+}
+
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   if (req.method !== 'GET') { res.statusCode = 405; res.end(JSON.stringify({ error: 'Use GET' })); return }
   try {
@@ -27,7 +37,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
     // Keep edge cache short so market transitions and live quotes are always fresh
     if (isMarketClosed) {
-      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=60')
+      const { browser, edge } = closedCacheSeconds(hour, minute, istDate.getSeconds(), isWeekend || calendar.holidays.includes(dateKey))
+      res.setHeader('Cache-Control', `public, max-age=${browser}, s-maxage=${edge}, stale-while-revalidate=${Math.min(60, edge)}`)
     } else {
       res.setHeader('Cache-Control', 'public, s-maxage=5, stale-while-revalidate=10')
     }

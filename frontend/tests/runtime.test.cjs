@@ -228,3 +228,11 @@ test('rating explanations state rank, drivers, red flags and missing data in pla
   assert.match(thin.headline,/Not rated: only 55% of the inputs/)
   assert.equal(explainRating({ ...base, Sector:'ETF' }),null)
 })
+test('a closed-market answer is never cached past the opening bell', () => {
+  const { closedCacheSeconds } = load('api/live_data.ts')
+  assert.deepEqual(closedCacheSeconds(2,0,0,false),{browser:60,edge:300})      // night: full cache
+  assert.deepEqual(closedCacheSeconds(9,13,0,false),{browser:60,edge:120})     // two minutes to open
+  assert.deepEqual(closedCacheSeconds(9,14,50,false),{browser:10,edge:10})
+  assert.deepEqual(closedCacheSeconds(16,0,0,false),{browser:60,edge:300})     // after the close
+  assert.deepEqual(closedCacheSeconds(9,14,50,true),{browser:60,edge:300})     // holiday or weekend
+})

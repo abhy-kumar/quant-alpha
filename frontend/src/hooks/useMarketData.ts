@@ -3,6 +3,14 @@ import axios from 'axios'
 import type { DashboardData, DataHealth, ScoreHistoryItem } from '../types'
 
 
+/** Milliseconds until 09:15 IST today plus a small margin, or null if that has passed. */
+function msUntilOpen(now = new Date()): number | null {
+  const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
+  const open = new Date(ist); open.setHours(9, 15, 5, 0)
+  const wait = open.getTime() - ist.getTime()
+  return wait > 0 ? wait : null
+}
+
 export function useMarketData(selectedTicker: string, setSelectedTicker: (t: string) => void, isLoggedIn = false) {
   const [data, setData] = useState<DashboardData[]>([])
   const [scanUpdated, setScanUpdated] = useState('')
@@ -39,6 +47,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
   const liveBusyRef = useRef(false)
   const dataBusyRef = useRef(false)
   const closedRef = useRef(true)
+  const liveSeenRef = useRef(false)
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const lastScanUpdatedRef = useRef<string>('')
 
@@ -60,6 +69,7 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
 
       if (res.data.status === 'ok') {
         closedRef.current = Boolean(res.data.is_market_closed)
+        liveSeenRef.current = true
         const lp = res.data.data
         let changed = false
 
@@ -122,7 +132,10 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
         const updatedTime = res.data.last_updated || ''
         setScanUpdated(updatedTime)
 
-        if (res.data.nifty_50) setNiftyData(res.data.nifty_50)
+        // The scan file's index level and open/closed flag are hours old. Once a live
+        // quote has arrived it owns both; otherwise every refresh (tab focus, the
+        // 15-minute reload) would flip the header back to "Closed" mid-session.
+        if (!liveSeenRef.current && res.data.nifty_50) setNiftyData(res.data.nifty_50)
         setCoveragePct(res.data.coverage_pct ?? null)
         setRegimeReadings(res.data.market_regime_readings ?? null)
         setDataHealth(res.data.data_health ?? null)
@@ -130,7 +143,6 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
         setFiiNet(res.data.fii_net ?? null)
         setDiiNet(res.data.dii_net ?? null)
         setPcr(res.data.pcr ?? null)
-        setIsDynamic(res.data.is_dynamic || false)
 
         if (!selectedTickerRef.current && d.length > 0) {
           setSelectedTickerRef.current(d[0].Ticker)
@@ -161,7 +173,8 @@ export function useMarketData(selectedTicker: string, setSelectedTicker: (t: str
     let liveTimer: ReturnType<typeof setTimeout>
     const poll = async () => {
       await fetchLive()
-      if (!stopped) liveTimer = setTimeout(poll, closedRef.current ? 5 * 60_000 : 30_000)
+      // While closed, check again as soon as the session opens rather than up to five minutes late.
+      if (!stopped) liveTimer = setTimeout(poll, closedRef.current ? Math.min(5 * 60_000, msUntilOpen() ?? Infinity) : 30_000)
     }
     if (!isLoggedIn) setScoreHistory({})
     fetchData().then(() => { if (!stopped) poll() })

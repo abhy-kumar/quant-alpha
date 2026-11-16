@@ -402,7 +402,7 @@ export default function App() {
           )}
 
           {dataHealth ? (
-            <button type="button" className="glass-pill" style={{ flexShrink:0, fontWeight:500, cursor:'pointer', border:'1px solid var(--border)', background:'transparent' }}
+            <button type="button" className="glass-pill" style={{ flexShrink:0, fontWeight:500, cursor:'pointer', border:'1px solid var(--border)', background:'transparent', height:22, minHeight:0, padding:'0 9px', lineHeight:1, fontSize:12 }}
               onClick={() => setShowHealth(true)} aria-haspopup="dialog">
               <span aria-hidden="true" style={{ width:6, height:6, borderRadius:'50%', display:'inline-block', marginRight:6, background: dataHealth.status === 'ok' ? 'var(--green)' : 'var(--amber)' }}/>
               <span style={{ color:'var(--text-2)' }}>{dataHealth.status === 'ok' ? 'Data healthy' : `Data: ${dataHealth.issues.length} ${dataHealth.issues.length === 1 ? 'issue' : 'issues'}`}</span>
