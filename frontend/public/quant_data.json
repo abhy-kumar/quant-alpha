@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-17 13:10:24",
+  "last_updated": "2026-11-17 16:56:57",
   "model_portfolios": {
     "max_sharpe": {
       "KARURVYSYA.NS": 0.317,
@@ -34,9 +34,9 @@
   },
   "factor_exposures": {
     "Value": 64.7,
-    "Momentum": 78.1,
-    "Quality": 63.3,
-    "Low_Volatility": 65.0
+    "Momentum": 77.9,
+    "Quality": 63.4,
+    "Low_Volatility": 65.2
   },
   "efficient_frontier": [
     {
@@ -1998,7 +1998,7 @@
       },
       {
         "date": "2026-02-06",
-        "portfolio": 109.4013,
+        "portfolio": 109.4012,
         "benchmark": 100.4667
       },
       {
@@ -5020,7 +5020,7 @@
       },
       {
         "date": "2026-07-10",
-        "portfolio": 120.8941,
+        "portfolio": 120.8942,
         "benchmark": 94.653
       },
       {
