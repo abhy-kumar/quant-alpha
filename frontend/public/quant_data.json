@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-16 20:44:47",
+  "last_updated": "2026-11-17 00:31:27",
   "model_portfolios": {
     "max_sharpe": {
       "GLAND.NS": 0.326,
@@ -1279,7 +1279,7 @@
       },
       {
         "date": "2026-09-07",
-        "portfolio": 100.3221,
+        "portfolio": 100.3222,
         "benchmark": 100.6614
       },
       {
@@ -2823,7 +2823,7 @@
       },
       {
         "date": "2026-10-12",
-        "portfolio": 129.0219,
+        "portfolio": 129.022,
         "benchmark": 87.7259
       },
       {
@@ -4260,7 +4260,7 @@
       },
       {
         "date": "2025-11-26",
-        "portfolio": 101.4106,
+        "portfolio": 101.4105,
         "benchmark": 102.7969
       },
       {
