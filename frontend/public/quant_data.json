@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-18 13:13:17",
+  "last_updated": "2026-11-18 16:28:06",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.4268426842684269,
@@ -32,10 +32,10 @@
     }
   },
   "factor_exposures": {
-    "Value": 71.4,
+    "Value": 71.1,
     "Momentum": 83.0,
-    "Quality": 61.6,
-    "Low_Volatility": 60.2
+    "Quality": 61.5,
+    "Low_Volatility": 60.4
   },
   "efficient_frontier": [
     {
@@ -1483,7 +1483,7 @@
       },
       {
         "date": "2026-11-04",
-        "portfolio": 100.5587,
+        "portfolio": 100.5586,
         "benchmark": 101.4295
       },
       {
@@ -4804,7 +4804,7 @@
       },
       {
         "date": "2026-05-07",
-        "portfolio": 112.4472,
+        "portfolio": 112.4471,
         "benchmark": 94.6748
       },
       {
@@ -4849,7 +4849,7 @@
       },
       {
         "date": "2026-05-20",
-        "portfolio": 112.2222,
+        "portfolio": 112.2221,
         "benchmark": 92.0765
       },
       {
@@ -4874,7 +4874,7 @@
       },
       {
         "date": "2026-05-27",
-        "portfolio": 113.4964,
+        "portfolio": 113.4963,
         "benchmark": 93.0422
       },
       {
@@ -5029,7 +5029,7 @@
       },
       {
         "date": "2026-07-13",
-        "portfolio": 115.0097,
+        "portfolio": 115.0096,
         "benchmark": 94.2247
       },
       {
@@ -5194,7 +5194,7 @@
       },
       {
         "date": "2026-08-27",
-        "portfolio": 121.5544,
+        "portfolio": 121.5543,
         "benchmark": 93.7571
       },
       {
@@ -5234,7 +5234,7 @@
       },
       {
         "date": "2026-09-08",
-        "portfolio": 121.7735,
+        "portfolio": 121.7734,
         "benchmark": 91.9834
       },
       {
@@ -5429,7 +5429,7 @@
       },
       {
         "date": "2026-11-05",
-        "portfolio": 125.8452,
+        "portfolio": 125.8451,
         "benchmark": 95.4919
       },
       {
