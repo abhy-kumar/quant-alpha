@@ -6,18 +6,18 @@
       "as_of_date": "2026-11-20",
       "model": "long",
       "horizon": "6m",
-      "created_at": "2026-11-20 03:47:51",
+      "created_at": "2026-11-20 12:49:25",
       "data_start": "2026-05-21",
       "data_end": "2026-11-20",
       "n_chart_pts": 126,
       "stats": {
-        "total_return": 15.89,
-        "cagr": 34.22,
-        "volatility": 16.07,
-        "sharpe": 1.53,
-        "max_drawdown": -6.98,
-        "info_ratio": 0.98,
-        "win_rate": 56.0
+        "total_return": 14.78,
+        "cagr": 31.66,
+        "volatility": 16.55,
+        "sharpe": 1.37,
+        "max_drawdown": -8.58,
+        "info_ratio": 0.65,
+        "win_rate": 52.8
       }
     },
     {
@@ -26,18 +26,18 @@
       "as_of_date": "2026-11-20",
       "model": "long",
       "horizon": "1y",
-      "created_at": "2026-11-20 03:47:40",
+      "created_at": "2026-11-20 12:49:09",
       "data_start": "2025-11-13",
       "data_end": "2026-11-20",
       "n_chart_pts": 252,
       "stats": {
-        "total_return": 21.78,
-        "cagr": 21.35,
-        "volatility": 21.52,
-        "sharpe": 0.72,
-        "max_drawdown": -15.14,
-        "info_ratio": 1.32,
-        "win_rate": 53.0
+        "total_return": 18.19,
+        "cagr": 17.83,
+        "volatility": 21.16,
+        "sharpe": 0.59,
+        "max_drawdown": -15.42,
+        "info_ratio": 1.07,
+        "win_rate": 52.6
       }
     },
     {
@@ -46,18 +46,18 @@
       "as_of_date": "2026-11-20",
       "model": "short",
       "horizon": "6m",
-      "created_at": "2026-11-20 03:47:24",
+      "created_at": "2026-11-20 12:48:46",
       "data_start": "2026-05-21",
       "data_end": "2026-11-20",
       "n_chart_pts": 126,
       "stats": {
-        "total_return": -13.43,
-        "cagr": -25.01,
-        "volatility": 27.06,
-        "sharpe": -1.18,
+        "total_return": -14.18,
+        "cagr": -26.31,
+        "volatility": 27.08,
+        "sharpe": -1.24,
         "max_drawdown": -21.14,
-        "info_ratio": -1.47,
-        "win_rate": 52.0
+        "info_ratio": -1.65,
+        "win_rate": 51.2
       }
     },
     {
@@ -66,18 +66,18 @@
       "as_of_date": "2026-11-20",
       "model": "short",
       "horizon": "1y",
-      "created_at": "2026-11-20 03:46:54",
+      "created_at": "2026-11-20 12:48:02",
       "data_start": "2025-11-13",
       "data_end": "2026-11-20",
       "n_chart_pts": 252,
       "stats": {
-        "total_return": 55.7,
-        "cagr": 54.46,
-        "volatility": 36.03,
-        "sharpe": 1.24,
-        "max_drawdown": -23.81,
-        "info_ratio": 1.56,
-        "win_rate": 57.0
+        "total_return": 58.63,
+        "cagr": 57.3,
+        "volatility": 39.3,
+        "sharpe": 1.22,
+        "max_drawdown": -27.52,
+        "info_ratio": 1.45,
+        "win_rate": 58.2
       }
     },
     {
@@ -561,5 +561,5 @@
       }
     }
   ],
-  "exported_at": "2026-11-20 03:47:57"
+  "exported_at": "2026-11-20 12:49:34"
 }
