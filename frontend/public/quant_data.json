@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-24 03:07:28",
+  "last_updated": "2026-11-24 06:40:12",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.4594459445944594,
@@ -1304,7 +1304,7 @@
       },
       {
         "date": "2026-09-07",
-        "portfolio": 100.3221,
+        "portfolio": 100.3222,
         "benchmark": 100.6614
       },
       {
