@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-24 14:51:29",
+  "last_updated": "2026-11-24 18:58:06",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.4594459445944594,
@@ -33,9 +33,9 @@
     }
   },
   "factor_exposures": {
-    "Value": 64.3,
+    "Value": 64.2,
     "Momentum": 79.0,
-    "Quality": 64.7,
+    "Quality": 63.0,
     "Low_Volatility": 69.7
   },
   "efficient_frontier": [
@@ -1304,7 +1304,7 @@
       },
       {
         "date": "2026-09-07",
-        "portfolio": 100.3221,
+        "portfolio": 100.3222,
         "benchmark": 100.6614
       },
       {
@@ -4910,7 +4910,7 @@
       },
       {
         "date": "2026-06-03",
-        "portfolio": 113.1466,
+        "portfolio": 113.1465,
         "benchmark": 90.3341
       },
       {
@@ -4945,7 +4945,7 @@
       },
       {
         "date": "2026-06-12",
-        "portfolio": 112.4464,
+        "portfolio": 112.4463,
         "benchmark": 91.1727
       },
       {
@@ -5065,7 +5065,7 @@
       },
       {
         "date": "2026-07-17",
-        "portfolio": 116.7555,
+        "portfolio": 116.7554,
         "benchmark": 93.9184
       },
       {
@@ -5345,7 +5345,7 @@
       },
       {
         "date": "2026-10-07",
-        "portfolio": 120.9745,
+        "portfolio": 120.9744,
         "benchmark": 87.2366
       },
       {
@@ -5375,7 +5375,7 @@
       },
       {
         "date": "2026-10-15",
-        "portfolio": 118.0841,
+        "portfolio": 118.084,
         "benchmark": 88.7584
       },
       {
@@ -7124,7 +7124,7 @@
         "ticker": "MAHABANK.NS",
         "sector": "Financial Services",
         "rating_now": "Strong Buy",
-        "score_now": 7.08,
+        "score_now": 7.07,
         "entry_date": "2026-10-05",
         "entry_price": 80.9,
         "price": 97.56,
@@ -7134,7 +7134,7 @@
         "ticker": "PNB.NS",
         "sector": "Financial Services",
         "rating_now": "Strong Buy",
-        "score_now": 7.45,
+        "score_now": 7.44,
         "entry_date": "2026-11-12",
         "entry_price": 141.79,
         "price": 149.75,
@@ -7144,7 +7144,7 @@
         "ticker": "HEROMOTOCO.NS",
         "sector": "Consumer Discretionary",
         "rating_now": "Strong Buy",
-        "score_now": 7.11,
+        "score_now": 7.1,
         "entry_date": "2026-11-12",
         "entry_price": 5342.0,
         "price": 5535.0,
@@ -7154,7 +7154,7 @@
         "ticker": "SHREEJISPG.NS",
         "sector": "Services",
         "rating_now": "Strong Buy",
-        "score_now": 7.59,
+        "score_now": 7.27,
         "entry_date": "2026-10-05",
         "entry_price": 779.85,
         "price": 910.0,
@@ -7174,7 +7174,7 @@
         "ticker": "UNIONBANK.NS",
         "sector": "Financial Services",
         "rating_now": "Strong Buy",
-        "score_now": 7.39,
+        "score_now": 7.4,
         "entry_date": "2026-11-12",
         "entry_price": 204.4,
         "price": 208.2,
@@ -7183,8 +7183,8 @@
       {
         "ticker": "NAVINFLUOR.NS",
         "sector": "Commodities",
-        "rating_now": "Strong Buy",
-        "score_now": 6.51,
+        "rating_now": "Buy",
+        "score_now": 6.48,
         "entry_date": "2026-11-12",
         "entry_price": 9969.0,
         "price": 10154.0,
@@ -7194,7 +7194,7 @@
         "ticker": "LALPATHLAB.NS",
         "sector": "Healthcare",
         "rating_now": "Strong Buy",
-        "score_now": 7.11,
+        "score_now": 7.08,
         "entry_date": "2026-10-05",
         "entry_price": 1966.41,
         "price": 2040.5,
@@ -7204,7 +7204,7 @@
         "ticker": "CHENNPETRO.NS",
         "sector": "Energy",
         "rating_now": "Strong Buy",
-        "score_now": 6.56,
+        "score_now": 6.55,
         "entry_date": "2026-10-05",
         "entry_price": 1377.83,
         "price": 1443.8,
@@ -7214,7 +7214,7 @@
         "ticker": "KARURVYSYA.NS",
         "sector": "Financial Services",
         "rating_now": "Strong Buy",
-        "score_now": 7.28,
+        "score_now": 7.27,
         "entry_date": "2026-11-12",
         "entry_price": 380.6,
         "price": 384.1,
@@ -7244,7 +7244,7 @@
         "ticker": "AUROPHARMA.NS",
         "sector": "Healthcare",
         "rating_now": "Strong Buy",
-        "score_now": 6.8,
+        "score_now": 6.79,
         "entry_date": "2026-11-12",
         "entry_price": 1807.2,
         "price": 1796.5,
@@ -7254,7 +7254,7 @@
         "ticker": "ALIVUS.NS",
         "sector": "Healthcare",
         "rating_now": "Strong Buy",
-        "score_now": 7.59,
+        "score_now": 7.58,
         "entry_date": "2026-11-12",
         "entry_price": 1443.7,
         "price": 1410.3,
@@ -7264,7 +7264,7 @@
         "ticker": "PETRONET.NS",
         "sector": "Energy",
         "rating_now": "Strong Buy",
-        "score_now": 6.65,
+        "score_now": 6.64,
         "entry_date": "2026-11-12",
         "entry_price": 335.0,
         "price": 326.05,
@@ -7274,7 +7274,7 @@
         "ticker": "SHYAMMETL.NS",
         "sector": "Industrials",
         "rating_now": "Strong Buy",
-        "score_now": 7.0,
+        "score_now": 6.98,
         "entry_date": "2026-11-12",
         "entry_price": 1313.9,
         "price": 1276.2,
@@ -7284,7 +7284,7 @@
         "ticker": "ENGINERSIN.NS",
         "sector": "Industrials",
         "rating_now": "Strong Buy",
-        "score_now": 6.75,
+        "score_now": 6.76,
         "entry_date": "2026-10-05",
         "entry_price": 306.32,
         "price": 298.4,
@@ -7294,7 +7294,7 @@
         "ticker": "BOSCHLTD.NS",
         "sector": "Consumer Discretionary",
         "rating_now": "Strong Buy",
-        "score_now": 6.66,
+        "score_now": 6.64,
         "entry_date": "2026-10-05",
         "entry_price": 44960.0,
         "price": 48800.0,
@@ -7314,7 +7314,7 @@
         "ticker": "SSWL.NS",
         "sector": "Consumer Discretionary",
         "rating_now": "Strong Buy",
-        "score_now": 6.66,
+        "score_now": 6.65,
         "entry_date": "2026-11-12",
         "entry_price": 572.8,
         "price": 490.45,
@@ -7322,7 +7322,7 @@
       }
     ],
     "next_basket": {
-      "ratings_from": "2026-11-24",
+      "ratings_from": "2026-11-25",
       "would_add": [
         "CEMPRO.NS",
         "EICHERMOT.NS",
@@ -7347,16 +7347,16 @@
       ],
       "tickers": [
         "ALIVUS.NS",
-        "SHREEJISPG.NS",
         "PNB.NS",
         "UNIONBANK.NS",
         "KARURVYSYA.NS",
+        "SHREEJISPG.NS",
         "TIPSMUSIC.NS",
         "HEROMOTOCO.NS",
-        "LALPATHLAB.NS",
         "SOUTHBANK.NS",
-        "SHYAMMETL.NS",
+        "LALPATHLAB.NS",
         "TMCV.NS",
+        "SHYAMMETL.NS",
         "EICHERMOT.NS",
         "INDHOTEL.NS",
         "EMCURE.NS",
@@ -7542,203 +7542,59 @@
     ]
   },
   "rating_changes": {
-    "date": "2026-11-24",
-    "compared_with": "2026-11-23",
+    "date": "2026-11-25",
+    "compared_with": "2026-11-24",
     "upgrades": [
       {
-        "ticker": "CHENNPETRO.NS",
-        "sector": "Energy",
-        "from": "Buy",
-        "to": "Strong Buy",
-        "steps": 1,
-        "score": 6.56,
-        "score_change": 0.07
-      },
-      {
-        "ticker": "IGIL.NS",
-        "sector": "Services",
-        "from": "Buy",
-        "to": "Strong Buy",
-        "steps": 1,
-        "score": 6.55,
-        "score_change": 0.34
-      },
-      {
-        "ticker": "SAREGAMA.NS",
-        "sector": "Consumer Discretionary",
-        "from": "Buy",
-        "to": "Strong Buy",
-        "steps": 1,
-        "score": 6.55,
-        "score_change": 0.05
-      },
-      {
-        "ticker": "TCS.NS",
-        "sector": "Information Technology",
-        "from": "Buy",
-        "to": "Strong Buy",
-        "steps": 1,
-        "score": 6.55,
-        "score_change": 0.23
-      },
-      {
-        "ticker": "NEULANDLAB.NS",
-        "sector": "Healthcare",
-        "from": "Buy",
-        "to": "Strong Buy",
-        "steps": 1,
-        "score": 6.52,
-        "score_change": 0.13
-      },
-      {
-        "ticker": "MCX.NS",
-        "sector": "Financial Services",
-        "from": "Hold",
-        "to": "Buy",
-        "steps": 1,
-        "score": 5.96,
-        "score_change": 0.26
-      },
-      {
-        "ticker": "INFY.NS",
-        "sector": "Information Technology",
-        "from": "Hold",
-        "to": "Buy",
-        "steps": 1,
-        "score": 5.9,
-        "score_change": 0.14
-      },
-      {
-        "ticker": "PRIVISCL.NS",
+        "ticker": "ULTRACEMCO.NS",
         "sector": "Commodities",
         "from": "Hold",
         "to": "Buy",
         "steps": 1,
-        "score": 5.88,
-        "score_change": 0.12
+        "score": 5.8,
+        "score_change": 0.02
       },
       {
-        "ticker": "TORNTPHARM.NS",
-        "sector": "Healthcare",
-        "from": "Hold",
-        "to": "Buy",
-        "steps": 1,
-        "score": 5.86,
-        "score_change": 0.21
-      },
-      {
-        "ticker": "GLENMARK.NS",
-        "sector": "Healthcare",
-        "from": "Hold",
-        "to": "Buy",
-        "steps": 1,
-        "score": 5.83,
-        "score_change": 0.12
-      },
-      {
-        "ticker": "MARUTI.NS",
+        "ticker": "LENSKART.NS",
         "sector": "Consumer Discretionary",
         "from": "Hold",
         "to": "Buy",
         "steps": 1,
-        "score": 5.79,
-        "score_change": 0.07
-      },
-      {
-        "ticker": "IIFLCAPS.NS",
-        "sector": "Financial Services",
-        "from": "Hold",
-        "to": "Buy",
-        "steps": 1,
-        "score": 5.78,
-        "score_change": 0.13
-      },
-      {
-        "ticker": "SRF.NS",
-        "sector": "Commodities",
-        "from": "Caution",
-        "to": "Hold",
-        "steps": 1,
-        "score": 4.98,
-        "score_change": 0.09
-      },
-      {
-        "ticker": "BALRAMCHIN.NS",
-        "sector": "Fast Moving Consumer Goods",
-        "from": "Caution",
-        "to": "Hold",
-        "steps": 1,
-        "score": 4.96,
-        "score_change": 0.08
-      },
-      {
-        "ticker": "MARINE.NS",
-        "sector": "Industrials",
-        "from": "Caution",
-        "to": "Hold",
-        "steps": 1,
-        "score": 4.92,
-        "score_change": 0.01
-      },
-      {
-        "ticker": "M&MFIN.NS",
-        "sector": "Financial Services",
-        "from": "Caution",
-        "to": "Hold",
-        "steps": 1,
-        "score": 4.9,
+        "score": 5.76,
         "score_change": -0.01
       },
       {
-        "ticker": "IDFCFIRSTB.NS",
+        "ticker": "360ONE.NS",
         "sector": "Financial Services",
         "from": "Caution",
         "to": "Hold",
         "steps": 1,
-        "score": 4.87,
-        "score_change": 0.01
+        "score": 4.86,
+        "score_change": -0.01
       },
       {
-        "ticker": "VIYASH.NS",
-        "sector": "Healthcare",
-        "from": "Avoid",
-        "to": "Caution",
-        "steps": 1,
-        "score": 4.13,
-        "score_change": 0.15
-      },
-      {
-        "ticker": "PWL.NS",
-        "sector": "Consumer Discretionary",
-        "from": "Avoid",
-        "to": "Caution",
-        "steps": 1,
-        "score": 4.12,
-        "score_change": 0.15
-      },
-      {
-        "ticker": "SBICARD.NS",
+        "ticker": "LTF.NS",
         "sector": "Financial Services",
         "from": "Avoid",
         "to": "Caution",
         "steps": 1,
-        "score": 4.08,
-        "score_change": 0.13
+        "score": 4.0,
+        "score_change": 0.0
       }
     ],
     "downgrades": [
       {
-        "ticker": "FEDERALBNK.NS",
+        "ticker": "ICICIBANK.NS",
         "sector": "Financial Services",
         "from": "Strong Buy",
         "to": "Buy",
         "steps": -1,
-        "score": 6.48,
-        "score_change": -0.08
+        "score": 6.5,
+        "score_change": -0.01
       },
       {
-        "ticker": "PNBHOUSING.NS",
-        "sector": "Financial Services",
+        "ticker": "NAVINFLUOR.NS",
+        "sector": "Commodities",
         "from": "Strong Buy",
         "to": "Buy",
         "steps": -1,
@@ -7746,165 +7602,21 @@
         "score_change": -0.03
       },
       {
-        "ticker": "BANKINDIA.NS",
-        "sector": "Financial Services",
-        "from": "Strong Buy",
-        "to": "Buy",
-        "steps": -1,
-        "score": 6.44,
-        "score_change": -0.13
-      },
-      {
-        "ticker": "VRLLOG.NS",
-        "sector": "Services",
-        "from": "Strong Buy",
-        "to": "Buy",
-        "steps": -1,
-        "score": 6.35,
-        "score_change": -0.2
-      },
-      {
-        "ticker": "ULTRACEMCO.NS",
-        "sector": "Commodities",
-        "from": "Buy",
-        "to": "Hold",
-        "steps": -1,
-        "score": 5.78,
-        "score_change": 0.0
-      },
-      {
-        "ticker": "LENSKART.NS",
-        "sector": "Consumer Discretionary",
-        "from": "Buy",
-        "to": "Hold",
-        "steps": -1,
-        "score": 5.77,
-        "score_change": -0.12
-      },
-      {
-        "ticker": "MSUMI.NS",
-        "sector": "Consumer Discretionary",
-        "from": "Buy",
-        "to": "Hold",
-        "steps": -1,
-        "score": 5.76,
-        "score_change": -0.07
-      },
-      {
-        "ticker": "SGMART.NS",
-        "sector": "Commodities",
-        "from": "Buy",
-        "to": "Hold",
-        "steps": -1,
-        "score": 5.74,
-        "score_change": -0.07
-      },
-      {
-        "ticker": "PIDILITIND.NS",
-        "sector": "Commodities",
-        "from": "Buy",
-        "to": "Hold",
-        "steps": -1,
-        "score": 5.72,
-        "score_change": -0.05
-      },
-      {
-        "ticker": "J&KBANK.NS",
-        "sector": "Financial Services",
-        "from": "Buy",
-        "to": "Hold",
-        "steps": -1,
-        "score": 5.71,
-        "score_change": -0.1
-      },
-      {
-        "ticker": "QPOWER.NS",
-        "sector": "Industrials",
-        "from": "Buy",
-        "to": "Hold",
-        "steps": -1,
-        "score": 5.67,
-        "score_change": -0.17
-      },
-      {
-        "ticker": "APLAPOLLO.NS",
-        "sector": "Industrials",
-        "from": "Buy",
-        "to": "Hold",
-        "steps": -1,
-        "score": 5.03,
-        "score_change": -1.21
-      },
-      {
-        "ticker": "SMCGLOBAL.NS",
-        "sector": "Financial Services",
-        "from": "Hold",
-        "to": "Caution",
-        "steps": -1,
-        "score": 4.85,
-        "score_change": -0.12
-      },
-      {
-        "ticker": "ADANIENSOL.NS",
-        "sector": "Utilities",
-        "from": "Hold",
-        "to": "Caution",
-        "steps": -1,
-        "score": 4.84,
-        "score_change": -0.07
-      },
-      {
-        "ticker": "HDFCBANK.NS",
-        "sector": "Financial Services",
-        "from": "Hold",
-        "to": "Caution",
-        "steps": -1,
-        "score": 4.84,
-        "score_change": -0.13
-      },
-      {
-        "ticker": "TATASTEEL.NS",
-        "sector": "Commodities",
-        "from": "Hold",
-        "to": "Caution",
-        "steps": -1,
-        "score": 4.74,
-        "score_change": -0.52
-      },
-      {
-        "ticker": "GALLANTT.NS",
-        "sector": "Industrials",
+        "ticker": "RELIANCE.NS",
+        "sector": "Energy",
         "from": "Caution",
         "to": "Avoid",
         "steps": -1,
-        "score": 3.99,
-        "score_change": -0.05
-      },
-      {
-        "ticker": "AVANTIFEED.NS",
-        "sector": "Fast Moving Consumer Goods",
-        "from": "Caution",
-        "to": "Avoid",
-        "steps": -1,
-        "score": 3.92,
-        "score_change": -0.13
-      },
-      {
-        "ticker": "BBOX.NS",
-        "sector": "Information Technology",
-        "from": "Caution",
-        "to": "Avoid",
-        "steps": -1,
-        "score": 3.79,
-        "score_change": -0.27
+        "score": 3.98,
+        "score_change": -0.07
       }
     ],
-    "upgrade_count": 20,
-    "downgrade_count": 19
+    "upgrade_count": 4,
+    "downgrade_count": 3
   },
   "fundamental_evidence": {
     "version": "ranking-v3.0",
-    "snapshot_dates": 13,
+    "snapshot_dates": 14,
     "matured_dates": 1,
     "dates_required": 252,
     "enough_history": false,
