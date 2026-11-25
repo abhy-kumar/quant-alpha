@@ -6,17 +6,17 @@
       "as_of_date": "2026-11-25",
       "model": "long",
       "horizon": "6m",
-      "created_at": "2026-11-25 05:06:51",
+      "created_at": "2026-11-25 14:25:43",
       "data_start": "2026-05-25",
       "data_end": "2026-11-25",
       "n_chart_pts": 126,
       "stats": {
-        "total_return": 17.21,
-        "cagr": 37.05,
-        "volatility": 15.91,
-        "sharpe": 1.68,
+        "total_return": 17.33,
+        "cagr": 37.34,
+        "volatility": 15.92,
+        "sharpe": 1.7,
         "max_drawdown": -6.31,
-        "info_ratio": 1.02,
+        "info_ratio": 1.03,
         "win_rate": 56.8
       }
     },
@@ -26,17 +26,17 @@
       "as_of_date": "2026-11-25",
       "model": "long",
       "horizon": "1y",
-      "created_at": "2026-11-25 05:06:39",
+      "created_at": "2026-11-25 14:25:31",
       "data_start": "2025-11-17",
       "data_end": "2026-11-25",
       "n_chart_pts": 252,
       "stats": {
-        "total_return": 29.91,
-        "cagr": 29.21,
-        "volatility": 22.04,
-        "sharpe": 1.01,
-        "max_drawdown": -17.26,
-        "info_ratio": 1.55,
+        "total_return": 30.63,
+        "cagr": 29.91,
+        "volatility": 22.17,
+        "sharpe": 1.03,
+        "max_drawdown": -17.74,
+        "info_ratio": 1.58,
         "win_rate": 53.8
       }
     },
@@ -46,17 +46,17 @@
       "as_of_date": "2026-11-25",
       "model": "short",
       "horizon": "6m",
-      "created_at": "2026-11-25 05:06:21",
+      "created_at": "2026-11-25 14:25:12",
       "data_start": "2026-05-25",
       "data_end": "2026-11-25",
       "n_chart_pts": 126,
       "stats": {
-        "total_return": -7.48,
-        "cagr": -14.3,
-        "volatility": 26.67,
-        "sharpe": -0.7,
+        "total_return": -7.68,
+        "cagr": -14.67,
+        "volatility": 26.69,
+        "sharpe": -0.71,
         "max_drawdown": -15.4,
-        "info_ratio": -1.05,
+        "info_ratio": -1.07,
         "win_rate": 49.6
       }
     },
@@ -66,18 +66,18 @@
       "as_of_date": "2026-11-25",
       "model": "short",
       "horizon": "1y",
-      "created_at": "2026-11-25 05:05:47",
+      "created_at": "2026-11-25 14:24:38",
       "data_start": "2025-11-17",
       "data_end": "2026-11-25",
       "n_chart_pts": 252,
       "stats": {
-        "total_return": 44.71,
-        "cagr": 43.6,
-        "volatility": 44.33,
-        "sharpe": 0.92,
+        "total_return": 40.2,
+        "cagr": 39.22,
+        "volatility": 44.27,
+        "sharpe": 0.85,
         "max_drawdown": -32.99,
-        "info_ratio": 1.11,
-        "win_rate": 54.6
+        "info_ratio": 1.03,
+        "win_rate": 55.4
       }
     },
     {
@@ -801,5 +801,5 @@
       }
     }
   ],
-  "exported_at": "2026-11-25 05:06:58"
+  "exported_at": "2026-11-25 14:25:51"
 }
