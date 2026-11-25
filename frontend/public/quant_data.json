@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-25 14:25:44",
+  "last_updated": "2026-11-25 18:03:42",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.4596459645964596,
@@ -33,7 +33,7 @@
     }
   },
   "factor_exposures": {
-    "Value": 64.2,
+    "Value": 64.3,
     "Momentum": 79.1,
     "Quality": 63.1,
     "Low_Volatility": 69.8
@@ -800,7 +800,7 @@
       },
       {
         "date": "2026-11-13",
-        "portfolio": 102.1235,
+        "portfolio": 102.1236,
         "benchmark": 106.4404
       },
       {
@@ -2588,7 +2588,7 @@
       },
       {
         "date": "2026-07-27",
-        "portfolio": 135.2569,
+        "portfolio": 135.257,
         "benchmark": 92.2444
       },
       {
@@ -2793,7 +2793,7 @@
       },
       {
         "date": "2026-09-23",
-        "portfolio": 161.2276,
+        "portfolio": 161.2277,
         "benchmark": 90.1334
       },
       {
@@ -2833,7 +2833,7 @@
       },
       {
         "date": "2026-10-06",
-        "portfolio": 165.7774,
+        "portfolio": 165.7775,
         "benchmark": 87.5551
       },
       {
@@ -2848,7 +2848,7 @@
       },
       {
         "date": "2026-10-09",
-        "portfolio": 160.7586,
+        "portfolio": 160.7587,
         "benchmark": 86.5723
       },
       {
@@ -2973,7 +2973,7 @@
       },
       {
         "date": "2026-11-17",
-        "portfolio": 139.5836,
+        "portfolio": 139.5837,
         "benchmark": 97.5934
       },
       {
@@ -4985,7 +4985,7 @@
       },
       {
         "date": "2026-06-23",
-        "portfolio": 123.8656,
+        "portfolio": 123.8655,
         "benchmark": 91.5838
       },
       {
@@ -5210,7 +5210,7 @@
       },
       {
         "date": "2026-08-26",
-        "portfolio": 127.7085,
+        "portfolio": 127.7084,
         "benchmark": 93.0586
       },
       {
@@ -7202,9 +7202,9 @@
       },
       {
         "ticker": "KAJARIACER.NS",
-        "sector": null,
-        "rating_now": null,
-        "score_now": null,
+        "sector": "Consumer Discretionary",
+        "rating_now": "Strong Buy",
+        "score_now": 6.91,
         "entry_date": "2026-10-05",
         "entry_price": 1201.34,
         "price": 1206.0,
