@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-27 13:49:31",
+  "last_updated": "2026-11-27 17:33:20",
   "model_portfolios": {
     "max_sharpe": {
       "SHREEJISPG.NS": 0.4555,
@@ -33,9 +33,9 @@
     }
   },
   "factor_exposures": {
-    "Value": 55.7,
+    "Value": 55.9,
     "Momentum": 77.0,
-    "Quality": 65.8,
+    "Quality": 65.9,
     "Low_Volatility": 74.3
   },
   "efficient_frontier": [
@@ -2253,7 +2253,7 @@
       },
       {
         "date": "2026-04-16",
-        "portfolio": 109.9194,
+        "portfolio": 109.9193,
         "benchmark": 92.8763
       },
       {
@@ -2278,7 +2278,7 @@
       },
       {
         "date": "2026-04-23",
-        "portfolio": 113.7742,
+        "portfolio": 113.7741,
         "benchmark": 92.7854
       },
       {
@@ -2938,7 +2938,7 @@
       },
       {
         "date": "2026-11-03",
-        "portfolio": 114.7212,
+        "portfolio": 114.7213,
         "benchmark": 91.3951
       },
       {
@@ -3616,7 +3616,7 @@
       },
       {
         "date": "2026-07-23",
-        "portfolio": 93.4547,
+        "portfolio": 93.4548,
         "benchmark": 99.8429
       },
       {
@@ -4790,7 +4790,7 @@
       },
       {
         "date": "2026-04-23",
-        "portfolio": 118.825,
+        "portfolio": 118.8249,
         "benchmark": 92.7854
       },
       {
@@ -4995,7 +4995,7 @@
       },
       {
         "date": "2026-06-23",
-        "portfolio": 132.741,
+        "portfolio": 132.7409,
         "benchmark": 91.446
       },
       {
@@ -5175,7 +5175,7 @@
       },
       {
         "date": "2026-08-13",
-        "portfolio": 143.2779,
+        "portfolio": 143.2778,
         "benchmark": 93.6406
       },
       {
@@ -5395,7 +5395,7 @@
       },
       {
         "date": "2026-10-16",
-        "portfolio": 138.2735,
+        "portfolio": 138.2734,
         "benchmark": 88.8437
       },
       {
@@ -7636,6 +7636,15 @@
         "score_change": 0.08
       },
       {
+        "ticker": "DHAMPURSUG.NS",
+        "sector": "Fast Moving Consumer Goods",
+        "from": "Hold",
+        "to": "Buy",
+        "steps": 1,
+        "score": 5.8,
+        "score_change": 0.16
+      },
+      {
         "ticker": "ZENSARTECH.NS",
         "sector": "Information Technology",
         "from": "Hold",
@@ -7881,7 +7890,7 @@
         "score_change": -0.36
       }
     ],
-    "upgrade_count": 11,
+    "upgrade_count": 12,
     "downgrade_count": 21
   },
   "fundamental_evidence": {
