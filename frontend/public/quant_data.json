@@ -1,193 +1,193 @@
 {
-  "last_updated": "2026-11-27 04:36:26",
+  "last_updated": "2026-11-27 13:49:31",
   "model_portfolios": {
     "max_sharpe": {
-      "SHREEJISPG.NS": 0.4492,
-      "ALIVUS.NS": 0.1658,
-      "KARURVYSYA.NS": 0.1636,
-      "UNIONBANK.NS": 0.1053,
-      "EMCURE.NS": 0.095,
-      "TIPSMUSIC.NS": 0.0207
+      "SHREEJISPG.NS": 0.4555,
+      "KARURVYSYA.NS": 0.1646,
+      "ALIVUS.NS": 0.1583,
+      "UNIONBANK.NS": 0.0995,
+      "EMCURE.NS": 0.0945,
+      "TIPSMUSIC.NS": 0.0276
     },
     "min_volatility": {
-      "AJANTPHARM.NS": 0.24922492249224926,
-      "HEROMOTOCO.NS": 0.16141614161416143,
-      "PNB.NS": 0.12861286128612862,
-      "LALPATHLAB.NS": 0.12271227122712272,
-      "ALIVUS.NS": 0.11681168116811683,
-      "EMCURE.NS": 0.10701070107010702,
-      "TIPSMUSIC.NS": 0.07350735073507352,
-      "KARURVYSYA.NS": 0.03310331033103311
+      "AJANTPHARM.NS": 0.24997500249975002,
+      "HEROMOTOCO.NS": 0.16008399160083991,
+      "PNB.NS": 0.1282871712828717,
+      "LALPATHLAB.NS": 0.12018798120187982,
+      "ALIVUS.NS": 0.11748825117488251,
+      "EMCURE.NS": 0.10718928107189282,
+      "TIPSMUSIC.NS": 0.0738926107389261,
+      "KARURVYSYA.NS": 0.03399660033996601
     },
     "risk_parity": {
-      "AJANTPHARM.NS": 0.13652730546109224,
-      "ALIVUS.NS": 0.11122224444888978,
-      "HEROMOTOCO.NS": 0.10972194438887779,
-      "LALPATHLAB.NS": 0.10892178435687139,
-      "EMCURE.NS": 0.10502100420084018,
-      "TIPSMUSIC.NS": 0.09321864372874576,
-      "PNB.NS": 0.09121824364872975,
-      "KARURVYSYA.NS": 0.08511702340468094,
-      "UNIONBANK.NS": 0.08191638327665533,
-      "SHREEJISPG.NS": 0.07711542308461693
+      "AJANTPHARM.NS": 0.13661366136613662,
+      "ALIVUS.NS": 0.1113111311131113,
+      "HEROMOTOCO.NS": 0.10951095109510951,
+      "LALPATHLAB.NS": 0.10841084108410841,
+      "EMCURE.NS": 0.10491049104910491,
+      "TIPSMUSIC.NS": 0.0933093309330933,
+      "PNB.NS": 0.09120912091209121,
+      "KARURVYSYA.NS": 0.0852085208520852,
+      "UNIONBANK.NS": 0.08210821082108212,
+      "SHREEJISPG.NS": 0.0774077407740774
     }
   },
   "factor_exposures": {
-    "Value": 56.3,
-    "Momentum": 76.5,
-    "Quality": 65.7,
-    "Low_Volatility": 74.1
+    "Value": 55.7,
+    "Momentum": 77.0,
+    "Quality": 65.8,
+    "Low_Volatility": 74.3
   },
   "efficient_frontier": [
     {
-      "volatility": 15.53,
-      "return": 30.95,
-      "sharpe": 1.57
+      "volatility": 15.56,
+      "return": 30.33,
+      "sharpe": 1.53
     },
     {
-      "volatility": 15.57,
-      "return": 33.82,
-      "sharpe": 1.75
+      "volatility": 15.6,
+      "return": 33.22,
+      "sharpe": 1.71
     },
     {
-      "volatility": 15.69,
-      "return": 36.68,
-      "sharpe": 1.92
+      "volatility": 15.71,
+      "return": 36.11,
+      "sharpe": 1.88
     },
     {
-      "volatility": 15.88,
-      "return": 39.55,
-      "sharpe": 2.08
+      "volatility": 15.9,
+      "return": 39.0,
+      "sharpe": 2.04
     },
     {
-      "volatility": 16.14,
-      "return": 42.42,
-      "sharpe": 2.23
+      "volatility": 16.16,
+      "return": 41.88,
+      "sharpe": 2.19
     },
     {
-      "volatility": 16.47,
-      "return": 45.29,
-      "sharpe": 2.36
+      "volatility": 16.48,
+      "return": 44.77,
+      "sharpe": 2.32
     },
     {
-      "volatility": 16.85,
-      "return": 48.16,
-      "sharpe": 2.47
+      "volatility": 16.87,
+      "return": 47.66,
+      "sharpe": 2.44
     },
     {
-      "volatility": 17.3,
-      "return": 51.03,
-      "sharpe": 2.57
+      "volatility": 17.31,
+      "return": 50.55,
+      "sharpe": 2.54
     },
     {
       "volatility": 17.8,
-      "return": 53.9,
-      "sharpe": 2.66
+      "return": 53.44,
+      "sharpe": 2.64
     },
     {
       "volatility": 18.35,
-      "return": 56.77,
-      "sharpe": 2.74
+      "return": 56.32,
+      "sharpe": 2.71
     },
     {
       "volatility": 18.97,
-      "return": 59.64,
-      "sharpe": 2.8
+      "return": 59.21,
+      "sharpe": 2.78
     },
     {
       "volatility": 19.66,
-      "return": 62.51,
-      "sharpe": 2.85
-    },
-    {
-      "volatility": 20.42,
-      "return": 65.38,
-      "sharpe": 2.88
-    },
-    {
-      "volatility": 21.24,
-      "return": 68.25,
-      "sharpe": 2.91
-    },
-    {
-      "volatility": 22.12,
-      "return": 71.12,
-      "sharpe": 2.92
-    },
-    {
-      "volatility": 23.04,
-      "return": 73.99,
-      "sharpe": 2.93
-    },
-    {
-      "volatility": 24.01,
-      "return": 76.86,
-      "sharpe": 2.93
-    },
-    {
-      "volatility": 25.04,
-      "return": 79.73,
-      "sharpe": 2.92
-    },
-    {
-      "volatility": 26.12,
-      "return": 82.6,
-      "sharpe": 2.91
-    },
-    {
-      "volatility": 27.27,
-      "return": 85.47,
-      "sharpe": 2.9
-    },
-    {
-      "volatility": 28.46,
-      "return": 88.34,
-      "sharpe": 2.88
-    },
-    {
-      "volatility": 29.7,
-      "return": 91.21,
-      "sharpe": 2.85
-    },
-    {
-      "volatility": 30.98,
-      "return": 94.08,
+      "return": 62.1,
       "sharpe": 2.83
     },
     {
-      "volatility": 32.3,
-      "return": 96.95,
-      "sharpe": 2.8
+      "volatility": 20.43,
+      "return": 64.99,
+      "sharpe": 2.86
     },
     {
-      "volatility": 33.66,
-      "return": 99.82,
+      "volatility": 21.26,
+      "return": 67.87,
+      "sharpe": 2.89
+    },
+    {
+      "volatility": 22.14,
+      "return": 70.76,
+      "sharpe": 2.9
+    },
+    {
+      "volatility": 23.07,
+      "return": 73.65,
+      "sharpe": 2.91
+    },
+    {
+      "volatility": 24.05,
+      "return": 76.54,
+      "sharpe": 2.91
+    },
+    {
+      "volatility": 25.08,
+      "return": 79.42,
+      "sharpe": 2.91
+    },
+    {
+      "volatility": 26.17,
+      "return": 82.31,
+      "sharpe": 2.9
+    },
+    {
+      "volatility": 27.31,
+      "return": 85.2,
+      "sharpe": 2.88
+    },
+    {
+      "volatility": 28.5,
+      "return": 88.09,
+      "sharpe": 2.86
+    },
+    {
+      "volatility": 29.74,
+      "return": 90.97,
+      "sharpe": 2.84
+    },
+    {
+      "volatility": 31.01,
+      "return": 93.86,
+      "sharpe": 2.82
+    },
+    {
+      "volatility": 32.32,
+      "return": 96.75,
+      "sharpe": 2.79
+    },
+    {
+      "volatility": 33.67,
+      "return": 99.64,
       "sharpe": 2.77
     },
     {
-      "volatility": 35.05,
-      "return": 102.69,
+      "volatility": 35.06,
+      "return": 102.52,
       "sharpe": 2.74
     },
     {
-      "volatility": 36.49,
-      "return": 105.56,
+      "volatility": 36.5,
+      "return": 105.41,
       "sharpe": 2.71
     },
     {
       "volatility": 38.02,
-      "return": 108.43,
+      "return": 108.3,
       "sharpe": 2.68
     },
     {
       "volatility": 39.63,
-      "return": 111.29,
+      "return": 111.19,
       "sharpe": 2.64
     },
     {
       "volatility": 41.31,
-      "return": 114.16,
-      "sharpe": 2.61
+      "return": 114.07,
+      "sharpe": 2.6
     }
   ],
   "data_version": 4,
@@ -845,8 +845,8 @@
       },
       {
         "date": "2026-11-27",
-        "portfolio": 99.4594,
-        "benchmark": 109.3735
+        "portfolio": 98.9712,
+        "benchmark": 108.3999
       }
     ],
     "holdings": [
@@ -1004,13 +1004,13 @@
       }
     ],
     "stats": {
-      "total_return": -0.54,
-      "cagr": -1.17,
+      "total_return": -1.03,
+      "cagr": -2.22,
       "volatility": 14.62,
-      "sharpe": -0.45,
+      "sharpe": -0.53,
       "max_drawdown": -8.95,
-      "info_ratio": -1.21,
-      "win_rate": 56.1
+      "info_ratio": -1.15,
+      "win_rate": 55.3
     },
     "version": 4,
     "methodology": "Prior-close price signals; close execution; shares held between rebalances; 20bps per leg; historical liquidity; close-triggered trailing stops"
@@ -1319,7 +1319,7 @@
       },
       {
         "date": "2026-09-07",
-        "portfolio": 100.3221,
+        "portfolio": 100.3222,
         "benchmark": 100.6614
       },
       {
@@ -1589,8 +1589,8 @@
       },
       {
         "date": "2026-11-27",
-        "portfolio": 107.9129,
-        "benchmark": 109.3735
+        "portfolio": 107.5498,
+        "benchmark": 108.3999
       }
     ],
     "holdings": [
@@ -1748,12 +1748,12 @@
       }
     ],
     "stats": {
-      "total_return": 7.91,
-      "cagr": 18.01,
-      "volatility": 14.82,
-      "sharpe": 0.77,
+      "total_return": 7.55,
+      "cagr": 17.14,
+      "volatility": 14.78,
+      "sharpe": 0.72,
       "max_drawdown": -8.38,
-      "info_ratio": -0.18,
+      "info_ratio": -0.1,
       "win_rate": 60.5
     },
     "version": 4,
@@ -2253,7 +2253,7 @@
       },
       {
         "date": "2026-04-16",
-        "portfolio": 109.9193,
+        "portfolio": 109.9194,
         "benchmark": 92.8763
       },
       {
@@ -2278,7 +2278,7 @@
       },
       {
         "date": "2026-04-23",
-        "portfolio": 113.7741,
+        "portfolio": 113.7742,
         "benchmark": 92.7854
       },
       {
@@ -2768,258 +2768,258 @@
       },
       {
         "date": "2026-09-11",
-        "portfolio": 129.169,
+        "portfolio": 129.7612,
         "benchmark": 89.8108
       },
       {
         "date": "2026-09-15",
-        "portfolio": 122.4619,
+        "portfolio": 122.9681,
         "benchmark": 88.738
       },
       {
         "date": "2026-09-16",
-        "portfolio": 121.0784,
+        "portfolio": 121.981,
         "benchmark": 89.118
       },
       {
         "date": "2026-09-17",
-        "portfolio": 121.9097,
+        "portfolio": 122.8009,
         "benchmark": 89.3214
       },
       {
         "date": "2026-09-18",
-        "portfolio": 125.262,
+        "portfolio": 126.7582,
         "benchmark": 89.6124
       },
       {
         "date": "2026-09-21",
-        "portfolio": 126.762,
+        "portfolio": 127.3711,
         "benchmark": 89.873
       },
       {
         "date": "2026-09-22",
-        "portfolio": 127.3891,
+        "portfolio": 128.0431,
         "benchmark": 89.5456
       },
       {
         "date": "2026-09-23",
-        "portfolio": 129.0221,
+        "portfolio": 129.8785,
         "benchmark": 89.9978
       },
       {
         "date": "2026-09-24",
-        "portfolio": 127.2004,
+        "portfolio": 128.0178,
         "benchmark": 88.525
       },
       {
         "date": "2026-09-25",
-        "portfolio": 128.0893,
+        "portfolio": 129.0857,
         "benchmark": 88.8221
       },
       {
         "date": "2026-09-28",
-        "portfolio": 126.5471,
+        "portfolio": 127.5722,
         "benchmark": 87.4393
       },
       {
         "date": "2026-09-29",
-        "portfolio": 129.2701,
+        "portfolio": 130.4955,
         "benchmark": 87.1934
       },
       {
         "date": "2026-09-30",
-        "portfolio": 130.0977,
+        "portfolio": 131.3771,
         "benchmark": 86.8259
       },
       {
         "date": "2026-10-01",
-        "portfolio": 127.7188,
+        "portfolio": 128.8972,
         "benchmark": 86.064
       },
       {
         "date": "2026-10-05",
-        "portfolio": 128.094,
+        "portfolio": 129.2774,
         "benchmark": 86.5776
       },
       {
         "date": "2026-10-06",
-        "portfolio": 130.3039,
+        "portfolio": 131.2231,
         "benchmark": 87.4233
       },
       {
         "date": "2026-10-07",
-        "portfolio": 132.7429,
+        "portfolio": 134.4735,
         "benchmark": 86.7591
       },
       {
         "date": "2026-10-08",
-        "portfolio": 129.2002,
+        "portfolio": 130.0389,
         "benchmark": 85.3341
       },
       {
         "date": "2026-10-09",
-        "portfolio": 129.4815,
+        "portfolio": 130.0978,
         "benchmark": 86.4421
       },
       {
         "date": "2026-10-12",
-        "portfolio": 131.1661,
+        "portfolio": 131.4978,
         "benchmark": 85.8391
       },
       {
         "date": "2026-10-13",
-        "portfolio": 129.772,
+        "portfolio": 130.1002,
         "benchmark": 87.2155
       },
       {
         "date": "2026-10-14",
-        "portfolio": 130.689,
+        "portfolio": 131.0196,
         "benchmark": 86.8345
       },
       {
         "date": "2026-10-15",
-        "portfolio": 125.8274,
+        "portfolio": 126.1457,
         "benchmark": 88.2726
       },
       {
         "date": "2026-10-16",
-        "portfolio": 125.5838,
+        "portfolio": 125.9015,
         "benchmark": 88.8437
       },
       {
         "date": "2026-10-19",
-        "portfolio": 123.2563,
+        "portfolio": 123.5681,
         "benchmark": 87.8565
       },
       {
         "date": "2026-10-21",
-        "portfolio": 120.2884,
+        "portfolio": 120.5926,
         "benchmark": 87.5587
       },
       {
         "date": "2026-10-22",
-        "portfolio": 119.3885,
+        "portfolio": 119.6904,
         "benchmark": 87.0838
       },
       {
         "date": "2026-10-23",
-        "portfolio": 116.9762,
+        "portfolio": 117.2721,
         "benchmark": 86.7474
       },
       {
         "date": "2026-10-26",
-        "portfolio": 117.5087,
+        "portfolio": 117.8059,
         "benchmark": 87.3354
       },
       {
         "date": "2026-10-27",
-        "portfolio": 120.9544,
+        "portfolio": 121.2603,
         "benchmark": 87.3222
       },
       {
         "date": "2026-10-28",
-        "portfolio": 117.7792,
+        "portfolio": 118.0771,
         "benchmark": 87.1268
       },
       {
         "date": "2026-10-29",
-        "portfolio": 117.3491,
+        "portfolio": 117.6459,
         "benchmark": 88.04
       },
       {
         "date": "2026-10-30",
-        "portfolio": 115.1301,
+        "portfolio": 115.4212,
         "benchmark": 88.4866
       },
       {
         "date": "2026-11-02",
-        "portfolio": 114.8043,
+        "portfolio": 115.0947,
         "benchmark": 89.9747
       },
       {
         "date": "2026-11-03",
-        "portfolio": 114.4318,
+        "portfolio": 114.7212,
         "benchmark": 91.3951
       },
       {
         "date": "2026-11-04",
-        "portfolio": 116.6278,
+        "portfolio": 116.9228,
         "benchmark": 91.9699
       },
       {
         "date": "2026-11-05",
-        "portfolio": 115.1708,
+        "portfolio": 115.4621,
         "benchmark": 94.1808
       },
       {
         "date": "2026-11-06",
-        "portfolio": 110.3516,
+        "portfolio": 110.6307,
         "benchmark": 96.076
       },
       {
         "date": "2026-11-09",
-        "portfolio": 111.7643,
+        "portfolio": 112.047,
         "benchmark": 96.1309
       },
       {
         "date": "2026-11-11",
-        "portfolio": 114.0095,
+        "portfolio": 114.2979,
         "benchmark": 96.9385
       },
       {
         "date": "2026-11-12",
-        "portfolio": 115.5773,
+        "portfolio": 115.8697,
         "benchmark": 97.1085
       },
       {
         "date": "2026-11-13",
-        "portfolio": 115.691,
+        "portfolio": 115.9836,
         "benchmark": 96.5134
       },
       {
         "date": "2026-11-16",
-        "portfolio": 114.2559,
+        "portfolio": 114.5449,
         "benchmark": 97.0769
       },
       {
         "date": "2026-11-17",
-        "portfolio": 113.5175,
+        "portfolio": 113.8046,
         "benchmark": 97.4465
       },
       {
         "date": "2026-11-18",
-        "portfolio": 112.8031,
+        "portfolio": 113.0884,
         "benchmark": 96.8345
       },
       {
         "date": "2026-11-19",
-        "portfolio": 113.3914,
+        "portfolio": 113.6782,
         "benchmark": 97.9336
       },
       {
         "date": "2026-11-20",
-        "portfolio": 112.2631,
+        "portfolio": 112.5471,
         "benchmark": 99.0325
       },
       {
         "date": "2026-11-23",
-        "portfolio": 112.4209,
+        "portfolio": 112.7052,
         "benchmark": 97.3016
       },
       {
         "date": "2026-11-25",
-        "portfolio": 113.3268,
+        "portfolio": 113.6135,
         "benchmark": 99.1041
       },
       {
         "date": "2026-11-26",
-        "portfolio": 114.82,
+        "portfolio": 115.1104,
         "benchmark": 99.3546
       },
       {
         "date": "2026-11-27",
-        "portfolio": 115.6594,
-        "benchmark": 99.173
+        "portfolio": 115.8823,
+        "benchmark": 98.2902
       }
     ],
     "holdings": [
@@ -3326,7 +3326,7 @@
           "SHILPAMED.NS",
           "CHENNPETRO.NS",
           "AEROFLEX.NS",
-          "SHAILY.NS"
+          "CONFIPET.NS"
         ],
         "weights": {
           "CPPLUS.NS": 0.1,
@@ -3338,7 +3338,7 @@
           "SHILPAMED.NS": 0.1,
           "CHENNPETRO.NS": 0.1,
           "AEROFLEX.NS": 0.1,
-          "SHAILY.NS": 0.1
+          "CONFIPET.NS": 0.1
         },
         "equity_ratio": 1.0
       },
@@ -3402,12 +3402,12 @@
       }
     ],
     "stats": {
-      "total_return": 15.66,
-      "cagr": 15.31,
-      "volatility": 38.52,
+      "total_return": 15.88,
+      "cagr": 15.53,
+      "volatility": 38.62,
       "sharpe": 0.41,
       "max_drawdown": -32.59,
-      "info_ratio": 0.6,
+      "info_ratio": 0.63,
       "win_rate": 57.0
     },
     "version": 4,
@@ -3616,7 +3616,7 @@
       },
       {
         "date": "2026-07-23",
-        "portfolio": 93.4548,
+        "portfolio": 93.4547,
         "benchmark": 99.8429
       },
       {
@@ -4046,8 +4046,8 @@
       },
       {
         "date": "2026-11-27",
-        "portfolio": 80.3027,
-        "benchmark": 108.0731
+        "portfolio": 80.0375,
+        "benchmark": 107.111
       }
     ],
     "holdings": [
@@ -4061,8 +4061,8 @@
           "DEEDEV.NS",
           "SANSERA.NS",
           "MTARTECH.NS",
-          "KESORAMIND.NS",
           "ACUTAAS.NS",
+          "KESORAMIND.NS",
           "SBC.NS",
           "VEDL.NS"
         ],
@@ -4073,8 +4073,8 @@
           "DEEDEV.NS": 0.1,
           "SANSERA.NS": 0.1,
           "MTARTECH.NS": 0.1,
-          "KESORAMIND.NS": 0.1,
           "ACUTAAS.NS": 0.1,
+          "KESORAMIND.NS": 0.1,
           "SBC.NS": 0.1,
           "VEDL.NS": 0.1
         },
@@ -4256,12 +4256,12 @@
       }
     ],
     "stats": {
-      "total_return": -19.7,
-      "cagr": -35.3,
-      "volatility": 27.21,
-      "sharpe": -1.73,
+      "total_return": -19.96,
+      "cagr": -35.73,
+      "volatility": 27.18,
+      "sharpe": -1.75,
       "max_drawdown": -23.11,
-      "info_ratio": -2.03,
+      "info_ratio": -1.98,
       "win_rate": 51.2
     },
     "version": 4,
@@ -4460,7 +4460,7 @@
       },
       {
         "date": "2026-01-12",
-        "portfolio": 110.911,
+        "portfolio": 110.9109,
         "benchmark": 98.9928
       },
       {
@@ -4790,7 +4790,7 @@
       },
       {
         "date": "2026-04-23",
-        "portfolio": 118.8249,
+        "portfolio": 118.825,
         "benchmark": 92.7854
       },
       {
@@ -4995,7 +4995,7 @@
       },
       {
         "date": "2026-06-23",
-        "portfolio": 132.7409,
+        "portfolio": 132.741,
         "benchmark": 91.446
       },
       {
@@ -5175,7 +5175,7 @@
       },
       {
         "date": "2026-08-13",
-        "portfolio": 143.2778,
+        "portfolio": 143.2779,
         "benchmark": 93.6406
       },
       {
@@ -5395,7 +5395,7 @@
       },
       {
         "date": "2026-10-16",
-        "portfolio": 138.2734,
+        "portfolio": 138.2735,
         "benchmark": 88.8437
       },
       {
@@ -5530,8 +5530,8 @@
       },
       {
         "date": "2026-11-27",
-        "portfolio": 140.132,
-        "benchmark": 99.173
+        "portfolio": 140.2014,
+        "benchmark": 98.2902
       }
     ],
     "holdings": [
@@ -5914,12 +5914,12 @@
       }
     ],
     "stats": {
-      "total_return": 40.13,
-      "cagr": 39.15,
+      "total_return": 40.2,
+      "cagr": 39.22,
       "volatility": 22.95,
       "sharpe": 1.31,
       "max_drawdown": -19.02,
-      "info_ratio": 1.85,
+      "info_ratio": 1.89,
       "win_rate": 57.0
     },
     "version": 4,
@@ -6558,8 +6558,8 @@
       },
       {
         "date": "2026-11-27",
-        "portfolio": 109.7961,
-        "benchmark": 108.0731
+        "portfolio": 109.4909,
+        "benchmark": 107.111
       }
     ],
     "holdings": [
@@ -6768,12 +6768,12 @@
       }
     ],
     "stats": {
-      "total_return": 9.8,
-      "cagr": 20.38,
-      "volatility": 15.74,
-      "sharpe": 0.86,
+      "total_return": 9.49,
+      "cagr": 19.72,
+      "volatility": 15.73,
+      "sharpe": 0.83,
       "max_drawdown": -7.64,
-      "info_ratio": 0.21,
+      "info_ratio": 0.28,
       "win_rate": 53.6
     },
     "version": 4,
@@ -6790,8 +6790,8 @@
       5
     ],
     "nifty_trend": "bullish",
-    "vix": 16.657499313354492,
-    "breadth": 54.6
+    "vix": 16.545000076293945,
+    "breadth": 57.0
   },
   "track_record": {
     "method": "Bought at the next session's close after each scan and held for the stated number of sessions. Price returns before costs. Neighbouring scans overlap, so treat the number of independent periods, not scan dates, as the sample size.",
@@ -6810,55 +6810,55 @@
               "label": "Strong Buy",
               "scan_dates": 7,
               "stocks_per_date": 35.7,
-              "mean_return": -0.0087,
-              "nifty": 0.012,
-              "positive_share": 0.47,
+              "mean_return": -0.0094,
+              "nifty": 0.0107,
+              "positive_share": 0.46,
               "beat_nifty_share": 0.38
             },
             {
               "label": "Buy",
               "scan_dates": 7,
               "stocks_per_date": 103.6,
-              "mean_return": -0.0037,
-              "nifty": 0.012,
-              "positive_share": 0.49,
+              "mean_return": -0.0048,
+              "nifty": 0.0107,
+              "positive_share": 0.47,
               "beat_nifty_share": 0.36
             },
             {
               "label": "Hold",
               "scan_dates": 7,
               "stocks_per_date": 138.1,
-              "mean_return": -0.0046,
-              "nifty": 0.012,
+              "mean_return": -0.0051,
+              "nifty": 0.0107,
               "positive_share": 0.44,
-              "beat_nifty_share": 0.34
+              "beat_nifty_share": 0.35
             },
             {
               "label": "Caution",
               "scan_dates": 7,
               "stocks_per_date": 120.4,
-              "mean_return": -0.0098,
-              "nifty": 0.012,
+              "mean_return": -0.0101,
+              "nifty": 0.0107,
               "positive_share": 0.38,
-              "beat_nifty_share": 0.3
+              "beat_nifty_share": 0.31
             },
             {
               "label": "Avoid",
               "scan_dates": 7,
               "stocks_per_date": 78.0,
-              "mean_return": -0.0072,
-              "nifty": 0.012,
-              "positive_share": 0.43,
+              "mean_return": -0.0081,
+              "nifty": 0.0107,
+              "positive_share": 0.42,
               "beat_nifty_share": 0.31
             },
             {
               "label": "All rated stocks",
               "scan_dates": 7,
-              "stocks_per_date": 517.6,
-              "mean_return": -0.0083,
-              "nifty": 0.012,
-              "positive_share": 0.43,
-              "beat_nifty_share": 0.32
+              "stocks_per_date": 517.9,
+              "mean_return": -0.0088,
+              "nifty": 0.0107,
+              "positive_share": 0.42,
+              "beat_nifty_share": 0.33
             }
           ]
         },
@@ -7078,8 +7078,8 @@
               "label": "Buy",
               "scan_dates": 35,
               "stocks_per_date": 52.1,
-              "mean_return": -0.0147,
-              "nifty": -0.0302,
+              "mean_return": -0.0148,
+              "nifty": -0.0305,
               "positive_share": 0.36,
               "beat_nifty_share": 0.49
             },
@@ -7087,8 +7087,8 @@
               "label": "Hold",
               "scan_dates": 35,
               "stocks_per_date": 71.6,
-              "mean_return": -0.0176,
-              "nifty": -0.0302,
+              "mean_return": -0.0177,
+              "nifty": -0.0305,
               "positive_share": 0.37,
               "beat_nifty_share": 0.49
             },
@@ -7096,8 +7096,8 @@
               "label": "Caution",
               "scan_dates": 35,
               "stocks_per_date": 48.6,
-              "mean_return": -0.0261,
-              "nifty": -0.0302,
+              "mean_return": -0.0262,
+              "nifty": -0.0305,
               "positive_share": 0.35,
               "beat_nifty_share": 0.48
             },
@@ -7106,7 +7106,7 @@
               "scan_dates": 35,
               "stocks_per_date": 49.8,
               "mean_return": -0.0392,
-              "nifty": -0.0302,
+              "nifty": -0.0305,
               "positive_share": 0.32,
               "beat_nifty_share": 0.4
             },
@@ -7114,8 +7114,8 @@
               "label": "All rated stocks",
               "scan_dates": 35,
               "stocks_per_date": 234.1,
-              "mean_return": -0.0232,
-              "nifty": -0.0302,
+              "mean_return": -0.0233,
+              "nifty": -0.0305,
               "positive_share": 0.35,
               "beat_nifty_share": 0.46
             }
@@ -7129,8 +7129,8 @@
     "inception": "2026-10-05",
     "through": "2026-11-27",
     "sessions": 37,
-    "return": 0.0567,
-    "nifty_return": 0.1455,
+    "return": 0.051,
+    "nifty_return": 0.1353,
     "max_drawdown": -0.0519,
     "reviews": [
       {
@@ -7157,48 +7157,8 @@
         "score_now": 7.3,
         "entry_date": "2026-11-12",
         "entry_price": 5342.0,
-        "price": 5816.5,
-        "return": 0.0888
-      },
-      {
-        "ticker": "MAHABANK.NS",
-        "sector": "Financial Services",
-        "rating_now": "Strong Buy",
-        "score_now": 6.76,
-        "entry_date": "2026-10-05",
-        "entry_price": 80.9,
-        "price": 96.73,
-        "return": 0.1957
-      },
-      {
-        "ticker": "PNB.NS",
-        "sector": "Financial Services",
-        "rating_now": "Strong Buy",
-        "score_now": 7.39,
-        "entry_date": "2026-11-12",
-        "entry_price": 141.79,
-        "price": 149.19,
-        "return": 0.0522
-      },
-      {
-        "ticker": "UNIONBANK.NS",
-        "sector": "Financial Services",
-        "rating_now": "Strong Buy",
-        "score_now": 7.31,
-        "entry_date": "2026-11-12",
-        "entry_price": 204.4,
-        "price": 214.02,
-        "return": 0.0471
-      },
-      {
-        "ticker": "SHREEJISPG.NS",
-        "sector": "Services",
-        "rating_now": "Strong Buy",
-        "score_now": 7.22,
-        "entry_date": "2026-10-05",
-        "entry_price": 779.85,
-        "price": 924.7,
-        "return": 0.1857
+        "price": 5701.0,
+        "return": 0.0672
       },
       {
         "ticker": "NAVINFLUOR.NS",
@@ -7207,8 +7167,48 @@
         "score_now": 6.37,
         "entry_date": "2026-11-12",
         "entry_price": 9969.0,
-        "price": 10352.0,
-        "return": 0.0384
+        "price": 10456.5,
+        "return": 0.0489
+      },
+      {
+        "ticker": "MAHABANK.NS",
+        "sector": "Financial Services",
+        "rating_now": "Strong Buy",
+        "score_now": 6.76,
+        "entry_date": "2026-10-05",
+        "entry_price": 80.9,
+        "price": 95.73,
+        "return": 0.1833
+      },
+      {
+        "ticker": "SHREEJISPG.NS",
+        "sector": "Services",
+        "rating_now": "Strong Buy",
+        "score_now": 7.22,
+        "entry_date": "2026-10-05",
+        "entry_price": 779.85,
+        "price": 923.7,
+        "return": 0.1845
+      },
+      {
+        "ticker": "PNB.NS",
+        "sector": "Financial Services",
+        "rating_now": "Strong Buy",
+        "score_now": 7.39,
+        "entry_date": "2026-11-12",
+        "entry_price": 141.79,
+        "price": 146.5,
+        "return": 0.0332
+      },
+      {
+        "ticker": "UNIONBANK.NS",
+        "sector": "Financial Services",
+        "rating_now": "Strong Buy",
+        "score_now": 7.31,
+        "entry_date": "2026-11-12",
+        "entry_price": 204.4,
+        "price": 211.1,
+        "return": 0.0328
       },
       {
         "ticker": "KAJARIACER.NS",
@@ -7217,18 +7217,8 @@
         "score_now": 6.85,
         "entry_date": "2026-10-05",
         "entry_price": 1201.34,
-        "price": 1232.0,
-        "return": 0.0255
-      },
-      {
-        "ticker": "AUROPHARMA.NS",
-        "sector": "Healthcare",
-        "rating_now": "Strong Buy",
-        "score_now": 6.98,
-        "entry_date": "2026-11-12",
-        "entry_price": 1807.2,
-        "price": 1814.0,
-        "return": 0.0038
+        "price": 1205.3,
+        "return": 0.0033
       },
       {
         "ticker": "EMCURE.NS",
@@ -7237,8 +7227,8 @@
         "score_now": 7.05,
         "entry_date": "2026-11-12",
         "entry_price": 2314.4,
-        "price": 2319.0,
-        "return": 0.002
+        "price": 2308.6,
+        "return": -0.0025
       },
       {
         "ticker": "SHYAMMETL.NS",
@@ -7247,8 +7237,18 @@
         "score_now": 6.87,
         "entry_date": "2026-11-12",
         "entry_price": 1313.9,
-        "price": 1309.3,
-        "return": -0.0035
+        "price": 1305.4,
+        "return": -0.0065
+      },
+      {
+        "ticker": "AUROPHARMA.NS",
+        "sector": "Healthcare",
+        "rating_now": "Strong Buy",
+        "score_now": 6.98,
+        "entry_date": "2026-11-12",
+        "entry_price": 1807.2,
+        "price": 1791.8,
+        "return": -0.0085
       },
       {
         "ticker": "LALPATHLAB.NS",
@@ -7257,38 +7257,8 @@
         "score_now": 7.27,
         "entry_date": "2026-10-05",
         "entry_price": 1966.41,
-        "price": 1997.3,
-        "return": 0.0157
-      },
-      {
-        "ticker": "ALIVUS.NS",
-        "sector": "Healthcare",
-        "rating_now": "Strong Buy",
-        "score_now": 7.62,
-        "entry_date": "2026-11-12",
-        "entry_price": 1443.7,
-        "price": 1433.6,
-        "return": -0.007
-      },
-      {
-        "ticker": "PETRONET.NS",
-        "sector": "Energy",
-        "rating_now": "Strong Buy",
-        "score_now": 6.62,
-        "entry_date": "2026-11-12",
-        "entry_price": 335.0,
-        "price": 329.1,
-        "return": -0.0176
-      },
-      {
-        "ticker": "KARURVYSYA.NS",
-        "sector": "Financial Services",
-        "rating_now": "Strong Buy",
-        "score_now": 7.0,
-        "entry_date": "2026-11-12",
-        "entry_price": 380.6,
-        "price": 373.65,
-        "return": -0.0183
+        "price": 1983.3,
+        "return": 0.0086
       },
       {
         "ticker": "GRWRHITECH.NS",
@@ -7297,18 +7267,18 @@
         "score_now": 6.62,
         "entry_date": "2026-10-05",
         "entry_price": 6725.5,
-        "price": 7515.0,
-        "return": 0.1174
+        "price": 7580.0,
+        "return": 0.1271
       },
       {
-        "ticker": "BOSCHLTD.NS",
-        "sector": "Consumer Discretionary",
+        "ticker": "ALIVUS.NS",
+        "sector": "Healthcare",
         "rating_now": "Strong Buy",
-        "score_now": 6.63,
-        "entry_date": "2026-10-05",
-        "entry_price": 44960.0,
-        "price": 48820.0,
-        "return": 0.0859
+        "score_now": 7.62,
+        "entry_date": "2026-11-12",
+        "entry_price": 1443.7,
+        "price": 1413.0,
+        "return": -0.0213
       },
       {
         "ticker": "ENGINERSIN.NS",
@@ -7317,8 +7287,38 @@
         "score_now": 6.65,
         "entry_date": "2026-10-05",
         "entry_price": 306.32,
-        "price": 295.0,
-        "return": -0.0369
+        "price": 300.75,
+        "return": -0.0182
+      },
+      {
+        "ticker": "KARURVYSYA.NS",
+        "sector": "Financial Services",
+        "rating_now": "Strong Buy",
+        "score_now": 7.0,
+        "entry_date": "2026-11-12",
+        "entry_price": 380.6,
+        "price": 371.1,
+        "return": -0.025
+      },
+      {
+        "ticker": "BOSCHLTD.NS",
+        "sector": "Consumer Discretionary",
+        "rating_now": "Strong Buy",
+        "score_now": 6.63,
+        "entry_date": "2026-10-05",
+        "entry_price": 44960.0,
+        "price": 49170.0,
+        "return": 0.0936
+      },
+      {
+        "ticker": "PETRONET.NS",
+        "sector": "Energy",
+        "rating_now": "Strong Buy",
+        "score_now": 6.62,
+        "entry_date": "2026-11-12",
+        "entry_price": 335.0,
+        "price": 322.35,
+        "return": -0.0378
       },
       {
         "ticker": "CHENNPETRO.NS",
@@ -7327,8 +7327,8 @@
         "score_now": 6.44,
         "entry_date": "2026-10-05",
         "entry_price": 1377.83,
-        "price": 1358.4,
-        "return": -0.0141
+        "price": 1352.5,
+        "return": -0.0184
       },
       {
         "ticker": "DPABHUSHAN.NS",
@@ -7347,8 +7347,8 @@
         "score_now": 6.6,
         "entry_date": "2026-11-12",
         "entry_price": 572.8,
-        "price": 484.15,
-        "return": -0.1548
+        "price": 488.75,
+        "return": -0.1467
       }
     ],
     "next_basket": {
@@ -7581,8 +7581,8 @@
       },
       {
         "date": "2026-11-27",
-        "portfolio": 105.67,
-        "nifty": 114.55
+        "portfolio": 105.1,
+        "nifty": 113.53
       }
     ]
   },
@@ -9378,118 +9378,118 @@
         -0.03,
         0.18,
         0.08,
-        0.26,
+        0.27,
         -0.14,
-        0.23,
+        0.22,
         0.02,
-        0.17
+        0.16
       ],
       [
         0.21,
         1.0,
         0.34,
         0.2,
-        0.07,
-        0.3,
+        0.06,
+        0.31,
         -0.11,
-        0.28,
+        0.27,
         0.16,
-        0.06
+        0.05
       ],
       [
         -0.03,
         0.34,
         1.0,
-        0.16,
+        0.17,
         0.02,
         0.28,
-        0.06,
+        0.07,
         0.21,
-        0.09,
+        0.08,
         -0.08
       ],
       [
         0.18,
         0.2,
-        0.16,
+        0.17,
         1.0,
         0.1,
-        0.01,
-        -0.05,
-        0.16,
+        0.04,
+        -0.04,
+        0.15,
         0.11,
-        0.01
+        0.0
       ],
       [
         0.08,
-        0.07,
+        0.06,
         0.02,
         0.1,
         1.0,
         -0.01,
         0.43,
-        0.17,
-        0.21,
+        0.16,
+        0.22,
         0.39
       ],
       [
-        0.26,
-        0.3,
+        0.27,
+        0.31,
         0.28,
-        0.01,
+        0.04,
         -0.01,
         1.0,
-        -0.1,
+        -0.07,
         0.12,
-        0.2,
-        0.07
+        0.19,
+        0.09
       ],
       [
         -0.14,
         -0.11,
-        0.06,
-        -0.05,
+        0.07,
+        -0.04,
         0.43,
-        -0.1,
+        -0.07,
         1.0,
-        -0.1,
-        0.16,
-        0.71
+        -0.11,
+        0.17,
+        0.7
       ],
       [
-        0.23,
-        0.28,
+        0.22,
+        0.27,
         0.21,
+        0.15,
         0.16,
-        0.17,
         0.12,
-        -0.1,
+        -0.11,
         1.0,
         0.16,
-        -0.0
+        -0.01
       ],
       [
         0.02,
         0.16,
-        0.09,
+        0.08,
         0.11,
-        0.21,
-        0.2,
-        0.16,
+        0.22,
+        0.19,
+        0.17,
         0.16,
         1.0,
-        0.03
+        0.04
       ],
       [
-        0.17,
-        0.06,
+        0.16,
+        0.05,
         -0.08,
-        0.01,
+        0.0,
         0.39,
-        0.07,
-        0.71,
-        -0.0,
-        0.03,
+        0.09,
+        0.7,
+        -0.01,
+        0.04,
         1.0
       ]
     ]
